@@ -7,7 +7,7 @@ import ch.qos.logback.core.spi.FilterReply
 
 appender("STDOUT", ConsoleAppender) {
   filter(LevelFilter) {
-    level = Level.WARN
+    level = Level.TRACE
     onMatch = FilterReply.ACCEPT
     onMismatch = FilterReply.DENY
   }
@@ -16,7 +16,7 @@ appender("STDOUT", ConsoleAppender) {
   }
 }
 appender("FILE", FileAppender) {
-  file = "budget.log"
+  file = "tally.log"
   append = true
   encoder(PatternLayoutEncoder) {
     pattern = "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%file:%line] - %msg%n"

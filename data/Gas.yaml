@@ -1,0 +1,24 @@
+closed_on: ~
+name: gas
+number: "1234567"
+opened_on: Sep2014
+owner: [ john ]
+pswd: "password"
+type: "bill"
+url: "http://www.gas.com/"
+username: "john"
+
+balances:
+  - { grp: Apr2015, date: 2015-04-02, pamt:  -15.00 }
+  - { grp: Mar2015, date: 2015-03-02, pamt:  -15.00 }
+  - { grp: Feb2015, date: 2015-02-02, camt:  -14.42 }
+  - { grp: Jan2015, date: 2015-01-02, camt:  -15.70 }
+
+transfers_to:
+  External:
+    - { grp: Jan2015, date: 2015-01-13, camt:  -2.75, desc: "Customer Refund" }
+    - { grp: Jan2015, date: 2015-01-13, camt:   1.06, desc: "Distribution" }
+    - { grp: Jan2015, date: 2015-01-13, camt:   1.93, desc: "Basic Gas 3.1" }
+    - { grp: Jan2015, date: 2015-01-13, camt:   0.23, desc: "CAC" }
+    - { grp: Jan2015, date: 2015-01-13, camt:   8.00, desc: "Service Charge" }
+

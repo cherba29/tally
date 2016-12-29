@@ -1,0 +1,16 @@
+closed_on: Jan2015
+name: "phone"
+number: "1234567890"
+opened_on: Jan2011
+owner: [ john ]
+pswd: "password"
+type: "bill"
+url: "http://verizon.com"
+username: "john"
+
+balances:
+  - { grp: Feb2015, date: 2015-02-01, camt:    0.00 }
+  - { grp: Jan2015, date: 2015-01-01, camt:   11.94 }
+transfers_to:
+  External:
+    - { grp: Jan2015, date: 2015-01-01, camt:  40.65, desc: "Monthly Bill" }

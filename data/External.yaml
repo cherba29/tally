@@ -1,0 +1,9 @@
+name: External
+opened_on: Jan2010
+closed_on: ~
+type: "external"
+owner: [ "xxx" ]
+
+transfers_to:
+  phone:
+    - { grp: Jan2013, date: 2013-01-07, camt: 178.89, desc: "Check 1062 ???" }

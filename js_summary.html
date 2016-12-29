@@ -1,0 +1,202 @@
+<!doctype html>
+<html>
+<head>
+    <title>Summary of finances</title>
+    <script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="js/handlebars-v1.3.0.js"></script>
+    <script type="text/javascript" src="js/templates.js"></script>
+    <script type="text/javascript" src="js/utils.js"></script>
+    <style>
+    body {
+     font-size:80%;
+    }
+    .account_type {
+      font-weight:bold;
+    }
+    .change {
+      font-family:"Courier New", "Lucida Console";
+      font-size:75%;
+    }
+    .balance {
+      font-family:"Courier New", "Lucida Console";
+    }
+    .unaccounted {
+      font-family:"Courier New", "Lucida Console";
+      font-size:66%;
+      color:#f00;
+    }
+    .accounted {
+      font-family:"Courier New", "Lucida Console";
+      font-size:66%;
+      color:#0a0;
+    }
+    .add_sub {
+      font-family:"Courier New", "Lucida Console";
+      font-size:66%;
+    }
+    .closed {
+      background-color:#ccc;
+    }
+    .projected {
+      background-color:#ddf;
+    }
+    .vertical-text {
+      -webkit-transform: rotate(270deg);
+      -webkit-transform-origin: 0% 100%;
+      max-width: 25px;
+      height: 200px;
+      border: 2px solid #222;
+    }
+    table.main {
+      border: 5px solid #C3C3C3;
+      border-collapse: collapse;
+    }
+    table.main td {
+      border-left: 1px solid #C3C3C3;
+      border-top: 1px solid #C3C3C3;
+      padding: 1px;
+      vertical-align:middle;
+    }
+    table.main td.balance,td.unaccounted,td.add_sub,td.accounted,td.change {
+      text-align: right;
+    }
+    table.main th {
+      border-left-width: 1px;
+      font-family:"Times New Roman", Times, serif;
+      font-size:75%;
+      padding: 2px;
+      vertical-align:middle;
+    }
+    .toolTip {
+      position:absolute;
+      /* left:26px; Moves it to the right beside the question mark*/
+      /* top:0; */
+      /* display:none; */
+      /*The attributes below make it look pretty
+      min-width:330px; */
+      padding:5px;
+      border:1px solid #000;
+      background-color:#ffff80;
+      font:10px/12px Arial, Helvetica, sans-serif;
+    }
+    .toolTip .projected {
+      background-color:#f0a022;
+    }
+    .toolTip .highlight:hover {
+      background-color: #40C340;
+    }
+    div.toolTip td {
+      border-left: 1px solid #C3C3C3;
+      border-top: 1px solid #C3C3C3;
+      padding: 1px;
+      vertical-align:middle;
+    }
+  </style>
+</head>
+<body>
+<button id="reload" style="position:fixed">Reload</button>
+<script>
+var template = jbudget.templates['summary'];
+var balance_tooltip = jbudget.templates['balance-tooltip'];
+var balance_summary_tooltip = jbudget.templates['balance-summary-tooltip'];
+var account_tooltip = jbudget.templates['account-tooltip'];
+var transfer_matrix_view = jbudget.templates['transfer-matrix'];
+var jsonPath = window.location.hash.substring(1);
+
+function formatCurrency(value) {
+  if (value === null || value === undefined) {
+    return "n/a";
+  }
+  return (value / 100.0).toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+}
+
+Handlebars.registerHelper('currency', formatCurrency);
+
+Handlebars.registerHelper('isProjected', function(balance, options) {
+  var fnTrue=options.fn, fnFalse=options.inverse;
+  return (balance && ('type' in balance) && balance.type != 'CONFIRMED')
+      ? fnTrue() : fnFalse();
+});
+
+Handlebars.registerHelper('eqname', function(a, b, options) {
+  var fnTrue=options.fn, fnFalse=options.inverse;
+  return (a == b) ? fnTrue() : fnFalse();
+});
+
+Handlebars.registerHelper('currencyitem', function(object, key) {
+  var value = object[key];
+  return value && formatCurrency(value) || "";
+});
+
+Handlebars.registerHelper('isNotSymetric', function(aTransfers, bTransfers, aName, bName, options) {
+  var fnTrue=options.fn, fnFalse=options.inverse;
+  var aTransfer = aTransfers[bName];
+  var bTransfer = bTransfers[aName];
+  return (aTransfer && bTransfer && aTransfer != -bTransfer) ? fnTrue() : fnFalse();
+});
+
+function clearPopup() {
+  $('#popup-content').html("");
+}
+
+// Function to execute to display summary details popup.
+function createPopupFunc(popup) {
+  return function(e) {
+    console.log("popup", popup);
+    var popupElement = $('#popup-content');
+    popupElement.offset({ top: e.pageY + 10, left: e.pageX });
+    if ('summary' in popup) {
+      popupElement.html(balance_summary_tooltip(popup));
+    } else if ('account' in popup) {
+      popupElement.html(account_tooltip(popup));
+    } else {
+      popupElement.html(balance_tooltip(popup));
+    }
+    $("#" + popup.id + "_close").click(clearPopup);
+    $("#" + popup.id + "_transfer_matrix").click(function(e) {
+      popupElement.html(transfer_matrix_view(popup.transfer_matrix));
+    });
+  };
+}
+
+// Loads json and re-renders the page.
+function reload() {
+  var path = "/budget?dir=" + jsonPath;
+  console.log("Loading ", path);
+  $.getJSON(path, function(response) {
+    console.log("response", response)
+    if (!response.success) {
+      var popupElement = $('#popup-content');
+      popupElement.offset({ top: 40, left: 0 });
+      popupElement.html("<pre>" + response.message + "</pre>");
+      return;
+    } else {
+      clearPopup();
+    }
+    // Convert data so it can be rendered.
+    var data = response.data;
+    var dataView = transformBudgetData(
+        data.months, data.accountNameToAccount, data.statements, data.summaries);
+    $('#content').html(template(dataView));
+    // Most cells have popups with details, activate these.
+    var popupCells = dataView.popupCells;
+    for (var i = 0, ii = popupCells.length; i < ii; i++) {
+      var popup = popupCells[i];
+      $('#' + popup.id).click(createPopupFunc(popup));
+    }
+  }).fail(function( jqxhr, textStatus, error ) {
+    var err = textStatus + ", " + error;
+    console.log( "Request Failed: " + err );
+  });
+}
+
+$("#reload").on('click', reload);
+// Trigger reload on first load.
+reload();
+
+</script>
+<div id="sample-content"></div>
+<div id="popup-content"></div>
+<div id="content"></div>
+</body>
+</html>
