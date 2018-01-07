@@ -1,0 +1,73 @@
+<table class="main">
+<thead>
+  <tr>
+    <th>Account</th>
+    {{#each months}}
+    <th colspan="4">{{this}}</th>
+    {{/each}}
+  </tr>
+  <tr>
+    <th></th>
+    {{#each months}}
+    <th>+/-<th>$Bal<th>Chg%<th>?</th>
+    {{/each}}
+  </tr>
+</thead>
+<tbody>
+  {{#each rows}}
+  {{#if isSpace}}
+  <tr>
+    <td class="account_type">{{title}}</td>
+    {{#each ../../months}}
+    <td colspan="4" style="border-right:2px double #a00"></td>
+    {{/each}}
+  </tr>
+  {{/if}}  
+  {{#if isTotal}}
+  <tr>
+    <td><b>{{title}}/Total</b></td>
+    {{#each cells}}
+      {{#if isClosed}}
+      <td colspan="4" class="closed" style="border-right:2px double #a00"></td>
+      {{else}}
+      <td class="add_sub">{{currency addSub}}</td>
+      <td id="{{id}}" style="font-weight:700;font-size:75%;"
+          class="balance {{#if isProjected}}projected{{/if}}">
+          {{~currency balance~}}
+      </td>
+      <td class="change">{{percentChange}}</td>
+      <td class="{{#if balanced}}accounted{{else}}unaccounted{{/if}}"
+          style="border-right:2px double #a00">{{currency unaccounted}}</td>
+      {{/if}}
+    {{/each}}
+  </tr>
+  {{/if}}
+  {{#if isNormal}}
+  <tr>
+    <td id="{{title.name}}">
+    {{~#if title.url~}}
+      <a href="{{title.url}}" target="_blank">{{title.name}}</a>
+    {{else}}
+      {{title.name}}
+    {{/if}}</td>
+    {{#each cells}}
+      {{#if isClosed}}
+      <td colspan="4" class="closed" style="border-right:2px double #a00"></td>
+      {{else}}
+      <td class="add_sub">{{currency addSub}}</td>
+      <td id="{{id}}" class="balance{{#if isProjected}} projected{{/if}}">
+        {{~#unless isCovered}}<span style="color:
+          {{~#if isProjectedCovered}}#fa0{{else}}#f00{{/if}};font-weight:700;">{{/unless}}
+            {{~#if hasProjectedTransfer~}}**{{/if}}{{currency balance}}
+        {{~#unless isCovered~}}</span>{{/unless}}
+      </td>
+      <td class="change">{{percentChange}}</td>
+      <td class="{{#if balanced}}accounted{{else}}unaccounted{{/if}}"
+          style="border-right:2px double #a00">{{currency unaccounted}}</td>
+      {{/if}}
+    {{/each}}
+  </tr>
+  {{/if}}
+  {{/each}}
+</tbody>
+</table>

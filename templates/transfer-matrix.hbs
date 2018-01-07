@@ -1,0 +1,29 @@
+<div class="toolTip">
+<span id="{{id}}_close">XXX</span>
+<table>
+  <thead>
+    <th>Accounts</th>
+    {{#each accounts}}
+    <th>{{@index}}</th>
+    {{/each}}
+    <th>Totals</th>
+  </thead>
+  <tbody>
+    {{#each accounts}}
+    <tr class="highlight">
+      <td>{{@index}} {{name}}</td>
+      {{#each ../accounts}}
+      <td {{#eqname ../name name}}style="background:#ccc"{{/eqname}}{{#isNotSymetric ../transfers transfers ../name name}}style="background:#c88"{{/isNotSymetric}}>{{currencyitem ../transfers name}}</td>
+      {{/each}}
+      <td>{{currency total}}</td>
+   </tr>
+   {{/each}}
+   <tr>
+     <td>Totals</td>
+    {{#each accounts}}
+      <td>{{currency total}}</td>
+    {{/each}}
+    <td>{{currency total}}</td>
+   </tr>
+</table>
+</div>

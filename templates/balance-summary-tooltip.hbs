@@ -1,0 +1,67 @@
+<div class="toolTip">
+<span id="{{id}}_close">XXX</span>
+<span id="{{id}}_transfer_matrix">Transfer Matrix</span>
+<span style="float:right;">{{accountName}} - {{month}}</span>
+<table>
+  <thead>
+    <th style="min-width:170px">Account</th>
+    <th style="min-width:60px">Start Date</th>
+    <th style="min-width:50px">Start<br>Balance</th>
+    <th style="min-width:60px">End Date</th>
+    <th style="min-width:50px">End<br>Balance</th>
+    <th style="min-width:50px">Change</th>
+    <th style="min-width:50px">Prct<br>Change</th>
+    <th style="min-width:50px">Inflows</th>
+    <th style="min-width:50px">OutFlows</th>
+    <th style="min-width:50px">AddSub</th>
+    <th style="min-width:50px">Income</th>
+    <th style="min-width:50px">Expenses</th>
+    <th style="min-width:50px">Transfers</th>
+    <th style="min-width:50px">Unaccounted</th>
+  </thead>
+  <tbody>
+    {{#each statements}}
+    <tr class="highlight">
+      <td>{{@index}} {{name}}</td>
+      <td align="middle">{{stmt.startBalance.date}}</td>
+      <td align="right"{{#isProjected stmt.startBalance}} class="projected"{{/isProjected}}>
+        {{~currency stmt.startBalance.amount~}}
+      </td>
+      <td align="middle">{{stmt.endBalance.date}}</td>
+      <td align="right"{{#isProjected stmt.endBalance}} class="projected"{{/isProjected}}>
+        {{~currency stmt.endBalance.amount~}}
+      </td>
+      <td align="right">{{currency stmt.change}}</td>
+      <td align="right">{{stmt.percentChange}}</td>
+      <td align="right">{{currency stmt.inFlows}}</td>
+      <td align="right">{{currency stmt.outFlows}}</td>
+      <td align="right">{{currency stmt.addSub}}</td>
+      <td align="right">{{currency stmt.income}}</td>
+      <td align="right">{{currency stmt.totalPayments}}</td>
+      <td align="right">{{currency stmt.totalTransfers}}</td>
+      <td align="right">{{currency stmt.unaccounted}}</td>
+    </tr>
+    {{/each}}
+    <tr>
+      <td><b>Total</b></td>
+      <td align="middle">{{summary.startBalance.date}}</td>
+      <td align="right"{{#if summary.startBalance.projected}} class="projected"{{/if}}>
+        {{~currency summary.startBalance.amount~}}
+      </td>
+      <td align="middle">{{summary.endBalance.date}}</td>
+      <td align="right"{{#if summary.endBalance.projected}} class="projected"{{/if}}>
+        {{~currency summary.endBalance.amount~}}
+      </td>
+      <td align="right">{{currency summary.change}}</td>
+      <td align="right">{{summary.percentChange}}</td>
+      <td align="right">{{currency summary.inFlows}}</td>
+      <td align="right">{{currency summary.outFlows}}</td>
+      <td align="right">{{currency summary.addSub}}</td>
+      <td align="right">{{currency summary.income}}</td>
+      <td align="right">{{currency summary.totalPayments}}</td>
+      <td align="right">{{currency summary.totalTransfers}}</td>
+      <td align="right">{{currency summary.unaccounted}}</td>
+    </tr>
+  </tbody>
+</table>
+</div>

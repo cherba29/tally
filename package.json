@@ -1,0 +1,12 @@
+{
+  "name": "tally",
+  "version": "0.1.0",
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-contrib-handlebars": "^0.8.0",
+    "grunt-contrib-nodeunit": "~0.3.3"
+  },
+  "dependencies": {
+    "grunt-cli": "^1.2.0"
+  }
+}

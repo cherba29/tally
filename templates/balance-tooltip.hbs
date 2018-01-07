@@ -1,0 +1,94 @@
+<div class="toolTip">
+<span id="{{id}}_close">XXX</span>
+<span style="float:right;">{{accountName}} - {{month}}</span>
+<table>
+  <tr>
+    <th align="left">Ending Balance</th>
+    <th>Type</th>
+    <th></th>
+    <th>{{stmt.endBalance.date}}</th>
+    <th align="right">{{currency stmt.endBalance.amount}}</th>
+    <th></th>
+  </tr>
+  {{#each stmt.transactions}}
+  <tr class="highlight">
+    <td style="min-width:175px">{{@index}} {{#isProjected balance}}**{{/isProjected}}{{toAccountName}}
+    <span style="font-size:80%">{{description}}</span>
+    </td>
+    <td align="middle" style="{{~#if isExpense~}}
+        background-color:#caa
+      {{else}}{{~#if isIncome~}}
+        background-color:#aca
+      {{/if}}{{/if}}">{{#if isExpense}}E{{else}}{{#if isIncome}}I{{else}}T{{/if}}{{/if}}</td>
+    <td align="right" style="min-width:40px">{{currency balance.amount}}</td>
+    <td align="middle" style="min-width:60px">{{balance.date}}</td>
+    <td align="right" style="min-width:50px">{{currency balanceFromEnd}}</td>
+    <td align="right" style="min-width:50px">{{currency balanceFromStart}}</td>
+  </tr>
+  {{/each}}
+  <tr>
+    <th align="left">Starting Balance</td>
+    <th></th>
+    <th></th>
+    <th>{{stmt.startBalance.date}}</th>
+    <th></th>
+    <th align="right" style="width:50px">{{currency stmt.startBalance.amount}}</th>
+  </tr>
+  <tr>
+    <td align="right"><b>Income</b></td>
+    <td></td>
+    <td align="right">{{currency stmt.income}}</td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td align="right"><b>Expenses</b></td>
+    <td></td>
+    <td align="right">{{currency stmt.totalPayments}}</td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td align="right"><b>Transfers</b></td>
+    <td></td>
+    <td align="right">{{currency stmt.totalTransfers}}</td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td align="right"><b>Inflows</b></td>
+    <td></td>
+    <td align="right">{{currency stmt.inFlows}}</td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td align="right"><b>Outflows</b></td>
+    <td></td>
+    <td align="right">{{currency stmt.outFlows}}</td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td align="right"><b>Total</b></td>
+    <td></td>
+    <td align="right">{{currency stmt.addSub}}</td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td align="right"><b>Unaccounted</b></td>
+    <td></td>
+    <td align="right">{{currency stmt.unaccounted}}</td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+</table>
+</div>
