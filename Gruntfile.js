@@ -1,6 +1,6 @@
 module.exports = function (grunt) {
-
   grunt.loadNpmTasks('grunt-contrib-handlebars');
+  grunt.loadNpmTasks('grunt-typescript');
 
   // Project configuration.
   grunt.initConfig({
@@ -21,8 +21,21 @@ module.exports = function (grunt) {
           "js/templates.js": ["templates/**/*.hbs"]
         }
       }
+    },
+    typescript: {
+      base: {
+        src: ['js/**/*.ts'],
+        dest: 'js',
+        options: {
+          module: 'amd', //or commonjs 
+          target: 'es5', //or es3 
+          basePath: 'js',
+          sourceMap: true,
+          declaration: true
+        }
+      }
     }
   });
 
-  grunt.registerTask('default', ['handlebars']);
+  grunt.registerTask('default', ['handlebars', 'typescript']);
 };
