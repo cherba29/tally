@@ -5,9 +5,15 @@
     "grunt": "~0.4.5",
     "grunt-contrib-handlebars": "^0.8.0",
     "grunt-contrib-nodeunit": "~0.3.3",
-    "grunt-typescript": "^0.8.0"
+    "grunt-typescript": "^0.8.0",
+    "jasmine": "^2.8.0",
+    "karma": "^2.0.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-jasmine": "^1.1.1",
+    "karma-typescript": "^3.0.9"
   },
   "dependencies": {
-    "grunt-cli": "^1.2.0"
+    "grunt-cli": "^1.2.0",
+    "grunt-ts": "^6.0.0-beta.17"
   }
 }
