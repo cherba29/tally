@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "module": "es2015",
+    "outDir": "./public",
+    "rootDir": "./js",
+
+    "strict": true,
+    "noImplicitAny": true,
+
+    "esModuleInterop": true,
+
+    "forceConsistentCasingInFileNames": true
+  },
+
+  "files": [
+    "js/utils.ts"
+  ]
+}

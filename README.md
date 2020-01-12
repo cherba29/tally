@@ -36,3 +36,14 @@ gradle runT --offline
 
 Load page for example by navigating to
 http://localhost:8080/files/js_summary.html#data
+
+
+## typescript
+
+```
+grunt ts
+```
+
+```
+npm run test
+```
