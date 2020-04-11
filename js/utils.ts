@@ -1,31 +1,55 @@
-interface Account {
+interface TallyAccount {
   name: string;
-  address: string;
-  closedOn: string;
   description: string;
-  external: boolean;
-  number: string;
+
+  // Month when account was opened and possibly closed.
   openedOn: string;
-  owners: string[];
-  password: string;
-  phone: string;
+  closedOn: string | null;
+
+  // Is this an external/bookeeping account. External accounts are not
+  // considered to be part of any owner.
+  external: boolean;
+
+  // Is this synthetic summary account.
   summary: boolean;
+
+  // List of account owner ids.
+  owners: string[];
+
+  // Account type, for example 'CREDIT_CARD'.
   type: string;
+
+  // Url to the account.
   url: string;
+
+  // Physical address for the account.
+  address: string;
+
+  // Phone number for customer support.
+  phone: string;
+
+  // Username/password to use to login to the account.
   userName: string;
+  password: string;
+
+  // Real account number associated with this account.
+  number: string;
 }
 
-// Create map of owner->type->accountname, it will be rendered in this format.
-// @param accountNameToAccount - account name->account map
-function getOwnerTypeAccountMap(accountNameToAccount: {[accountType: string]: Account}):
-    {[ownerType:string]: {[accountType:string]: string[]}} {
+/**
+ *  Create map of owner->type->accountname, it will be rendered in this format.
+ * @param accountNameToAccount - account name->account map
+ */
+function getOwnerTypeAccountMap(
+    accountNameToAccount: {[accountType: string]: TallyAccount}):
+        {[ownerType:string]: {[accountType:string]: string[]}} {
   console.log("name to account", accountNameToAccount);
-  let ownerTypeAccountNames: {[ownerType:string]: {[accountType:string]: string[]}} = {};
+  let ownerTypeAccountNames: {
+    [ownerType:string]: {[accountType:string]: string[]}} = {};
 
   for (let accountName in accountNameToAccount) {
-    let account = accountNameToAccount[accountName]
-    for (let i = 0; i < account.owners.length; i++) {
-      let owner = account.owners[i];
+    let account: TallyAccount = accountNameToAccount[accountName]
+    for (let owner of account.owners) {
       let typeAccounts: {[accountName:string]: string[]};
       if (owner in ownerTypeAccountNames) {
         typeAccounts = ownerTypeAccountNames[owner];
@@ -47,13 +71,13 @@ function getOwnerTypeAccountMap(accountNameToAccount: {[accountType: string]: Ac
 
 // Data for rendering given row.
 class Row {
-  title: string|Account;
+  title: string|TallyAccount;
   isSpace: boolean;
   isTotal: boolean;
   isNormal: boolean;
   cells: any[];
 
-  constructor(title: string|Account, type: string, cells: any[]) {
+  constructor(title: string|TallyAccount, type: string, cells: any[]) {
     this.title = title;
     this.isSpace = ('SPACE' == type);
     this.isTotal = ('TOTAL' == type);
@@ -90,40 +114,38 @@ interface Statement {
 class Cell {
   id: string;
   isClosed: boolean;
-  addSub: number;
-  balance: number;
+  addSub: number | null;
+  balance: number | null;
   isProjected: boolean;
   isCovered: boolean;
   isProjectedCovered: boolean;
   hasProjectedTransfer: boolean;
-  percentChange: number;
-  unaccounted: number;
+  percentChange: number | null;
+  unaccounted: number | null;
   balanced: boolean;
 
   constructor(id: string, stmt: Statement) {
     this.isClosed = stmt.isClosed;
-    if (!this.isClosed) {
-      this.id = id;
-      this.addSub = ('addSub' in stmt) ? stmt.addSub : null;
-      if ('endBalance' in stmt && stmt.endBalance !== null) {
-        this.balance = stmt.endBalance.amount;
-        this.isProjected = stmt.endBalance.type != 'CONFIRMED';
-      } else {
-        this.balance = null;
-        this.isProjected = false;
-      }
-      this.isCovered = stmt.isCovered;
-      this.isProjectedCovered = stmt.isProjectedCovered;
-      this.hasProjectedTransfer = stmt.hasProjectedTransfer;
-      this.isProjected = this.isProjected || this.hasProjectedTransfer;
-      this.percentChange = ('percentChange' in stmt) ? stmt.percentChange : null;
-      if ('unaccounted' in stmt) {
-        this.unaccounted = stmt.unaccounted;
-        this.balanced = !this.unaccounted;
-      } else {
-        this.unaccounted = null;
-        this.balanced = true;
-      }
+    this.id = id;
+    this.addSub = ('addSub' in stmt) ? stmt.addSub : null;
+    if ('endBalance' in stmt && stmt.endBalance !== null) {
+      this.balance = stmt.endBalance.amount;
+      this.isProjected = stmt.endBalance.type != 'CONFIRMED';
+    } else {
+      this.balance = null;
+      this.isProjected = false;
+    }
+    this.isCovered = stmt.isCovered;
+    this.isProjectedCovered = stmt.isProjectedCovered;
+    this.hasProjectedTransfer = stmt.hasProjectedTransfer;
+    this.isProjected = this.isProjected || this.hasProjectedTransfer;
+    this.percentChange = ('percentChange' in stmt) ? stmt.percentChange : null;
+    if ('unaccounted' in stmt) {
+      this.unaccounted = stmt.unaccounted;
+      this.balanced = !this.unaccounted;
+    } else {
+      this.unaccounted = null;
+      this.balanced = true;
     }
   }
 }
@@ -141,43 +163,72 @@ interface SummaryStatement {
   transactions: Transaction[];
 }
 
-interface PopupData {
-  id: string;
-  accountName: string;
-  month: string;
-  summary: any;
-  transfer_matrix: any;
-  statements: {
+interface PopupMonthSummaryData {
+  id: string,
+  accountName: string,
+  month: string,
+  summary?: SummaryStatement,
+  statements?: StatementEntry[]
+}
+
+interface MonthTransferMatrix {
+  accounts: {
     name: string;
-    stmt: Statement;
-  }[];
+    transfers: {[accountName:string]: number},
+    total:number
+  }[],
+  total: number
+}
+
+interface StatementEntry {
+  name: string,
+  stmt: Statement
+}
+
+interface PopupMonthData {
+  id: string,
+  accountName: string,
+  month: string,
+  stmt: Statement
+}
+
+interface HeadingPopupData {
+  id: string,
+  account: TallyAccount
+}
+
+type PopupData = PopupMonthSummaryData | PopupMonthData | HeadingPopupData;
+
+
+interface CellData {
+  cells: Cell[],
+  popups: PopupData[],
+  // summary?: SummaryStatement,
+  // statements?: StatementEntry[],
 }
 
 // Computes data for summary cells.
 function getSummaryCells(
     owner: string, name: string, months: string[],
     statements: {[accountName:string]: {[month:string]: Statement}},
-    summaries: {[month:string]: SummaryStatement}): {cells: Cell[], popups: PopupData[]} {
-  let cellData = {
+    summaries: {[month:string]: SummaryStatement}): CellData {
+  
+  let cellData: CellData = {
     cells: [],
     popups: []
   };
-  for (let m = 0, mm = months.length; m < mm; m++) {
-    let month = months[m];
-    let summaryStmt = summaries[month];
+  for (let month of months) {
+    let summaryStmt: SummaryStatement = summaries[month];
     let id = owner + "_" + name + "_" + month;
     cellData.cells.push(new Cell(id, summaryStmt));
     let accounts = ('accounts' in summaryStmt) ? summaryStmt.accounts : [];
-    let transfer_matrix = buildMonthTransferMatrix(month, statements);
-    console.log("transfer matrix", id, transfer_matrix);
     cellData.popups.push({
       id: id,
       accountName: owner + " " + name,
       month: month,
       summary: summaryStmt,
-      transfer_matrix: transfer_matrix,
       statements: accounts.map(
-          function(name: string) {
+          function(name: string): StatementEntry {
             return { name: name, stmt: statements[name][month] };
           })
     });
@@ -185,7 +236,9 @@ function getSummaryCells(
   return cellData;
 }
 
-function getPopupData(id: string, owner: string, name: string, month: string, stmt: Statement) {
+function getPopupData(
+  id: string, owner: string, name: string,
+  month: string, stmt: Statement): PopupMonthData {
   return {
     id: id,
     accountName: name,
@@ -194,59 +247,25 @@ function getPopupData(id: string, owner: string, name: string, month: string, st
   };
 }
 
-// Builds a list of accounts with name, map of account name to
-// total transfers to that account, and total transfers for the whole account.
-// @param statements - table indexed by account name and month of statements
-function buildMonthTransferMatrix(
-    month: string,
-    statements: {[accountName:string]: {[month:string]: Statement}}): 
-        {accounts: {name: string; transfers: {[accountName:string]: number}, total:number}[], total: number} {
-  let accounts: {name: string; transfers: {[accountName:string]: number}, total:number}[] = [];
-  let overall_total = 0.0;
-  //console.log("transfer matrix month ", month);
-  for (let accountName in statements) {
-    //console.log("transfer matrix accountName ", accountName);
-    let stmt = statements[accountName][month];
-    //console.log("transfer matrix stmt ", stmt);
-    if (stmt.isClosed) {
-      continue;
-    }
-    let transfers: {[accountName:string]: number} = {};
-    let total = 0.0;
-    for (let i = 0, ii = stmt.transactions.length; i < ii; i++) {
-      let transaction = stmt.transactions[i];
-      if (!transaction.isExpense && !transaction.isIncome) {
-        transfers[transaction.toAccountName] = transaction.balance.amount;
-        total += transaction.balance.amount
-      }
-    }
-    overall_total += total;
-    accounts.push({
-      name: accountName,
-      transfers: transfers,
-      total: total
-    });
-  }
-  accounts.sort(function(a, b) {
-    return a.name < b.name ? -1 : (a.name > b.name ? 1 : 0)
-  });
-  return {
-    accounts: accounts,
-    total: overall_total
-  };
+interface MatrixDataView {
+  months: string[],
+  rows: Row[],
+  popupCells: PopupData[]
 }
-
-// Builds dataView structure with months, rows and popup cell data.
-// @param months - descending, continuous list of months to show
-// @param accountNameToAccount - account name to account map
-// @param statements - table indexed by account name and month of statements
-// @param summaries - table indexed by owner name + account type and month
-//                    of statement summaries.
+/**
+ * Builds dataView structure with months, rows and popup cell data.
+ * 
+ * @param {Array<string>} months - descending, continuous list of months to show
+ * @param accountNameToAccount - account name to account map
+ * @param statements - table indexed by account name and month of statements
+ * @param summaries - table indexed by owner name + account type and month
+ *                    of statement summaries.
+ */
 function transformBudgetData(
-    months: string[], accountNameToAccount: {[accountName:string]: Account}, 
+    months: string[], accountNameToAccount: {[accountName:string]: TallyAccount}, 
     statements: {[accountName:string]: {[month:string]: Statement}}, 
     summaries: {[ownerAccountType:string]: {[month:string]: SummaryStatement}}) {
-  let dataView = {
+  let dataView: MatrixDataView = {
     months: months,
     rows: [],
     popupCells: []
@@ -255,8 +274,7 @@ function transformBudgetData(
   console.log("ownerTypeAccountNames", ownerTypeAccountNames);
   let ownersSorted = getKeysSorted(ownerTypeAccountNames);
   console.log("ownersSorted", ownersSorted);
-  for (let i = 0, ii = ownersSorted.length; i < ii; i++) {
-    let owner = ownersSorted[i];
+  for (let owner of ownersSorted) {
     let typeAccountNames = ownerTypeAccountNames[owner];
     dataView.rows.push(new Row(owner, 'SPACE', []));
     let summaryName = owner + " SUMMARY";
@@ -269,24 +287,22 @@ function transformBudgetData(
     }
     let accountTypes = getKeysSorted(typeAccountNames);
 
-    for (let j = 0, jj = accountTypes.length; j < jj; j++) {
-      let accountType = accountTypes[j];
+    for (let accountType of accountTypes) {
       dataView.rows.push(new Row(
           "*** " + owner + " - " + accountType + " *** accounts", 'SPACE', []));
       let accountNames = typeAccountNames[accountType].sort(function(a, b) {
         return a < b ? -1 : (a > b ? 1 : 0)
       });
-      for (let k = 0, kk = accountNames.length; k < kk; k++) {
-        let accountName = accountNames[k];
+      for (let accountName of accountNames) {
         let accountStatements = statements[accountName];
         let cells = [];
-        for (let m = 0, mm = months.length; m < mm; m++) {
-          let month = months[m];
+        for (let month of months) {
           let stmt = accountStatements[month];
           let id = owner + "_" + accountName + "_" + month;
           //console.log("stmt", stmt, "id", id);
           cells.push(new Cell(id, stmt));
-          dataView.popupCells.push(getPopupData(id, owner, accountName, month, stmt))
+          dataView.popupCells.push(
+              getPopupData(id, owner, accountName, month, stmt))
         }
         let account = accountNameToAccount[accountName];
         dataView.rows.push(new Row(account, 'NORMAL', cells));
@@ -311,3 +327,5 @@ function getKeysSorted(obj:  {[key:string]: any;}): string[] {
     return a < b ? -1 : (a > b ? 1 : 0)
   });
 }
+
+// export { transformBudgetData };

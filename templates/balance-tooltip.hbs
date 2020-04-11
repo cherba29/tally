@@ -12,7 +12,7 @@
   </tr>
   {{#each stmt.transactions}}
   <tr class="highlight">
-    <td style="min-width:175px">{{@index}} {{#isProjected balance}}**{{/isProjected}}{{toAccountName}}
+    <td style="min-width:175px">{{incremented @index}} {{#isProjected balance}}**{{/isProjected}}{{toAccountName}}
     <span style="font-size:80%">{{description}}</span>
     </td>
     <td align="middle" style="{{~#if isExpense~}}

@@ -2,18 +2,27 @@
   "name": "tally",
   "version": "0.1.0",
   "devDependencies": {
-    "grunt": "~0.4.5",
+    "@types/chai": "^4.1.2",
+    "@types/mocha": "^2.2.48",
+    "chai": "^4.1.2",
+    "grunt": "latest",
     "grunt-contrib-handlebars": "^0.8.0",
     "grunt-contrib-nodeunit": "~0.3.3",
-    "grunt-typescript": "^0.8.0",
+    "grunt-mocha": "^1.2.0",
     "jasmine": "^2.8.0",
     "karma": "^2.0.0",
     "karma-chrome-launcher": "^2.2.0",
     "karma-jasmine": "^1.1.1",
-    "karma-typescript": "^3.0.9"
+    "karma-typescript": "^3.0.9",
+    "mocha": "^5.0.0",
+    "ts-node": "^4.1.0",
+    "typescript": "^3.7.4"
   },
   "dependencies": {
     "grunt-cli": "^1.2.0",
-    "grunt-ts": "^6.0.0-beta.17"
+    "grunt-ts": "^6.0.0-beta.22"
+  },
+  "scripts": {
+    "test": "mocha -r ts-node/register js/**/*_test.ts"
   }
 }

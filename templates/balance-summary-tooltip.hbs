@@ -1,6 +1,5 @@
 <div class="toolTip">
 <span id="{{id}}_close">XXX</span>
-<span id="{{id}}_transfer_matrix">Transfer Matrix</span>
 <span style="float:right;">{{accountName}} - {{month}}</span>
 <table>
   <thead>
@@ -22,7 +21,7 @@
   <tbody>
     {{#each statements}}
     <tr class="highlight">
-      <td>{{@index}} {{name}}</td>
+      <td>{{incremented @index}} {{name}}</td>
       <td align="middle">{{stmt.startBalance.date}}</td>
       <td align="right"{{#isProjected stmt.startBalance}} class="projected"{{/isProjected}}>
         {{~currency stmt.startBalance.amount~}}

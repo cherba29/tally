@@ -4,8 +4,8 @@
     <title>Summary of finances</title>
     <script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
     <script type="text/javascript" src="js/handlebars-v1.3.0.js"></script>
-    <script type="text/javascript" src="js/templates.js"></script>
-    <script type="text/javascript" src="js/utils.js"></script>
+    <script type="text/javascript" src="public/templates.js"></script>
+    <script type="text/javascript" src="public/utils.js"></script>
     <style>
     body {
      font-size:80%;
@@ -96,12 +96,14 @@
 <body>
 <button id="reload" style="position:fixed">Reload</button>
 <script>
-var template = jbudget.templates['summary'];
-var balance_tooltip = jbudget.templates['balance-tooltip'];
-var balance_summary_tooltip = jbudget.templates['balance-summary-tooltip'];
-var account_tooltip = jbudget.templates['account-tooltip'];
-var transfer_matrix_view = jbudget.templates['transfer-matrix'];
-var jsonPath = window.location.hash.substring(1);
+Handlebars.registerHelper("incremented", function (index){
+    return index + 1;
+});
+
+let summary_template = jbudget.templates['summary'];
+let balance_tooltip = jbudget.templates['balance-tooltip'];
+let balance_summary_tooltip = jbudget.templates['balance-summary-tooltip'];
+let account_tooltip = jbudget.templates['account-tooltip'];
 
 function formatCurrency(value) {
   if (value === null || value === undefined) {
@@ -113,25 +115,25 @@ function formatCurrency(value) {
 Handlebars.registerHelper('currency', formatCurrency);
 
 Handlebars.registerHelper('isProjected', function(balance, options) {
-  var fnTrue=options.fn, fnFalse=options.inverse;
+  let fnTrue=options.fn, fnFalse=options.inverse;
   return (balance && ('type' in balance) && balance.type != 'CONFIRMED')
       ? fnTrue() : fnFalse();
 });
 
 Handlebars.registerHelper('eqname', function(a, b, options) {
-  var fnTrue=options.fn, fnFalse=options.inverse;
+  let fnTrue=options.fn, fnFalse=options.inverse;
   return (a == b) ? fnTrue() : fnFalse();
 });
 
 Handlebars.registerHelper('currencyitem', function(object, key) {
-  var value = object[key];
+  let value = object[key];
   return value && formatCurrency(value) || "";
 });
 
 Handlebars.registerHelper('isNotSymetric', function(aTransfers, bTransfers, aName, bName, options) {
-  var fnTrue=options.fn, fnFalse=options.inverse;
-  var aTransfer = aTransfers[bName];
-  var bTransfer = bTransfers[aName];
+  let fnTrue=options.fn, fnFalse=options.inverse;
+  let aTransfer = aTransfers[bName];
+  let bTransfer = bTransfers[aName];
   return (aTransfer && bTransfer && aTransfer != -bTransfer) ? fnTrue() : fnFalse();
 });
 
@@ -143,7 +145,7 @@ function clearPopup() {
 function createPopupFunc(popup) {
   return function(e) {
     console.log("popup", popup);
-    var popupElement = $('#popup-content');
+    let popupElement = $('#popup-content');
     popupElement.offset({ top: e.pageY + 10, left: e.pageX });
     if ('summary' in popup) {
       popupElement.html(balance_summary_tooltip(popup));
@@ -153,20 +155,17 @@ function createPopupFunc(popup) {
       popupElement.html(balance_tooltip(popup));
     }
     $("#" + popup.id + "_close").click(clearPopup);
-    $("#" + popup.id + "_transfer_matrix").click(function(e) {
-      popupElement.html(transfer_matrix_view(popup.transfer_matrix));
-    });
   };
 }
 
 // Loads json and re-renders the page.
 function reload() {
-  var path = "/budget?dir=" + jsonPath;
+  let path = "/budget?dir=" + window.location.hash.substring(1);
   console.log("Loading ", path);
   $.getJSON(path, function(response) {
-    console.log("response", response)
+    console.log("server response", response)
     if (!response.success) {
-      var popupElement = $('#popup-content');
+      let popupElement = $('#popup-content');
       popupElement.offset({ top: 40, left: 0 });
       popupElement.html("<pre>" + response.message + "</pre>");
       return;
@@ -174,18 +173,16 @@ function reload() {
       clearPopup();
     }
     // Convert data so it can be rendered.
-    var data = response.data;
-    var dataView = transformBudgetData(
+    let data = response.data;
+    let dataView = transformBudgetData(
         data.months, data.accountNameToAccount, data.statements, data.summaries);
-    $('#content').html(template(dataView));
+    $('#content').html(summary_template(dataView));
     // Most cells have popups with details, activate these.
-    var popupCells = dataView.popupCells;
-    for (var i = 0, ii = popupCells.length; i < ii; i++) {
-      var popup = popupCells[i];
+    for (let popup of dataView.popupCells) {
       $('#' + popup.id).click(createPopupFunc(popup));
     }
   }).fail(function( jqxhr, textStatus, error ) {
-    var err = textStatus + ", " + error;
+    let err = textStatus + ", " + error;
     console.log( "Request Failed: " + err );
   });
 }
