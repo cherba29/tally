@@ -203,8 +203,6 @@ type PopupData = PopupMonthSummaryData | PopupMonthData | HeadingPopupData;
 interface CellData {
   cells: Cell[],
   popups: PopupData[],
-  // summary?: SummaryStatement,
-  // statements?: StatementEntry[],
 }
 
 // Computes data for summary cells.
@@ -252,6 +250,7 @@ interface MatrixDataView {
   rows: Row[],
   popupCells: PopupData[]
 }
+
 /**
  * Builds dataView structure with months, rows and popup cell data.
  * 
@@ -278,7 +277,6 @@ function transformBudgetData(
     let typeAccountNames = ownerTypeAccountNames[owner];
     dataView.rows.push(new Row(owner, 'SPACE', []));
     let summaryName = owner + " SUMMARY";
-    //console.log("summaryName", summaryName);
     if (summaryName in summaries) {
       let cellData = getSummaryCells(
           owner, "SUMMARY", months, statements, summaries[summaryName]);
@@ -299,7 +297,6 @@ function transformBudgetData(
         for (let month of months) {
           let stmt = accountStatements[month];
           let id = owner + "_" + accountName + "_" + month;
-          //console.log("stmt", stmt, "id", id);
           cells.push(new Cell(id, stmt));
           dataView.popupCells.push(
               getPopupData(id, owner, accountName, month, stmt))
