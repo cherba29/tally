@@ -328,4 +328,4 @@ function getKeysSorted(obj:  {[key:string]: any;}): string[] {
   });
 }
 
-// export { transformBudgetData };
+export { transformBudgetData };
