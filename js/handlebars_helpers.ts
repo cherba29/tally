@@ -1,5 +1,3 @@
-// import { Handlebars } from './handlebars.runtime-v4.5.3.js';
-
 const Handlebars = (window as any).Handlebars;
 
 Handlebars.registerHelper("incremented", function (index){
