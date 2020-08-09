@@ -223,7 +223,6 @@ function transformBudgetData(
         let cells = [];
         for (let month of months) {
           let stmt = accountStatements[month];
-          console.log("Processing " + accountName + " month " + month + " stmt " + stmt);
           let id = owner + "_" + accountName + "_" + month;
           cells.push(new Cell(id, stmt));
           dataView.popupCells.push(

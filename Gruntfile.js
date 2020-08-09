@@ -1,6 +1,8 @@
 module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-handlebars');
   grunt.loadNpmTasks('grunt-ts');
+  grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-contrib-copy');
 
   // Project configuration.
   grunt.initConfig({
@@ -22,6 +24,23 @@ module.exports = function (grunt) {
         }
       }
     },
+    copy: {
+      handlebars: {
+        files: [
+          { src: 'js/handlebars.runtime-v4.5.3.js', dest: 'public/' }
+        ]
+      },
+      jquery: {
+        files: [
+          { src: 'js/jquery-3.5.1.min.js', dest: 'public/' }
+        ]
+      } 
+    },
+    clean: {
+      out: {
+        src: ["public/**/*"]
+      }
+    },
     ts: {
       default : {
         tsconfig: './tsconfig.json'
@@ -29,5 +48,5 @@ module.exports = function (grunt) {
     }
   });
 
-  grunt.registerTask('default', ['handlebars', 'ts']);
+  grunt.registerTask('default', ['clean', 'copy', 'handlebars', 'ts']);
 };

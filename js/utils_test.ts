@@ -1,6 +1,5 @@
-import { transformBudgetData } from './utils';
 import { expect } from 'chai';
-import 'mocha';
+import { transformBudgetData } from './utils';
 
 describe("transformBudgetData", function () {
 
@@ -20,7 +19,7 @@ describe("transformBudgetData", function () {
   });
 
   it("works on single", function () {
-    let months = ["Sep2014", "Oct2014"];
+    let months = ["Sep2014"];
     let accountNameToAccount = {
       main: {
         name: "main",
@@ -39,8 +38,43 @@ describe("transformBudgetData", function () {
         userName: "user1"
       }
     };
-    let statements = {};
-    let summaries = {};
+    let statements = {
+      main: {
+        Sep2014: {
+          isClosed: true,
+          addSub: 100,
+          endBalance: {
+            amount: 3000,
+            type: 'PROJECTED',
+          },
+          isCovered: true,
+          isProjectedCovered: true,
+          hasProjectedTransfer: true,
+          percentChange: 1.4,
+          unaccounted: 500,
+          transactions: []
+        },
+      }
+    };
+    let summaries = {
+      main: {
+        Sep2014: {
+          isClosed: true,
+          accounts: ["main"],
+          addSub: 100,
+          endBalance: {
+            amount: 3000,
+            type: 'PROJECTED',
+          },
+          isCovered: true,
+          isProjectedCovered: true,
+          hasProjectedTransfer: true,
+          percentChange: 1.4,
+          unaccounted: 200,
+          transactions: []
+        }
+      }
+    };
     let data_view = transformBudgetData(
         months, accountNameToAccount, statements, summaries);
 

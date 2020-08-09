@@ -6,6 +6,8 @@
     "@types/mocha": "^2.2.48",
     "chai": "^4.2.0",
     "grunt": "^1.1.0",
+    "grunt-contrib-clean": "^2.0.0",
+    "grunt-contrib-copy": "^1.0.0",
     "grunt-contrib-handlebars": "^2.0.0",
     "grunt-contrib-nodeunit": "~0.3.3",
     "grunt-mocha": "^1.2.0",
@@ -23,6 +25,6 @@
     "grunt-ts": "^6.0.0-beta.22"
   },
   "scripts": {
-    "test": "mocha -r ts-node/register js/**/*_test.ts"
+    "test": "mocha --compilers ts:ts-node/register js/**/*_test.ts"
   }
 }
