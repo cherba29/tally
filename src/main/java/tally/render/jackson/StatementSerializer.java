@@ -2,6 +2,7 @@ package tally.render.jackson;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import tally.statement.Statement;
 
@@ -24,7 +25,7 @@ public class StatementSerializer extends JsonSerializer<Statement> {
       if (percentChange != null && !percentChange.isNaN() && !percentChange.isInfinite()) {
         jgen.writeNumberField(
             "percentChange",
-            BigDecimal.valueOf(percentChange).setScale(2, BigDecimal.ROUND_HALF_UP));
+            BigDecimal.valueOf(percentChange).setScale(2, RoundingMode.HALF_UP));
       }
       Long unaccounted = value.getUnaccounted();
       if (unaccounted != null) {

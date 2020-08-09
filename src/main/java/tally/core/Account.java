@@ -32,20 +32,20 @@ public class Account {
 
     private static final Map<String, Type> stringToEnum = new HashMap<>();
     static {
-      for (Type op : values()) {
+      for (final Type op : values()) {
         stringToEnum.put(op.name, op);
       }
     }
 
     private final String name;
 
-    Type(String name) {
+    Type(final String name) {
       this.name = name;
     }
 
     @Nullable
-    public static Type fromString(String symbol) {
-      Type type = stringToEnum.get(symbol);
+    public static Type fromString(final String symbol) {
+      final Type type = stringToEnum.get(symbol);
       return type;
     }
   }
@@ -93,13 +93,13 @@ public class Account {
       this.address = null;
     }
 
-    public Builder addOwner(String owner) {
+    public Builder addOwner(final String owner) {
       checkNotNull(owner);
       owners.add(owner);
       return this;
     }
 
-    public Builder addOwners(List<String> owners) {
+    public Builder addOwners(final List<String> owners) {
       this.owners.addAll(owners);
       return this;
     }
@@ -109,67 +109,67 @@ public class Account {
       return name;
     }
 
-    public Builder setAddress(String address) {
+    public Builder setAddress(final String address) {
       checkNotNull(address);
       this.address = address;
       return this;
     }
 
-    public Builder setClosedOn(Month closedOn) {
+    public Builder setClosedOn(final Month closedOn) {
       checkNotNull(closedOn);
       this.closedOn = closedOn;
       return this;
     }
 
-    public Builder setName(String name) {
+    public Builder setName(final String name) {
       checkNotNull(name);
       this.name = name;
       return this;
     }
 
-    public Builder setDescription(String description) {
+    public Builder setDescription(final String description) {
       checkNotNull(description);
       this.description = description;
       return this;
     }
 
-    public Builder setType(Type type) {
+    public Builder setType(final Type type) {
       checkNotNull(type);
       this.type = type;
       return this;
     }
 
-    public Builder setNumber(String number) {
+    public Builder setNumber(final String number) {
       checkNotNull(number);
       this.number = number;
       return this;
     }
 
-    public Builder setOpenedOn(Month openedOn) {
+    public Builder setOpenedOn(final Month openedOn) {
       checkNotNull(openedOn);
       this.openedOn = openedOn;
       return this;
     }
 
-    public Builder setPassword(String password) {
+    public Builder setPassword(final String password) {
       checkNotNull(password);
       this.password = password;
       return this;
     }
 
-    public Builder setPhone(String phone) {
+    public Builder setPhone(final String phone) {
       checkNotNull(phone);
       this.phone = phone;
       return this;
     }
 
-    public Builder setUrl(String url) {
+    public Builder setUrl(final String url) {
       checkArgument(url != null);
       this.url = url;
       return this;
     }
 
-    public Builder setUserName(String userName) {
+    public Builder setUserName(final String userName) {
       checkNotNull(userName);
       this.userName = userName;
       return this;
@@ -214,13 +214,13 @@ public class Account {
   }
 
   public List<String> getOwners() {
-    ArrayList<String> list = new ArrayList<>();
+    final ArrayList<String> list = new ArrayList<>();
     list.addAll(owners);
     return list;
   }
 
-  public boolean hasCommonOwner(Account account) {
-    for (String owner : owners) {
+  public boolean hasCommonOwner(final Account account) {
+    for (final String owner : owners) {
       if (account.owners.contains(owner)) {
         return true;
       }
@@ -263,7 +263,7 @@ public class Account {
     return address;
   }
 
-  public boolean isOpen(@Nullable Month month) {
+  public boolean isOpen(@Nullable final Month month) {
     if (month == null) {
       return closedOn == null;
     }
@@ -273,8 +273,8 @@ public class Account {
     return closedOn == null || closedOn.compareTo(month) >= 0;
   }
 
-  public boolean isOpen(Collection<Month> months) {
-    for (Month month : months) {
+  public boolean isOpen(final Collection<Month> months) {
+    for (final Month month : months) {
       if (isOpen(month)) {
         return true;
       }
@@ -282,7 +282,7 @@ public class Account {
     return false;
   }
 
-  private Account(Builder builder) {
+  private Account(final Builder builder) {
     if (builder.name == null) {
       throw new IllegalArgumentException("Name must be set");
     }
@@ -305,11 +305,11 @@ public class Account {
   }
 
   @Override
-  public String toString(/*Account this*/) {
+  public String toString(/* Account this */) {
     return "Account [name=" + name + ",type=" + type + "]";
   }
 
-  public String toDebugString(int indent) {
+  public String toDebugString(final int indent) {
     final char[] spaces = new char[indent + 2];
     Arrays.fill(spaces, ' ');
     final String indentString = new String(spaces);
@@ -336,7 +336,7 @@ public class Account {
   }
 
   @Override
-  public boolean equals(@Nullable Object obj) {
+  public boolean equals(@Nullable final Object obj) {
     if (this == obj) {
       return true;
     }
@@ -346,7 +346,7 @@ public class Account {
     if (!(obj instanceof Account)) {
       return false;
     }
-    Account other = (Account) obj;
+    final Account other = (Account) obj;
     return name.equals(other.name) && type == other.type;
   }
 }
