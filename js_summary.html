@@ -3,11 +3,6 @@
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8" />
   <title>Summary of finances</title>
-  <script type="text/javascript" src="public/js/jquery-3.5.1.min.js"></script>
-  <script type="text/javascript" src="public/js/handlebars.runtime-v4.5.3.js"></script>
-  <script type="text/javascript" src="public/templates.js"></script>
-  <script type="module" src="public/js/utils.js"></script>
-  <script type="module" src="public/js/handlebars_helpers.js"></script>
   <style>
     body {
      font-size:80%;
@@ -97,71 +92,9 @@
 </head>
 <body>
 <button id="reload" style="position:fixed">Reload</button>
-<script type="module">
-import {transformBudgetData} from "./public/js/utils.js";
-
-let summary_template = jbudget.templates['summary'];
-let balance_tooltip = jbudget.templates['balance-tooltip'];
-let balance_summary_tooltip = jbudget.templates['balance-summary-tooltip'];
-let account_tooltip = jbudget.templates['account-tooltip'];
-
-function clearPopup() {
-  $('#popup-content').html("");
-}
-
-// Function to execute to display summary details popup.
-function createPopupFunc(popup) {
-  return function(e) {
-    console.log("popup", popup);
-    let popupElement = $('#popup-content');
-    popupElement.offset({ top: e.pageY + 10, left: e.pageX });
-    if ('summary' in popup) {
-      popupElement.html(balance_summary_tooltip(popup));
-    } else if ('account' in popup) {
-      popupElement.html(account_tooltip(popup));
-    } else {
-      popupElement.html(balance_tooltip(popup));
-    }
-    $("#" + popup.id + "_close").click(clearPopup);
-  };
-}
-
-// Loads json and re-renders the page.
-function reload() {
-  let path = "/budget?dir=" + window.location.hash.substring(1);
-  console.log("Loading ", path);
-  $.getJSON(path, function(response) {
-    console.log("server response", response)
-    if (!response.success) {
-      let popupElement = $('#popup-content');
-      popupElement.offset({ top: 40, left: 0 });
-      popupElement.html("<pre>" + response.message + "</pre>");
-      return;
-    } else {
-      clearPopup();
-    }
-    // Convert data so it can be rendered.
-    let data = response.data;
-    let dataView = transformBudgetData(
-        data.months, data.accountNameToAccount, data.statements, data.summaries);
-    $('#content').html(summary_template(dataView));
-    // Most cells have popups with details, activate these.
-    for (let popup of dataView.popupCells) {
-      $('#' + popup.id).click(createPopupFunc(popup));
-    }
-  }).fail(function( jqxhr, textStatus, error ) {
-    let err = textStatus + ", " + error;
-    console.log( "Request Failed: " + err );
-  });
-}
-
-$("#reload").on('click', reload);
-// Trigger reload on first load.
-reload();
-
-</script>
 <div id="sample-content"></div>
 <div id="popup-content"></div>
 <div id="content"></div>
+<script type="text/javascript" src="public/bundle.js"></script>
 </body>
 </html>

@@ -124,7 +124,7 @@ interface HeadingPopupData {
   account: TallyAccount
 }
 
-type PopupData = PopupMonthSummaryData | PopupMonthData | HeadingPopupData;
+export type PopupData = PopupMonthSummaryData | PopupMonthData | HeadingPopupData;
 
 
 interface CellData {
