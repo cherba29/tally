@@ -27,7 +27,11 @@ module.exports = {
             __dirname + "/templates/helpers"
           ]
         }
-      }
+      },
+      {
+        test: /\.css$/i,
+        use: ['style-loader', 'css-loader'],
+      },
     ]
   },
 };

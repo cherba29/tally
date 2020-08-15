@@ -1,0 +1,84 @@
+body {
+  font-size:80%;
+ }
+ .account_type {
+   font-weight:bold;
+ }
+ .change {
+   font-family:"Courier New", "Lucida Console";
+   font-size:75%;
+ }
+ .balance {
+   font-family:"Courier New", "Lucida Console";
+ }
+ .unaccounted {
+   font-family:"Courier New", "Lucida Console";
+   font-size:66%;
+   color:#f00;
+ }
+ .accounted {
+   font-family:"Courier New", "Lucida Console";
+   font-size:66%;
+   color:#0a0;
+ }
+ .add_sub {
+   font-family:"Courier New", "Lucida Console";
+   font-size:66%;
+ }
+ .closed {
+   background-color:#ccc;
+ }
+ .projected {
+   background-color:#ddf;
+ }
+ .vertical-text {
+   -webkit-transform: rotate(270deg);
+   -webkit-transform-origin: 0% 100%;
+   max-width: 25px;
+   height: 200px;
+   border: 2px solid #222;
+ }
+ table.main {
+   border: 5px solid #C3C3C3;
+   border-collapse: collapse;
+ }
+ table.main td {
+   border-left: 1px solid #C3C3C3;
+   border-top: 1px solid #C3C3C3;
+   padding: 1px;
+   vertical-align:middle;
+ }
+ table.main td.balance,td.unaccounted,td.add_sub,td.accounted,td.change {
+   text-align: right;
+ }
+ table.main th {
+   border-left-width: 1px;
+   font-family:"Times New Roman", Times, serif;
+   font-size:75%;
+   padding: 2px;
+   vertical-align:middle;
+ }
+ .toolTip {
+   position:absolute;
+   /* left:26px; Moves it to the right beside the question mark*/
+   /* top:0; */
+   /* display:none; */
+   /*The attributes below make it look pretty
+   min-width:330px; */
+   padding:5px;
+   border:1px solid #000;
+   background-color:#ffff80;
+   font:10px/12px Arial, Helvetica, sans-serif;
+ }
+ .toolTip .projected {
+   background-color:#f0a022;
+ }
+ .toolTip .highlight:hover {
+   background-color: #40C340;
+ }
+ div.toolTip td {
+   border-left: 1px solid #C3C3C3;
+   border-top: 1px solid #C3C3C3;
+   padding: 1px;
+   vertical-align:middle;
+ }
