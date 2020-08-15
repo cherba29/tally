@@ -1,10 +1,13 @@
+import {HelperOptions} from 'handlebars';
+import {Balance} from './base';
+
 const Handlebars = (window as any).Handlebars;
 
-Handlebars.registerHelper("incremented", function (index){
+Handlebars.registerHelper("incremented", function (index: number){
   return index + 1;
 });
 
-function formatCurrency(value) {
+function formatCurrency(value: number) {
   if (value === null || value === undefined) {
     return "n/a";
   }
@@ -13,28 +16,13 @@ function formatCurrency(value) {
 
 Handlebars.registerHelper('currency', formatCurrency);
 
-Handlebars.registerHelper('isProjected', function(balance, options) {
+Handlebars.registerHelper('isProjected', function(balance: Balance, options: HelperOptions) {
   let fnTrue=options.fn, fnFalse=options.inverse;
   return (balance && ('type' in balance) && balance.type != 'CONFIRMED')
-      ? fnTrue() : fnFalse();
+      ? fnTrue(this) : fnFalse(this);
 });
 
-Handlebars.registerHelper('eqname', function(a, b, options) {
+Handlebars.registerHelper('eqname', function(a: string, b: string, options: HelperOptions) {
   let fnTrue=options.fn, fnFalse=options.inverse;
-  return (a == b) ? fnTrue() : fnFalse();
+  return (a == b) ? fnTrue(this) : fnFalse(this);
 });
-
-Handlebars.registerHelper('currencyitem', function(object, key) {
-  let value = object[key];
-  return value && formatCurrency(value) || "";
-});
-
-Handlebars.registerHelper(
-    'isNotSymetric',
-    function(aTransfers, bTransfers, aName, bName, options) {
-      let fnTrue=options.fn, fnFalse=options.inverse;
-      let aTransfer = aTransfers[bName];
-      let bTransfer = bTransfers[aName];
-      return (aTransfer && bTransfer && aTransfer != -bTransfer) ? fnTrue() : fnFalse();
-    }
-);

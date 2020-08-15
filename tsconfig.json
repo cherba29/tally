@@ -16,8 +16,8 @@
       "es2017", 
       "dom"  // dom for "console" declaration.
     ],
-    "declaration": false,
-    "noImplicitAny": false,
+    "declaration": true,
+    "noImplicitAny": true,
     "removeComments": true,
     "inlineSourceMap": true,
     "baseUrl": "public",  // Allows absolute paths from root.
@@ -25,6 +25,7 @@
   },
   "exclude": [
     "node_modules/**/*",
+    "public/**/*",
     "**/*_test.ts"
   ]
 }
