@@ -14,7 +14,7 @@ function clearPopup() {
 
 // Function to execute to display summary details popup.
 function createPopupFunc(popup: PopupData) {
-  return function(e: JQuery.Event) {
+  return (e: JQuery.Event): void => {
     console.log("popup", popup);
     const popupElement = $('#popup-content');
     popupElement.offset({ top: e.pageY + 10, left: e.pageX });
@@ -33,7 +33,7 @@ function createPopupFunc(popup: PopupData) {
 function reload() {
   const path = "/budget?dir=" + window.location.hash.substring(1);
   console.log("Loading ", path);
-  $.getJSON(path, function(response) {
+  $.getJSON(path, (response): void => {
     console.log("server response", response)
     if (!response.success) {
       const popupElement = $('#popup-content');
@@ -49,12 +49,11 @@ function reload() {
         data.months, data.accountNameToAccount, data.statements, data.summaries);
     $('#content').html(summary_template(dataView));
     // Most cells have popups with details, activate these.
-    for (let popup of dataView.popupCells) {
+    for (const popup of dataView.popupCells) {
       $('#' + popup.id).click(createPopupFunc(popup));
     }
-  }).fail(function(jqxhr, textStatus, error) {
-    let err = textStatus + ", " + error;
-    console.log( "Request Failed: " + err );
+  }).fail((jqxhr, textStatus, error): void => {
+    console.log( `Request Failed: ${textStatus}, ${error}`);
   });
 }
 

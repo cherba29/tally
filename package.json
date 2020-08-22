@@ -1,22 +1,26 @@
 {
   "name": "tally",
   "version": "0.2.0",
+  "type": "module",
   "devDependencies": {
-    "@types/chai": "^4.2.11",
+    "@types/chai": "^4.2.12",
+    "@types/jasmine": "^3.5.13",
     "@types/mocha": "^2.2.48",
-    "chai": "^4.2.0",
     "css-loader": "^4.2.1",
     "handlebars-loader": "^1.7.1",
     "jasmine": "^2.99.0",
     "karma": "^2.0.5",
     "karma-chrome-launcher": "^2.2.0",
     "karma-jasmine": "^1.1.2",
+    "karma-sourcemap-loader": "^0.3.8",
+    "karma-spec-reporter": "0.0.32",
     "karma-typescript": "^3.0.13",
-    "mocha": "^5.2.0",
+    "karma-webpack": "^4.0.2",
+    "nyc": "^15.1.0",
     "style-loader": "^1.2.1",
     "ts-loader": "^8.0.2",
     "ts-node": "^4.1.0",
-    "typescript": "^3.8.3",
+    "typescript": "^3.9.7",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0"
@@ -29,6 +33,9 @@
   "scripts": {
     "serve": "webpack-dev-server",
     "build": "webpack",
-    "test": "mocha --compilers ts:ts-node/register js/**/*_test.ts"
+    "karma": "karma start karma.conf.js",
+    "test": "ts-node node_modules/jasmine/bin/jasmine --config=jasmine.json",
+    "coverage": "nyc -r text -e .ts -x \"tests/*.test.ts\" npm run test",
+    "lint": "tslint -c tslint.json -p tsconfig.json"
   }
 }

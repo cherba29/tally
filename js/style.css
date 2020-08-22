@@ -31,13 +31,6 @@ body {
  .projected {
    background-color:#ddf;
  }
- .vertical-text {
-   -webkit-transform: rotate(270deg);
-   -webkit-transform-origin: 0% 100%;
-   max-width: 25px;
-   height: 200px;
-   border: 2px solid #222;
- }
  table.main {
    border: 5px solid #C3C3C3;
    border-collapse: collapse;

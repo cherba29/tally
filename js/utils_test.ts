@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import { transformBudgetData } from './utils';
 
 describe("transformBudgetData", function () {
@@ -11,7 +10,7 @@ describe("transformBudgetData", function () {
     let data_view = transformBudgetData(
         months, accountNameToAccount, statements, summaries);
 
-    expect(data_view).to.deep.equal({
+    expect(data_view).toEqual({
       months: [],
       rows: [],
       popupCells: []
@@ -78,7 +77,7 @@ describe("transformBudgetData", function () {
     let data_view = transformBudgetData(
         months, accountNameToAccount, statements, summaries);
 
-    expect(data_view).to.deep.equal({
+    expect(data_view).toEqual({
       months: ["Sep2014"],
       rows: [],
       popupCells: []
