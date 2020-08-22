@@ -38,7 +38,8 @@ public class Main {
     resource_handler.setDirectoriesListed(true);
     resource_handler.setWelcomeFiles(new String[]{ "index.html" });
 
-    resource_handler.setResourceBase(".");
+    // TODO: make it command line flag.
+    resource_handler.setResourceBase("../..");
     fileContext.setHandler(resource_handler);
 
     HandlerList handlers = new HandlerList();

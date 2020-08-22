@@ -12,38 +12,18 @@ Line wrapper: https://google.github.io/styleguide/javaguide.html#s4.4-column-lim
 
 ## Setup
 
-```
-npm install -g grunt-cli
-```
+Build client side:
 
 ```
-npm install grunt-contrib-handlebars --save-dev
-```	
-
-Run unit tests as
-
+npm run webpack
 ```
-gradle tests
-```
-	
-If any templates are changes run grunt to regenerate 'templates.js' file.
-
-grunt
 
 Start server with
 
-gradle runT --offline
+gradle -p server/jetty runT --offline
 
 Load page for example by navigating to
 http://localhost:8080/files/js_summary.html#data
 
-
-## typescript
-
-```
-grunt ts
-```
-
-```
-npm run test
-```
+where data is path to yaml files to be parsed. It can be relative to current 
+server directory which will be in this case `./server/jetty`.

@@ -77,6 +77,6 @@ task runTally(type: JavaExec) {
   main = 'tally.Main'
   classpath sourceSets.main.runtimeClasspath // + files(sourceSets.main.resources.srcDirs)
   maxHeapSize = '128m'
-  jvmArgs '-Dlogback.configurationFile=src/resources/logback.groovy'
+  jvmArgs '-Dlogback.configurationFile=src/resources/logback.groovy --illegal-access=warn'
   args = [ "../src/data", "summary.html",  "accounts.html" ]
 }
