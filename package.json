@@ -32,7 +32,7 @@
   },
   "scripts": {
     "serve": "webpack-dev-server",
-    "build": "webpack",
+    "build": "webpack --config webpack.config.cjs",
     "karma": "karma start karma.conf.js",
     "test": "ts-node node_modules/jasmine/bin/jasmine --config=jasmine.json",
     "coverage": "nyc -r text -e .ts -x \"tests/*.test.ts\" npm run test",
