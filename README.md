@@ -12,18 +12,28 @@ Line wrapper: https://google.github.io/styleguide/javaguide.html#s4.4-column-lim
 
 ## Setup
 
+### Initial
+
+```
+npm update
+```
+
+
+
 Build client side:
 
 ```
-npm run webpack
+npm run build
 ```
 
 Start server with
 
+```
 gradle -p server/jetty runT --offline
+```
 
 Load page for example by navigating to
-http://localhost:8080/files/js_summary.html#data
+http://localhost:8080/files/client/js_summary.html#data
 
 where data is path to yaml files to be parsed. It can be relative to current 
 server directory which will be in this case `./server/jetty`.
