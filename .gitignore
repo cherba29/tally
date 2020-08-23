@@ -21,5 +21,6 @@ server/jetty/build/
 .settings/
 .idea/
 .tscache
+.vscode
 node_modules
 *.log
