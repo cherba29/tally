@@ -1,10 +1,21 @@
 {
   "compilerOptions": {
+    "sourceMap": true,
     "target": "es6",
     "module": "commonjs",
     "rootDir": "./",
     "outDir": "./build",
+    "baseUrl": "./src",
     "esModuleInterop": true,
-    "strict": true
-  }
+    "strict": true,
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true
+  },
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
