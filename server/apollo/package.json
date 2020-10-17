@@ -1,0 +1,34 @@
+{
+  "name": "apollo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --config webpack.development.js",
+    "start": "node dist/server",
+    "generate": "graphql-codegen",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@graphql-codegen/cli": "^1.17.10",
+    "@graphql-codegen/typescript": "^1.17.10",
+    "@types/webpack-env": "^1.15.3",
+    "clean-webpack-plugin": "^3.0.0",
+    "ts-loader": "^8.0.4",
+    "typescript": "^4.0.3",
+    "webpack": "^4.44.2",
+    "webpack-cli": "^3.3.12",
+    "webpack-merge": "^5.1.4",
+    "webpack-node-externals": "^2.5.2"
+  },
+  "dependencies": {
+    "@types/js-yaml": "^3.12.5",
+    "apollo-server": "^2.18.1",
+    "dotenv": "^8.2.0",
+    "graphql": "^15.3.0",
+    "js-yaml": "^3.14.0"
+  }
+}
