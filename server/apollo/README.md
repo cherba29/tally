@@ -31,3 +31,14 @@ In the query/mutation window (left pannel), enter a query like
   }
 }
 ```
+
+## Regenerate GraphQL typescript types
+
+Make sure server is running and then run
+
+```
+npm run generate
+```
+
+which uses
+[GraphQL Code generator](https://graphql-code-generator.com/docs/getting-started/index).

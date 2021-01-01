@@ -7,6 +7,7 @@
     "build": "webpack --config webpack.development.js",
     "start": "node dist/server",
     "generate": "graphql-codegen",
+    "debug-build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -27,8 +28,11 @@
   "dependencies": {
     "@types/js-yaml": "^3.12.5",
     "apollo-server": "^2.18.1",
+    "class-validator": "^0.12.2",
     "dotenv": "^8.2.0",
-    "graphql": "^15.3.0",
-    "js-yaml": "^3.14.0"
+    "graphql": "^15.4.0",
+    "js-yaml": "^3.14.0",
+    "reflect-metadata": "^0.1.13",
+    "type-graphql": "^1.1.1"
   }
 }

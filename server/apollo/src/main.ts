@@ -27,7 +27,7 @@ const server = new ApolloServer({
  });
 
 server.listen()
-  .then(({ url }) => console.log(`Server ready222 at ${url}. `));
+  .then(({ url }) => console.log(`Server ready at ${url}. `));
 
 if (module.hot) {
   module.hot.accept();
