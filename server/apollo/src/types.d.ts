@@ -19,45 +19,52 @@ export type Scalars = {
 
 export type Query = {
   __typename?: 'Query';
-  /** Test Message.  */
-  testMessage: Scalars['String'];
-  foo: Scalars['String'];
   accounts?: Maybe<Array<Maybe<GqlAccount>>>;
   months?: Maybe<Array<Maybe<Scalars['GqlMonth']>>>;
   statements?: Maybe<Array<Maybe<GqlStatement>>>;
   summaries?: Maybe<Array<Maybe<GqlSummaryStatement>>>;
-  files?: Maybe<Array<Scalars['String']>>;
+  files?: Maybe<Array<Maybe<Scalars['String']>>>;
 };
 
 export type GqlAccount = {
   __typename?: 'GqlAccount';
-  name: Scalars['String'];
-  description: Scalars['String'];
-  type: Scalars['String'];
-  number: Scalars['String'];
-  openedOn: Scalars['String'];
-  closedOn: Scalars['String'];
-  owners?: Maybe<Array<Scalars['String']>>;
+  /** Account id/name. */
+  name?: Maybe<Scalars['String']>;
+  /** Long description for the account. */
+  description?: Maybe<Scalars['String']>;
+  /**
+   * Account type. Determines how account is grouped.
+   * TODO: This should change to enum.
+   */
+  type?: Maybe<Scalars['String']>;
+  /** Account number. Can be null or unknown for external or proxy accounts. */
+  number?: Maybe<Scalars['String']>;
+  /** Month when account was open. Can be unknown. */
+  openedOn?: Maybe<Scalars['GqlMonth']>;
+  /** Month when account was clased. If not set means account is still open. */
+  closedOn?: Maybe<Scalars['GqlMonth']>;
+  /** List of owner ids for this account. */
+  owners?: Maybe<Array<Maybe<Scalars['String']>>>;
 };
 
 export type GqlBalance = {
   __typename?: 'GqlBalance';
   /** Amount in cents. */
-  amount: Scalars['Int'];
-  date: Scalars['Date'];
+  amount?: Maybe<Scalars['Int']>;
+  date?: Maybe<Scalars['Date']>;
 };
 
 export type GqlStatement = {
   __typename?: 'GqlStatement';
-  name: Scalars['String'];
-  month: Scalars['GqlMonth'];
-  isClosed: Scalars['Boolean'];
-  startBalance: GqlBalance;
+  name?: Maybe<Scalars['String']>;
+  month?: Maybe<Scalars['GqlMonth']>;
+  isClosed?: Maybe<Scalars['Boolean']>;
+  startBalance?: Maybe<GqlBalance>;
 };
 
 export type GqlSummaryStatement = {
   __typename?: 'GqlSummaryStatement';
-  isCovered: Scalars['Boolean'];
+  isCovered?: Maybe<Scalars['Boolean']>;
 };
 
 export enum CacheControlScope {

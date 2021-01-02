@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {Account} from '../core/account';
+import {GqlAccount} from '../types';
 import {Budget} from '../core/budget';
 import {Statement} from '../core/statement';
 import {loadYamlFile} from './loader_yaml';
@@ -37,14 +37,21 @@ export function listFiles(): string[] {
 }
 
 
-export function loadAccounts(): Account[] {
-  if (!process.env.TALLY_FILES) {
-    throw Error('Process environment variable "TALLY_FILES" has not been specified.');
+export function loadAccounts(): GqlAccount[] {
+  const budget: Budget = loadBudget();
+  const accounts: GqlAccount[] = [];
+  for (const account of budget.accounts.values()) {
+    const gqlAccount: GqlAccount = {
+      name: account.name,
+      ...(account.description && {description: account.description}),
+      type: account.type,
+      ...(account.number && {number: account.number}),
+      ...(account.openedOn && {openedOn: account.openedOn.toString()}),
+      ...(account.closedOn && {closedOn: account.closedOn.toString()}),
+    };
+    accounts.push(gqlAccount);
   }
-  for (const file of readdirSync(process.env.TALLY_FILES)) {
-    console.log(file);
-  }
-  return [];
+  return accounts;
 }
 
 

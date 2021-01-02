@@ -1,12 +1,11 @@
 import {Month} from './core/month';
 import { loadTallyConfig } from './data/config'
-import { listFiles, loadStatements } from './data/loader'
+import { listFiles, loadStatements, loadAccounts } from './data/loader'
 import { GraphQLScalarType, Kind } from 'graphql';
 
 export default {
   Query: {
-    testMessage: (): string => 'Hello World' + process.env.TALLY_FILES,
-    accounts: (): Account[]  => [],
+    accounts: loadAccounts,
     files: listFiles,
     statements: loadStatements,
     months: (): Month[] => {

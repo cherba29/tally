@@ -14,8 +14,13 @@ interface BalanceData {
 }
 
 interface YamlData {
-  name: string
-  balances: BalanceData[];
+  name?: string;
+  description?: string;
+  number?: string;
+  type?: string;
+  opened_on?: string;
+  closed_on?: string;
+  balances?: BalanceData[];
 }
 
 
@@ -35,8 +40,20 @@ function makeBalance(data: BalanceData) {
 }
 
 function processYamlData(budget: Budget, data: YamlData) {
+  if (!data.name) {  // Ignore data which dont represent account.
+    return;
+  }
+  if (!data.type) {
+    throw new Error(`Type is not set for account ${data.name}`)
+  }
   const account = new Account(
-    { name: data.name }
+    { name: data.name,
+      description: data.description,
+      type: data.type,
+      number: data.number,
+      openedOn: data.opened_on ? Month.fromString(data.opened_on) : undefined,
+      closedOn: data.closed_on ? Month.fromString(data.closed_on) : undefined
+     }
   );
   budget.setAccount(account);
   if (data.balances) {
