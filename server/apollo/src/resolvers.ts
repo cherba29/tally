@@ -1,20 +1,53 @@
-import {Month} from './core/month';
-import { loadTallyConfig } from './data/config'
-import { listFiles, loadStatements, loadAccounts } from './data/loader'
+import { Month } from './core/month';
+import { listFiles, loadBudget } from './data/loader'
 import { GraphQLScalarType, Kind } from 'graphql';
+import { GqlAccount, GqlBudget, GqlStatement } from './types';
+
+function buildGqlBudget(): GqlBudget {
+  const budget = loadBudget();
+  
+  const accounts: GqlAccount[] = [];
+  for (const account of budget.accounts.values()) {
+    const gqlAccount: GqlAccount = {
+      name: account.name,
+      ...(account.description && {description: account.description}),
+      type: account.type,
+      ...(account.number && {number: account.number}),
+      ...(account.openedOn && {openedOn: account.openedOn}),
+      ...(account.closedOn && {closedOn: account.closedOn}),
+    };
+    accounts.push(gqlAccount);
+  }
+
+  const statements: GqlStatement[] = [];
+  for (const account of budget.accounts.values()) {
+    for (const month of budget.months) {
+      statements.push({
+        name: account.name,
+        month,
+        inFlows: 0,
+        outFlows: 0,
+        income: 0,
+        totalPayments: 0,
+        totalTransfers: 0,
+      });
+    }
+  }
+ 
+  return {
+    accounts,
+    months: budget.months,
+    statements,
+    summaries: []
+  };
+}
 
 export default {
   Query: {
-    accounts: loadAccounts,
     files: listFiles,
-    statements: loadStatements,
-    months: (): Month[] => {
-      const config = loadTallyConfig();
-      const start = Month.fromString(config.budget_period.start);
-      const end = Month.fromString(config.budget_period.end).next();
-      return Array.from(Month.generate(start, end));
-    },
+    budget: buildGqlBudget
   },
+
   Date: new GraphQLScalarType({
     name: 'Date',
     description: 'Date representation in YYYY-MM-DD format.',
@@ -31,6 +64,7 @@ export default {
       return null;
     },
   }),
+
   GqlMonth: new GraphQLScalarType({
     name: 'GqlMonth',
     description: 'Month representation in XxxYYYY format.',

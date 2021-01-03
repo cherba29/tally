@@ -19,11 +19,8 @@ export type Scalars = {
 
 export type Query = {
   __typename?: 'Query';
-  accounts?: Maybe<Array<Maybe<GqlAccount>>>;
-  months?: Maybe<Array<Maybe<Scalars['GqlMonth']>>>;
-  statements?: Maybe<Array<Maybe<GqlStatement>>>;
-  summaries?: Maybe<Array<Maybe<GqlSummaryStatement>>>;
   files?: Maybe<Array<Maybe<Scalars['String']>>>;
+  budget?: Maybe<GqlBudget>;
 };
 
 export type GqlAccount = {
@@ -60,11 +57,24 @@ export type GqlStatement = {
   month?: Maybe<Scalars['GqlMonth']>;
   isClosed?: Maybe<Scalars['Boolean']>;
   startBalance?: Maybe<GqlBalance>;
+  inFlows?: Maybe<Scalars['Float']>;
+  outFlows?: Maybe<Scalars['Float']>;
+  income?: Maybe<Scalars['Float']>;
+  totalPayments?: Maybe<Scalars['Float']>;
+  totalTransfers?: Maybe<Scalars['Float']>;
 };
 
 export type GqlSummaryStatement = {
   __typename?: 'GqlSummaryStatement';
   isCovered?: Maybe<Scalars['Boolean']>;
+};
+
+export type GqlBudget = {
+  __typename?: 'GqlBudget';
+  accounts?: Maybe<Array<Maybe<GqlAccount>>>;
+  months?: Maybe<Array<Maybe<Scalars['GqlMonth']>>>;
+  statements?: Maybe<Array<Maybe<GqlStatement>>>;
+  summaries?: Maybe<Array<Maybe<GqlSummaryStatement>>>;
 };
 
 export enum CacheControlScope {

@@ -5,13 +5,9 @@ export default gql`
   scalar Date
 
   type Query {
-    accounts: [GqlAccount]
-    months: [GqlMonth]
-    statements: [GqlStatement] 
-    summaries: [GqlSummaryStatement]
     files: [String]
+    budget: GqlBudget
   }
-
 
   type GqlAccount {
     """
@@ -66,8 +62,23 @@ export default gql`
     month: GqlMonth
     isClosed: Boolean
     startBalance: GqlBalance
+    inFlows: Float
+    outFlows: Float
+    income: Float
+    totalPayments: Float
+    totalTransfers: Float
   }
+
+
   type GqlSummaryStatement {
     isCovered: Boolean
+  }
+
+
+  type GqlBudget {
+    accounts: [GqlAccount]
+    months: [GqlMonth]
+    statements: [GqlStatement]
+    summaries: [GqlSummaryStatement]
   }
 `;
