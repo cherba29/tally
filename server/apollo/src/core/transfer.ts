@@ -7,6 +7,6 @@ export interface Transfer {
   toAccount: Account;
   fromMonth: Month;
   toMonth: Month;
-  description: string;
-  balace: Balance;
+  description?: string;
+  balance: Balance;
 }

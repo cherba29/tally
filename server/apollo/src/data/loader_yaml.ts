@@ -1,8 +1,7 @@
-import {Account} from '../core/account';
-import {Budget} from '../core/budget';
-
+import { Account } from '../core/account';
 import { Balance, Type as BalanceType } from '../core/balance';
-import {Month} from '../core/month';
+import { BudgetBuilder, TransferData } from '../core/budget';
+import { Month } from '../core/month';
 
 import * as yaml from 'js-yaml';
 
@@ -13,6 +12,14 @@ interface BalanceData {
   pamt?: number;
 }
 
+interface TransferYamlData {
+  grp?: string;
+  date?: Date;
+  camt?: number;
+  pamt?: number;
+  desc?: string;
+}
+
 interface YamlData {
   name?: string;
   description?: string;
@@ -21,6 +28,7 @@ interface YamlData {
   opened_on?: string;
   closed_on?: string;
   balances?: BalanceData[];
+  transfers_to?: { [key: string]: TransferYamlData[]; };
 }
 
 
@@ -39,7 +47,7 @@ function makeBalance(data: BalanceData) {
   return new Balance(amount, data.date, balanceType);
 }
 
-function processYamlData(budget: Budget, data: YamlData) {
+function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
   if (!data.name) {  // Ignore data which dont represent account.
     return;
   }
@@ -55,22 +63,56 @@ function processYamlData(budget: Budget, data: YamlData) {
       closedOn: data.closed_on ? Month.fromString(data.closed_on) : undefined
      }
   );
-  budget.setAccount(account);
+  budgetBuilder.setAccount(account);
   if (data.balances) {
     for (const balanceData of data.balances) {
       const month = Month.fromString(balanceData.grp);
       if (!month) { throw Error(`Balance ${balanceData} has no grp setting.`); }
-      budget.setBalance(account.name, month.toString(), makeBalance(balanceData));
+      budgetBuilder.setBalance(account.name, month.toString(), makeBalance(balanceData));
+    }
+  }
+  if (data.transfers_to) {
+    for (const [account_name, transfers] of Object.entries(data.transfers_to)) {
+      if (!transfers) continue;
+      for (const transfer_data of transfers) {
+        if (!transfer_data.grp) {
+          throw new Error(`For account "${account.name} transfer to ${account_name}" does not have "grp" field.`);
+        }
+        if (!transfer_data.date) {
+          throw new Error(`For account "${account.name}" transfer to "${account_name}" does not have "date" field.`);
+        }
+        let balance: Balance|undefined;
+        if (transfer_data.pamt !== undefined) {
+          balance = new Balance(transfer_data.pamt, transfer_data.date, BalanceType.PROJECTED);
+        } else if (transfer_data.camt !== undefined) {
+          balance = new Balance(transfer_data.camt, transfer_data.date, BalanceType.CONFIRMED);
+        }
+        if (balance === undefined) {
+          throw new Error(
+            `For account "${account.name}" transfer to "${account_name}" ` +
+            `does not have "pamt" or "camt" field: ${JSON.stringify(transfer_data)}.`)
+        }
+        
+        const transfer: TransferData = {
+          fromAccount: account.name,
+          fromMonth: Month.fromString(transfer_data.grp),
+          toAccount: account_name,
+          toMonth: Month.fromString(transfer_data.grp),
+          balance,
+          description: transfer_data.desc
+        };
+        budgetBuilder.addTransfer(transfer);
+      }
     }
   }
 }
 
-export function loadYamlFile(budget: Budget, content: string, relative_file_path: string) {
+export function loadYamlFile(budgetBuilder: BudgetBuilder, content: string, relative_file_path: string) {
   const accountData = yaml.safeLoad(content, {
     filename: relative_file_path
   }) as YamlData;
   try {
-    processYamlData(budget, accountData);
+    processYamlData(budgetBuilder, accountData);
   }
   catch (e) {
     console.error(e.name + ': ' + e.message + ' in ' + relative_file_path);
