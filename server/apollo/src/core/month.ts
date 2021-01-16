@@ -43,6 +43,13 @@ export class Month {
     return this.year < other.year;
   }
 
+  compareTo(other: Month): number {
+    if (this.year === other.year) {
+      return this.month - other.month;
+    }
+    return this.year - other.year;
+  }
+
   /** Convert string representation to internal representation. */
   static fromString(name: string): Month {
     if (name.length < 4) {
