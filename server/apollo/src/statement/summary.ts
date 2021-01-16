@@ -1,12 +1,11 @@
-import {Balance} from '../core/balance';
-import {Transaction} from '../core/transaction';
+import {Statement} from './statement';
+import {Transaction} from './transaction';
 
 
-export interface SummaryStatement {
+export interface SummaryStatement extends Statement {
   isClosed: boolean;
   accounts: string[];
   addSub: number;
-  endBalance: Balance;
   isCovered: boolean;
   isProjectedCovered: boolean;
   hasProjectedTransfer: boolean;
