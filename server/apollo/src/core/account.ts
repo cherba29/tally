@@ -1,9 +1,23 @@
 import { Month } from './month';
 
+export enum Type {
+  BILL = 'bill',
+  CHECKING = 'checking',
+  CREDIT = 'credit',
+  CREDIT_CARD = 'credit-card',
+  DEFERRED_INCOME = 'deferred income',
+  EXTERNAL = 'external',
+  INCOME = 'income',
+  INVESTMENT = 'investment',
+  RETIREMENT = 'retirement',
+  SUMMARY = '_summary_',
+  TAX = 'tax_',
+}
+
 export interface InitData {
   name: string;
   description?: string;
-  type: string;
+  type: Type;
   number?: string;
   openedOn?: Month;
   closedOn?: Month;
@@ -12,7 +26,7 @@ export interface InitData {
 export class Account {
   readonly name: string;
   readonly description?: string;
-  readonly type: string;
+  readonly type: Type;
   readonly number?: string;
   readonly openedOn?: Month;
   readonly closedOn?: Month;

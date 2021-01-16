@@ -1,4 +1,4 @@
-import { Account } from '../core/account';
+import { Account, Type as AccountType } from '../core/account';
 import { Balance, Type as BalanceType } from '../core/balance';
 import { BudgetBuilder, TransferData } from '../core/budget';
 import { Month } from '../core/month';
@@ -31,6 +31,14 @@ interface YamlData {
   transfers_to?: { [key: string]: TransferYamlData[]; };
 }
 
+function lookupAccountType(type: string): AccountType | undefined {
+  for (const [key, value] of Object.entries(AccountType)) {
+    if (value == type) {
+      return AccountType[key as keyof typeof AccountType];
+    }
+  }
+  return undefined;
+}
 
 function makeBalance(data: BalanceData) {
   let amount = 0;
@@ -52,12 +60,16 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
     return;
   }
   if (!data.type) {
-    throw new Error(`Type is not set for account ${data.name}`)
+    throw new Error(`Type is not set for account '${data.name}'`)
+  }
+  const accountType = lookupAccountType(data.type);
+  if (!accountType) {
+    throw new Error(`Unknown type '${data.type}' for account '${data.name}'`)
   }
   const account = new Account(
     { name: data.name,
       description: data.description,
-      type: data.type,
+      type: accountType,
       number: data.number,
       openedOn: data.opened_on ? Month.fromString(data.opened_on) : undefined,
       closedOn: data.closed_on ? Month.fromString(data.closed_on) : undefined
