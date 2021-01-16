@@ -1,5 +1,5 @@
-import {Balance} from './balance';
-import {Transaction} from './transaction';
+import {Balance} from '../core/balance';
+import {Transaction} from '../core/transaction';
 
 
 export interface SummaryStatement {
