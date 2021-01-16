@@ -1,3 +1,4 @@
+import {buildTransactionStatementTable} from './statement/transaction';
 import { Month } from './core/month';
 import { listFiles, loadBudget } from './data/loader'
 import { GraphQLScalarType, Kind } from 'graphql';
@@ -19,19 +20,18 @@ function buildGqlBudget(): GqlBudget {
     accounts.push(gqlAccount);
   }
 
+  const transactionStatementTable = buildTransactionStatementTable(budget);
   const statements: GqlStatement[] = [];
-  for (const account of budget.accounts.values()) {
-    for (const month of budget.months) {
-      statements.push({
-        name: account.name,
-        month,
-        inFlows: 0,
-        outFlows: 0,
-        income: 0,
-        totalPayments: 0,
-        totalTransfers: 0,
-      });
-    }
+  for (const statement of transactionStatementTable) {
+    statements.push({
+      name: statement.name,
+      month: statement.month,
+      inFlows: statement.inFlows,
+      outFlows: statement.outFlows,
+      income: statement.income,
+      totalPayments: statement.totalPayments,
+      totalTransfers: statement.totalTransfers,
+    });
   }
  
   return {
