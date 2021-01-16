@@ -21,6 +21,7 @@ export interface InitData {
   number?: string;
   openedOn?: Month;
   closedOn?: Month;
+  owners: string[];
 }
 
 export class Account {
@@ -30,6 +31,7 @@ export class Account {
   readonly number?: string;
   readonly openedOn?: Month;
   readonly closedOn?: Month;
+  readonly owners: string[];
 
   constructor(data: InitData) {
     this.name = data.name;
@@ -38,5 +40,6 @@ export class Account {
     this.number = data.number;
     this.openedOn = data.openedOn;
     this.closedOn = data.closedOn;
+    this.owners = data.owners;
   }
 }

@@ -27,6 +27,7 @@ interface YamlData {
   type?: string;
   opened_on?: string;
   closed_on?: string;
+  owners?: string[];
   balances?: BalanceData[];
   transfers_to?: { [key: string]: TransferYamlData[]; };
 }
@@ -72,7 +73,8 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
       type: accountType,
       number: data.number,
       openedOn: data.opened_on ? Month.fromString(data.opened_on) : undefined,
-      closedOn: data.closed_on ? Month.fromString(data.closed_on) : undefined
+      closedOn: data.closed_on ? Month.fromString(data.closed_on) : undefined,
+      owners: data.owners || [],
      }
   );
   budgetBuilder.setAccount(account);
