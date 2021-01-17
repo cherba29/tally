@@ -31,6 +31,8 @@ function buildGqlBudget(): GqlBudget {
       income: statement.income,
       totalPayments: statement.totalPayments,
       totalTransfers: statement.totalTransfers,
+      isClosed: statement.account.closedOn?.isLess(statement.month) ||
+          statement.account.openedOn && statement.month.isLess(statement.account.openedOn) || false,
     });
   }
  
