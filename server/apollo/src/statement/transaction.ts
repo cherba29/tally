@@ -48,7 +48,7 @@ export class TransactionStatement extends Statement {
   isProjectedCovered: boolean = false;
 
   // Is this statement for closed account for given month.
-  isClosed(): boolean {
+  get isClosed(): boolean {
     return this.account.isClosed(this.month);
   }
 

@@ -3,7 +3,7 @@ import {Balance} from '../core/balance';
 
 
 // Abstraction for a financial statement for a period of time.
-export class Statement {
+export abstract class Statement {
   name: string;
   
   // Period of time for the statement 
@@ -55,5 +55,22 @@ export class Statement {
     const change = this.change;
     return change && change - this.addSub;
   }
-}
 
+  abstract get isClosed(): boolean;
+
+  addInFlow(inFlow: number) {
+    if (inFlow > 0) {
+      this.inFlows += inFlow;
+    } else {
+      this.outFlows += inFlow;
+    }
+  }
+
+  addOutFlow(outFlow: number) {
+    if (outFlow > 0) {
+      this.inFlows += outFlow;
+    } else {
+      this.outFlows += outFlow;
+    }
+  }
+}
