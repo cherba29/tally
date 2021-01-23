@@ -1,8 +1,9 @@
 import {buildTransactionStatementTable} from './statement/transaction';
+import {buildSummaryStatementTable} from './statement/summary';
 import { Month } from './core/month';
 import { listFiles, loadBudget } from './data/loader'
 import { GraphQLScalarType, Kind } from 'graphql';
-import { GqlAccount, GqlBudget, GqlStatement } from './types';
+import { GqlAccount, GqlBudget, GqlStatement, GqlSummaryStatement } from './types';
 
 function buildGqlBudget(): GqlBudget {
   const budget = loadBudget();
@@ -35,12 +36,36 @@ function buildGqlBudget(): GqlBudget {
           statement.account.openedOn && statement.month.isLess(statement.account.openedOn) || false,
     });
   }
- 
+  const summaryStatementTable = buildSummaryStatementTable(transactionStatementTable);
+  const summaries: GqlSummaryStatement[] = [];
+  for (const summary of summaryStatementTable) {
+    summaries.push({
+      name: summary.name,
+      month: summary.month,
+      accounts: summary.statements.map(statement=>statement.name),
+      addSub: summary.addSub,
+      change: summary.change,
+      inFlows: summary.inFlows,
+      outFlows: summary.outFlows,
+      percentChange: summary.percentChange,
+      totalPayments: summary.totalPayments,
+      totalTransfers: summary.totalTransfers,
+      unaccounted: summary.unaccounted,
+      ...(summary.startBalance && { startBalance: {
+         amount: summary.startBalance.amount,
+         date: summary.startBalance.date,
+      }}),
+      ...(summary.endBalance && { endBalance: {
+        amount: summary.endBalance.amount,
+        date: summary.endBalance.date,
+     }})
+    });
+  }
   return {
     accounts,
     months: budget.months,
     statements,
-    summaries: []
+    summaries,
   };
 }
 
