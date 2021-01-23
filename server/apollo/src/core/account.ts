@@ -47,4 +47,17 @@ export class Account {
     return this.closedOn?.isLess(month)  // After closed.
         || !this.openedOn?.isLess(month);  // Before open.
   }
+
+  get isExternal(): boolean {
+    return this.type === Type.EXTERNAL || this.type === Type.TAX || this.type === Type.DEFERRED_INCOME;
+  }
+
+  get isSummary(): boolean {
+    return this.type === Type.SUMMARY;
+  }
+
+  hasCommonOwner(other: Account): boolean {
+    return this.owners.some(owner=>other.owners.includes(owner))
+  }
+  
 }

@@ -23,41 +23,45 @@ export interface Transaction {
 
 
 // Extension of Statement for transactions over an account.
-export interface TransactionStatement extends Statement {
+export class TransactionStatement extends Statement {
   // Account to which this transaction statements belongs.
   account: Account;
 
   // List of transcation in this statement.
-  transactions: Transaction[];
+  transactions: Transaction[] = [];
 
   // True if any transactions in this statement "cover" previous statement.
-  coversPrevious: boolean;
+  coversPrevious: boolean = false;
 
   // True if any projected transactions in this statement "cover"
   // previous statement.
-  coversProjectedPrevious: boolean;
+  coversProjectedPrevious: boolean = false;
 
   // True if any of the transcations are projects.
-  hasProjectedTransfer: boolean;
+  hasProjectedTransfer: boolean = false;
 
   // True if this statement is covered by next.
-  isCovered: boolean;
+  isCovered: boolean = false;
 
   // True if this statement is covered by any projected transactions in next
   // statement.
-  isProjectedCovered: boolean;
+  isProjectedCovered: boolean = false;
 
   // Is this statement for closed account for given month.
-  isClosed: boolean;
+  isClosed(): boolean {
+    return this.account.isClosed(this.month);
+  }
+
+  constructor(account: Account, month: Month) {
+    super(account.name, month);
+    this.account = account;
+  }
 }
 
-function hasCommonOwner(account1: Account, account2: Account): boolean {
-  return account1.owners.some(owner=>account2.owners.includes(owner))
-}
 
 function getTransactionType(
   fromAccount: Account, toAccount: Account, amount: number): Type {
-  if (hasCommonOwner(toAccount, fromAccount)
+  if (toAccount.hasCommonOwner(fromAccount)
       && toAccount.type != AccountType.EXTERNAL 
       && fromAccount.type != AccountType.EXTERNAL) {
     return Type.TRANSFER;
@@ -68,25 +72,8 @@ function getTransactionType(
 
 function makeTranscationStatement(
     account: Account, month: Month, transfers?: Set<Transfer>, startBalance?: Balance): TransactionStatement {
-  const statement: TransactionStatement = {
-    name: account.name,
-    month,
-    startBalance,
-    inFlows: 0,
-    outFlows: 0,
-    totalTransfers: 0,
-    totalPayments: 0,
-    income:0 ,
-
-    account,
-    transactions: [],
-    coversPrevious: false,
-    coversProjectedPrevious: false,
-    hasProjectedTransfer: false,
-    isCovered: false,
-    isProjectedCovered: false,
-    isClosed: account.isClosed(month),
-  };
+  const statement = new TransactionStatement(account, month);
+  statement.startBalance = startBalance;
   const attributeTransfer = (fromAccount: Account, toAccount: Account, amount: number): Type => {
     if (amount > 0) {
       statement.inFlows += amount;
@@ -130,7 +117,7 @@ function makeTranscationStatement(
         `Setting transfer (${t.fromAccount.name} to ${t.toAccount.name}) for ${account.name} account statement!`)
     }
     if (!statement.coversPrevious && balance.amount > 0
-            && hasCommonOwner(t.fromAccount, account)) {
+            && t.fromAccount.hasCommonOwner(account)) {
       statement.coversProjectedPrevious = true;
       if (balance.type != BalanceType.PROJECTED) {
         statement.coversPrevious = true;
