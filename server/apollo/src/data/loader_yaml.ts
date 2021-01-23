@@ -27,7 +27,7 @@ interface YamlData {
   type?: string;
   opened_on?: string;
   closed_on?: string;
-  owners?: string[];
+  owner?: string[];
   balances?: BalanceData[];
   transfers_to?: { [key: string]: TransferYamlData[]; };
 }
@@ -45,10 +45,10 @@ function makeBalance(data: BalanceData) {
   let amount = 0;
   let balanceType = BalanceType.UNKNOWN;
   if (data.camt !== undefined) {
-    amount = data.camt;
+    amount = Math.round(100* data.camt);
     balanceType = BalanceType.CONFIRMED;
   } else if (data.pamt !== undefined) {
-    amount = data.pamt;
+    amount = Math.round(100 * data.pamt);
     balanceType = BalanceType.PROJECTED;
   } else {
     throw new Error('Unable to determine balance type, expected camt or pamt entry.')
@@ -74,7 +74,7 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
       number: data.number,
       openedOn: data.opened_on ? Month.fromString(data.opened_on) : undefined,
       closedOn: data.closed_on ? Month.fromString(data.closed_on) : undefined,
-      owners: data.owners || [],
+      owners: data.owner || [],
      }
   );
   budgetBuilder.setAccount(account);
@@ -97,9 +97,15 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
         }
         let balance: Balance|undefined;
         if (transfer_data.pamt !== undefined) {
-          balance = new Balance(transfer_data.pamt, transfer_data.date, BalanceType.PROJECTED);
+          balance = new Balance(
+              Math.round(100 * transfer_data.pamt),
+              transfer_data.date,
+              BalanceType.PROJECTED);
         } else if (transfer_data.camt !== undefined) {
-          balance = new Balance(transfer_data.camt, transfer_data.date, BalanceType.CONFIRMED);
+          balance = new Balance(
+              Math.round(100 * transfer_data.camt),
+              transfer_data.date,
+              BalanceType.CONFIRMED);
         }
         if (balance === undefined) {
           throw new Error(
