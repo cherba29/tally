@@ -71,7 +71,19 @@ export default gql`
 
 
   type GqlSummaryStatement {
-    isCovered: Boolean
+    name: String,
+    month: GqlMonth,
+    accounts: [String]
+    addSub: Float
+    change: Float
+    inFlows: Float
+    outFlows: Float
+    percentChange: Float
+    totalPayments: Float
+    totalTransfers: Float
+    unaccounted: Float    
+    endBalance: GqlBalance
+    startBalance: GqlBalance
   }
 
 

@@ -66,7 +66,19 @@ export type GqlStatement = {
 
 export type GqlSummaryStatement = {
   __typename?: 'GqlSummaryStatement';
-  isCovered?: Maybe<Scalars['Boolean']>;
+  name?: Maybe<Scalars['String']>;
+  month?: Maybe<Scalars['GqlMonth']>;
+  accounts?: Maybe<Array<Maybe<Scalars['String']>>>;
+  addSub?: Maybe<Scalars['Float']>;
+  change?: Maybe<Scalars['Float']>;
+  inFlows?: Maybe<Scalars['Float']>;
+  outFlows?: Maybe<Scalars['Float']>;
+  percentChange?: Maybe<Scalars['Float']>;
+  totalPayments?: Maybe<Scalars['Float']>;
+  totalTransfers?: Maybe<Scalars['Float']>;
+  unaccounted?: Maybe<Scalars['Float']>;
+  endBalance?: Maybe<GqlBalance>;
+  startBalance?: Maybe<GqlBalance>;
 };
 
 export type GqlBudget = {
