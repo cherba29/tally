@@ -46,6 +46,9 @@ export interface TransactionStatement extends Statement {
   // True if this statement is covered by any projected transactions in next
   // statement.
   isProjectedCovered: boolean;
+
+  // Is this statement for closed account for given month.
+  isClosed: boolean;
 }
 
 function hasCommonOwner(account1: Account, account2: Account): boolean {
@@ -82,6 +85,7 @@ function makeTranscationStatement(
     hasProjectedTransfer: false,
     isCovered: false,
     isProjectedCovered: false,
+    isClosed: account.isClosed(month),
   };
   const attributeTransfer = (fromAccount: Account, toAccount: Account, amount: number): Type => {
     if (amount > 0) {

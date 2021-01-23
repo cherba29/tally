@@ -42,4 +42,9 @@ export class Account {
     this.closedOn = data.closedOn;
     this.owners = data.owners;
   }
+
+  isClosed(month: Month) : boolean {
+    return this.closedOn?.isLess(month)  // After closed.
+        || !this.openedOn?.isLess(month);  // Before open.
+  }
 }
