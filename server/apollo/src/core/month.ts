@@ -14,7 +14,7 @@ const MONTH_NAME_TO_INDEX = Object.fromEntries(
 export class Month {
   constructor(readonly year:number, readonly month:number) {
     if (this.month < 0 || this.month > 11) {
-      throw Error(`Infavlid value for month ${this.month}`)
+      throw new Error(`Invalid value for month ${this.month}`)
     }
   }
 
@@ -53,7 +53,7 @@ export class Month {
   /** Convert string representation to internal representation. */
   static fromString(name: string): Month {
     if (name.length < 4) {
-      throw new Error(`Cant get month from small string ${name}`);
+      throw new Error(`Cant get month from small string "${name}"`);
       
     };
     const month = MONTH_NAME_TO_INDEX[name.substring(0, 3)];
@@ -62,7 +62,7 @@ export class Month {
     }
     const year = Number(name.substring(3));
     if (isNaN(year)) {
-      throw Error(`Cant get year from ${name}`);
+      throw Error(`Cant get year from "${name}"`);
     }
     return new Month(year, month);
   }
