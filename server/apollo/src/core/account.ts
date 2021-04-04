@@ -11,7 +11,7 @@ export enum Type {
   INVESTMENT = 'investment',
   RETIREMENT = 'retirement',
   SUMMARY = '_summary_',
-  TAX = 'tax_',
+  TAX = 'tax_'
 }
 
 export interface InitData {
@@ -43,13 +43,17 @@ export class Account {
     this.owners = data.owners;
   }
 
-  isClosed(month: Month) : boolean {
-    return this.closedOn?.isLess(month)  // After closed.
-        || !this.openedOn?.isLess(month);  // Before open.
+  isClosed(month: Month): boolean {
+    return (
+      this.closedOn?.isLess(month) || // After closed.
+      !this.openedOn?.isLess(month) // Before open.
+    );
   }
 
   get isExternal(): boolean {
-    return this.type === Type.EXTERNAL || this.type === Type.TAX || this.type === Type.DEFERRED_INCOME;
+    return (
+      this.type === Type.EXTERNAL || this.type === Type.TAX || this.type === Type.DEFERRED_INCOME
+    );
   }
 
   get isSummary(): boolean {
@@ -57,7 +61,6 @@ export class Account {
   }
 
   hasCommonOwner(other: Account): boolean {
-    return this.owners.some(owner=>other.owners.includes(owner))
+    return this.owners.some((owner) => other.owners.includes(owner));
   }
-  
 }

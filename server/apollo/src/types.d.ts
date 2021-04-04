@@ -15,8 +15,6 @@ export type Scalars = {
   Upload: any;
 };
 
-
-
 export type Query = {
   __typename?: 'Query';
   files?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -93,4 +91,3 @@ export enum CacheControlScope {
   Public = 'PUBLIC',
   Private = 'PRIVATE'
 }
-

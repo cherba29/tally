@@ -11,7 +11,6 @@ interface TallyConfig {
   budget_period: BudgetPeriod;
 }
 
-
 export function loadTallyConfig(): TallyConfig {
   if (!process.env.TALLY_FILES) {
     throw Error('Process environment variable "TALLY_FILES" has not been specified.');

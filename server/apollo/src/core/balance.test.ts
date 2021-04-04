@@ -1,5 +1,4 @@
-import {Balance, Type} from './balance';
-
+import { Balance, Type } from './balance';
 
 test('negation', () => {
   const balance = new Balance(100.0, new Date(2020, 1, 3), Type.CONFIRMED);

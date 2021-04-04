@@ -1,8 +1,7 @@
-import {Balance} from '../core/balance';
-import {Month} from '../core/month';
-import {Statement} from './statement';
-import {TransactionStatement} from './transaction';
-
+import { Balance } from '../core/balance';
+import { Month } from '../core/month';
+import { Statement } from './statement';
+import { TransactionStatement } from './transaction';
 
 export class SummaryStatement extends Statement {
   statements: Statement[] = [];
@@ -12,7 +11,7 @@ export class SummaryStatement extends Statement {
   }
 
   get isClosed(): boolean {
-    return this.statements.every(statement=>statement.isClosed);
+    return this.statements.every((statement) => statement.isClosed);
   }
 
   addStatement(statement: Statement): void {
@@ -21,7 +20,8 @@ export class SummaryStatement extends Statement {
     }
     if (statement.month.compareTo(this.month) !== 0) {
       throw new Error(
-        `Statement for month ${statement.month} is being added to summary for month ${this.month}`);
+        `Statement for month ${statement.month} is being added to summary for month ${this.month}`
+      );
     }
     if (!this.startBalance) {
       this.startBalance = statement.startBalance;
@@ -42,8 +42,13 @@ export class SummaryStatement extends Statement {
   }
 }
 
-export function* buildSummaryStatementTable(statements: TransactionStatement[]): Generator<SummaryStatement> {
-  const summaryStatements: Map<string, Map<string, SummaryStatement>> = new Map<string, Map<string, SummaryStatement>>();
+export function* buildSummaryStatementTable(
+  statements: TransactionStatement[]
+): Generator<SummaryStatement> {
+  const summaryStatements: Map<string, Map<string, SummaryStatement>> = new Map<
+    string,
+    Map<string, SummaryStatement>
+  >();
 
   const updateSummaryStatement = (name: string, statement: TransactionStatement) => {
     let accountSummaryStatements = summaryStatements.get(name);
@@ -61,10 +66,8 @@ export function* buildSummaryStatementTable(statements: TransactionStatement[]):
 
   for (const statement of statements) {
     for (const owner of statement.account.owners) {
-      for (const summaryName of [owner + ' ' + statement.account.type,
-                                 owner + ' SUMMARY']) {
-        if (statement.account.isExternal
-            && summaryName.includes('SUMMARY')) {
+      for (const summaryName of [owner + ' ' + statement.account.type, owner + ' SUMMARY']) {
+        if (statement.account.isExternal && summaryName.includes('SUMMARY')) {
           continue;
         }
         updateSummaryStatement(summaryName, statement);

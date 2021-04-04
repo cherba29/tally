@@ -1,4 +1,4 @@
-import {Month} from './month';
+import { Month } from './month';
 
 describe('Creation', () => {
   test('basic', () => {
@@ -89,26 +89,26 @@ describe('Ordering', () => {
 });
 
 describe('Naming', () => {
-  test('toString', () => { 
+  test('toString', () => {
     const month = new Month(2019, 11);
     expect(month.toString()).toBe('Dec2019');
   });
 
-  test('fromString', () => { 
+  test('fromString', () => {
     const month = Month.fromString('Dec2019');
     expect(month.year).toBe(2019);
     expect(month.month).toBe(11);
   });
 
-  test('fromString incomplete', () => { 
+  test('fromString incomplete', () => {
     expect(() => Month.fromString('Dec')).toThrow('Cant get month from small string "Dec"');
   });
 
-  test('fromString bad name', () => { 
+  test('fromString bad name', () => {
     expect(() => Month.fromString('Sec2020')).toThrow('Cant find month for "Sec2020"');
   });
 
-  test('fromString bad year', () => { 
+  test('fromString bad year', () => {
     expect(() => Month.fromString('Sep202A')).toThrow('Cant get year from "Sep202A"');
   });
 });

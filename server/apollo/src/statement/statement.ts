@@ -1,28 +1,27 @@
-import {Month} from '../core/month';
-import {Balance} from '../core/balance';
-
+import { Month } from '../core/month';
+import { Balance } from '../core/balance';
 
 // Abstraction for a financial statement for a period of time.
 export abstract class Statement {
   name: string;
-  
-  // Period of time for the statement 
-  month: Month;  
-  
+
+  // Period of time for the statement
+  month: Month;
+
   // Recorded start balance for the statement.
-  startBalance?: Balance; 
-  
-  // Recorded end balance for the statement. 
-  endBalance?: Balance;  
+  startBalance?: Balance;
+
+  // Recorded end balance for the statement.
+  endBalance?: Balance;
 
   // Total transaction inflows.
-  inFlows  = 0;
+  inFlows = 0;
 
   // Total transaction outflows.
-  outFlows = 0;  
+  outFlows = 0;
 
   // Amount transfered to other accounts by same owner.
-  totalTransfers = 0;  
+  totalTransfers = 0;
 
   // Amount transfered to external entities.
   totalPayments = 0;
@@ -40,15 +39,15 @@ export abstract class Statement {
   }
 
   get change(): number | undefined {
-    const startAmount = this.startBalance?.amount
-    const endAmount = this.endBalance?.amount
-    return startAmount && endAmount && (endAmount - startAmount);
+    const startAmount = this.startBalance?.amount;
+    const endAmount = this.endBalance?.amount;
+    return startAmount && endAmount && endAmount - startAmount;
   }
 
   get percentChange(): number | undefined {
-    const startAmount = this.startBalance?.amount
+    const startAmount = this.startBalance?.amount;
     const change = this.change;
-    return change && startAmount && (100 * change / startAmount);
+    return change && startAmount && (100 * change) / startAmount;
   }
 
   get unaccounted(): number | undefined {

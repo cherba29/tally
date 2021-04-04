@@ -7,7 +7,7 @@ import { loadYamlFile } from './loader_yaml';
 import { loadTallyConfig } from './config';
 // import {SummaryStatement} from '../core/summary_statement';
 
-function* readdirSync(file_path: string) : Generator<string> {
+function* readdirSync(file_path: string): Generator<string> {
   if (fs.statSync(file_path).isDirectory()) {
     for (const f of fs.readdirSync(file_path)) {
       const child_file = path.join(file_path, f);
@@ -23,19 +23,17 @@ function* readdirSync(file_path: string) : Generator<string> {
   return;
 }
 
-
 export function listFiles(): string[] {
   if (!process.env.TALLY_FILES) {
     throw Error('Process environment variable "TALLY_FILES" has not been specified.');
   }
   const filePaths: string[] = [];
-  for (const file_path of readdirSync(process.env.TALLY_FILES)) { 
+  for (const file_path of readdirSync(process.env.TALLY_FILES)) {
     const relative_file_path = file_path.slice(process.env.TALLY_FILES.length + 1);
     filePaths.push(relative_file_path);
   }
   return filePaths;
 }
-
 
 export function loadBudget(): Budget {
   if (!process.env.TALLY_FILES) {
@@ -49,11 +47,11 @@ export function loadBudget(): Budget {
   budgetBuilder.setPeriod(start, end);
 
   const filePaths: string[] = [];
-  for (const file_path of readdirSync(process.env.TALLY_FILES)) { 
+  for (const file_path of readdirSync(process.env.TALLY_FILES)) {
     const relative_file_path = file_path.slice(process.env.TALLY_FILES.length + 1);
     filePaths.push(relative_file_path);
     console.log('Loading ' + relative_file_path);
-    const content =  fs.readFileSync(file_path, 'utf8');
+    const content = fs.readFileSync(file_path, 'utf8');
     loadYamlFile(budgetBuilder, content, relative_file_path);
   }
   console.log(`Done loading ${filePaths.length} file(s)`);

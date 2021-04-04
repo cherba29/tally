@@ -47,7 +47,6 @@ export default gql`
     owners: [String]
   }
 
-
   type GqlBalance {
     """
     Amount in cents.
@@ -55,7 +54,6 @@ export default gql`
     amount: Int
     date: Date
   }
-
 
   type GqlStatement {
     name: String
@@ -69,10 +67,9 @@ export default gql`
     totalTransfers: Float
   }
 
-
   type GqlSummaryStatement {
-    name: String,
-    month: GqlMonth,
+    name: String
+    month: GqlMonth
     accounts: [String]
     addSub: Float
     change: Float
@@ -81,11 +78,10 @@ export default gql`
     percentChange: Float
     totalPayments: Float
     totalTransfers: Float
-    unaccounted: Float    
+    unaccounted: Float
     endBalance: GqlBalance
     startBalance: GqlBalance
   }
-
 
   type GqlBudget {
     accounts: [GqlAccount]

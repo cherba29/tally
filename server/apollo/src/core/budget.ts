@@ -1,7 +1,7 @@
-import {Account} from './account';
-import {Balance} from './balance';
-import {Month} from './month';
-import {Transfer} from './transfer';
+import { Account } from './account';
+import { Balance } from './balance';
+import { Month } from './month';
+import { Transfer } from './transfer';
 
 export class Budget {
   constructor(
@@ -25,21 +25,23 @@ export interface TransferData {
   description?: string;
 }
 
-
-function getMonthTransfers<T>(transfers: Map<string, Map<string, Set<T>>>, accountName: string, month: string)  {
+function getMonthTransfers<T>(
+  transfers: Map<string, Map<string, Set<T>>>,
+  accountName: string,
+  month: string
+) {
   let accountTransfers = transfers.get(accountName);
   if (!accountTransfers) {
     accountTransfers = new Map<string, Set<T>>();
     transfers.set(accountName, accountTransfers);
   }
-  let monthTransfers = accountTransfers.get(month)
+  let monthTransfers = accountTransfers.get(month);
   if (!monthTransfers) {
     monthTransfers = new Set<T>();
     accountTransfers.set(month, monthTransfers);
   }
   return monthTransfers;
 }
-
 
 export class BudgetBuilder {
   // Period over which the budget is defined.
@@ -88,12 +90,19 @@ export class BudgetBuilder {
         toMonth: transferData.toMonth,
         fromMonth: transferData.fromMonth,
         balance: transferData.balance,
-        description: transferData.description,
+        description: transferData.description
       };
       const toMonthTransfers = getMonthTransfers(
-          transfers, toAccount.name, transferData.toMonth.toString());
+        transfers,
+        toAccount.name,
+        transferData.toMonth.toString()
+      );
       toMonthTransfers.add(transfer);
-      const fromMonthTransfers = getMonthTransfers(transfers, fromAccount.name, transferData.fromMonth.toString());
+      const fromMonthTransfers = getMonthTransfers(
+        transfers,
+        fromAccount.name,
+        transferData.fromMonth.toString()
+      );
       fromMonthTransfers.add(transfer);
     }
     return new Budget(this.months, this.accounts, this.balances, transfers);
