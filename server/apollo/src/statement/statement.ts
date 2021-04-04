@@ -16,19 +16,19 @@ export abstract class Statement {
   endBalance?: Balance;  
 
   // Total transaction inflows.
-  inFlows: number = 0;
+  inFlows  = 0;
 
   // Total transaction outflows.
-  outFlows: number = 0;  
+  outFlows = 0;  
 
   // Amount transfered to other accounts by same owner.
-  totalTransfers: number = 0;  
+  totalTransfers = 0;  
 
   // Amount transfered to external entities.
-  totalPayments: number = 0;
+  totalPayments = 0;
 
   // Amount transfered from external entities.
-  income: number = 0;
+  income = 0;
 
   constructor(name: string, month: Month) {
     this.name = name;
@@ -58,7 +58,7 @@ export abstract class Statement {
 
   abstract get isClosed(): boolean;
 
-  addInFlow(inFlow: number) {
+  addInFlow(inFlow: number): void {
     if (inFlow > 0) {
       this.inFlows += inFlow;
     } else {
@@ -66,7 +66,7 @@ export abstract class Statement {
     }
   }
 
-  addOutFlow(outFlow: number) {
+  addOutFlow(outFlow: number): void {
     if (outFlow > 0) {
       this.inFlows += outFlow;
     } else {

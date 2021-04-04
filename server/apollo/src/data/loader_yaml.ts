@@ -127,7 +127,8 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
   }
 }
 
-export function loadYamlFile(budgetBuilder: BudgetBuilder, content: string, relative_file_path: string) {
+export function loadYamlFile(
+    budgetBuilder: BudgetBuilder, content: string, relative_file_path: string): void {
   const accountData = yaml.safeLoad(content, {
     filename: relative_file_path
   }) as YamlData;

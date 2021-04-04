@@ -15,7 +15,7 @@ export class SummaryStatement extends Statement {
     return this.statements.every(statement=>statement.isClosed);
   }
 
-  addStatement(statement: Statement) {
+  addStatement(statement: Statement): void {
     if (statement.isClosed) {
       return;
     }

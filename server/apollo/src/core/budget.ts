@@ -50,15 +50,15 @@ export class BudgetBuilder {
   readonly balances = new Map<string, Map<string, Balance>>();
   readonly transfers: TransferData[] = [];
 
-  setPeriod(start: Month, end: Month) {
+  setPeriod(start: Month, end: Month): void {
     this.months = Array.from(Month.generate(start, end));
   }
 
-  setAccount(account: Account) {
+  setAccount(account: Account): void {
     this.accounts.set(account.name, account);
   }
 
-  setBalance(accountName: string, month: string, balance: Balance) {
+  setBalance(accountName: string, month: string, balance: Balance): void {
     let balances = this.balances.get(accountName);
     if (!balances) {
       balances = new Map<string, Balance>();
@@ -67,7 +67,7 @@ export class BudgetBuilder {
     balances.set(month, balance);
   }
 
-  addTransfer(transferData: TransferData) {
+  addTransfer(transferData: TransferData): void {
     this.transfers.push(transferData);
   }
 

@@ -31,21 +31,21 @@ export class TransactionStatement extends Statement {
   transactions: Transaction[] = [];
 
   // True if any transactions in this statement "cover" previous statement.
-  coversPrevious: boolean = false;
+  coversPrevious = false;
 
   // True if any projected transactions in this statement "cover"
   // previous statement.
-  coversProjectedPrevious: boolean = false;
+  coversProjectedPrevious = false;
 
   // True if any of the transcations are projects.
-  hasProjectedTransfer: boolean = false;
+  hasProjectedTransfer = false;
 
   // True if this statement is covered by next.
-  isCovered: boolean = false;
+  isCovered = false;
 
   // True if this statement is covered by any projected transactions in next
   // statement.
-  isProjectedCovered: boolean = false;
+  isProjectedCovered = false;
 
   // Is this statement for closed account for given month.
   get isClosed(): boolean {

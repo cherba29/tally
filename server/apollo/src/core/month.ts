@@ -36,7 +36,7 @@ export class Month {
     return new Month(this.year, this.month - 1);
   }
 
-  isLess(other: Month) {
+  isLess(other: Month): boolean {
     if (this.year === other.year) {
       return this.month < other.month;
     }
@@ -55,7 +55,7 @@ export class Month {
     if (name.length < 4) {
       throw new Error(`Cant get month from small string "${name}"`);
       
-    };
+    }
     const month = MONTH_NAME_TO_INDEX[name.substring(0, 3)];
     if (month === undefined) {
       throw new Error(`Cant find month for "${name}"`);
@@ -68,7 +68,7 @@ export class Month {
   }
   
   /** Creates generator spanning start and end (but not including) months. */
-  static* generate(start: Month, end: Month) {
+  static* generate(start: Month, end: Month): IterableIterator<Month> {
     let current = start;
     while(current.isLess(end)) {
       yield current;

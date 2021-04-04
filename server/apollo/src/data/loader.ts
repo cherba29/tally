@@ -16,7 +16,7 @@ function* readdirSync(file_path: string) : Generator<string> {
           yield cf;
         }
       }
-    };
+    }
   } else {
     yield file_path;
   }
