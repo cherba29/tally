@@ -16,7 +16,8 @@ describe('GqlMonth', () => {
 describe('query', () => {
   test('buildBudget', () => {
     expect(resolvers.Query.budget).toThrow(
-      new Error('Process environment variable "TALLY_FILES" has not been specified.'));
+      new Error('Process environment variable "TALLY_FILES" has not been specified.')
+    );
   });
 
   afterEach(() => {
