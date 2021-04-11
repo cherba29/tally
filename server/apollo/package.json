@@ -20,6 +20,7 @@
     "@graphql-codegen/cli": "^1.17.10",
     "@graphql-codegen/typescript": "^1.17.10",
     "@types/jest": "^26.0.22",
+    "@types/js-yaml": "^3.12.6",
     "@types/webpack-env": "^1.15.3",
     "@typescript-eslint/eslint-plugin": "^4.20.0",
     "@typescript-eslint/parser": "^4.20.0",
@@ -38,7 +39,6 @@
     "webpack-node-externals": "^2.5.2"
   },
   "dependencies": {
-    "@types/js-yaml": "^3.12.5",
     "apollo-server": "^2.18.1",
     "class-validator": "^0.12.2",
     "dotenv": "^8.2.0",

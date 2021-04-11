@@ -56,8 +56,8 @@ function makeBalance(data: BalanceData) {
   return new Balance(amount, data.date, balanceType);
 }
 
-function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
-  if (!data.name) {
+function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData | undefined) {
+  if (!data || !data.name) {
     // Ignore data which dont represent account.
     return;
   }
@@ -143,7 +143,7 @@ export function loadYamlFile(
 ): void {
   const accountData = yaml.safeLoad(content, {
     filename: relative_file_path
-  }) as YamlData;
+  }) as YamlData | undefined;
   try {
     processYamlData(budgetBuilder, accountData);
   } catch (e) {
