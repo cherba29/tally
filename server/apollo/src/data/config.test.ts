@@ -34,16 +34,29 @@ describe('Loading config', () => {
     );
   });
 
+  test('fails when config.yaml does not specify budget_period', () => {
+    const TALLY_PATH = 'tally/files/path';
+    process.env.TALLY_FILES = TALLY_PATH;
+    mockfs({
+      [TALLY_PATH]: {
+        '_config.yaml': 'something_else: []'
+      }
+    });
+    expect(loadTallyConfig).toThrow(
+      new Error(`File \"${TALLY_PATH}/_config.yaml\" does not specify budget_period`)
+    );
+  });
+
   test('fails when config.yaml does not specify start', () => {
     const TALLY_PATH = 'tally/files/path';
     process.env.TALLY_FILES = TALLY_PATH;
     mockfs({
       [TALLY_PATH]: {
-        '_config.yaml': 'end: Feb2020'
+        '_config.yaml': 'budget_period: {end: Feb2020}'
       }
     });
     expect(loadTallyConfig).toThrow(
-      new Error(`File \"${TALLY_PATH}/_config.yaml\" does not specify start`)
+      new Error(`File \"${TALLY_PATH}/_config.yaml\" does not specify start in budget_period`)
     );
   });
 
@@ -52,11 +65,11 @@ describe('Loading config', () => {
     process.env.TALLY_FILES = TALLY_PATH;
     mockfs({
       [TALLY_PATH]: {
-        '_config.yaml': 'start: Nov2019'
+        '_config.yaml': 'budget_period: {start: Nov2019}'
       }
     });
     expect(loadTallyConfig).toThrow(
-      new Error(`File \"${TALLY_PATH}/_config.yaml\" does not specify end`)
+      new Error(`File \"${TALLY_PATH}/_config.yaml\" does not specify end in budget_period`)
     );
   });
 
@@ -65,12 +78,14 @@ describe('Loading config', () => {
     process.env.TALLY_FILES = TALLY_PATH;
     mockfs({
       [TALLY_PATH]: {
-        '_config.yaml': 'start: Nov2019\nend: Feb2021'
+        '_config.yaml': 'budget_period: {start: Nov2019, end: Feb2021}'
       }
     });
     expect(loadTallyConfig()).toEqual({
-      start: 'Nov2019',
-      end: 'Feb2021'
+      budget_period: {
+        start: 'Nov2019',
+        end: 'Feb2021'
+      }
     });
   });
 
