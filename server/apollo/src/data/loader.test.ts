@@ -4,8 +4,8 @@ import { Month } from '../core/month';
 
 describe('listFiles', () => {
   afterEach(() => {
+    mockfs.restore();
     delete process.env.TALLY_FILES;
-    jest.clearAllMocks();
   });
 
   test('fails if environment not set', () => {
@@ -50,6 +50,12 @@ describe('listFiles', () => {
 });
 
 describe('loadBudget', () => {
+  afterEach(() => {
+    mockfs.restore();
+    delete process.env.TALLY_FILES;
+    jest.clearAllMocks();
+  });
+
   test('fails if environment path is not set', () => {
     expect(loadBudget).toThrow(
       new Error('Process environment variable "TALLY_FILES" has not been specified.')
@@ -91,7 +97,4 @@ describe('loadBudget', () => {
     expect(console.log).toHaveBeenCalledWith('Done loading 1 file(s)');
   });
 
-  afterEach(() => {
-    delete process.env.TALLY_FILES;
-  });
 });

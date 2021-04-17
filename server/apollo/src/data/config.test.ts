@@ -2,6 +2,11 @@ import { loadTallyConfig } from './config';
 import mockfs from 'mock-fs';
 
 describe('Loading config', () => {
+  afterEach(() => {
+    mockfs.restore();
+    delete process.env.TALLY_FILES;
+  });
+
   test('fails tally path is not set', () => {
     expect(loadTallyConfig).toThrow(
       new Error('Process environment variable "TALLY_FILES" has not been specified.')
@@ -87,10 +92,5 @@ describe('Loading config', () => {
         end: 'Feb2021'
       }
     });
-  });
-
-  afterEach(() => {
-    mockfs.restore();
-    delete process.env.TALLY_FILES;
   });
 });
