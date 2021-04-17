@@ -6,8 +6,8 @@ import { Month } from '../core/month';
 import * as yaml from 'js-yaml';
 
 interface BalanceData {
-  grp: string;
-  date: Date;
+  grp?: string;
+  date?: Date;
   camt?: number;
   pamt?: number;
 }
@@ -51,7 +51,12 @@ function makeBalance(data: BalanceData) {
     amount = Math.round(100 * data.pamt);
     balanceType = BalanceType.PROJECTED;
   } else {
-    throw new Error('Unable to determine balance type, expected camt or pamt entry.');
+    throw new Error(
+      `Balance ${JSON.stringify(data)} does not have date set type, expected camt or pamt entry.`
+    );
+  }
+  if (!data.date) {
+    throw new Error(`Balance ${JSON.stringify(data)} does not have date set.`);
   }
   return new Balance(amount, data.date, balanceType);
 }
@@ -80,9 +85,14 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData | undefine
   budgetBuilder.setAccount(account);
   if (data.balances) {
     for (const balanceData of data.balances) {
-      const month = Month.fromString(balanceData.grp);
-      if (!month) {
-        throw Error(`Balance ${balanceData} has no grp setting.`);
+      if (!balanceData.grp) {
+        throw Error(`Balance entry ${JSON.stringify(balanceData)} has no grp setting.`);
+      }
+      let month;
+      try {
+        month = Month.fromString(balanceData.grp);
+      } catch (e) {
+        throw new Error(`Balance ${JSON.stringify(balanceData)} has bad grp setting: ${e.message}`);
       }
       budgetBuilder.setBalance(account.name, month.toString(), makeBalance(balanceData));
     }
