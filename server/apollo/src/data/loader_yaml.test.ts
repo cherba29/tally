@@ -105,16 +105,12 @@ describe('loadYaml', () => {
 
     const balances = budget.balances.get('test-account');
     expect(balances!.size).toBe(2);
-    expect(balances!.get('Jan2020')).toEqual({
-      amount: 0,
-      date: new Date('2020-01-01'),
-      type: BalanceType.CONFIRMED
-    });
-    expect(balances!.get('Feb2020')).toEqual({
-      amount: 1000,
-      date: new Date('2020-02-01'),
-      type: BalanceType.PROJECTED
-    });
+    expect(balances!.get('Jan2020')).toEqual(
+      new Balance(0, new Date('2020-01-01'), BalanceType.CONFIRMED)
+    );
+    expect(balances!.get('Feb2020')).toEqual(
+      new Balance(1000, new Date('2020-02-01'), BalanceType.PROJECTED)
+    );
   });
 
   test('fails without balance month', () => {

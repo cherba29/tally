@@ -31,21 +31,17 @@ describe('listFiles', () => {
     mockfs({
       [TALLY_PATH]: {
         '_config.yaml': '',
-        'subdir1': {
+        subdir1: {
           'file1.json': '',
           'file2.yaml': ''
         },
-        'subdir2': {
+        subdir2: {
           'file1.json': '',
           'file2.yaml': ''
         }
       }
     });
-    expect(listFiles()).toEqual([
-      "_config.yaml",
-      "subdir1/file2.yaml",
-      "subdir2/file2.yaml"
-    ]);
+    expect(listFiles()).toEqual(['_config.yaml', 'subdir1/file2.yaml', 'subdir2/file2.yaml']);
   });
 });
 
@@ -71,7 +67,7 @@ describe('loadBudget', () => {
       }
     });
     expect(loadBudget).toThrow(
-      new Error('ENOENT: no such file or directory, open \'tally/files/path/_config.yaml\'')
+      new Error("ENOENT: no such file or directory, open 'tally/files/path/_config.yaml'")
     );
   });
 
@@ -96,5 +92,4 @@ describe('loadBudget', () => {
     expect(console.log).toHaveBeenCalledWith('Loading _config.yaml');
     expect(console.log).toHaveBeenCalledWith('Done loading 1 file(s)');
   });
-
 });

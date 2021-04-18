@@ -8,8 +8,7 @@ class TestStatement extends Statement {
   }
 }
 
-
-function stmtToObj(stmt:Statement) {
+function stmtToObj(stmt: Statement) {
   return {
     ...stmt,
     addSub: stmt.addSub,
@@ -17,7 +16,7 @@ function stmtToObj(stmt:Statement) {
     percentChange: stmt.percentChange,
     unaccounted: stmt.unaccounted,
     isClosed: stmt.isClosed
-  }
+  };
 }
 
 describe('Creation', () => {

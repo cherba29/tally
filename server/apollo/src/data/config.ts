@@ -23,7 +23,9 @@ export function loadTallyConfig(): TallyConfig {
   if (!('budget_period' in config)) {
     throw new Error(`File "${configPath}" does not specify budget_period`);
   }
-  const budget_period = (config as {budget_period: {start?:string, end?:string}})['budget_period'];
+  const budget_period = (config as { budget_period: { start?: string; end?: string } })[
+    'budget_period'
+  ];
   if (!budget_period.start) {
     throw new Error(`File "${configPath}" does not specify start in budget_period`);
   }
