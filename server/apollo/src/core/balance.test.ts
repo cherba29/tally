@@ -34,3 +34,8 @@ test('subtraction', () => {
   expect(sum.amount).toBe(-100.0);
   expect(sum.type).toBe(Type.PROJECTED);
 });
+
+test('toString', () => {
+  const balance = new Balance(100.0, new Date(2020, 1, 3), Type.CONFIRMED);
+  expect(balance.toString()).toEqual('Balance { amount: 100, date: 2020-02-03, type: CONFIRMED }');
+});

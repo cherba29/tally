@@ -26,4 +26,10 @@ export class Balance {
   static subtract(balance1: Balance, balance2: Balance): Balance {
     return Balance.add(balance1, new Balance(-balance2.amount, balance2.date, balance2.type));
   }
+
+  toString(): string {
+    return `Balance { amount: ${this.amount}, date: ${this.date
+      .toISOString()
+      .slice(0, 10)}, type: ${Type[this.type]} }`;
+  }
 }
