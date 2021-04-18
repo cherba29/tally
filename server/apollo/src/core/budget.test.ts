@@ -73,6 +73,30 @@ test('build simple', () => {
   expect(budget.transfers.size).toBe(3);
 });
 
+test('build budget - duplicate balance', () => {
+  const builder = new BudgetBuilder();
+  const account1 = new Account({
+    name: 'test-account1',
+    type: AccountType.EXTERNAL,
+    owners: []
+  });
+  builder.setAccount(account1);
+  builder.setBalance(
+    'test-account1',
+    'Nov2019',
+    new Balance(100, new Date(2019, 10, 1), BalanceType.PROJECTED)
+  );
+  expect(() =>
+    builder.setBalance(
+      'test-account1',
+      'Nov2019',
+      new Balance(200, new Date(2020, 2, 1), BalanceType.PROJECTED)
+    )
+  ).toThrow(
+    "Balance for 'test-account1' 'Nov2019' is already set to Balance { amount: 200, date: 2020-03-01, type: PROJECTED }"
+  );
+});
+
 test('build budget - bad to account', () => {
   const builder = new BudgetBuilder();
   builder.addTransfer({

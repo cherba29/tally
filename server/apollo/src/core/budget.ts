@@ -66,6 +66,12 @@ export class BudgetBuilder {
       balances = new Map<string, Balance>();
       this.balances.set(accountName, balances);
     }
+    const existingBalance = balances.get(month);
+    if (existingBalance) {
+      throw new Error(
+        `Balance for '${accountName}' '${month}' is already set to ${balance.toString()}`
+      );
+    }
     balances.set(month, balance);
   }
 
