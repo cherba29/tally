@@ -5,7 +5,7 @@ import { Budget } from '../core/budget';
 import { Statement } from './statement';
 import { Transfer } from '../core/transfer';
 
-enum Type {
+export enum Type {
   UNKNOWN,
   TRANSFER,
   INCOME,
