@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@types/jquery": "^3.5.1",
-    "handlebars": "^4.7.6",
+    "handlebars": "^4.7.7",
     "jquery": "^3.5.1"
   },
   "scripts": {
