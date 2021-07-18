@@ -10,6 +10,15 @@ const combineTypes = (t1: Type, t2: Type): Type => (t1 < t2 ? t2 : t1);
 export class Balance {
   constructor(readonly amount: number, readonly date: Date, readonly type: Type) {}
 
+  // Helper contructor.
+  static confirmed(amount: number, date: string): Balance {
+    return new Balance(amount, new Date(date), Type.CONFIRMED);
+  }
+
+  static projected(amount: number, date: string): Balance {
+    return new Balance(amount, new Date(date), Type.PROJECTED);
+  }
+
   static negated(balance: Balance): Balance {
     return new Balance(-balance.amount, balance.date, balance.type);
   }

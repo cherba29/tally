@@ -1,3 +1,4 @@
+/* eslint-disable  @typescript-eslint/no-non-null-assertion */
 import { Type as AccountType } from '../core/account';
 import { Balance, Type as BalanceType } from '../core/balance';
 import { Month } from '../core/month';
@@ -5,8 +6,6 @@ import { BudgetBuilder } from '../core/budget';
 import { loadYamlFile } from './loader_yaml';
 
 describe('loadYaml', () => {
-  beforeEach(() => {});
-
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -103,12 +102,12 @@ describe('loadYaml', () => {
     expect(budget.months.length).toBe(0);
     expect(budget.transfers.size).toBe(0);
 
-    const balances = budget.balances.get('test-account');
-    expect(balances!.size).toBe(2);
-    expect(balances!.get('Jan2020')).toEqual(
+    const balances = budget.balances.get('test-account')!;
+    expect(balances.size).toBe(2);
+    expect(balances.get('Jan2020')).toEqual(
       new Balance(0, new Date('2020-01-01'), BalanceType.CONFIRMED)
     );
-    expect(balances!.get('Feb2020')).toEqual(
+    expect(balances.get('Feb2020')).toEqual(
       new Balance(1000, new Date('2020-02-01'), BalanceType.PROJECTED)
     );
   });
@@ -209,9 +208,9 @@ describe('loadYaml', () => {
     expect(budget.months.length).toBe(0);
     expect(budget.transfers.size).toBe(2);
 
-    const testAccountTransfers = budget.transfers.get('test-account');
-    expect(testAccountTransfers!.size).toBe(1);
-    const testAccountMonthTransfers = testAccountTransfers!.get('Jan2020');
+    const testAccountTransfers = budget.transfers.get('test-account')!;
+    expect(testAccountTransfers.size).toBe(1);
+    const testAccountMonthTransfers = testAccountTransfers.get('Jan2020');
     expect(testAccountMonthTransfers).toEqual(
       new Set([
         {
@@ -231,9 +230,9 @@ describe('loadYaml', () => {
       ])
     );
 
-    const externalAccountTransfers = budget.transfers.get('external');
-    expect(externalAccountTransfers!.size).toBe(1);
-    const externalAccountMonthTransfers = externalAccountTransfers!.get('Jan2020');
+    const externalAccountTransfers = budget.transfers.get('external')!;
+    expect(externalAccountTransfers.size).toBe(1);
+    const externalAccountMonthTransfers = externalAccountTransfers.get('Jan2020');
     expect(externalAccountMonthTransfers).toEqual(
       new Set([
         {

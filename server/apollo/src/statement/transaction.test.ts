@@ -1,5 +1,5 @@
 import { Account, Type as AccountType } from '../core/account';
-import { Balance, Type as BalanceType } from '../core/balance';
+import { Balance } from '../core/balance';
 import { BudgetBuilder } from '../core/budget';
 import { Month } from '../core/month';
 import { buildTransactionStatementTable, Type as TransactionType } from './transaction';
@@ -52,7 +52,134 @@ describe('Build', () => {
     expect(table[0].isClosed).toBe(true);
   });
 
-  test('two accounts with single transfers', () => {
+  test('bad account name on transfer', () => {
+    const builder = new BudgetBuilder();
+    builder.setPeriod(Month.fromString('Dec2019'), Month.fromString('Jan2020'));
+    const account1 = new Account({
+      name: 'test-account1',
+      type: AccountType.CHECKING,
+      owners: ['john']
+    });
+    builder.setAccount(account1);
+    builder.addTransfer({
+      fromAccount: 'test-account1',
+      toAccount: 'test-account2',
+      toMonth: Month.fromString('Dec2019'),
+      fromMonth: Month.fromString('Dec2019'),
+      balance: Balance.projected(2000, '2019-12-05'),
+      description: 'First transfer'
+    });
+    expect(() => buildTransactionStatementTable(builder.build())).toThrow(
+      new Error('Unknown account test-account2')
+    );
+  });
+
+  test('two accounts with common owner and transfers', () => {
+    const builder = new BudgetBuilder();
+    builder.setPeriod(Month.fromString('Dec2019'), Month.fromString('Jan2020'));
+    const account1 = new Account({
+      name: 'test-account1',
+      type: AccountType.CHECKING,
+      owners: ['john']
+    });
+    const account2 = new Account({
+      name: 'test-account2',
+      type: AccountType.CREDIT,
+      owners: ['john']
+    });
+
+    builder.setAccount(account1);
+    builder.setBalance('test-account1', 'Dec2019', Balance.confirmed(10, '2019-12-01'));
+    builder.setBalance('test-account1', 'Jan2020', Balance.confirmed(20, '2020-01-01'));
+    builder.setBalance('test-account1', 'Feb2020', Balance.projected(30, '2020-02-01'));
+    builder.setAccount(account2);
+    builder.addTransfer({
+      fromAccount: 'test-account1',
+      toAccount: 'test-account2',
+      toMonth: Month.fromString('Dec2019'),
+      fromMonth: Month.fromString('Dec2019'),
+      balance: Balance.projected(2000, '2019-12-05'),
+      description: 'First transfer'
+    });
+
+    builder.addTransfer({
+      fromAccount: 'test-account1',
+      toAccount: 'test-account2',
+      toMonth: Month.fromString('Dec2019'),
+      fromMonth: Month.fromString('Dec2019'),
+      balance: Balance.projected(1000, '2019-12-05'),
+      description: 'Second transfer'
+    });
+
+    const table = buildTransactionStatementTable(builder.build());
+    expect(table).toEqual([
+      {
+        account: account1,
+        coversPrevious: false,
+        coversProjectedPrevious: false,
+        endBalance: Balance.confirmed(20, '2020-01-01'),
+        hasProjectedTransfer: true,
+        inFlows: 0,
+        income: 0,
+        isCovered: false,
+        isProjectedCovered: false,
+        month: new Month(2019, 11),
+        name: 'test-account1',
+        outFlows: -3000,
+        startBalance: Balance.confirmed(10, '2019-12-01'),
+        totalPayments: 0,
+        totalTransfers: -3000,
+        transactions: [
+          {
+            account: account2,
+            balance: Balance.projected(-2000, '2019-12-05'),
+            type: TransactionType.TRANSFER,
+            description: 'First transfer'
+          },
+          {
+            account: account2,
+            balance: Balance.projected(-1000, '2019-12-05'),
+            type: TransactionType.TRANSFER,
+            description: 'Second transfer'
+          }
+        ]
+      },
+      {
+        account: account2,
+        coversPrevious: false,
+        coversProjectedPrevious: true,
+        endBalance: undefined,
+        hasProjectedTransfer: true,
+        inFlows: 3000,
+        income: 0,
+        isCovered: false,
+        isProjectedCovered: false,
+        month: new Month(2019, 11),
+        name: 'test-account2',
+        outFlows: 0,
+        startBalance: undefined,
+        totalPayments: 0,
+        totalTransfers: 3000,
+        transactions: [
+          {
+            account: account1,
+            balance: Balance.projected(2000, '2019-12-05'),
+            type: TransactionType.TRANSFER,
+            description: 'First transfer'
+          },
+          {
+            account: account1,
+            balance: Balance.projected(1000, '2019-12-05'),
+            type: TransactionType.TRANSFER,
+            description: 'Second transfer'
+          }
+        ]
+      }
+    ]);
+    expect(table[0].isClosed).toBe(true);
+  });
+
+  test('two accounts with extenal transfer', () => {
     const builder = new BudgetBuilder();
     builder.setPeriod(Month.fromString('Dec2019'), Month.fromString('Jan2020'));
     const account1 = new Account({
@@ -63,33 +190,30 @@ describe('Build', () => {
     const account2 = new Account({
       name: 'test-account2',
       type: AccountType.CREDIT,
-      owners: []
+      owners: ['john']
     });
 
     builder.setAccount(account1);
-    builder.setBalance(
-      'test-account1',
-      'Dec2019',
-      new Balance(10, new Date('2019-12-01'), BalanceType.CONFIRMED)
-    );
-    builder.setBalance(
-      'test-account1',
-      'Jan2020',
-      new Balance(20, new Date('2020-01-01'), BalanceType.CONFIRMED)
-    );
-    builder.setBalance(
-      'test-account1',
-      'Feb2020',
-      new Balance(30, new Date('2020-02-01'), BalanceType.PROJECTED)
-    );
+    builder.setBalance('test-account1', 'Dec2019', Balance.confirmed(10, '2019-12-01'));
+    builder.setBalance('test-account1', 'Jan2020', Balance.confirmed(20, '2020-01-01'));
+    builder.setBalance('test-account1', 'Feb2020', Balance.projected(30, '2020-02-01'));
     builder.setAccount(account2);
-    const transferBalance = new Balance(2000, new Date('2019-12-05'), BalanceType.PROJECTED);
     builder.addTransfer({
       fromAccount: 'test-account1',
       toAccount: 'test-account2',
       toMonth: Month.fromString('Dec2019'),
       fromMonth: Month.fromString('Dec2019'),
-      balance: transferBalance
+      balance: Balance.projected(2000, '2019-12-05'),
+      description: 'First transfer'
+    });
+
+    builder.addTransfer({
+      fromAccount: 'test-account1',
+      toAccount: 'test-account2',
+      toMonth: Month.fromString('Dec2019'),
+      fromMonth: Month.fromString('Dec2019'),
+      balance: Balance.projected(1000, '2019-12-05'),
+      description: 'Second transfer'
     });
 
     const table = buildTransactionStatementTable(builder.build());
@@ -98,7 +222,7 @@ describe('Build', () => {
         account: account1,
         coversPrevious: false,
         coversProjectedPrevious: false,
-        endBalance: new Balance(20, new Date('2020-01-01'), BalanceType.CONFIRMED),
+        endBalance: Balance.confirmed(20, '2020-01-01'),
         hasProjectedTransfer: true,
         inFlows: 0,
         income: 0,
@@ -106,15 +230,22 @@ describe('Build', () => {
         isProjectedCovered: false,
         month: new Month(2019, 11),
         name: 'test-account1',
-        outFlows: -2000,
-        startBalance: new Balance(10, new Date('2019-12-01'), BalanceType.CONFIRMED),
-        totalPayments: -2000,
+        outFlows: -3000,
+        startBalance: Balance.confirmed(10, '2019-12-01'),
+        totalPayments: -3000,
         totalTransfers: 0,
         transactions: [
           {
             account: account2,
-            balance: Balance.negated(transferBalance),
-            type: TransactionType.EXPENSE
+            balance: Balance.projected(-2000, '2019-12-05'),
+            type: TransactionType.EXPENSE,
+            description: 'First transfer'
+          },
+          {
+            account: account2,
+            balance: Balance.projected(-1000, '2019-12-05'),
+            type: TransactionType.EXPENSE,
+            description: 'Second transfer'
           }
         ]
       },
@@ -124,8 +255,8 @@ describe('Build', () => {
         coversProjectedPrevious: false,
         endBalance: undefined,
         hasProjectedTransfer: true,
-        inFlows: 2000,
-        income: 2000,
+        inFlows: 3000,
+        income: 3000,
         isCovered: false,
         isProjectedCovered: false,
         month: new Month(2019, 11),
@@ -137,8 +268,15 @@ describe('Build', () => {
         transactions: [
           {
             account: account1,
-            balance: transferBalance,
-            type: TransactionType.INCOME
+            balance: Balance.projected(2000, '2019-12-05'),
+            type: TransactionType.INCOME,
+            description: 'First transfer'
+          },
+          {
+            account: account1,
+            balance: Balance.projected(1000, '2019-12-05'),
+            type: TransactionType.INCOME,
+            description: 'Second transfer'
           }
         ]
       }

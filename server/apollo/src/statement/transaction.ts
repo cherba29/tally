@@ -117,6 +117,7 @@ function makeTranscationStatement(
       otherAccount = t.toAccount;
       transactionType = attributeTransfer(account, otherAccount, balance.amount);
     } else {
+      // This should never occur since budget should have been validated by now.
       throw new Error(
         `Setting transfer (${t.fromAccount.name} to ${t.toAccount.name}) for ${account.name} account statement!`
       );

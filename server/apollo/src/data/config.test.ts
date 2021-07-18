@@ -22,7 +22,7 @@ describe('Loading config', () => {
       }
     });
     expect(loadTallyConfig).toThrow(
-      new Error(`ENOENT: no such file or directory, open \'${TALLY_PATH}/_config.yaml\'`)
+      new Error(`ENOENT: no such file or directory, open '${TALLY_PATH}/_config.yaml'`)
     );
   });
 
@@ -35,7 +35,7 @@ describe('Loading config', () => {
       }
     });
     expect(loadTallyConfig).toThrow(
-      new Error(`Could not parse file at \"${TALLY_PATH}/_config.yaml\"`)
+      new Error(`Could not parse file at "${TALLY_PATH}/_config.yaml"`)
     );
   });
 
@@ -48,7 +48,7 @@ describe('Loading config', () => {
       }
     });
     expect(loadTallyConfig).toThrow(
-      new Error(`File \"${TALLY_PATH}/_config.yaml\" does not specify budget_period`)
+      new Error(`File "${TALLY_PATH}/_config.yaml" does not specify budget_period`)
     );
   });
 
@@ -61,7 +61,7 @@ describe('Loading config', () => {
       }
     });
     expect(loadTallyConfig).toThrow(
-      new Error(`File \"${TALLY_PATH}/_config.yaml\" does not specify start in budget_period`)
+      new Error(`File "${TALLY_PATH}/_config.yaml" does not specify start in budget_period`)
     );
   });
 
@@ -74,7 +74,7 @@ describe('Loading config', () => {
       }
     });
     expect(loadTallyConfig).toThrow(
-      new Error(`File \"${TALLY_PATH}/_config.yaml\" does not specify end in budget_period`)
+      new Error(`File "${TALLY_PATH}/_config.yaml" does not specify end in budget_period`)
     );
   });
 

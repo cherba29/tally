@@ -42,3 +42,22 @@ npm run generate
 
 which uses
 [GraphQL Code generator](https://graphql-code-generator.com/docs/getting-started/index).
+
+
+## Test
+
+```
+npm run test:unit -- --coverage
+```
+
+## Lint
+
+```
+npm run lint
+```
+
+## Format
+
+```
+npm run prettier-format
+```

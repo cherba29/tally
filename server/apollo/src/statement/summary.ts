@@ -15,9 +15,6 @@ export class SummaryStatement extends Statement {
   }
 
   addStatement(statement: Statement): void {
-    if (statement.isClosed) {
-      return;
-    }
     if (statement.month.compareTo(this.month) !== 0) {
       throw new Error(
         `Statement for month ${statement.month} is being added to summary for month ${this.month}`
@@ -45,10 +42,8 @@ export class SummaryStatement extends Statement {
 export function* buildSummaryStatementTable(
   statements: TransactionStatement[]
 ): Generator<SummaryStatement> {
-  const summaryStatements: Map<string, Map<string, SummaryStatement>> = new Map<
-    string,
-    Map<string, SummaryStatement>
-  >();
+  // Map of 'summary name' -> month -> 'summary statement'.
+  const summaryStatements = new Map<string, Map<string, SummaryStatement>>();
 
   const updateSummaryStatement = (name: string, statement: TransactionStatement) => {
     let accountSummaryStatements = summaryStatements.get(name);
@@ -65,11 +60,16 @@ export function* buildSummaryStatementTable(
   };
 
   for (const statement of statements) {
+    if (statement.isClosed) {
+      // Closed accounts are not included in summary.
+      return;
+    }
     for (const owner of statement.account.owners) {
       for (const summaryName of [owner + ' ' + statement.account.type, owner + ' SUMMARY']) {
         if (statement.account.isExternal && summaryName.includes('SUMMARY')) {
           continue;
         }
+        // Aggregate statements by name and month.
         updateSummaryStatement(summaryName, statement);
       }
     }
