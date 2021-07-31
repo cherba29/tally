@@ -22,10 +22,8 @@ module.exports = {
       { test: /\.ts$/, loader: "ts-loader" },
       { test: /\.hbs/,
         loader: "handlebars-loader",
-        query: { 
-          helperDirs: [
-            __dirname + "/templates/helpers"
-          ]
+        options: { 
+          helperDirs: path.join(__dirname, "/templates/helpers"),
         }
       },
       {
