@@ -4,14 +4,16 @@
   "type": "module",
   "devDependencies": {
     "@types/chai": "^4.2.12",
-    "@types/jasmine": "^3.5.13",
+    "@types/jasmine": "^3.8.2",
     "@types/mocha": "^8.2.3",
     "@types/node": "^16.4.8",
     "@types/webpack": "^5.28.0",
     "@types/webpack-dev-server": "^3.11.5",
     "css-loader": "^4.2.1",
     "handlebars-loader": "^1.7.1",
-    "jasmine": "^3.6.1",
+    "jasmine": "^3.8.0",
+    "jasmine-spec-reporter": "^7.0.0",
+    "jasmine-ts": "^0.4.0",
     "karma": "^6.3.4",
     "karma-chrome-launcher": "^3.1.0",
     "karma-jasmine": "^4.0.1",
@@ -39,7 +41,7 @@
     "build2": "webpack",
     "build": "TS_NODE_PROJECT=\"tsconfig-for-webpack-config.json\" webpack",
     "karma": "karma start karma.conf.js",
-    "test": "ts-node node_modules/jasmine/bin/jasmine --config=jasmine.json",
+    "test": "jasmine-ts --config=jasmine.json",
     "coverage": "nyc -r text -e .ts -x \"tests/*.test.ts\" npm run test",
     "lint": "tslint -c tslint.json -p tsconfig.json"
   }
