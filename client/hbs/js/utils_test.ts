@@ -4,11 +4,11 @@ import { transformBudgetData } from './utils';
 describe("transformBudgetData", function () {
 
   it("works on empty", function () {
-    let months: string[] = [];
-    let accountNameToAccount = {};
-    let statements = {};
-    let summaries = {};
-    let data_view = transformBudgetData(
+    const months: string[] = [];
+    const accountNameToAccount = {};
+    const statements = {};
+    const summaries = {};
+    const data_view = transformBudgetData(
         months, accountNameToAccount, statements, summaries);
 
     expect(data_view).toEqual({
@@ -19,42 +19,40 @@ describe("transformBudgetData", function () {
   });
 
   it("works on single", function () {
-    let months = ["Sep2014"];
-    let accountNameToAccount: {[accountName:string]: TallyAccount} = {
-      main: {
-        name: "main",
-        address: "some place",
-        closedOn: null,
-        description: "Main account",
-        external: false,
-        number: "123",
-        openedOn: "Aug2014",
-        owners: ["owner1", "owner2"],
-        password: "password",
-        phone: "123-456-7890",
-        summary: false,
-        type: "credit",
-        url: "http://somewhere",
-        userName: "user1"
-      }
+    const months = ["Sep2014"];
+    const account: TallyAccount = {
+      name: "main",
+      address: "some place",
+      closedOn: null,
+      description: "Main account",
+      external: false,
+      number: "123",
+      openedOn: "Aug2014",
+      owners: ["owner1", "owner2"],
+      password: "password",
+      phone: "123-456-7890",
+      summary: false,
+      type: "credit",
+      url: "http://somewhere",
+      userName: "user1"
     };
-    let statements: {[accountName:string]: {[month:string]: Statement}} = {
-      main: {
-        Sep2014: {
-          isClosed: true,
-          addSub: 100,
-          endBalance: {
-            amount: 3000,
-            type: 'PROJECTED',
-          },
-          isCovered: true,
-          isProjectedCovered: true,
-          hasProjectedTransfer: true,
-          percentChange: 1.4,
-          unaccounted: 500,
-          transactions: []
-        },
-      }
+    const accountNameToAccount: {[accountName:string]: TallyAccount} = { main: account };
+    const statement: Statement =  {
+      isClosed: true,
+      addSub: 100,
+      endBalance: {
+        amount: 3000,
+        type: 'PROJECTED',
+      },
+      isCovered: true,
+      isProjectedCovered: true,
+      hasProjectedTransfer: true,
+      percentChange: 1.4,
+      unaccounted: 500,
+      transactions: []
+    };
+    const statements: {[accountName:string]: {[month:string]: Statement}} = {
+      main: { Sep2014: statement }
     };
     let summaries: {[ownerAccountType:string]: {[month:string]: SummaryStatement}} = {
       'owner1 credit': {
