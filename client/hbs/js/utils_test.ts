@@ -54,7 +54,7 @@ describe("transformBudgetData", function () {
     const statements: {[accountName:string]: {[month:string]: Statement}} = {
       main: { Sep2014: statement }
     };
-    let summaries: {[ownerAccountType:string]: {[month:string]: SummaryStatement}} = {
+    const summaries: {[ownerAccountType:string]: {[month:string]: SummaryStatement}} = {
       'owner1 credit': {
         Sep2014: {
           isClosed: true,
@@ -90,14 +90,10 @@ describe("transformBudgetData", function () {
         }
       }
     };
-    let data_view = transformBudgetData(
+    const data_view = transformBudgetData(
         months, accountNameToAccount, statements, summaries);
 
-    // expect(data_view).toEqual({
-    //   months: ["Sep2014"],
-    //   rows: [],
-    //   popupCells: []
-    // });
+    expect(data_view).toMatchSnapshot();
   });
 
 });

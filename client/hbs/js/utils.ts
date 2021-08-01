@@ -9,7 +9,6 @@ import {Row} from './row';
 function getOwnerTypeAccountMap(
     accountNameToAccount: {[accountType: string]: TallyAccount}):
         {[ownerType:string]: {[accountType:string]: string[]}} {
-  console.log("name to account", accountNameToAccount);
   const ownerTypeAccountNames: {
     [ownerType:string]: {[accountType:string]: string[]}} = {};
 
@@ -140,9 +139,8 @@ function transformBudgetData(
     popupCells: []
   };
   const ownerTypeAccountNames = getOwnerTypeAccountMap(accountNameToAccount);
-  console.log("ownerTypeAccountNames", ownerTypeAccountNames);
   const ownersSorted = getKeysSorted(ownerTypeAccountNames);
-  console.log("ownersSorted", ownersSorted);
+
   for (const owner of ownersSorted) {
     const typeAccountNames = ownerTypeAccountNames[owner];
     dataView.rows.push(new Row(owner, 'SPACE', []));
@@ -184,7 +182,6 @@ function transformBudgetData(
       Array.prototype.push.apply(dataView.popupCells, cellData.popups);
     }
   }
-  console.log("dataView", dataView);
   return dataView;
 }
 
