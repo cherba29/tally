@@ -92,7 +92,8 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData | undefine
       try {
         month = Month.fromString(balanceData.grp);
       } catch (e) {
-        throw new Error(`Balance ${JSON.stringify(balanceData)} has bad grp setting: ${e.message}`);
+        const message = (e instanceof Error) ? e.message : 'unknown';
+        throw new Error(`Balance ${JSON.stringify(balanceData)} has bad grp setting: ${message}`);
       }
       budgetBuilder.setBalance(account.name, month.toString(), makeBalance(balanceData));
     }
@@ -157,9 +158,14 @@ export function loadYamlFile(
   try {
     processYamlData(budgetBuilder, accountData);
   } catch (e) {
-    console.error(e.name + ': ' + e.message + ' in ' + relative_file_path);
+    const message = ' while processing ' + relative_file_path; 
+    if (e instanceof Error) {
+      e.message += message;
+      console.error(e.name + ': ' + e.message);
+    } else {
+      console.error('Error' + message);
+    }
     console.log('Account Data', accountData);
-    e.message += ' while processing ' + relative_file_path;
     throw e;
   }
 }
