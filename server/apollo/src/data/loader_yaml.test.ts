@@ -31,7 +31,7 @@ describe('loadYaml', () => {
     ).toThrow(new Error("Type is not set for account 'test' while processing path/file.yaml"));
     expect(console.error).toHaveBeenCalledTimes(1);
     expect(console.error).toHaveBeenCalledWith(
-      "Error: Type is not set for account 'test' in path/file.yaml"
+      "Error: Type is not set for account 'test' while processing path/file.yaml"
     );
     expect(console.log).toHaveBeenCalledTimes(1);
     expect(console.log).toHaveBeenCalledWith('Account Data', { name: 'test' });
@@ -53,7 +53,7 @@ describe('loadYaml', () => {
     );
     expect(console.error).toHaveBeenCalledTimes(1);
     expect(console.error).toHaveBeenCalledWith(
-      "Error: Unknown type 'SOMETHING' for account 'test' in path/file.yaml"
+      "Error: Unknown type 'SOMETHING' for account 'test' while processing path/file.yaml"
     );
     expect(console.log).toHaveBeenCalledTimes(1);
     expect(console.log).toHaveBeenCalledWith('Account Data', { name: 'test', type: 'SOMETHING' });

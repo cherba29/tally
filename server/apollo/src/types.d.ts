@@ -1,5 +1,7 @@
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
+export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -7,19 +9,20 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
-  /** Month representation in XxxYYYY format. */
-  GqlMonth: any;
   /** Date representation in YYYY-MM-DD format. */
   Date: any;
+  /** Month representation in XxxYYYY format. */
+  GqlMonth: any;
   /** The `Upload` scalar type represents a file upload. */
   Upload: any;
 };
 
-export type Query = {
-  __typename?: 'Query';
-  files?: Maybe<Array<Maybe<Scalars['String']>>>;
-  budget?: Maybe<GqlBudget>;
-};
+
+export enum CacheControlScope {
+  Public = 'PUBLIC',
+  Private = 'PRIVATE'
+}
+
 
 export type GqlAccount = {
   __typename?: 'GqlAccount';
@@ -47,19 +50,36 @@ export type GqlBalance = {
   /** Amount in cents. */
   amount?: Maybe<Scalars['Int']>;
   date?: Maybe<Scalars['Date']>;
+  type?: Maybe<Scalars['String']>;
 };
+
+export type GqlBudget = {
+  __typename?: 'GqlBudget';
+  accounts?: Maybe<Array<Maybe<GqlAccount>>>;
+  months?: Maybe<Array<Maybe<Scalars['GqlMonth']>>>;
+  statements?: Maybe<Array<Maybe<GqlStatement>>>;
+  summaries?: Maybe<Array<Maybe<GqlSummaryStatement>>>;
+};
+
 
 export type GqlStatement = {
   __typename?: 'GqlStatement';
   name?: Maybe<Scalars['String']>;
   month?: Maybe<Scalars['GqlMonth']>;
   isClosed?: Maybe<Scalars['Boolean']>;
+  isCovered?: Maybe<Scalars['Boolean']>;
+  isProjectedCovered?: Maybe<Scalars['Boolean']>;
+  hasProjectedTransfer?: Maybe<Scalars['Boolean']>;
   startBalance?: Maybe<GqlBalance>;
+  endBalance?: Maybe<GqlBalance>;
   inFlows?: Maybe<Scalars['Float']>;
   outFlows?: Maybe<Scalars['Float']>;
   income?: Maybe<Scalars['Float']>;
   totalPayments?: Maybe<Scalars['Float']>;
   totalTransfers?: Maybe<Scalars['Float']>;
+  percentChange?: Maybe<Scalars['Float']>;
+  unaccounted?: Maybe<Scalars['Float']>;
+  transactions?: Maybe<Array<Maybe<GqlTransaction>>>;
 };
 
 export type GqlSummaryStatement = {
@@ -79,15 +99,14 @@ export type GqlSummaryStatement = {
   startBalance?: Maybe<GqlBalance>;
 };
 
-export type GqlBudget = {
-  __typename?: 'GqlBudget';
-  accounts?: Maybe<Array<Maybe<GqlAccount>>>;
-  months?: Maybe<Array<Maybe<Scalars['GqlMonth']>>>;
-  statements?: Maybe<Array<Maybe<GqlStatement>>>;
-  summaries?: Maybe<Array<Maybe<GqlSummaryStatement>>>;
+export type GqlTransaction = {
+  __typename?: 'GqlTransaction';
+  account?: Maybe<Scalars['String']>;
 };
 
-export enum CacheControlScope {
-  Public = 'PUBLIC',
-  Private = 'PRIVATE'
-}
+export type Query = {
+  __typename?: 'Query';
+  files?: Maybe<Array<Maybe<Scalars['String']>>>;
+  budget?: Maybe<GqlBudget>;
+};
+

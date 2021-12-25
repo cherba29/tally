@@ -1,5 +1,6 @@
 import { buildTransactionStatementTable } from './statement/transaction';
 import { buildSummaryStatementTable } from './statement/summary';
+import { Type as BalanceType } from './core/balance';
 import { Month } from './core/month';
 import { listFiles, loadBudget } from './data/loader';
 import { GraphQLScalarType, Kind } from 'graphql';
@@ -32,6 +33,22 @@ function buildGqlBudget(): GqlBudget {
       income: statement.income,
       totalPayments: statement.totalPayments,
       totalTransfers: statement.totalTransfers,
+      percentChange: statement.percentChange,
+      unaccounted: statement.unaccounted,
+      startBalance: {
+        amount: statement.startBalance?.amount ?? 0,
+        type: BalanceType[statement.startBalance?.type ?? BalanceType.UNKNOWN],
+      },
+      endBalance: {
+        amount: statement.endBalance?.amount,
+        type: BalanceType[statement.endBalance?.type ?? BalanceType.UNKNOWN],
+      },
+      isCovered: statement.isCovered,
+      isProjectedCovered: statement.isProjectedCovered,
+      hasProjectedTransfer: statement.hasProjectedTransfer,
+      transactions: statement.transactions.map(t => ({
+        account: t.account.name,
+      })),
       isClosed:
         statement.account.closedOn?.isLess(statement.month) ||
         (statement.account.openedOn && statement.month.isLess(statement.account.openedOn)) ||

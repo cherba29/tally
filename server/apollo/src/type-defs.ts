@@ -53,18 +53,30 @@ export default gql`
     """
     amount: Int
     date: Date
+    type: String
+  }
+
+  type GqlTransaction {
+    account: String
   }
 
   type GqlStatement {
     name: String
     month: GqlMonth
     isClosed: Boolean
+    isCovered: Boolean
+    isProjectedCovered: Boolean
+    hasProjectedTransfer: Boolean
     startBalance: GqlBalance
+    endBalance: GqlBalance
     inFlows: Float
     outFlows: Float
     income: Float
     totalPayments: Float
     totalTransfers: Float
+    percentChange: Float
+    unaccounted: Float
+    transactions: [GqlTransaction]
   }
 
   type GqlSummaryStatement {
