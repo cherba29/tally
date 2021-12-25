@@ -1,5 +1,9 @@
 import './style.css';
 
+import {ApolloClient, gql} from '@apollo/client/core';
+import {InMemoryCache, NormalizedCacheObject} from '@apollo/client/cache';
+import { GqlBudget, GqlStatement } from './graphql';
+import {Statement} from './base';
 import * as $ from 'jquery';
 import * as account_tooltip from 'templates/account-tooltip.hbs';
 import * as balance_summary_tooltip from 'templates/balance-summary-tooltip.hbs';
@@ -57,7 +61,83 @@ function reload() {
   });
 }
 
+const gqlCache: InMemoryCache = new InMemoryCache({});
+const gqlClient: ApolloClient<NormalizedCacheObject> = new ApolloClient({
+  cache: gqlCache,
+  uri:  'http://localhost:4000/graphql'
+});
+
+// Loads graphql version of data and re-renders the page.
+function reloadGql() {
+  console.log("Loading graphql");
+  gqlClient
+  .query<GqlBudget>({
+    query: gql`
+      query {
+        budget {
+          accounts {
+            name
+            description
+            type
+            openedOn
+            closedOn
+            number
+            owners
+          }
+          months 
+          statements {
+            name
+            month
+            inFlows
+            outFlows
+            income
+            totalPayments
+            totalTransfers
+            isClosed
+            startBalance {
+              amount
+              date
+              type
+            }
+            endBalance {
+              amount
+              date
+              type
+            }
+          }
+          summaries {
+            name
+            month
+            accounts
+            addSub
+            change
+            inFlows
+            outFlows
+            percentChange
+            totalPayments
+            totalTransfers
+            unaccounted
+            startBalance {
+              amount
+              date
+              type
+            }
+            endBalance {
+              amount
+              date
+              type
+            }
+          }
+        }
+      }`
+  })
+  .then(result => {
+    console.log(result);
+  });
+}
+
 $("#reload").on('click', reload);
+$("#reload-gql").on('click', reloadGql);
 
 // Trigger reload on first load.
 reload();
