@@ -63,9 +63,15 @@ describe('loadYaml', () => {
     const budgetBuilder = new BudgetBuilder();
     const content = `
       name: test-account
+      description: 'Testing account'
+      number: '1223344'
       opened_on: Nov2019
       closed_on: Mar2020
       type: external
+      url: 'example.com'
+      phone: '111-222-3344'
+      username: 'john'
+      pswd: 'xxxyyy'
       transfers_to:
         external:
       `;
@@ -79,7 +85,13 @@ describe('loadYaml', () => {
     const account = budget.accounts.get('test-account');
     expect(account).toEqual({
       name: 'test-account',
+      description: 'Testing account',
+      number: '1223344',
       type: AccountType.EXTERNAL,
+      url: 'example.com',
+      phone: '111-222-3344',
+      userName: 'john',
+      password: 'xxxyyy',
       owners: [],
       openedOn: new Month(2019, 10),
       closedOn: new Month(2020, 2)
