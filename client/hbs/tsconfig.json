@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "outDir": "./public",  // Redirect output structure to the directory. 
-    "rootDir": "./",     // The root directory of input files, so that outDir structure matches.
+    "baseUrl": ".",
+    "paths": { "@backend/*": ["../../server/apollo/src/*"], },
 
     // "strict": true,        // All strict type-checking options.
 

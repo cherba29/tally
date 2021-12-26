@@ -2,8 +2,7 @@ import './style.css';
 
 import {ApolloClient, gql} from '@apollo/client/core';
 import {InMemoryCache, NormalizedCacheObject} from '@apollo/client/cache';
-import { GqlBudget, GqlStatement } from './graphql';
-import {Statement} from './base';
+import {GqlBudget} from '@backend/types';
 import * as $ from 'jquery';
 import * as account_tooltip from 'templates/account-tooltip.hbs';
 import * as balance_summary_tooltip from 'templates/balance-summary-tooltip.hbs';
@@ -132,7 +131,13 @@ function reloadGql() {
       }`
   })
   .then(result => {
+    clearPopup();
     console.log(result);
+  })
+  .catch(error => {
+    const popupElement = $('#popup-content');
+    popupElement.offset({ top: 40, left: 0 });
+    popupElement.html("<pre>" + error.message + "</pre>");
   });
 }
 

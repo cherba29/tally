@@ -2,17 +2,17 @@ import {Statement} from './base';
 
 // Data for rendering given cell.
 export class Cell {
-  id: string;
-  isClosed: boolean;
-  addSub: number | null;
-  balance: number | null;
-  isProjected: boolean;
-  isCovered: boolean;
-  isProjectedCovered: boolean;
-  hasProjectedTransfer: boolean;
-  percentChange: number | null;
-  unaccounted: number | null;
-  balanced: boolean;
+  readonly id: string;
+  readonly isClosed: boolean;
+  readonly addSub: number | null;
+  readonly balance: number | null;
+  readonly isProjected: boolean;
+  readonly isCovered: boolean;
+  readonly isProjectedCovered: boolean;
+  readonly hasProjectedTransfer: boolean;
+  readonly percentChange: number | null;
+  readonly unaccounted: number | null;
+  readonly balanced: boolean;
 
   constructor(id: string, stmt: Statement) {
     this.isClosed = stmt.isClosed;
