@@ -1,4 +1,4 @@
-import { buildTransactionStatementTable } from './statement/transaction';
+import { buildTransactionStatementTable, Type as TransactionType } from './statement/transaction';
 import { buildSummaryStatementTable } from './statement/summary';
 import { Type as BalanceType } from './core/balance';
 import { Month } from './core/month';
@@ -17,7 +17,15 @@ function buildGqlBudget(): GqlBudget {
       type: account.type,
       ...(account.number && { number: account.number }),
       ...(account.openedOn && { openedOn: account.openedOn }),
-      ...(account.closedOn && { closedOn: account.closedOn })
+      ...(account.closedOn && { closedOn: account.closedOn }),
+      owners: account.owners,
+      url: account.url,
+      phone: account.phone,
+      address: account.address,
+      userName: account.userName,
+      password: account.password,
+      external: account.isExternal,
+      summary: account.isSummary,
     };
     accounts.push(gqlAccount);
   }
@@ -47,7 +55,16 @@ function buildGqlBudget(): GqlBudget {
       isProjectedCovered: statement.isProjectedCovered,
       hasProjectedTransfer: statement.hasProjectedTransfer,
       transactions: statement.transactions.map(t => ({
-        account: t.account.name,
+        toAccountName: t.account.name,
+        isExpense: t.type == TransactionType.EXPENSE,
+        isIncome: t.type ==  TransactionType.INCOME,
+        balance: {
+          amount: t.balance.amount,
+          type: BalanceType[t.balance.type],
+        },
+        balanceFromStart: t.balanceFromStart,
+        balanceFromEnd: t.balanceFromEnd,
+        description: t.description,
       })),
       isClosed:
         statement.account.closedOn?.isLess(statement.month) ||
@@ -86,7 +103,7 @@ function buildGqlBudget(): GqlBudget {
   }
   return {
     accounts,
-    months: budget.months,
+    months: budget.months.sort((a,b)=>-a.compareTo(b)),
     statements,
     summaries
   };

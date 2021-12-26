@@ -30,6 +30,7 @@ interface YamlData {
   owner?: string[];
   url?: string;
   phone?: string;
+  address?: string;
   username?: string;
   pswd?: string;
   balances?: BalanceData[];
@@ -87,6 +88,7 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData | undefine
     owners: data.owner || [],
     url: data.url,
     phone: data.phone,
+    address: data.address,
     userName: data.username,
     password: data.pswd,
   });

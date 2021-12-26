@@ -65,11 +65,13 @@ describe('loadYaml', () => {
       name: test-account
       description: 'Testing account'
       number: '1223344'
+      owner: [ arthur ]
       opened_on: Nov2019
       closed_on: Mar2020
       type: external
       url: 'example.com'
       phone: '111-222-3344'
+      address: '55 Road'
       username: 'john'
       pswd: 'xxxyyy'
       transfers_to:
@@ -90,9 +92,10 @@ describe('loadYaml', () => {
       type: AccountType.EXTERNAL,
       url: 'example.com',
       phone: '111-222-3344',
+      address: '55 Road',
       userName: 'john',
       password: 'xxxyyy',
-      owners: [],
+      owners: ['arthur'],
       openedOn: new Month(2019, 10),
       closedOn: new Month(2020, 2)
     });

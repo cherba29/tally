@@ -26,6 +26,10 @@ export default gql`
     """
     type: String
 
+    external: Boolean
+
+    summary: Boolean
+
     """
     Account number. Can be null or unknown for external or proxy accounts.
     """
@@ -45,6 +49,16 @@ export default gql`
     List of owner ids for this account.
     """
     owners: [String]
+
+    url: String
+
+    address: String
+
+    userName: String
+
+    password: String
+
+    phone: String
   }
 
   type GqlBalance {
@@ -57,7 +71,13 @@ export default gql`
   }
 
   type GqlTransaction {
-    account: String
+    toAccountName: String
+    isIncome: Boolean
+    isExpense: Boolean
+    balance: GqlBalance
+    balanceFromStart: Int
+    balanceFromEnd: Int
+    description: String
   }
 
   type GqlStatement {

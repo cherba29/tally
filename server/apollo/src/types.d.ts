@@ -35,6 +35,8 @@ export type GqlAccount = {
    * TODO: This should change to enum.
    */
   type?: Maybe<Scalars['String']>;
+  external?: Maybe<Scalars['Boolean']>;
+  summary?: Maybe<Scalars['Boolean']>;
   /** Account number. Can be null or unknown for external or proxy accounts. */
   number?: Maybe<Scalars['String']>;
   /** Month when account was open. Can be unknown. */
@@ -43,6 +45,11 @@ export type GqlAccount = {
   closedOn?: Maybe<Scalars['GqlMonth']>;
   /** List of owner ids for this account. */
   owners?: Maybe<Array<Maybe<Scalars['String']>>>;
+  url?: Maybe<Scalars['String']>;
+  address?: Maybe<Scalars['String']>;
+  userName?: Maybe<Scalars['String']>;
+  password?: Maybe<Scalars['String']>;
+  phone?: Maybe<Scalars['String']>;
 };
 
 export type GqlBalance = {
@@ -101,7 +108,13 @@ export type GqlSummaryStatement = {
 
 export type GqlTransaction = {
   __typename?: 'GqlTransaction';
-  account?: Maybe<Scalars['String']>;
+  toAccountName?: Maybe<Scalars['String']>;
+  isIncome?: Maybe<Scalars['Boolean']>;
+  isExpense?: Maybe<Scalars['Boolean']>;
+  balance?: Maybe<GqlBalance>;
+  balanceFromStart?: Maybe<Scalars['Int']>;
+  balanceFromEnd?: Maybe<Scalars['Int']>;
+  description?: Maybe<Scalars['String']>;
 };
 
 export type Query = {
