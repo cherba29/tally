@@ -14,6 +14,16 @@ export class Budget {
     // Account name -> month -> transfers map.
     readonly transfers: Map<string, Map<string, Set<Transfer>>>
   ) {}
+
+  findActiveAccounts(): Account[] {
+    const accounts: Account[] = [];
+    for (const account of this.accounts.values()) {
+      if (this.months.some(m=>!account.isClosed(m))) {
+        accounts.push(account);
+      }
+    }
+    return accounts;
+  }
 }
 
 export interface TransferData {

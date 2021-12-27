@@ -10,12 +10,12 @@ function buildGqlBudget(): GqlBudget {
   const budget = loadBudget();
 
   const accounts: GqlAccount[] = [];
-  for (const account of budget.accounts.values()) {
+  for (const account of budget.findActiveAccounts()) {
     const gqlAccount: GqlAccount = {
       name: account.name,
       ...(account.description && { description: account.description }),
       type: account.typeIdName,
-      ...(account.number && { number: account.number }),
+      number: account.number,
       ...(account.openedOn && { openedOn: account.openedOn }),
       ...(account.closedOn && { closedOn: account.closedOn }),
       owners: account.owners,
@@ -73,6 +73,7 @@ function buildGqlBudget(): GqlBudget {
         false
     });
   }
+
   const summaryStatementTable = buildSummaryStatementTable(transactionStatementTable);
   const summaries: GqlSummaryStatement[] = [];
   for (const summary of summaryStatementTable) {
