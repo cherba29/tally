@@ -22,7 +22,7 @@ interface TransferYamlData {
 
 interface YamlData {
   name?: string;
-  description?: string;
+  desc?: string;
   number?: string;
   type?: string;
   opened_on?: string;
@@ -80,7 +80,7 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData | undefine
   }
   const account = new Account({
     name: data.name,
-    description: data.description,
+    description: data.desc,
     type: accountType,
     number: data.number,
     openedOn: data.opened_on ? Month.fromString(data.opened_on) : undefined,

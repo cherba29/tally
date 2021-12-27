@@ -14,7 +14,7 @@ function buildGqlBudget(): GqlBudget {
     const gqlAccount: GqlAccount = {
       name: account.name,
       ...(account.description && { description: account.description }),
-      type: account.type,
+      type: account.typeIdName,
       ...(account.number && { number: account.number }),
       ...(account.openedOn && { openedOn: account.openedOn }),
       ...(account.closedOn && { closedOn: account.closedOn }),
@@ -29,6 +29,7 @@ function buildGqlBudget(): GqlBudget {
     };
     accounts.push(gqlAccount);
   }
+  accounts.sort((a, b) => (a.name == b.name) ? 0 : (((a.name ?? '') < (b.name ?? '')) ? -1 : 1));
 
   const transactionStatementTable = buildTransactionStatementTable(budget);
   const statements: GqlStatement[] = [];

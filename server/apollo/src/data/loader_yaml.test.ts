@@ -63,7 +63,7 @@ describe('loadYaml', () => {
     const budgetBuilder = new BudgetBuilder();
     const content = `
       name: test-account
-      description: 'Testing account'
+      desc: 'Testing account'
       number: '1223344'
       owner: [ arthur ]
       opened_on: Nov2019
