@@ -85,25 +85,29 @@ function buildGqlBudget(): GqlBudget {
     summaries.push({
       name: summary.name,
       month: summary.month,
-      accounts: summary.statements.map((statement) => statement.name),
+      accounts: summary.statements.map((statement) => statement.name).sort(),
       addSub: summary.addSub,
       change: summary.change,
+      income: summary.income,
       inFlows: summary.inFlows,
       outFlows: summary.outFlows,
-      percentChange: summary.percentChange,
+      percentChange: summary.percentChange  
+          && Math.round((summary.percentChange + Number.EPSILON) * 100) / 100,
       totalPayments: summary.totalPayments,
       totalTransfers: summary.totalTransfers,
       unaccounted: summary.unaccounted,
       ...(summary.startBalance && {
         startBalance: {
           amount: summary.startBalance.amount,
-          date: summary.startBalance.date
+          date: summary.startBalance.date,
+          type: BalanceType[summary.startBalance.type]
         }
       }),
       ...(summary.endBalance && {
         endBalance: {
           amount: summary.endBalance.amount,
-          date: summary.endBalance.date
+          date: summary.endBalance.date,
+          type: BalanceType[summary.endBalance.type]
         }
       })
     });

@@ -65,7 +65,7 @@ export function* buildSummaryStatementTable(
       return;
     }
     for (const owner of statement.account.owners) {
-      for (const summaryName of [owner + ' ' + statement.account.type, owner + ' SUMMARY']) {
+      for (const summaryName of [owner + ' ' + statement.account.typeIdName, owner + ' SUMMARY']) {
         if (statement.account.isExternal && summaryName.includes('SUMMARY')) {
           continue;
         }

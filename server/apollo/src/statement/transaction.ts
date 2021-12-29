@@ -1,4 +1,4 @@
-import { Account, Type as AccountType } from '../core/account';
+import { Account } from '../core/account';
 import { Balance, Type as BalanceType } from '../core/balance';
 import { Month } from '../core/month';
 import { Budget } from '../core/budget';
@@ -60,8 +60,8 @@ export class TransactionStatement extends Statement {
 function getTransactionType(fromAccount: Account, toAccount: Account, amount: number): Type {
   if (
     toAccount.hasCommonOwner(fromAccount) &&
-    toAccount.type != AccountType.EXTERNAL &&
-    fromAccount.type != AccountType.EXTERNAL
+    !toAccount.isExternal &&
+    !fromAccount.isExternal
   ) {
     return Type.TRANSFER;
   } else {
@@ -100,7 +100,24 @@ function makeTranscationStatement(
     return transactionType;
   };
   const descTransfers = Array.from(transfers || []).sort(
-    (a, b) => b.balance.date.getTime() - a.balance.date.getTime()
+    (b, a) => {
+      let eq = a.balance.compareTo(b.balance);
+      if (eq != 0) return eq;
+      eq = a.fromMonth.compareTo(b.fromMonth);
+      if (eq != 0) return eq;
+      eq = a.toMonth.compareTo(b.toMonth);
+      if (eq != 0) return eq;
+      if (a.fromAccount.name != b.fromAccount.name) {
+        return a.fromAccount.name < b.fromAccount.name ? -1 : 1;
+      }
+      if (a.toAccount.name != b.toAccount.name) {
+        return a.toAccount.name < b.toAccount.name ? -1 : 1;
+      }
+      if (a.description != b.description) {
+        return (a.description || '') < (b.description || '') ? -1 : 1;
+      }
+      return 0;
+    }
   );
 
   for (const t of descTransfers) {
@@ -169,13 +186,18 @@ export function buildTransactionStatementTable(budget: Budget): TransactionState
       statement.isProjectedCovered = statement.isCovered 
           || nextMonthStatement.coversProjectedPrevious;
       nextMonthStatement = statement;      
-      // Sort descending date but increasing absolute amount.
-      const transactions = statement.transactions.sort((a,b)=>{
-        return b.balance.date.getTime() - a.balance.date.getTime()
-            || Math.abs(b.balance.amount) - Math.abs(a.balance.amount)
-            || a.balance.amount - b.balance.amount;
-      });
-      // const transactions = statement.transactions.sort((a,b)=>b.balance.compareTo(a.balance));
+      // const transactions = statement.transactions.sort((b,a)=>{
+      //   let eq = a.balance.compareTo(b.balance);
+      //   if (eq != 0) { return eq; }
+      //   if (a.account.name != b.account.name) {
+      //     return a.account.name < b.account.name ? -1 : 1;
+      //   }
+      //   if (a.description != b.description) {
+      //     return (a.account.description || '') < (b.account.description || '') ? -1 : 1;
+      //   }
+      //   return 0;
+      // });
+      const transactions = statement.transactions;
       if (statement.startBalance) {
         transactions.reduceRight((prevBalance, t)=>{
           return t.balanceFromStart = prevBalance + t.balance.amount;
