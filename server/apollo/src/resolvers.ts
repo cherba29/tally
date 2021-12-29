@@ -42,14 +42,18 @@ function buildGqlBudget(): GqlBudget {
       income: statement.income,
       totalPayments: statement.totalPayments,
       totalTransfers: statement.totalTransfers,
-      percentChange: statement.percentChange,
+      change: statement.change,
+      percentChange: statement.percentChange  
+          && Math.round((statement.percentChange + Number.EPSILON) * 100) / 100,
       unaccounted: statement.unaccounted,
       startBalance: {
         amount: statement.startBalance?.amount ?? 0,
+        date: statement.startBalance?.date,
         type: BalanceType[statement.startBalance?.type ?? BalanceType.UNKNOWN],
       },
       endBalance: {
         amount: statement.endBalance?.amount,
+        date: statement.endBalance?.date,
         type: BalanceType[statement.endBalance?.type ?? BalanceType.UNKNOWN],
       },
       isCovered: statement.isCovered,
@@ -61,6 +65,7 @@ function buildGqlBudget(): GqlBudget {
         isIncome: t.type ==  TransactionType.INCOME,
         balance: {
           amount: t.balance.amount,
+          date: t.balance.date,
           type: BalanceType[t.balance.type],
         },
         balanceFromStart: t.balanceFromStart,

@@ -36,6 +36,18 @@ export class Balance {
     return Balance.add(balance1, new Balance(-balance2.amount, balance2.date, balance2.type));
   }
 
+  compareTo(other: Balance): number {
+    const dateDiff = this.date.getTime() - other.date.getTime();
+    if (dateDiff !== 0) {
+      return dateDiff;
+    }
+    const amountDiff = this.amount - other.amount;
+    if (amountDiff !== 0) {
+      return amountDiff;
+    }
+    return this.type - other.type;
+  }
+
   toString(): string {
     return `Balance { amount: ${this.amount}, date: ${this.date
       .toISOString()

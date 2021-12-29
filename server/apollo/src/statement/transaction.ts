@@ -151,7 +151,7 @@ export function buildTransactionStatementTable(budget: Budget): TransactionState
   };
 
   // Working backwards.
-  const months = budget.months; //.sort((a, b) => b.compareTo(a));
+  const months = budget.months.concat().sort((a, b) => b.compareTo(a));
   if (months.length < 1) {
     throw new Error('Budget must have at least one month.');
   }
@@ -163,9 +163,29 @@ export function buildTransactionStatementTable(budget: Budget): TransactionState
     for (const month of months) {
       const statement = makeStatement(account, month);
       statement.endBalance = nextMonthStatement.startBalance;
-      statement.isCovered = nextMonthStatement.coversPrevious;
-      statement.isProjectedCovered = nextMonthStatement.coversProjectedPrevious;
-      nextMonthStatement = statement;
+      statement.isCovered = statement.endBalance === undefined 
+          || statement.endBalance.amount >= 0
+          || nextMonthStatement.coversPrevious;
+      statement.isProjectedCovered = statement.isCovered 
+          || nextMonthStatement.coversProjectedPrevious;
+      nextMonthStatement = statement;      
+      // Sort descending date but increasing absolute amount.
+      const transactions = statement.transactions.sort((a,b)=>{
+        return b.balance.date.getTime() - a.balance.date.getTime()
+            || Math.abs(b.balance.amount) - Math.abs(a.balance.amount)
+            || a.balance.amount - b.balance.amount;
+      });
+      // const transactions = statement.transactions.sort((a,b)=>b.balance.compareTo(a.balance));
+      if (statement.startBalance) {
+        transactions.reduceRight((prevBalance, t)=>{
+          return t.balanceFromStart = prevBalance + t.balance.amount;
+        }, statement.startBalance.amount);
+      }
+      if (statement.endBalance) {
+        transactions.reduce((prevBalance, t)=>{
+          return t.balanceFromEnd = prevBalance - t.balance.amount;
+        }, statement.endBalance.amount);
+      }
       statementTable.push(statement);
     }
   }

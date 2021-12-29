@@ -89,11 +89,12 @@ export default gql`
     hasProjectedTransfer: Boolean
     startBalance: GqlBalance
     endBalance: GqlBalance
-    inFlows: Float
-    outFlows: Float
-    income: Float
-    totalPayments: Float
-    totalTransfers: Float
+    inFlows: Int
+    outFlows: Int
+    income: Int
+    totalPayments: Int
+    totalTransfers: Int
+    change: Int
     percentChange: Float
     unaccounted: Float
     transactions: [GqlTransaction]
@@ -103,14 +104,15 @@ export default gql`
     name: String
     month: GqlMonth
     accounts: [String]
-    addSub: Float
-    change: Float
-    inFlows: Float
-    outFlows: Float
+    addSub: Int
+    income: Int
+    change: Int
+    inFlows: Int
+    outFlows: Int
     percentChange: Float
-    totalPayments: Float
-    totalTransfers: Float
-    unaccounted: Float
+    totalPayments: Int
+    totalTransfers: Int
+    unaccounted: Int
     endBalance: GqlBalance
     startBalance: GqlBalance
   }

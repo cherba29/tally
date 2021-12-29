@@ -40,8 +40,10 @@ export abstract class Statement {
 
   get change(): number | undefined {
     const startAmount = this.startBalance?.amount;
+    if (startAmount === undefined) return undefined;
     const endAmount = this.endBalance?.amount;
-    return startAmount && endAmount && endAmount - startAmount;
+    if (endAmount === undefined) return undefined;
+    return endAmount - startAmount;
   }
 
   get percentChange(): number | undefined {
@@ -52,7 +54,7 @@ export abstract class Statement {
 
   get unaccounted(): number | undefined {
     const change = this.change;
-    return change && change - this.addSub;
+    return (change !== undefined) ? change - this.addSub : undefined;
   }
 
   abstract get isClosed(): boolean;
