@@ -17,12 +17,10 @@ export type Scalars = {
   Upload: any;
 };
 
-
 export enum CacheControlScope {
   Public = 'PUBLIC',
   Private = 'PRIVATE'
 }
-
 
 export type GqlAccount = {
   __typename?: 'GqlAccount';
@@ -67,7 +65,6 @@ export type GqlBudget = {
   statements?: Maybe<Array<Maybe<GqlStatement>>>;
   summaries?: Maybe<Array<Maybe<GqlSummaryStatement>>>;
 };
-
 
 export type GqlStatement = {
   __typename?: 'GqlStatement';
@@ -124,4 +121,3 @@ export type Query = {
   files?: Maybe<Array<Maybe<Scalars['String']>>>;
   budget?: Maybe<GqlBudget>;
 };
-

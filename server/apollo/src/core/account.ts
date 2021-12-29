@@ -16,9 +16,7 @@ export enum Type {
 
 // Typescript cannot reverse map string enums, so prebuild a lookup map.
 // https://www.typescriptlang.org/docs/handbook/enums.html
-const reverseAccountType = new Map<string, string>(
-  Object.entries(Type).map(([k,v]) => [v,k])
-);
+const reverseAccountType = new Map<string, string>(Object.entries(Type).map(([k, v]) => [v, k]));
 
 export interface InitData {
   name: string;

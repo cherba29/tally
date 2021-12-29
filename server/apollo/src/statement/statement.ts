@@ -54,7 +54,7 @@ export abstract class Statement {
 
   get unaccounted(): number | undefined {
     const change = this.change;
-    return (change !== undefined) ? change - this.addSub : undefined;
+    return change !== undefined ? change - this.addSub : undefined;
   }
 
   abstract get isClosed(): boolean;

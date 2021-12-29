@@ -25,11 +25,11 @@ function buildGqlBudget(): GqlBudget {
       userName: account.userName,
       password: account.password,
       external: account.isExternal,
-      summary: account.isSummary,
+      summary: account.isSummary
     };
     accounts.push(gqlAccount);
   }
-  accounts.sort((a, b) => (a.name == b.name) ? 0 : (((a.name ?? '') < (b.name ?? '')) ? -1 : 1));
+  accounts.sort((a, b) => (a.name == b.name ? 0 : (a.name ?? '') < (b.name ?? '') ? -1 : 1));
 
   const transactionStatementTable = buildTransactionStatementTable(budget);
   const statements: GqlStatement[] = [];
@@ -43,34 +43,35 @@ function buildGqlBudget(): GqlBudget {
       totalPayments: statement.totalPayments,
       totalTransfers: statement.totalTransfers,
       change: statement.change,
-      percentChange: statement.percentChange  
-          && Math.round((statement.percentChange + Number.EPSILON) * 100) / 100,
+      percentChange:
+        statement.percentChange &&
+        Math.round((statement.percentChange + Number.EPSILON) * 100) / 100,
       unaccounted: statement.unaccounted,
       startBalance: {
         amount: statement.startBalance?.amount ?? 0,
         date: statement.startBalance?.date,
-        type: BalanceType[statement.startBalance?.type ?? BalanceType.UNKNOWN],
+        type: BalanceType[statement.startBalance?.type ?? BalanceType.UNKNOWN]
       },
       endBalance: {
         amount: statement.endBalance?.amount,
         date: statement.endBalance?.date,
-        type: BalanceType[statement.endBalance?.type ?? BalanceType.UNKNOWN],
+        type: BalanceType[statement.endBalance?.type ?? BalanceType.UNKNOWN]
       },
       isCovered: statement.isCovered,
       isProjectedCovered: statement.isProjectedCovered,
       hasProjectedTransfer: statement.hasProjectedTransfer,
-      transactions: statement.transactions.map(t => ({
+      transactions: statement.transactions.map((t) => ({
         toAccountName: t.account.name,
         isExpense: t.type == TransactionType.EXPENSE,
-        isIncome: t.type ==  TransactionType.INCOME,
+        isIncome: t.type == TransactionType.INCOME,
         balance: {
           amount: t.balance.amount,
           date: t.balance.date,
-          type: BalanceType[t.balance.type],
+          type: BalanceType[t.balance.type]
         },
         balanceFromStart: t.balanceFromStart,
         balanceFromEnd: t.balanceFromEnd,
-        description: t.description,
+        description: t.description
       })),
       isClosed:
         statement.account.closedOn?.isLess(statement.month) ||
@@ -91,8 +92,8 @@ function buildGqlBudget(): GqlBudget {
       income: summary.income,
       inFlows: summary.inFlows,
       outFlows: summary.outFlows,
-      percentChange: summary.percentChange  
-          && Math.round((summary.percentChange + Number.EPSILON) * 100) / 100,
+      percentChange:
+        summary.percentChange && Math.round((summary.percentChange + Number.EPSILON) * 100) / 100,
       totalPayments: summary.totalPayments,
       totalTransfers: summary.totalTransfers,
       unaccounted: summary.unaccounted,
@@ -114,7 +115,7 @@ function buildGqlBudget(): GqlBudget {
   }
   return {
     accounts,
-    months: budget.months.sort((a,b)=>-a.compareTo(b)),
+    months: budget.months.sort((a, b) => -a.compareTo(b)),
     statements,
     summaries
   };

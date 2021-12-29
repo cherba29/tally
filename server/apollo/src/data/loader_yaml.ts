@@ -90,7 +90,7 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData | undefine
     phone: data.phone,
     address: data.address,
     userName: data.username,
-    password: data.pswd,
+    password: data.pswd
   });
   budgetBuilder.setAccount(account);
   if (data.balances) {
@@ -102,7 +102,7 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData | undefine
       try {
         month = Month.fromString(balanceData.grp);
       } catch (e) {
-        const message = (e instanceof Error) ? e.message : 'unknown';
+        const message = e instanceof Error ? e.message : 'unknown';
         throw new Error(`Balance ${JSON.stringify(balanceData)} has bad grp setting: ${message}`);
       }
       budgetBuilder.setBalance(account.name, month.toString(), makeBalance(balanceData));
@@ -168,7 +168,7 @@ export function loadYamlFile(
   try {
     processYamlData(budgetBuilder, accountData);
   } catch (e) {
-    const message = ' while processing ' + relative_file_path; 
+    const message = ' while processing ' + relative_file_path;
     if (e instanceof Error) {
       e.message += message;
       console.error(e.name + ': ' + e.message);

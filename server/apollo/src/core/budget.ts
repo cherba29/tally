@@ -18,7 +18,7 @@ export class Budget {
   findActiveAccounts(): Account[] {
     const accounts: Account[] = [];
     for (const account of this.accounts.values()) {
-      if (this.months.some(m=>!account.isClosed(m))) {
+      if (this.months.some((m) => !account.isClosed(m))) {
         accounts.push(account);
       }
     }

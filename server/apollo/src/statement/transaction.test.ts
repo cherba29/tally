@@ -136,7 +136,7 @@ describe('Build', () => {
             type: TransactionType.TRANSFER,
             description: 'First transfer',
             balanceFromEnd: 2020,
-            balanceFromStart: -2990,
+            balanceFromStart: -2990
           },
           {
             account: account2,
@@ -144,7 +144,7 @@ describe('Build', () => {
             type: TransactionType.TRANSFER,
             description: 'Second transfer',
             balanceFromEnd: 3020,
-            balanceFromStart: -990,
+            balanceFromStart: -990
           }
         ]
       },
@@ -245,7 +245,7 @@ describe('Build', () => {
             type: TransactionType.EXPENSE,
             description: 'First transfer',
             balanceFromEnd: 2020,
-            balanceFromStart: -2990,
+            balanceFromStart: -2990
           },
           {
             account: account2,
@@ -253,7 +253,7 @@ describe('Build', () => {
             type: TransactionType.EXPENSE,
             description: 'Second transfer',
             balanceFromEnd: 3020,
-            balanceFromStart: -990,
+            balanceFromStart: -990
           }
         ]
       },

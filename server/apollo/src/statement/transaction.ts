@@ -58,11 +58,7 @@ export class TransactionStatement extends Statement {
 }
 
 function getTransactionType(fromAccount: Account, toAccount: Account, amount: number): Type {
-  if (
-    toAccount.hasCommonOwner(fromAccount) &&
-    !toAccount.isExternal &&
-    !fromAccount.isExternal
-  ) {
+  if (toAccount.hasCommonOwner(fromAccount) && !toAccount.isExternal && !fromAccount.isExternal) {
     return Type.TRANSFER;
   } else {
     return amount > 0 ? Type.INCOME : Type.EXPENSE;
@@ -99,26 +95,24 @@ function makeTranscationStatement(
     }
     return transactionType;
   };
-  const descTransfers = Array.from(transfers || []).sort(
-    (b, a) => {
-      let eq = a.balance.compareTo(b.balance);
-      if (eq != 0) return eq;
-      eq = a.fromMonth.compareTo(b.fromMonth);
-      if (eq != 0) return eq;
-      eq = a.toMonth.compareTo(b.toMonth);
-      if (eq != 0) return eq;
-      if (a.fromAccount.name != b.fromAccount.name) {
-        return a.fromAccount.name < b.fromAccount.name ? -1 : 1;
-      }
-      if (a.toAccount.name != b.toAccount.name) {
-        return a.toAccount.name < b.toAccount.name ? -1 : 1;
-      }
-      if (a.description != b.description) {
-        return (a.description || '') < (b.description || '') ? -1 : 1;
-      }
-      return 0;
+  const descTransfers = Array.from(transfers || []).sort((b, a) => {
+    let eq = a.balance.compareTo(b.balance);
+    if (eq != 0) return eq;
+    eq = a.fromMonth.compareTo(b.fromMonth);
+    if (eq != 0) return eq;
+    eq = a.toMonth.compareTo(b.toMonth);
+    if (eq != 0) return eq;
+    if (a.fromAccount.name != b.fromAccount.name) {
+      return a.fromAccount.name < b.fromAccount.name ? -1 : 1;
     }
-  );
+    if (a.toAccount.name != b.toAccount.name) {
+      return a.toAccount.name < b.toAccount.name ? -1 : 1;
+    }
+    if (a.description != b.description) {
+      return (a.description || '') < (b.description || '') ? -1 : 1;
+    }
+    return 0;
+  });
 
   for (const t of descTransfers) {
     statement.hasProjectedTransfer ||= t.balance.type == BalanceType.PROJECTED;
@@ -180,12 +174,13 @@ export function buildTransactionStatementTable(budget: Budget): TransactionState
     for (const month of months) {
       const statement = makeStatement(account, month);
       statement.endBalance = nextMonthStatement.startBalance;
-      statement.isCovered = statement.endBalance === undefined 
-          || statement.endBalance.amount >= 0
-          || nextMonthStatement.coversPrevious;
-      statement.isProjectedCovered = statement.isCovered 
-          || nextMonthStatement.coversProjectedPrevious;
-      nextMonthStatement = statement;      
+      statement.isCovered =
+        statement.endBalance === undefined ||
+        statement.endBalance.amount >= 0 ||
+        nextMonthStatement.coversPrevious;
+      statement.isProjectedCovered =
+        statement.isCovered || nextMonthStatement.coversProjectedPrevious;
+      nextMonthStatement = statement;
       // const transactions = statement.transactions.sort((b,a)=>{
       //   let eq = a.balance.compareTo(b.balance);
       //   if (eq != 0) { return eq; }
@@ -199,13 +194,13 @@ export function buildTransactionStatementTable(budget: Budget): TransactionState
       // });
       const transactions = statement.transactions;
       if (statement.startBalance) {
-        transactions.reduceRight((prevBalance, t)=>{
-          return t.balanceFromStart = prevBalance + t.balance.amount;
+        transactions.reduceRight((prevBalance, t) => {
+          return (t.balanceFromStart = prevBalance + t.balance.amount);
         }, statement.startBalance.amount);
       }
       if (statement.endBalance) {
-        transactions.reduce((prevBalance, t)=>{
-          return t.balanceFromEnd = prevBalance - t.balance.amount;
+        transactions.reduce((prevBalance, t) => {
+          return (t.balanceFromEnd = prevBalance - t.balance.amount);
         }, statement.endBalance.amount);
       }
       statementTable.push(statement);
