@@ -1,3 +1,4 @@
+import { GqlBudget } from '@backend/types';
 import {TallyAccount, Statement, SummaryStatement} from './base';
 import {Cell} from './cell';
 import {Row} from './row';
@@ -129,7 +130,7 @@ interface MatrixDataView {
  * @param summaries - table indexed by owner name + account type and month
  *                    of statement summaries.
  */
-function transformBudgetData(
+export function transformBudgetData(
     months: string[], accountNameToAccount: {[accountName:string]: TallyAccount},
     statements: {[accountName:string]: {[month:string]: Statement}},
     summaries: {[ownerAccountType:string]: {[month:string]: SummaryStatement}}) {
@@ -185,8 +186,118 @@ function transformBudgetData(
   return dataView;
 }
 
+/**
+ * Builds dataView structure with months, rows and popup cell data.
+ *
+ * @param data - Server returnred GqlBudget structure.
+ */
+export function transformGqlBudgetData(data: GqlBudget) {
+  const accountNameToAccount: {[accountName:string]: TallyAccount} = {};
+  // Object.assign({}, ...data.accounts.map((x) => ({[x.name]: x})));;
+  for (const account of data.accounts) {
+    accountNameToAccount[account.name] = {
+      name: account.name,
+      description: account.description,
+      openedOn: account.openedOn,
+      closedOn: account.closedOn,
+      owners: account.owners ?? [],
+      url: account.url,
+      type: account.type,
+      address: account.address,
+      userName: account.userName,
+      number: account.number,
+      phone: account.phone,
+      password: account.password,
+      summary: account.summary,
+      external: account.external,
+    };
+  }
+  // account name => month => statement map.
+  const statements: {[accountName:string]: {[month:string]: Statement}} = {};
+  for (const stmt of data.statements) {
+    const entry = statements[stmt.name] || (statements[stmt.name] = {});
+    if (stmt.isClosed) {
+      entry[stmt.month] = {
+        isClosed: true
+      };
+    } else {
+      entry[stmt.month] = {
+        inFlows: stmt.inFlows,
+        outFlows: stmt.outFlows,
+        isClosed: stmt.isClosed || undefined,
+        isCovered: stmt.isCovered,
+        isProjectedCovered: stmt.isProjectedCovered,
+        hasProjectedTransfer: stmt.hasProjectedTransfer,
+        income: stmt.income,
+        totalPayments: stmt.totalPayments,
+        totalTransfers: stmt.totalTransfers,
+        ... (stmt.change == null ? {} : {change: stmt.change}),
+        ... (stmt.percentChange == null ? {} : {percentChange: stmt.percentChange}),
+        ... (stmt.unaccounted == null ? {} : {unaccounted: stmt.unaccounted}),
+        startBalance: (stmt.startBalance?.date == null ? null : {
+          amount: stmt.startBalance.amount,
+          date: stmt.startBalance.date,
+          type: stmt.startBalance.type,
+        }),
+        endBalance: (stmt.endBalance?.date == null ? null : {
+          amount: stmt.endBalance.amount,
+          date: stmt.endBalance.date,
+          type: stmt.endBalance.type,
+        }),
+        addSub: stmt.inFlows + stmt.outFlows,
+        transactions: stmt.transactions?.map(t=>({
+          toAccountName: t.toAccountName,
+          isExpense: t.isExpense,
+          isIncome: t.isIncome,
+          balance: {
+            amount: t.balance.amount,
+            date: t.balance.date,
+            type: t.balance.type
+          },
+          ...(t.balanceFromStart != null && {balanceFromStart: t.balanceFromStart}),
+          ...(t.balanceFromEnd != null && {balanceFromEnd: t.balanceFromEnd}),
+          description: t.description || ''
+        })) ?? [],
+      };
+    }
+  }
+  // owner + accout type => month => summary statement map.
+  const summaries: {[ownerAccountType:string]: {[month:string]: SummaryStatement}} = {};
+  for (const stmt of data.summaries) {
+    const entry = summaries[stmt.name] || (summaries[stmt.name] = {});
+    entry[stmt.month] = {
+      accounts: stmt.accounts,
+      inFlows: stmt.inFlows,
+      outFlows: stmt.outFlows,
+      income: stmt.income,
+      totalPayments: stmt.totalPayments,
+      totalTransfers: stmt.totalTransfers,
+      addSub: stmt.addSub,
+      startBalance: stmt.startBalance && {
+        amount: stmt.startBalance.amount,
+        date: stmt.startBalance.date,
+        type: stmt.startBalance.type,
+      },
+      endBalance: stmt.endBalance && {
+        amount: stmt.endBalance.amount,
+        date: stmt.endBalance.date,
+        type: stmt.endBalance.type,
+      },
+      ... (stmt.change == null ? {} : {change: stmt.change}),
+      ... (stmt.percentChange == null ? {} : {percentChange: stmt.percentChange}),
+      ... (stmt.unaccounted == null ? {} : {unaccounted: stmt.unaccounted}),
+    };
+  }
+  return transformBudgetData(data.months, accountNameToAccount, statements, summaries);
+
+  // return {
+  //   months: data.months,
+  //   accountNameToAccount,
+  //   statements,
+  //   summaries
+  // };
+}
+
 function getKeysSorted(obj:  {[key:string]: any;}): string[] {
   return Object.keys(obj).sort((a, b) => a < b ? -1 : (a > b ? 1 : 0));
 }
-
-export { transformBudgetData };

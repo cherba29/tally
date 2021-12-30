@@ -38,6 +38,7 @@ export interface TallyAccount {
 
 export interface Balance {
   amount: number;
+  date: Date;
   type: string;
 }
 
@@ -46,29 +47,46 @@ export interface Transaction {
   isIncome: boolean;
   toAccountName: string;
   balance: Balance;
+  balanceFromStart: number;
+  balanceFromEnd: number;
+  description: string;
 }
 
 export interface Statement {
-  isClosed: boolean;
-  addSub: number;
-  endBalance: Balance;
-  isCovered: boolean;
-  isProjectedCovered: boolean;
-  hasProjectedTransfer: boolean;
-  percentChange: number;
-  unaccounted: number;
-  transactions: Transaction[];
+  inFlows?: number;
+  outFlows?: number;
+  income?: number;
+  totalPayments?: number;
+  totalTransfers?: number;
+  isClosed?: boolean;
+  addSub?: number;
+  startBalance?: Balance;
+  endBalance?: Balance;
+  isCovered?: boolean;
+  isProjectedCovered?: boolean;
+  hasProjectedTransfer?: boolean;
+  change?: number;
+  percentChange?: number;
+  unaccounted?: number;
+  transactions?: Transaction[];
 }
 
 export interface SummaryStatement {
-  isClosed: boolean;
+  inFlows: number;
+  outFlows: number;
+  income: number;
+  totalPayments: number;
+  totalTransfers: number;
+  isClosed?: boolean;
   accounts: string[];
   addSub: number;
+  startBalance: Balance;
   endBalance: Balance;
-  isCovered: boolean;
-  isProjectedCovered: boolean;
-  hasProjectedTransfer: boolean;
-  percentChange: number;
-  unaccounted: number;
-  transactions: Transaction[];
+  isCovered?: boolean;
+  isProjectedCovered?: boolean;
+  hasProjectedTransfer?: boolean;
+  change?: number;
+  percentChange?: number;
+  unaccounted?: number;
+  transactions?: Transaction[];
 }

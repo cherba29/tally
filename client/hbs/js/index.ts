@@ -2,14 +2,14 @@ import './style.css';
 
 import {ApolloClient, gql} from '@apollo/client/core';
 import {InMemoryCache, NormalizedCacheObject} from '@apollo/client/cache';
-import {GqlBudget} from '@backend/types';
+import {Query} from '@backend/types';
 import * as $ from 'jquery';
 import * as account_tooltip from 'templates/account-tooltip.hbs';
 import * as balance_summary_tooltip from 'templates/balance-summary-tooltip.hbs';
 import * as balance_tooltip from 'templates/balance-tooltip.hbs';
 import * as summary_template from 'templates/summary.hbs';
 
-import {transformBudgetData, PopupData} from './utils';
+import {transformBudgetData, transformGqlBudgetData, PopupData} from './utils';
 
 function clearPopup() {
   $('#popup-content').html("");
@@ -66,11 +66,25 @@ const gqlClient: ApolloClient<NormalizedCacheObject> = new ApolloClient({
   uri:  'http://localhost:4000/graphql'
 });
 
+function JSONstringifyOrder(obj: {}, space: number) {
+    var allKeys: Array<string> = [];
+    var seen: {[key:string]: null} = {};
+    JSON.stringify(obj, function (key, value) {
+        if (!(key in seen)) {
+            allKeys.push(key);
+            seen[key] = null;
+        }
+        return value;
+    });
+    allKeys.sort();
+    return JSON.stringify(obj, allKeys, space);
+}
+
 // Loads graphql version of data and re-renders the page.
 function reloadGql() {
   console.log("Loading graphql");
   gqlClient
-  .query<GqlBudget>({
+  .query<Query>({
     query: gql`
       query {
         budget {
@@ -82,6 +96,13 @@ function reloadGql() {
             closedOn
             number
             owners
+            address
+            external
+            summary
+            userName
+            password
+            phone
+            url
           }
           months 
           statements {
@@ -93,6 +114,12 @@ function reloadGql() {
             totalPayments
             totalTransfers
             isClosed
+            isCovered
+            isProjectedCovered
+            hasProjectedTransfer
+            change
+            percentChange
+            unaccounted
             startBalance {
               amount
               date
@@ -102,6 +129,19 @@ function reloadGql() {
               amount
               date
               type
+            }
+            transactions {
+              toAccountName
+              isIncome
+              isExpense
+              balance {
+                amount
+                date
+                type
+              }
+              balanceFromStart
+              balanceFromEnd
+              description
             }
           }
           summaries {
@@ -113,6 +153,7 @@ function reloadGql() {
             inFlows
             outFlows
             percentChange
+            income
             totalPayments
             totalTransfers
             unaccounted
@@ -133,11 +174,32 @@ function reloadGql() {
   .then(result => {
     clearPopup();
     console.log(result);
+    // const newData = transformGqlBudgetData(result.data.budget);
+    // const path = "/budget?dir=" + window.location.hash.substring(1);
+    // $.getJSON(path, (response): void => {
+    //   console.log("server response", response)
+    //   if (!response.success) {
+    //     const popupElement = $('#popup-content');
+    //     popupElement.offset({ top: 40, left: 0 });
+    //     popupElement.html("<pre>" + response.message + "</pre>");
+    //     return;
+    //   }
+    //   const oldData = response.data;
+    //   console.log('OLD', JSONstringifyOrder(oldData, 2));
+    //   console.log('NEW', JSONstringifyOrder(newData, 2));
+    // });
+    const dataView = transformGqlBudgetData(result.data.budget);
+    $('#content').html(summary_template(dataView));
+    // Most cells have popups with details, activate these.
+    for (const popup of dataView.popupCells) {
+      $('#' + popup.id).click(createPopupFunc(popup));
+    }
   })
   .catch(error => {
     const popupElement = $('#popup-content');
     popupElement.offset({ top: 40, left: 0 });
     popupElement.html("<pre>" + error.message + "</pre>");
+    throw error;
   });
 }
 
