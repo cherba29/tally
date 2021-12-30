@@ -168,7 +168,7 @@ export function buildTransactionStatementTable(budget: Budget): TransactionState
   }
 
   for (const account of budget.accounts.values()) {
-    if (account.closedOn) continue;
+    const accountStatements: TransactionStatement[] = [];
     // Make statement outside range so that its attributes relating to previous can be used.
     let nextMonthStatement = makeStatement(account, months[0].next());
     for (const month of months) {
@@ -181,29 +181,21 @@ export function buildTransactionStatementTable(budget: Budget): TransactionState
       statement.isProjectedCovered =
         statement.isCovered || nextMonthStatement.coversProjectedPrevious;
       nextMonthStatement = statement;
-      // const transactions = statement.transactions.sort((b,a)=>{
-      //   let eq = a.balance.compareTo(b.balance);
-      //   if (eq != 0) { return eq; }
-      //   if (a.account.name != b.account.name) {
-      //     return a.account.name < b.account.name ? -1 : 1;
-      //   }
-      //   if (a.description != b.description) {
-      //     return (a.account.description || '') < (b.account.description || '') ? -1 : 1;
-      //   }
-      //   return 0;
-      // });
-      const transactions = statement.transactions;
       if (statement.startBalance) {
-        transactions.reduceRight((prevBalance, t) => {
+        statement.transactions.reduceRight((prevBalance, t) => {
           return (t.balanceFromStart = prevBalance + t.balance.amount);
         }, statement.startBalance.amount);
       }
       if (statement.endBalance) {
-        transactions.reduce((prevBalance, t) => {
+        statement.transactions.reduce((prevBalance, t) => {
           return (t.balanceFromEnd = prevBalance - t.balance.amount);
         }, statement.endBalance.amount);
       }
-      statementTable.push(statement);
+      accountStatements.push(statement);
+    }
+    // Do not include account if for all months it was closed.
+    if (accountStatements.some((stmt) => !stmt.isClosed)) {
+      statementTable.push(...accountStatements);
     }
   }
   return statementTable;

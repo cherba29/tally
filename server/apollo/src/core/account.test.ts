@@ -1,13 +1,13 @@
 import { Account, Type } from './account';
 import { Month } from './month';
 
-test('isClosed - by default', () => {
+test('isClosed - false by default', () => {
   const account = new Account({
     name: 'testAccount',
     type: Type.CHECKING,
     owners: ['bob']
   });
-  expect(account.isClosed(new Month(2021, 2))).toBe(true);
+  expect(account.isClosed(new Month(2021, 2))).toBe(false);
 });
 
 test('isClosed false if closedOn not set', () => {

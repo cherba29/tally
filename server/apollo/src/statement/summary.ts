@@ -62,7 +62,7 @@ export function* buildSummaryStatementTable(
   for (const statement of statements) {
     if (statement.isClosed) {
       // Closed accounts are not included in summary.
-      return;
+      continue;
     }
     for (const owner of statement.account.owners) {
       for (const summaryName of [owner + ' ' + statement.account.typeIdName, owner + ' SUMMARY']) {

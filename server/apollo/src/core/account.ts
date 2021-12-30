@@ -71,9 +71,11 @@ export class Account {
   }
 
   isClosed(month: Month): boolean {
-    return (
-      this.closedOn?.isLess(month) || // After closed.
-      !this.openedOn?.isLess(month) // Before open.
+    return !!(
+      (
+        this.closedOn?.isLess(month) || // After closed.
+        (this.openedOn && month.isLess(this.openedOn))
+      ) // Before or on open.
     );
   }
 
