@@ -1,11 +1,14 @@
-import { GqlBudget } from '@backend/types';
+import {GqlBudget} from '@backend/types';
 import {TallyAccount, Statement, SummaryStatement} from './base';
 import {Cell} from './cell';
 import {Row} from './row';
 
 /**
  *  Create map of owner->type->accountname, it will be rendered in this format.
- * @param accountNameToAccount - account name->account map
+ * @param {Object<string, TallyAccount>} accountNameToAccount
+ *   account name->account map
+ * @return {Object<string, Object<string, string>>} map of
+ *   owner->type->accountname.
  */
 function getOwnerTypeAccountMap(
     accountNameToAccount: {[accountType: string]: TallyAccount}):
@@ -14,13 +17,13 @@ function getOwnerTypeAccountMap(
     [ownerType:string]: {[accountType:string]: string[]}} = {};
 
   for (const accountName of Object.keys(accountNameToAccount)) {
-    const account: TallyAccount = accountNameToAccount[accountName]
+    const account: TallyAccount = accountNameToAccount[accountName];
     for (const owner of account.owners) {
       let typeAccounts: {[accountName:string]: string[]};
       if (owner in ownerTypeAccountNames) {
         typeAccounts = ownerTypeAccountNames[owner];
       } else {
-        ownerTypeAccountNames[owner] = typeAccounts = {}
+        ownerTypeAccountNames[owner] = typeAccounts = {};
       }
 
       let accountNames: string[];
@@ -43,15 +46,6 @@ interface PopupMonthSummaryData {
   statements?: StatementEntry[]
 }
 
-interface MonthTransferMatrix {
-  accounts: {
-    name: string;
-    transfers: {[accountName:string]: number},
-    total:number
-  }[],
-  total: number
-}
-
 interface StatementEntry {
   name: string,
   stmt: Statement
@@ -69,50 +63,48 @@ interface HeadingPopupData {
   account: TallyAccount
 }
 
-export type PopupData = PopupMonthSummaryData | PopupMonthData | HeadingPopupData;
-
+export type PopupData =
+    PopupMonthSummaryData | PopupMonthData | HeadingPopupData;
 
 interface CellData {
   cells: Cell[],
   popups: PopupData[],
 }
 
-// Computes data for summary cells.
+/**
+ * Computes data for summary cells.
+ * @param {string} owner the id/name for the owner.
+ * @param {string} name account type id
+ * @param {Array<string>} months list of month names to compute summary for.
+ * @param {Object<string, Object<string, Statement>>} statements
+ *   mapping of statements by account and month.
+ * @param {Object<String, SummaryStatement>} summaries
+ *   mapping of summaries by month.
+ * @return {CellData} list of cells and popus.
+ */
 function getSummaryCells(
     owner: string, name: string, months: string[],
     statements: {[accountName:string]: {[month:string]: Statement}},
     summaries: {[month:string]: SummaryStatement}): CellData {
-
   const cellData: CellData = {
     cells: [],
-    popups: []
+    popups: [],
   };
   for (const month of months) {
     const summaryStmt: SummaryStatement = summaries[month];
-    const id = owner + "_" + name + "_" + month;
+    const id = owner + '_' + name + '_' + month;
     cellData.cells.push(new Cell(id, summaryStmt));
     const accounts = ('accounts' in summaryStmt) ? summaryStmt.accounts : [];
     cellData.popups.push({
       id,
-      accountName: owner + " " + name,
+      accountName: owner + ' ' + name,
       month,
       summary: summaryStmt,
       statements: accounts.map((accountName: string): StatementEntry => ({
-          name: accountName, stmt: statements[accountName][month] }))
+        name: accountName, stmt: statements[accountName][month]})),
     });
   }
   return cellData;
-}
-
-function getPopupData(
-  id: string, owner: string, name: string,
-  month: string, stmt: Statement): PopupMonthData {
-  return {
-    id,
-    accountName: name,
-    month,
-    stmt
-  };
 }
 
 interface MatrixDataView {
@@ -125,30 +117,37 @@ interface MatrixDataView {
  * Builds dataView structure with months, rows and popup cell data.
  *
  * @param {Array<string>} months - descending, continuous list of months to show
- * @param accountNameToAccount - account name to account map
- * @param statements - table indexed by account name and month of statements
- * @param summaries - table indexed by owner name + account type and month
- *                    of statement summaries.
+ * @param {Object<string, TallyAccount>} accountNameToAccount
+ *   account name to account map
+ * @param {Object<string, Object<string, Statement>>} statements
+ *   table indexed by account name and month of statements
+ * @param {Object<string, Object<string, SummaryStatement>>} summaries
+ *   table indexed by owner name + account type and month of
+ *   statement summaries.
+ * @return {MatrixDataView} dataview structure.
  */
 export function transformBudgetData(
-    months: string[], accountNameToAccount: {[accountName:string]: TallyAccount},
+    months: string[],
+    accountNameToAccount: {[accountName:string]: TallyAccount},
     statements: {[accountName:string]: {[month:string]: Statement}},
-    summaries: {[ownerAccountType:string]: {[month:string]: SummaryStatement}}) {
+    summaries: {
+      [ownerAccountType:string]: {[month:string]: SummaryStatement}}) {
   const dataView: MatrixDataView = {
     months,
     rows: [],
-    popupCells: []
+    popupCells: [],
   };
-  const ownerTypeAccountNames = getOwnerTypeAccountMap(accountNameToAccount);
+  const ownerTypeAccountNames =
+      getOwnerTypeAccountMap(accountNameToAccount);
   const ownersSorted = getKeysSorted(ownerTypeAccountNames);
 
   for (const owner of ownersSorted) {
     const typeAccountNames = ownerTypeAccountNames[owner];
     dataView.rows.push(new Row(owner, 'SPACE', []));
-    const summaryName = owner + " SUMMARY";
+    const summaryName = owner + ' SUMMARY';
     if (summaryName in summaries) {
       const cellData = getSummaryCells(
-          owner, "SUMMARY", months, statements, summaries[summaryName]);
+          owner, 'SUMMARY', months, statements, summaries[summaryName]);
       dataView.rows.push(new Row(owner, 'TOTAL', cellData.cells));
       Array.prototype.push.apply(dataView.popupCells, cellData.popups);
     }
@@ -156,7 +155,8 @@ export function transformBudgetData(
 
     for (const accountType of accountTypes) {
       dataView.rows.push(new Row(
-          "*** " + owner + " - " + accountType + " *** accounts", 'SPACE', []));
+          '*** ' + owner + ' - ' + accountType + ' *** accounts',
+          'SPACE', []));
       const accountNames = typeAccountNames[accountType].sort(
           (a, b) => a < b ? -1 : (a > b ? 1 : 0));
       for (const accountName of accountNames) {
@@ -164,21 +164,26 @@ export function transformBudgetData(
         const cells = [];
         for (const month of months) {
           const stmt = accountStatements[month];
-          const id = owner + "_" + accountName + "_" + month;
+          const id = owner + '_' + accountName + '_' + month;
           cells.push(new Cell(id, stmt));
-          dataView.popupCells.push(
-              getPopupData(id, owner, accountName, month, stmt))
+          const popupMonthData: PopupMonthData = {
+            id,
+            accountName,
+            month,
+            stmt,
+          };
+          dataView.popupCells.push(popupMonthData);
         }
         const account = accountNameToAccount[accountName];
         dataView.rows.push(new Row(account, 'NORMAL', cells));
         dataView.popupCells.push({
           id: account.name,
-          account
+          account,
         });
       }
-      const name = owner + " " + accountType;
+      const name = owner + ' ' + accountType;
       const cellData = getSummaryCells(
-        owner, accountType, months, statements, summaries[name]);
+          owner, accountType, months, statements, summaries[name]);
       dataView.rows.push(new Row(name, 'TOTAL', cellData.cells));
       Array.prototype.push.apply(dataView.popupCells, cellData.popups);
     }
@@ -189,11 +194,11 @@ export function transformBudgetData(
 /**
  * Builds dataView structure with months, rows and popup cell data.
  *
- * @param data - Server returnred GqlBudget structure.
+ * @param {GqlBudget} data - Server returnred GqlBudget structure.
+ * @return {MatrixDataView} dataview structure.
  */
-export function transformGqlBudgetData(data: GqlBudget) {
+export function transformGqlBudgetData(data: GqlBudget): MatrixDataView {
   const accountNameToAccount: {[accountName:string]: TallyAccount} = {};
-  // Object.assign({}, ...data.accounts.map((x) => ({[x.name]: x})));;
   for (const account of data.accounts) {
     accountNameToAccount[account.name] = {
       name: account.name,
@@ -218,7 +223,7 @@ export function transformGqlBudgetData(data: GqlBudget) {
     const entry = statements[stmt.name] || (statements[stmt.name] = {});
     if (stmt.isClosed) {
       entry[stmt.month] = {
-        isClosed: true
+        isClosed: true,
       };
     } else {
       entry[stmt.month] = {
@@ -231,9 +236,11 @@ export function transformGqlBudgetData(data: GqlBudget) {
         income: stmt.income,
         totalPayments: stmt.totalPayments,
         totalTransfers: stmt.totalTransfers,
-        ... (stmt.change == null ? {} : {change: stmt.change}),
-        ... (stmt.percentChange == null ? {} : {percentChange: stmt.percentChange}),
-        ... (stmt.unaccounted == null ? {} : {unaccounted: stmt.unaccounted}),
+        ...(stmt.change == null ? {} : {change: stmt.change}),
+        ...(stmt.percentChange == null ?
+                {} : {percentChange: stmt.percentChange}),
+        ...(stmt.unaccounted == null ?
+                {} : {unaccounted: stmt.unaccounted}),
         startBalance: (stmt.startBalance?.date == null ? null : {
           amount: stmt.startBalance.amount,
           date: stmt.startBalance.date,
@@ -245,24 +252,26 @@ export function transformGqlBudgetData(data: GqlBudget) {
           type: stmt.endBalance.type,
         }),
         addSub: stmt.inFlows + stmt.outFlows,
-        transactions: stmt.transactions?.map(t=>({
+        transactions: stmt.transactions?.map((t)=>({
           toAccountName: t.toAccountName,
           isExpense: t.isExpense,
           isIncome: t.isIncome,
           balance: {
             amount: t.balance.amount,
             date: t.balance.date,
-            type: t.balance.type
+            type: t.balance.type,
           },
-          ...(t.balanceFromStart != null && {balanceFromStart: t.balanceFromStart}),
+          ...(t.balanceFromStart != null &&
+                  {balanceFromStart: t.balanceFromStart}),
           ...(t.balanceFromEnd != null && {balanceFromEnd: t.balanceFromEnd}),
-          description: t.description || ''
+          description: t.description || '',
         })) ?? [],
       };
     }
   }
   // owner + accout type => month => summary statement map.
-  const summaries: {[ownerAccountType:string]: {[month:string]: SummaryStatement}} = {};
+  const summaries: {
+    [ownerAccountType:string]: {[month:string]: SummaryStatement}} = {};
   for (const stmt of data.summaries) {
     const entry = summaries[stmt.name] || (summaries[stmt.name] = {});
     entry[stmt.month] = {
@@ -283,12 +292,14 @@ export function transformGqlBudgetData(data: GqlBudget) {
         date: stmt.endBalance.date,
         type: stmt.endBalance.type,
       },
-      ... (stmt.change == null ? {} : {change: stmt.change}),
-      ... (stmt.percentChange == null ? {} : {percentChange: stmt.percentChange}),
-      ... (stmt.unaccounted == null ? {} : {unaccounted: stmt.unaccounted}),
+      ...(stmt.change == null ? {} : {change: stmt.change}),
+      ...(stmt.percentChange == null ?
+              {} : {percentChange: stmt.percentChange}),
+      ...(stmt.unaccounted == null ? {} : {unaccounted: stmt.unaccounted}),
     };
   }
-  return transformBudgetData(data.months, accountNameToAccount, statements, summaries);
+  return transformBudgetData(
+      data.months, accountNameToAccount, statements, summaries);
 
   // return {
   //   months: data.months,
@@ -298,6 +309,11 @@ export function transformGqlBudgetData(data: GqlBudget) {
   // };
 }
 
-function getKeysSorted(obj:  {[key:string]: any;}): string[] {
+/**
+ * Get sorted list of object keys.
+ * @param {Object} obj any object
+ * @return {Array<string>} list of keys in sorted order.
+ */
+function getKeysSorted(obj: {[key:string]: any;}): string[] {
   return Object.keys(obj).sort((a, b) => a < b ? -1 : (a > b ? 1 : 0));
 }

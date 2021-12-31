@@ -1,6 +1,6 @@
 import {Statement} from './base';
 
-// Data for rendering given cell.
+/** Data for rendering given cell. */
 export class Cell {
   readonly id: string;
   readonly isClosed: boolean;
@@ -14,6 +14,11 @@ export class Cell {
   readonly unaccounted: number | null;
   readonly balanced: boolean;
 
+  /**
+   * Build cell representing the statement.
+   * @param {string} id cell id
+   * @param {Statement} stmt underlying statement.
+   */
   constructor(id: string, stmt: Statement) {
     this.isClosed = stmt.isClosed;
     this.id = id;

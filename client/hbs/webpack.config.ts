@@ -10,30 +10,31 @@ const config: webpack.Configuration = {
   output: {
     publicPath: 'public',
     filename: 'bundle.js',
-    path: path.resolve(__dirname, 'public')
+    path: path.resolve(__dirname, 'public'),
   },
   resolve: {
     // Add `.ts` as a resolvable extension.
     extensions: ['.ts', '.js'],
     alias: {
-      templates: __dirname + '/templates'
-    }
+      templates: __dirname + '/templates',
+    },
   },
   module: {
     rules: [
       // all files with a `.ts` extension will be handled by `ts-loader`
-      { test: /\.ts$/, loader: 'ts-loader' },
-      { test: /\.hbs/,
+      {test: /\.ts$/, loader: 'ts-loader'},
+      {
+        test: /\.hbs/,
         loader: 'handlebars-loader',
         options: {
           helperDirs: path.join(__dirname, '/templates/helpers'),
-        }
+        },
       },
       {
         test: /\.css$/i,
         use: ['style-loader', 'css-loader'],
       },
-    ]
+    ],
   },
 };
 
