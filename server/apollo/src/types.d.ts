@@ -1,4 +1,5 @@
 export type Maybe<T> = T | null;
+export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
@@ -18,36 +19,36 @@ export type Scalars = {
 };
 
 export enum CacheControlScope {
-  Public = 'PUBLIC',
-  Private = 'PRIVATE'
+  Private = 'PRIVATE',
+  Public = 'PUBLIC'
 }
 
 export type GqlAccount = {
   __typename?: 'GqlAccount';
-  /** Account id/name. */
-  name?: Maybe<Scalars['String']>;
+  address?: Maybe<Scalars['String']>;
+  /** Month when account was clased. If not set means account is still open. */
+  closedOn?: Maybe<Scalars['GqlMonth']>;
   /** Long description for the account. */
   description?: Maybe<Scalars['String']>;
+  external?: Maybe<Scalars['Boolean']>;
+  /** Account id/name. */
+  name?: Maybe<Scalars['String']>;
+  /** Account number. Can be null or unknown for external or proxy accounts. */
+  number?: Maybe<Scalars['String']>;
+  /** Month when account was open. Can be unknown. */
+  openedOn?: Maybe<Scalars['GqlMonth']>;
+  /** List of owner ids for this account. */
+  owners?: Maybe<Array<Maybe<Scalars['String']>>>;
+  password?: Maybe<Scalars['String']>;
+  phone?: Maybe<Scalars['String']>;
+  summary?: Maybe<Scalars['Boolean']>;
   /**
    * Account type. Determines how account is grouped.
    * TODO: This should change to enum.
    */
   type?: Maybe<Scalars['String']>;
-  external?: Maybe<Scalars['Boolean']>;
-  summary?: Maybe<Scalars['Boolean']>;
-  /** Account number. Can be null or unknown for external or proxy accounts. */
-  number?: Maybe<Scalars['String']>;
-  /** Month when account was open. Can be unknown. */
-  openedOn?: Maybe<Scalars['GqlMonth']>;
-  /** Month when account was clased. If not set means account is still open. */
-  closedOn?: Maybe<Scalars['GqlMonth']>;
-  /** List of owner ids for this account. */
-  owners?: Maybe<Array<Maybe<Scalars['String']>>>;
   url?: Maybe<Scalars['String']>;
-  address?: Maybe<Scalars['String']>;
   userName?: Maybe<Scalars['String']>;
-  password?: Maybe<Scalars['String']>;
-  phone?: Maybe<Scalars['String']>;
 };
 
 export type GqlBalance = {
@@ -68,56 +69,56 @@ export type GqlBudget = {
 
 export type GqlStatement = {
   __typename?: 'GqlStatement';
-  name?: Maybe<Scalars['String']>;
-  month?: Maybe<Scalars['GqlMonth']>;
+  change?: Maybe<Scalars['Int']>;
+  endBalance?: Maybe<GqlBalance>;
+  hasProjectedTransfer?: Maybe<Scalars['Boolean']>;
+  inFlows?: Maybe<Scalars['Int']>;
+  income?: Maybe<Scalars['Int']>;
   isClosed?: Maybe<Scalars['Boolean']>;
   isCovered?: Maybe<Scalars['Boolean']>;
   isProjectedCovered?: Maybe<Scalars['Boolean']>;
-  hasProjectedTransfer?: Maybe<Scalars['Boolean']>;
-  startBalance?: Maybe<GqlBalance>;
-  endBalance?: Maybe<GqlBalance>;
-  inFlows?: Maybe<Scalars['Int']>;
+  month?: Maybe<Scalars['GqlMonth']>;
+  name?: Maybe<Scalars['String']>;
   outFlows?: Maybe<Scalars['Int']>;
-  income?: Maybe<Scalars['Int']>;
+  percentChange?: Maybe<Scalars['Float']>;
+  startBalance?: Maybe<GqlBalance>;
   totalPayments?: Maybe<Scalars['Int']>;
   totalTransfers?: Maybe<Scalars['Int']>;
-  change?: Maybe<Scalars['Int']>;
-  percentChange?: Maybe<Scalars['Float']>;
-  unaccounted?: Maybe<Scalars['Float']>;
   transactions?: Maybe<Array<Maybe<GqlTransaction>>>;
+  unaccounted?: Maybe<Scalars['Float']>;
 };
 
 export type GqlSummaryStatement = {
   __typename?: 'GqlSummaryStatement';
-  name?: Maybe<Scalars['String']>;
-  month?: Maybe<Scalars['GqlMonth']>;
   accounts?: Maybe<Array<Maybe<Scalars['String']>>>;
   addSub?: Maybe<Scalars['Int']>;
-  income?: Maybe<Scalars['Int']>;
   change?: Maybe<Scalars['Int']>;
+  endBalance?: Maybe<GqlBalance>;
   inFlows?: Maybe<Scalars['Int']>;
+  income?: Maybe<Scalars['Int']>;
+  month?: Maybe<Scalars['GqlMonth']>;
+  name?: Maybe<Scalars['String']>;
   outFlows?: Maybe<Scalars['Int']>;
   percentChange?: Maybe<Scalars['Float']>;
+  startBalance?: Maybe<GqlBalance>;
   totalPayments?: Maybe<Scalars['Int']>;
   totalTransfers?: Maybe<Scalars['Int']>;
   unaccounted?: Maybe<Scalars['Int']>;
-  endBalance?: Maybe<GqlBalance>;
-  startBalance?: Maybe<GqlBalance>;
 };
 
 export type GqlTransaction = {
   __typename?: 'GqlTransaction';
-  toAccountName?: Maybe<Scalars['String']>;
-  isIncome?: Maybe<Scalars['Boolean']>;
-  isExpense?: Maybe<Scalars['Boolean']>;
   balance?: Maybe<GqlBalance>;
-  balanceFromStart?: Maybe<Scalars['Int']>;
   balanceFromEnd?: Maybe<Scalars['Int']>;
+  balanceFromStart?: Maybe<Scalars['Int']>;
   description?: Maybe<Scalars['String']>;
+  isExpense?: Maybe<Scalars['Boolean']>;
+  isIncome?: Maybe<Scalars['Boolean']>;
+  toAccountName?: Maybe<Scalars['String']>;
 };
 
 export type Query = {
   __typename?: 'Query';
-  files?: Maybe<Array<Maybe<Scalars['String']>>>;
   budget?: Maybe<GqlBudget>;
+  files?: Maybe<Array<Maybe<Scalars['String']>>>;
 };
