@@ -1,6 +1,6 @@
 import './style.css';
 
-import {ApolloClient, gql} from '@apollo/client/core';
+import {ApolloClient, gql, DefaultOptions} from '@apollo/client/core';
 import {InMemoryCache, NormalizedCacheObject} from '@apollo/client/cache';
 import {Query} from '@backend/types';
 import * as $ from 'jquery';
@@ -68,10 +68,22 @@ function reload() {
   });
 }
 
+const defaultOptions: DefaultOptions = {
+  watchQuery: {
+    fetchPolicy: 'no-cache',
+    errorPolicy: 'ignore',
+  },
+  query: {
+    fetchPolicy: 'no-cache',
+    errorPolicy: 'all',
+  },
+};
+
 const gqlCache: InMemoryCache = new InMemoryCache({});
 const gqlClient: ApolloClient<NormalizedCacheObject> = new ApolloClient({
   cache: gqlCache,
   uri: 'http://localhost:4000/graphql',
+  defaultOptions,
 });
 
 // function JSONstringifyOrder(obj: {}, space: number) {
