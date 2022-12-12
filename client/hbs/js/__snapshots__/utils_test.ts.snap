@@ -37,21 +37,22 @@ Object {
       },
     },
     Object {
-      "account": Object {
+      "account": Account {
         "address": "some place",
         "closedOn": null,
         "description": "Main account",
-        "external": false,
         "name": "main",
         "number": "123",
-        "openedOn": "Aug2014",
+        "openedOn": Month {
+          "month": 7,
+          "year": 2014,
+        },
         "owners": Array [
           "owner1",
           "owner2",
         ],
         "password": "password",
         "phone": "123-456-7890",
-        "summary": false,
         "type": "credit",
         "url": "http://somewhere",
         "userName": "user1",
@@ -152,21 +153,22 @@ Object {
       },
     },
     Object {
-      "account": Object {
+      "account": Account {
         "address": "some place",
         "closedOn": null,
         "description": "Main account",
-        "external": false,
         "name": "main",
         "number": "123",
-        "openedOn": "Aug2014",
+        "openedOn": Month {
+          "month": 7,
+          "year": 2014,
+        },
         "owners": Array [
           "owner1",
           "owner2",
         ],
         "password": "password",
         "phone": "123-456-7890",
-        "summary": false,
         "type": "credit",
         "url": "http://somewhere",
         "userName": "user1",
@@ -271,21 +273,22 @@ Object {
       "isNormal": true,
       "isSpace": false,
       "isTotal": false,
-      "title": Object {
+      "title": Account {
         "address": "some place",
         "closedOn": null,
         "description": "Main account",
-        "external": false,
         "name": "main",
         "number": "123",
-        "openedOn": "Aug2014",
+        "openedOn": Month {
+          "month": 7,
+          "year": 2014,
+        },
         "owners": Array [
           "owner1",
           "owner2",
         ],
         "password": "password",
         "phone": "123-456-7890",
-        "summary": false,
         "type": "credit",
         "url": "http://somewhere",
         "userName": "user1",
@@ -345,21 +348,22 @@ Object {
       "isNormal": true,
       "isSpace": false,
       "isTotal": false,
-      "title": Object {
+      "title": Account {
         "address": "some place",
         "closedOn": null,
         "description": "Main account",
-        "external": false,
         "name": "main",
         "number": "123",
-        "openedOn": "Aug2014",
+        "openedOn": Month {
+          "month": 7,
+          "year": 2014,
+        },
         "owners": Array [
           "owner1",
           "owner2",
         ],
         "password": "password",
         "phone": "123-456-7890",
-        "summary": false,
         "type": "credit",
         "url": "http://somewhere",
         "userName": "user1",

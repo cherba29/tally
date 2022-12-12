@@ -1,4 +1,4 @@
-import {TallyAccount} from './base';
+import {Account as TallyAccount} from '@tally-lib';
 
 /** Data for rendering given row. */
 export class Row {

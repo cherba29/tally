@@ -1,5 +1,5 @@
-import {Balance, BalanceType} from '@tally-lib';
-import {Statement, SummaryStatement, TallyAccount} from './base';
+import {Account as TallyAccount, AccountType, Balance, BalanceType, Month} from '@tally-lib';
+import {Statement, SummaryStatement} from './base';
 import {transformBudgetData} from './utils';
 
 
@@ -21,22 +21,20 @@ describe('transformBudgetData', function() {
 
   it('works on single', function() {
     const months = ['Sep2014'];
-    const account: TallyAccount = {
+    const account = new TallyAccount({
       name: 'main',
       address: 'some place',
       closedOn: null,
       description: 'Main account',
-      external: false,
       number: '123',
-      openedOn: 'Aug2014',
+      openedOn: new Month(2014, 7),
       owners: ['owner1', 'owner2'],
       password: 'password',
       phone: '123-456-7890',
-      summary: false,
-      type: 'credit',
+      type: AccountType.CREDIT,
       url: 'http://somewhere',
       userName: 'user1',
-    };
+    });
     const accountNameToAccount: {[accountName:string]: TallyAccount} = {
       main: account,
     };

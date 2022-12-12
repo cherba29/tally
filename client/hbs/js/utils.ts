@@ -1,13 +1,30 @@
-import { GqlBalance, GqlBudget } from '@backend/types';
-import { Balance, BalanceType } from '@tally-lib';
-import {TallyAccount, Statement, SummaryStatement} from './base';
+import { GqlBalance, GqlAccount, GqlBudget } from '@backend/types';
+import { Account as TallyAccount, AccountType, Balance, BalanceType, Month } from '@tally-lib';
+import { Statement, SummaryStatement} from './base';
 import {Cell} from './cell';
 import {Row} from './row';
 
+
+function gqlToAccount(gqlAccount: GqlAccount|null): TallyAccount|null {
+  return new TallyAccount({
+    name: gqlAccount.name,
+    description: gqlAccount.description,
+    openedOn: gqlAccount.openedOn ? Month.fromString(gqlAccount.openedOn) : undefined,
+    closedOn: gqlAccount.closedOn ? Month.fromString(gqlAccount.closedOn) : undefined,
+    owners: gqlAccount.owners ?? [],
+    url: gqlAccount.url,
+    type: gqlAccount.type as AccountType,
+    address: gqlAccount.address,
+    userName: gqlAccount.userName,
+    number: gqlAccount.number,
+    phone: gqlAccount.phone,
+    password: gqlAccount.password,
+  });
+}
+
 function gqlToBalance(gqlBalance: GqlBalance|null): Balance|null {
   if (!gqlBalance) { return null; }
-  const balanceType = gqlBalance.type as keyof typeof BalanceType;
-  return new Balance(gqlBalance.amount, gqlBalance.date, BalanceType[balanceType]);
+  return new Balance(gqlBalance.amount, gqlBalance.date, gqlBalance.type as BalanceType);
 }
 
 /**
@@ -207,22 +224,7 @@ export function transformBudgetData(
 export function transformGqlBudgetData(data: GqlBudget): MatrixDataView {
   const accountNameToAccount: {[accountName:string]: TallyAccount} = {};
   for (const account of data.accounts) {
-    accountNameToAccount[account.name] = {
-      name: account.name,
-      description: account.description,
-      openedOn: account.openedOn,
-      closedOn: account.closedOn,
-      owners: account.owners ?? [],
-      url: account.url,
-      type: account.type,
-      address: account.address,
-      userName: account.userName,
-      number: account.number,
-      phone: account.phone,
-      password: account.password,
-      summary: account.summary,
-      external: account.external,
-    };
+    accountNameToAccount[account.name] = gqlToAccount(account);
   }
   // account name => month => statement map.
   const statements: {[accountName:string]: {[month:string]: Statement}} = {};
