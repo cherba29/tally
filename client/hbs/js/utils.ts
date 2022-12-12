@@ -1,7 +1,14 @@
-import {GqlBudget} from '@backend/types';
+import { GqlBalance, GqlBudget } from '@backend/types';
+import { Balance, BalanceType } from '@tally-lib';
 import {TallyAccount, Statement, SummaryStatement} from './base';
 import {Cell} from './cell';
 import {Row} from './row';
+
+function gqlToBalance(gqlBalance: GqlBalance|null): Balance|null {
+  if (!gqlBalance) { return null; }
+  const balanceType = gqlBalance.type as keyof typeof BalanceType;
+  return new Balance(gqlBalance.amount, gqlBalance.date, BalanceType[balanceType]);
+}
 
 /**
  *  Create map of owner->type->accountname, it will be rendered in this format.
@@ -241,26 +248,14 @@ export function transformGqlBudgetData(data: GqlBudget): MatrixDataView {
                 {} : {percentChange: stmt.percentChange}),
         ...(stmt.unaccounted == null ?
                 {} : {unaccounted: stmt.unaccounted}),
-        startBalance: (stmt.startBalance?.date == null ? null : {
-          amount: stmt.startBalance.amount,
-          date: stmt.startBalance.date,
-          type: stmt.startBalance.type,
-        }),
-        endBalance: (stmt.endBalance?.date == null ? null : {
-          amount: stmt.endBalance.amount,
-          date: stmt.endBalance.date,
-          type: stmt.endBalance.type,
-        }),
+        startBalance: gqlToBalance(stmt.startBalance),
+        endBalance: gqlToBalance(stmt.endBalance),
         addSub: stmt.inFlows + stmt.outFlows,
         transactions: stmt.transactions?.map((t)=>({
           toAccountName: t.toAccountName,
           isExpense: t.isExpense,
           isIncome: t.isIncome,
-          balance: {
-            amount: t.balance.amount,
-            date: t.balance.date,
-            type: t.balance.type,
-          },
+          balance: gqlToBalance(t.balance),
           ...(t.balanceFromStart != null &&
                   {balanceFromStart: t.balanceFromStart}),
           ...(t.balanceFromEnd != null && {balanceFromEnd: t.balanceFromEnd}),
@@ -282,16 +277,8 @@ export function transformGqlBudgetData(data: GqlBudget): MatrixDataView {
       totalPayments: stmt.totalPayments,
       totalTransfers: stmt.totalTransfers,
       addSub: stmt.addSub,
-      startBalance: stmt.startBalance && {
-        amount: stmt.startBalance.amount,
-        date: stmt.startBalance.date,
-        type: stmt.startBalance.type,
-      },
-      endBalance: stmt.endBalance && {
-        amount: stmt.endBalance.amount,
-        date: stmt.endBalance.date,
-        type: stmt.endBalance.type,
-      },
+      startBalance: gqlToBalance(stmt.startBalance),
+      endBalance: gqlToBalance(stmt.endBalance),
       ...(stmt.change == null ? {} : {change: stmt.change}),
       ...(stmt.percentChange == null ?
               {} : {percentChange: stmt.percentChange}),

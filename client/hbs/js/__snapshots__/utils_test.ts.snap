@@ -12,7 +12,7 @@ Object {
       "month": "Sep2014",
       "stmt": Object {
         "addSub": 100,
-        "endBalance": Object {
+        "endBalance": Balance {
           "amount": 3000,
           "date": 2020-04-30T00:00:00.000Z,
           "type": "PROJECTED",
@@ -25,7 +25,7 @@ Object {
         "isProjectedCovered": true,
         "outFlows": 50,
         "percentChange": 1.4,
-        "startBalance": Object {
+        "startBalance": Balance {
           "amount": 2900,
           "date": 2020-04-03T00:00:00.000Z,
           "type": "PROJECTED",
@@ -67,7 +67,7 @@ Object {
           "name": "main",
           "stmt": Object {
             "addSub": 100,
-            "endBalance": Object {
+            "endBalance": Balance {
               "amount": 3000,
               "date": 2020-04-30T00:00:00.000Z,
               "type": "PROJECTED",
@@ -80,7 +80,7 @@ Object {
             "isProjectedCovered": true,
             "outFlows": 50,
             "percentChange": 1.4,
-            "startBalance": Object {
+            "startBalance": Balance {
               "amount": 2900,
               "date": 2020-04-03T00:00:00.000Z,
               "type": "PROJECTED",
@@ -97,7 +97,7 @@ Object {
           "main",
         ],
         "addSub": 100,
-        "endBalance": Object {
+        "endBalance": Balance {
           "amount": 3000,
           "date": 2020-04-30T00:00:00.000Z,
           "type": "PROJECTED",
@@ -110,7 +110,7 @@ Object {
         "isProjectedCovered": true,
         "outFlows": 50,
         "percentChange": 1.4,
-        "startBalance": Object {
+        "startBalance": Balance {
           "amount": 2900,
           "date": 2020-04-03T00:00:00.000Z,
           "type": "PROJECTED",
@@ -127,7 +127,7 @@ Object {
       "month": "Sep2014",
       "stmt": Object {
         "addSub": 100,
-        "endBalance": Object {
+        "endBalance": Balance {
           "amount": 3000,
           "date": 2020-04-30T00:00:00.000Z,
           "type": "PROJECTED",
@@ -140,7 +140,7 @@ Object {
         "isProjectedCovered": true,
         "outFlows": 50,
         "percentChange": 1.4,
-        "startBalance": Object {
+        "startBalance": Balance {
           "amount": 2900,
           "date": 2020-04-03T00:00:00.000Z,
           "type": "PROJECTED",
@@ -182,7 +182,7 @@ Object {
           "name": "main",
           "stmt": Object {
             "addSub": 100,
-            "endBalance": Object {
+            "endBalance": Balance {
               "amount": 3000,
               "date": 2020-04-30T00:00:00.000Z,
               "type": "PROJECTED",
@@ -195,7 +195,7 @@ Object {
             "isProjectedCovered": true,
             "outFlows": 50,
             "percentChange": 1.4,
-            "startBalance": Object {
+            "startBalance": Balance {
               "amount": 2900,
               "date": 2020-04-03T00:00:00.000Z,
               "type": "PROJECTED",
@@ -212,7 +212,7 @@ Object {
           "main",
         ],
         "addSub": 100,
-        "endBalance": Object {
+        "endBalance": Balance {
           "amount": 3000,
           "date": 2020-04-03T00:00:00.000Z,
           "type": "PROJECTED",
@@ -225,7 +225,7 @@ Object {
         "isProjectedCovered": true,
         "outFlows": 50,
         "percentChange": 1.4,
-        "startBalance": Object {
+        "startBalance": Balance {
           "amount": 2900,
           "date": 2020-04-30T00:00:00.000Z,
           "type": "PROJECTED",

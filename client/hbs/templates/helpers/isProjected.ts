@@ -1,5 +1,5 @@
 import {HelperOptions} from 'handlebars';
-import {Balance} from '../../js/base';
+import {Balance, BalanceType} from '@tally-lib';
 
 /**
  * Determines of balance is projected.
@@ -11,7 +11,7 @@ export default function(balance: Balance, options: HelperOptions) {
   const fnTrue = options.fn;
   const fnFalse = options.inverse;
   /* eslint-disable no-invalid-this */
-  return (balance && ('type' in balance) && balance.type !== 'CONFIRMED') ?
+  return (balance && ('type' in balance) && balance.type !== BalanceType.CONFIRMED) ?
       fnTrue(this) : fnFalse(this);
   /* eslint-enable no-invalid-this */
 };

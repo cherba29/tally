@@ -1,3 +1,5 @@
+import { Balance } from '@tally-lib';
+
 export interface TallyAccount {
   name: string;
   description: string;
@@ -34,12 +36,6 @@ export interface TallyAccount {
 
   // Real account number associated with this account.
   number: string;
-}
-
-export interface Balance {
-  amount: number;
-  date: Date;
-  type: string;
 }
 
 export interface Transaction {

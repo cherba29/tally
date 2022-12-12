@@ -1,8 +1,8 @@
 export enum Type {
-  UNKNOWN,
-  CONFIRMED,
-  PROJECTED,
-  AUTO_PROJECTED
+  UNKNOWN = 'UNKNOWN',
+  CONFIRMED = 'CONFIRMED',
+  PROJECTED = 'PROJECTED',
+  AUTO_PROJECTED = 'AUTO_PROJECTED'
 }
 
 const combineTypes = (t1: Type, t2: Type): Type => (t1 < t2 ? t2 : t1);
@@ -45,7 +45,7 @@ export class Balance {
     if (amountDiff !== 0) {
       return amountDiff;
     }
-    return this.type - other.type;
+    return this.type.localeCompare(other.type);
   }
 
   toString(): string {

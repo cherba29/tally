@@ -36,6 +36,7 @@
     "build": "TS_NODE_PROJECT=\"tsconfig-for-webpack-config.json\" webpack",
     "karma": "karma start karma.conf.js",
     "test": "jest",
+    "test-update-snapshot": "jest --updateSnapshot",
     "coverage": "nyc -r text -e .ts -x \"tests/*.test.ts\" npm run test",
     "lint": "eslint . --ext .ts"
   }

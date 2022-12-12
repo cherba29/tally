@@ -16,7 +16,8 @@ const config: webpack.Configuration = {
     // Add `.ts` as a resolvable extension.
     extensions: ['.ts', '.js'],
     alias: {
-      templates: __dirname + '/templates',
+      'templates': __dirname + '/templates',
+      '@tally-lib': path.resolve(__dirname, '../../lib'),
     },
   },
   module: {

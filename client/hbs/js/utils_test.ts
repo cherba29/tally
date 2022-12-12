@@ -1,3 +1,4 @@
+import {Balance, BalanceType} from '@tally-lib';
 import {Statement, SummaryStatement, TallyAccount} from './base';
 import {transformBudgetData} from './utils';
 
@@ -47,16 +48,8 @@ describe('transformBudgetData', function() {
       income: 0,
       totalPayments: 0,
       totalTransfers: 0,
-      startBalance: {
-        amount: 2900,
-        date: new Date('2020-04-03'),
-        type: 'PROJECTED',
-      },
-      endBalance: {
-        amount: 3000,
-        date: new Date('2020-04-30'),
-        type: 'PROJECTED',
-      },
+      startBalance: new Balance(2900, new Date('2020-04-03'), BalanceType.PROJECTED),
+      endBalance: new Balance(3000, new Date('2020-04-30'), BalanceType.PROJECTED),
       isCovered: true,
       isProjectedCovered: true,
       hasProjectedTransfer: true,
@@ -79,16 +72,8 @@ describe('transformBudgetData', function() {
             income: 0,
             totalPayments: 0,
             totalTransfers: 0,
-            startBalance: {
-              amount: 2900,
-              date: new Date('2020-04-03'),
-              type: 'PROJECTED',
-            },
-            endBalance: {
-              amount: 3000,
-              date: new Date('2020-04-30'),
-              type: 'PROJECTED',
-            },
+            startBalance: new Balance(2900, new Date('2020-04-03'),BalanceType.PROJECTED),
+            endBalance: new Balance(3000, new Date('2020-04-30'), BalanceType.PROJECTED),
             isCovered: true,
             isProjectedCovered: true,
             hasProjectedTransfer: true,
@@ -107,16 +92,8 @@ describe('transformBudgetData', function() {
             income: 0,
             totalPayments: 0,
             totalTransfers: 0,
-            startBalance: {
-              amount: 2900,
-              date: new Date('2020-04-30'),
-              type: 'PROJECTED',
-            },
-            endBalance: {
-              amount: 3000,
-              date: new Date('2020-04-03'),
-              type: 'PROJECTED',
-            },
+            startBalance: new Balance(2900, new Date('2020-04-30'), BalanceType.PROJECTED),
+            endBalance: new Balance(3000, new Date('2020-04-03'), BalanceType.PROJECTED),
             isCovered: true,
             isProjectedCovered: true,
             hasProjectedTransfer: true,

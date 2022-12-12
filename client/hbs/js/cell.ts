@@ -1,3 +1,4 @@
+import {BalanceType} from '@tally-lib';
 import {Statement} from './base';
 
 /** Data for rendering given cell. */
@@ -25,7 +26,7 @@ export class Cell {
     this.addSub = ('addSub' in stmt) ? stmt.addSub : null;
     if ('endBalance' in stmt && stmt.endBalance !== null) {
       this.balance = stmt.endBalance.amount;
-      this.isProjected = stmt.endBalance.type !== 'CONFIRMED';
+      this.isProjected = stmt.endBalance.type !== BalanceType.CONFIRMED;
     } else {
       this.balance = null;
       this.isProjected = false;
