@@ -1,4 +1,12 @@
 {
+  "name": "tally-lib",
+  "version": "1.0.0",
+  "main": "build/index.js",
+  "types": "build",
+  "scripts": {
+    "build": "tsc -p ."
+  },
+  "keywords": [],
   "devDependencies": {
     "typescript": "^4.9.4"
   }

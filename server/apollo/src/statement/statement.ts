@@ -1,5 +1,4 @@
-import { Month } from '../core/month';
-import { Balance } from '../core/balance';
+import { Balance, Month } from '@tally-lib';
 
 // Abstraction for a financial statement for a period of time.
 export abstract class Statement {

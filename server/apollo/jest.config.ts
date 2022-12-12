@@ -6,5 +6,8 @@ export default {
   preset: 'ts-jest',
   testEnvironment: 'node',
   /** Indicates whether each individual test should be reported during the run. */
-  verbose: false
+  verbose: false,
+  moduleNameMapper: {
+    '^@tally-lib$': '<rootDir>/../../lib'
+  }
 };

@@ -1,9 +1,5 @@
-import { Account } from '../core/account';
-import { Balance, Type as BalanceType } from '../core/balance';
-import { Month } from '../core/month';
-import { Budget } from '../core/budget';
+import { Account, Balance, BalanceType, Budget, Month, Transfer } from '@tally-lib';
 import { Statement } from './statement';
-import { Transfer } from '../core/transfer';
 
 export enum Type {
   UNKNOWN,
@@ -115,7 +111,8 @@ function makeTranscationStatement(
   });
 
   for (const t of descTransfers) {
-    statement.hasProjectedTransfer ||= t.balance.type == BalanceType.PROJECTED;
+    statement.hasProjectedTransfer =
+      statement.hasProjectedTransfer || t.balance.type == BalanceType.PROJECTED;
     let otherAccount: Account | undefined;
     let balance: Balance | undefined;
     let transactionType = Type.UNKNOWN;

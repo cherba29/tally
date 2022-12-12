@@ -1,5 +1,4 @@
-import { Balance } from '../core/balance';
-import { Month } from '../core/month';
+import { Balance, Month } from '@tally-lib';
 import { Statement } from './statement';
 import { TransactionStatement } from './transaction';
 

@@ -15,7 +15,10 @@ module.exports = {
     path: path.resolve(__dirname, 'dist')
   },
   resolve: {
-    extensions: ['.ts', '.js']
+    extensions: ['.ts', '.js'],
+    alias: {
+      '@tally-lib': path.resolve(__dirname, '../../lib'),
+    }
   },
   target: 'node'
 };

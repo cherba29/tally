@@ -1,6 +1,5 @@
-import { Account, Type as AccountType } from '../core/account';
+import { Account, AccountType, Month } from '@tally-lib';
 import { buildSummaryStatementTable } from './summary';
-import { Month } from '../core/month';
 import { TransactionStatement } from './transaction';
 
 describe('Build', () => {
@@ -9,7 +8,7 @@ describe('Build', () => {
     expect(statements).toEqual([]);
   });
 
-  test('single closed account - not included', () => {
+  test('single closed account - still included', () => {
     const account1 = new Account({
       name: 'test-account1',
       type: AccountType.CHECKING,
@@ -20,7 +19,32 @@ describe('Build', () => {
 
     const stmt = new TransactionStatement(account1, Month.fromString('Mar2021'));
     const statements = Array.from(buildSummaryStatementTable([stmt]));
-    expect(statements).toEqual([]);
+    expect(statements).toEqual([
+      {
+        startBalance: undefined,
+        endBalance: undefined,
+        inFlows: 0,
+        income: 0,
+        month: Month.fromString('Mar2021'),
+        name: 'john CHECKING',
+        outFlows: 0,
+        statements: [stmt],
+        totalPayments: 0,
+        totalTransfers: 0
+      },
+      {
+        startBalance: undefined,
+        endBalance: undefined,
+        inFlows: 0,
+        income: 0,
+        month: Month.fromString('Mar2021'),
+        name: 'john SUMMARY',
+        outFlows: 0,
+        statements: [stmt],
+        totalPayments: 0,
+        totalTransfers: 0
+      }
+    ]);
   });
 
   test('single external account - no SUMMARY', () => {

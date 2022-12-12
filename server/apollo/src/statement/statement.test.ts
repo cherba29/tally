@@ -1,5 +1,4 @@
-import { Balance, Type as BalanceType } from '../core/balance';
-import { Month } from '../core/month';
+import { Balance, BalanceType, Month } from '@tally-lib';
 import { Statement } from './statement';
 
 class TestStatement extends Statement {
@@ -49,11 +48,13 @@ describe('Creation', () => {
       month: new Month(2021, 2),
       addSub: 70,
       change: undefined,
+      endBalance: undefined,
       inFlows: 110,
       income: 0,
       isClosed: true,
       outFlows: -40,
       percentChange: undefined,
+      startBalance: undefined,
       totalPayments: 0,
       totalTransfers: 0,
       unaccounted: undefined
