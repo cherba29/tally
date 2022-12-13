@@ -8,6 +8,10 @@ import typeDefs from './type-defs';
 // Load settings from .env into process.env
 dotenv.config();
 
+if (!process.env.TALLY_FILES) {
+  throw Error('Process environment variable "TALLY_FILES" has not been specified.');
+}
+
 process.on('uncaughtException', (e) => {
   console.log(e);
   process.exit(1);
@@ -28,6 +32,7 @@ const server = new ApolloServer({
 });
 
 const app = express();
+app.use('/app', express.static(__dirname + '/../../../client/hbs'))
 server.applyMiddleware({app});
 
 app.listen({port: 4000}, () => 

@@ -225,4 +225,4 @@ $('#reload').on('click', reload);
 $('#reload-gql').on('click', reloadGql);
 
 // Trigger reload on first load.
-reload();
+reloadGql();

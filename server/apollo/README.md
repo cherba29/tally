@@ -1,5 +1,17 @@
 # GraphQL Tally server.
 
+To run
+
+Assuming in project directory `tally`, the server can be started as
+
+```
+cd server/apollo
+node dist/server
+```
+It serves files from the client registering them under `/app` path. 
+So to load it open http://localhost:4000/app/js_summary.html
+
+
 This version of the server is [Apollo](https://www.apollographql.com) based.
 
 In a terminal run
