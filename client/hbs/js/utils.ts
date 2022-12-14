@@ -1,31 +1,10 @@
-import { GqlBalance, GqlAccount, GqlBudget } from '@backend/types';
+import { GqlBudget } from '@backend/types';
 import { Account as TallyAccount, AccountType, Balance, BalanceType, Month } from '@tally-lib';
 import { Statement, SummaryStatement} from './base';
 import {Cell} from './cell';
 import {Row} from './row';
+import {gqlToAccount, gqlToBalance} from './gql_utils'
 
-
-function gqlToAccount(gqlAccount: GqlAccount|null): TallyAccount|null {
-  return new TallyAccount({
-    name: gqlAccount.name,
-    description: gqlAccount.description,
-    openedOn: gqlAccount.openedOn ? Month.fromString(gqlAccount.openedOn) : undefined,
-    closedOn: gqlAccount.closedOn ? Month.fromString(gqlAccount.closedOn) : undefined,
-    owners: gqlAccount.owners ?? [],
-    url: gqlAccount.url,
-    type: gqlAccount.type as AccountType,
-    address: gqlAccount.address,
-    userName: gqlAccount.userName,
-    number: gqlAccount.number,
-    phone: gqlAccount.phone,
-    password: gqlAccount.password,
-  });
-}
-
-function gqlToBalance(gqlBalance: GqlBalance|null): Balance|null {
-  if (!gqlBalance) { return null; }
-  return new Balance(gqlBalance.amount, gqlBalance.date, gqlBalance.type as BalanceType);
-}
 
 /**
  *  Create map of owner->type->accountname, it will be rendered in this format.
