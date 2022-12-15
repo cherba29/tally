@@ -95,6 +95,7 @@ export default gql`
     totalPayments: Int
     totalTransfers: Int
     change: Int
+    addSub: Int
     percentChange: Float
     unaccounted: Float
     transactions: [GqlTransaction]

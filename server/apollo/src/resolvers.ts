@@ -42,6 +42,7 @@ function buildGqlBudget(): GqlBudget {
       totalPayments: statement.totalPayments,
       totalTransfers: statement.totalTransfers,
       change: statement.change,
+      addSub: statement.addSub,
       percentChange:
         statement.percentChange &&
         Math.round((statement.percentChange + Number.EPSILON) * 100) / 100,

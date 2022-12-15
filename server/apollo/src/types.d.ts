@@ -10,11 +10,8 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
-  /** Date representation in YYYY-MM-DD format. */
   Date: any;
-  /** Month representation in XxxYYYY format. */
   GqlMonth: any;
-  /** The `Upload` scalar type represents a file upload. */
   Upload: any;
 };
 
@@ -69,6 +66,7 @@ export type GqlBudget = {
 
 export type GqlStatement = {
   __typename?: 'GqlStatement';
+  addSub?: Maybe<Scalars['Int']>;
   change?: Maybe<Scalars['Int']>;
   endBalance?: Maybe<GqlBalance>;
   hasProjectedTransfer?: Maybe<Scalars['Boolean']>;
