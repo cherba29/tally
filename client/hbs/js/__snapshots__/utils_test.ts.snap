@@ -39,7 +39,7 @@ Object {
     Object {
       "account": Account {
         "address": "some place",
-        "closedOn": null,
+        "closedOn": undefined,
         "description": "Main account",
         "name": "main",
         "number": "123",
@@ -155,7 +155,7 @@ Object {
     Object {
       "account": Account {
         "address": "some place",
-        "closedOn": null,
+        "closedOn": undefined,
         "description": "Main account",
         "name": "main",
         "number": "123",
@@ -275,7 +275,7 @@ Object {
       "isTotal": false,
       "title": Account {
         "address": "some place",
-        "closedOn": null,
+        "closedOn": undefined,
         "description": "Main account",
         "name": "main",
         "number": "123",
@@ -350,7 +350,7 @@ Object {
       "isTotal": false,
       "title": Account {
         "address": "some place",
-        "closedOn": null,
+        "closedOn": undefined,
         "description": "Main account",
         "name": "main",
         "number": "123",

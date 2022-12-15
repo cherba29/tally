@@ -12,7 +12,8 @@ import * as balance_tooltip from 'templates/balance-tooltip.hbs';
 import * as summary_template from 'templates/summary.hbs';
 /* eslint-enable camelcase */
 
-import {transformBudgetData, transformGqlBudgetData, PopupData} from './utils';
+import {transformGqlBudgetData, PopupData} from './utils';
+import { JettyResponse, transformJettyBudgetData } from './jetty_utils';
 
 /** Reset popup. */
 function clearPopup() {
@@ -27,7 +28,7 @@ function createPopupFunc(popup: PopupData) {
   return (e: JQuery.Event): void => {
     console.log('popup', popup);
     const popupElement = $('#popup-content');
-    popupElement.offset({top: e.pageY + 10, left: e.pageX});
+    popupElement.offset({top: (e.pageY ?? 0) + 10, left: e.pageX});
     if ('summary' in popup) {
       popupElement.html(balance_summary_tooltip(popup));
     } else if ('account' in popup) {
@@ -43,7 +44,7 @@ function createPopupFunc(popup: PopupData) {
 function reload() {
   const path = '/budget?dir=' + window.location.hash.substring(1);
   console.log('Loading ', path);
-  $.getJSON(path, (response): void => {
+  $.getJSON(path, (response: JettyResponse): void => {
     console.log('server response', response);
     if (!response.success) {
       const popupElement = $('#popup-content');
@@ -54,10 +55,7 @@ function reload() {
     clearPopup();
 
     // Convert data so it can be rendered.
-    const data = response.data;
-    const dataView = transformBudgetData(
-        data.months, data.accountNameToAccount,
-        data.statements, data.summaries);
+    const dataView = transformJettyBudgetData(response.data);
     $('#content').html(summary_template(dataView));
     // Most cells have popups with details, activate these.
     for (const popup of dataView.popupCells) {
@@ -138,6 +136,7 @@ function reloadGql() {
                 isProjectedCovered
                 hasProjectedTransfer
                 change
+                addSub
                 percentChange
                 unaccounted
                 startBalance {
@@ -207,7 +206,7 @@ function reloadGql() {
         //   console.log('OLD', JSONstringifyOrder(oldData, 2));
         //   console.log('NEW', JSONstringifyOrder(newData, 2));
         // });
-        const dataView = transformGqlBudgetData(result.data.budget);
+        const dataView = transformGqlBudgetData(result.data.budget || undefined);
         $('#content').html(summary_template(dataView));
         // Most cells have popups with details, activate these.
         for (const popup of dataView.popupCells) {

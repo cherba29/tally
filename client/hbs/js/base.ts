@@ -38,8 +38,8 @@ export interface SummaryStatement {
   isClosed?: boolean;
   accounts: string[];
   addSub: number;
-  startBalance: Balance;
-  endBalance: Balance;
+  startBalance?: Balance;
+  endBalance?: Balance;
   isCovered?: boolean;
   isProjectedCovered?: boolean;
   hasProjectedTransfer?: boolean;

@@ -1,9 +1,9 @@
-import { GqlBudget } from '@backend/types';
+import { GqlAccount, GqlBudget } from '@backend/types';
 import { Account as TallyAccount, AccountType, Balance, BalanceType, Month } from '@tally-lib';
 import { Statement, SummaryStatement} from './base';
 import {Cell} from './cell';
 import {Row} from './row';
-import {gqlToAccount, gqlToBalance} from './gql_utils'
+import {gqlToAccount, gqlToBalance, gqlToStatement, gqlToSummaryStatement} from './gql_utils'
 
 
 /**
@@ -110,7 +110,7 @@ function getSummaryCells(
   return cellData;
 }
 
-interface MatrixDataView {
+export interface MatrixDataView {
   months: string[],
   rows: Row[],
   popupCells: PopupData[]
@@ -134,7 +134,7 @@ export function transformBudgetData(
     accountNameToAccount: {[accountName:string]: TallyAccount},
     statements: {[accountName:string]: {[month:string]: Statement}},
     summaries: {
-      [ownerAccountType:string]: {[month:string]: SummaryStatement}}) {
+      [ownerAccountType:string]: {[month:string]: SummaryStatement}}): MatrixDataView {
   const dataView: MatrixDataView = {
     months,
     rows: [],
@@ -200,74 +200,30 @@ export function transformBudgetData(
  * @param {GqlBudget} data - Server returnred GqlBudget structure.
  * @return {MatrixDataView} dataview structure.
  */
-export function transformGqlBudgetData(data: GqlBudget): MatrixDataView {
+export function transformGqlBudgetData(data: GqlBudget|undefined): MatrixDataView {
   const accountNameToAccount: {[accountName:string]: TallyAccount} = {};
-  for (const account of data.accounts) {
-    accountNameToAccount[account.name] = gqlToAccount(account);
+  for (const gqlAccount of data?.accounts ?? []) {
+    if (!gqlAccount) continue;
+    const account = gqlToAccount(gqlAccount);
+    accountNameToAccount[account.name] = account;
   }
   // account name => month => statement map.
   const statements: {[accountName:string]: {[month:string]: Statement}} = {};
-  for (const stmt of data.statements) {
+  for (const stmt of data?.statements ?? []) {
+    if (!stmt || !stmt.name) continue;
     const entry = statements[stmt.name] || (statements[stmt.name] = {});
-    if (stmt.isClosed) {
-      entry[stmt.month] = {
-        isClosed: true,
-      };
-    } else {
-      entry[stmt.month] = {
-        inFlows: stmt.inFlows,
-        outFlows: stmt.outFlows,
-        isClosed: stmt.isClosed || undefined,
-        isCovered: stmt.isCovered,
-        isProjectedCovered: stmt.isProjectedCovered,
-        hasProjectedTransfer: stmt.hasProjectedTransfer,
-        income: stmt.income,
-        totalPayments: stmt.totalPayments,
-        totalTransfers: stmt.totalTransfers,
-        ...(stmt.change == null ? {} : {change: stmt.change}),
-        ...(stmt.percentChange == null ?
-                {} : {percentChange: stmt.percentChange}),
-        ...(stmt.unaccounted == null ?
-                {} : {unaccounted: stmt.unaccounted}),
-        startBalance: gqlToBalance(stmt.startBalance),
-        endBalance: gqlToBalance(stmt.endBalance),
-        addSub: stmt.inFlows + stmt.outFlows,
-        transactions: stmt.transactions?.map((t)=>({
-          toAccountName: t.toAccountName,
-          isExpense: t.isExpense,
-          isIncome: t.isIncome,
-          balance: gqlToBalance(t.balance),
-          ...(t.balanceFromStart != null &&
-                  {balanceFromStart: t.balanceFromStart}),
-          ...(t.balanceFromEnd != null && {balanceFromEnd: t.balanceFromEnd}),
-          description: t.description || '',
-        })) ?? [],
-      };
-    }
+    entry[stmt.month] = gqlToStatement(stmt);
   }
   // owner + accout type => month => summary statement map.
   const summaries: {
     [ownerAccountType:string]: {[month:string]: SummaryStatement}} = {};
-  for (const stmt of data.summaries) {
+  for (const stmt of data?.summaries ?? []) {
+    if (!stmt || !stmt.name) continue;
     const entry = summaries[stmt.name] || (summaries[stmt.name] = {});
-    entry[stmt.month] = {
-      accounts: stmt.accounts,
-      inFlows: stmt.inFlows,
-      outFlows: stmt.outFlows,
-      income: stmt.income,
-      totalPayments: stmt.totalPayments,
-      totalTransfers: stmt.totalTransfers,
-      addSub: stmt.addSub,
-      startBalance: gqlToBalance(stmt.startBalance),
-      endBalance: gqlToBalance(stmt.endBalance),
-      ...(stmt.change == null ? {} : {change: stmt.change}),
-      ...(stmt.percentChange == null ?
-              {} : {percentChange: stmt.percentChange}),
-      ...(stmt.unaccounted == null ? {} : {unaccounted: stmt.unaccounted}),
-    };
+    entry[stmt.month] = gqlToSummaryStatement(stmt);
   }
   return transformBudgetData(
-      data.months, accountNameToAccount, statements, summaries);
+      data?.months || [], accountNameToAccount, statements, summaries);
 
   // return {
   //   months: data.months,

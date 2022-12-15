@@ -3,7 +3,7 @@ import {gqlToAccount, gqlToBalance} from './gql_utils'
 
 describe('gqlToBalance', function() {
   it('returns null for null', function() {
-    expect(gqlToBalance(null)).toBeNull();
+    expect(gqlToBalance(null)).toBeUndefined();
   });
   it('returns null for null', function() {
     expect(gqlToBalance({amount: 100.0, date: '2022-01-02', type: 'CONFIRMED'}))

@@ -11,7 +11,9 @@ export default function(balance: Balance, options: HelperOptions) {
   const fnTrue = options.fn;
   const fnFalse = options.inverse;
   /* eslint-disable no-invalid-this */
-  return (balance && ('type' in balance) && balance.type !== BalanceType.CONFIRMED) ?
-      fnTrue(this) : fnFalse(this);
+  //@ts-ignore
+  const context = this;
   /* eslint-enable no-invalid-this */
+  return (balance && ('type' in balance) && balance.type !== BalanceType.CONFIRMED) ?
+      fnTrue(context) : fnFalse(context);
 };

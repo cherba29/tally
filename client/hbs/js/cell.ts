@@ -21,22 +21,22 @@ export class Cell {
    * @param {Statement} stmt underlying statement.
    */
   constructor(id: string, stmt: Statement) {
-    this.isClosed = stmt.isClosed;
+    this.isClosed = stmt.isClosed ?? false;
     this.id = id;
-    this.addSub = ('addSub' in stmt) ? stmt.addSub : null;
-    if ('endBalance' in stmt && stmt.endBalance !== null) {
+    this.addSub = stmt.addSub ?? null;
+    if (stmt.endBalance) {
       this.balance = stmt.endBalance.amount;
       this.isProjected = stmt.endBalance.type !== BalanceType.CONFIRMED;
     } else {
       this.balance = null;
       this.isProjected = false;
     }
-    this.isCovered = stmt.isCovered;
-    this.isProjectedCovered = stmt.isProjectedCovered;
-    this.hasProjectedTransfer = stmt.hasProjectedTransfer;
+    this.isCovered = stmt.isCovered ?? false;
+    this.isProjectedCovered = stmt.isProjectedCovered ?? false;
+    this.hasProjectedTransfer = stmt.hasProjectedTransfer ?? false;
     this.isProjected = this.isProjected || this.hasProjectedTransfer;
-    this.percentChange = ('percentChange' in stmt) ? stmt.percentChange : null;
-    if ('unaccounted' in stmt) {
+    this.percentChange = stmt.percentChange ?? null;
+    if (stmt.unaccounted) {
       this.unaccounted = stmt.unaccounted;
       this.balanced = !this.unaccounted;
     } else {

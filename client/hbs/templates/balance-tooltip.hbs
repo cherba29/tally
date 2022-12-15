@@ -6,7 +6,7 @@
     <th align="left">Ending Balance</th>
     <th>Type</th>
     <th></th>
-    <th>{{stmt.endBalance.date}}</th>
+    <th>{{dateFormat stmt.endBalance.date}}</th>
     <th align="right">{{currency stmt.endBalance.amount}}</th>
     <th></th>
   </tr>
@@ -21,7 +21,7 @@
         background-color:#aca
       {{/if}}{{/if}}">{{#if isExpense}}E{{else}}{{#if isIncome}}I{{else}}T{{/if}}{{/if}}</td>
     <td align="right" style="min-width:40px">{{currency balance.amount}}</td>
-    <td align="middle" style="min-width:60px">{{balance.date}}</td>
+    <td align="middle" style="min-width:60px">{{dateFormat balance.date}}</td>
     <td align="right" style="min-width:50px">{{currency balanceFromEnd}}</td>
     <td align="right" style="min-width:50px">{{currency balanceFromStart}}</td>
   </tr>
@@ -30,7 +30,7 @@
     <th align="left">Starting Balance</td>
     <th></th>
     <th></th>
-    <th>{{stmt.startBalance.date}}</th>
+    <th>{{dateFormat stmt.startBalance.date}}</th>
     <th></th>
     <th align="right" style="width:50px">{{currency stmt.startBalance.amount}}</th>
   </tr>

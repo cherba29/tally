@@ -22,11 +22,11 @@
     {{#each statements}}
     <tr class="highlight">
       <td>{{incremented @index}} {{name}}</td>
-      <td align="middle">{{stmt.startBalance.date}}</td>
+      <td align="middle">{{dateFormat stmt.startBalance.date}}</td>
       <td align="right"{{#isProjected stmt.startBalance}} class="projected"{{/isProjected}}>
         {{~currency stmt.startBalance.amount~}}
       </td>
-      <td align="middle">{{stmt.endBalance.date}}</td>
+      <td align="middle">{{dateFormat stmt.endBalance.date}}</td>
       <td align="right"{{#isProjected stmt.endBalance}} class="projected"{{/isProjected}}>
         {{~currency stmt.endBalance.amount~}}
       </td>
@@ -43,11 +43,11 @@
     {{/each}}
     <tr>
       <td><b>Total</b></td>
-      <td align="middle">{{summary.startBalance.date}}</td>
+      <td align="middle">{{dateFormat summary.startBalance.date}}</td>
       <td align="right"{{#if summary.startBalance.projected}} class="projected"{{/if}}>
         {{~currency summary.startBalance.amount~}}
       </td>
-      <td align="middle">{{summary.endBalance.date}}</td>
+      <td align="middle">{{dateFormat summary.endBalance.date}}</td>
       <td align="right"{{#if summary.endBalance.projected}} class="projected"{{/if}}>
         {{~currency summary.endBalance.amount~}}
       </td>

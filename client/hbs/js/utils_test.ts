@@ -24,7 +24,7 @@ describe('transformBudgetData', function() {
     const account = new TallyAccount({
       name: 'main',
       address: 'some place',
-      closedOn: null,
+      closedOn: undefined,
       description: 'Main account',
       number: '123',
       openedOn: new Month(2014, 7),
