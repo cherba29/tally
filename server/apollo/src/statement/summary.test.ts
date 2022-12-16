@@ -8,7 +8,7 @@ describe('Build', () => {
     expect(statements).toEqual([]);
   });
 
-  test('single closed account - still included', () => {
+  test('single closed account - produces summary without it', () => {
     const account1 = new Account({
       name: 'test-account1',
       type: AccountType.CHECKING,
@@ -28,7 +28,7 @@ describe('Build', () => {
         month: Month.fromString('Mar2021'),
         name: 'john CHECKING',
         outFlows: 0,
-        statements: [stmt],
+        statements: [],
         totalPayments: 0,
         totalTransfers: 0
       },
@@ -40,7 +40,7 @@ describe('Build', () => {
         month: Month.fromString('Mar2021'),
         name: 'john SUMMARY',
         outFlows: 0,
-        statements: [stmt],
+        statements: [],
         totalPayments: 0,
         totalTransfers: 0
       }

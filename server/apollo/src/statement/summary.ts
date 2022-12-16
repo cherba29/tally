@@ -19,6 +19,9 @@ export class SummaryStatement extends Statement {
         `Statement for month ${statement.month} is being added to summary for month ${this.month}`
       );
     }
+    if (statement.isClosed) {  // Does not contribute to the summary.
+      return;
+    }
     if (!this.startBalance) {
       this.startBalance = statement.startBalance;
     } else if (statement.startBalance) {
