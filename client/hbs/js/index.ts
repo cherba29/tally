@@ -12,8 +12,9 @@ import * as balance_tooltip from 'templates/balance-tooltip.hbs';
 import * as summary_template from 'templates/summary.hbs';
 /* eslint-enable camelcase */
 
-import {transformGqlBudgetData, PopupData} from './utils';
+import { PopupData} from './utils';
 import { JettyResponse, transformJettyBudgetData } from './jetty_utils';
+import {transformGqlBudgetData} from './gql_utils';
 
 /** Reset popup. */
 function clearPopup() {
