@@ -1,8 +1,5 @@
 import './style.css';
 
-import {ApolloClient, gql, DefaultOptions} from '@apollo/client/core';
-import {InMemoryCache, NormalizedCacheObject} from '@apollo/client/cache';
-import {Query} from '@backend/types';
 import * as $ from 'jquery';
 /* eslint-disable camelcase */
 import * as account_tooltip from 'templates/account-tooltip.hbs';
@@ -12,6 +9,7 @@ import * as balance_tooltip from 'templates/balance-tooltip.hbs';
 import * as summary_template from 'templates/summary.hbs';
 /* eslint-enable camelcase */
 
+import { BackendClient } from './api';
 import { PopupData} from './utils';
 import { JettyResponse, transformJettyBudgetData } from './jetty_utils';
 import {transformGqlBudgetData} from './gql_utils';
@@ -67,23 +65,7 @@ function reload() {
   });
 }
 
-const defaultOptions: DefaultOptions = {
-  watchQuery: {
-    fetchPolicy: 'no-cache',
-    errorPolicy: 'ignore',
-  },
-  query: {
-    fetchPolicy: 'no-cache',
-    errorPolicy: 'all',
-  },
-};
-
-const gqlCache: InMemoryCache = new InMemoryCache({});
-const gqlClient: ApolloClient<NormalizedCacheObject> = new ApolloClient({
-  cache: gqlCache,
-  uri: 'http://localhost:4000/graphql',
-  defaultOptions,
-});
+const backendClient = new BackendClient();
 
 // function JSONstringifyOrder(obj: {}, space: number) {
 //   var allKeys: Array<string> = [];
@@ -102,95 +84,7 @@ const gqlClient: ApolloClient<NormalizedCacheObject> = new ApolloClient({
 /** Loads graphql version of data and re-renders the page. */
 function reloadGql() {
   console.log('Loading graphql');
-  gqlClient
-      .query<Query>({
-        query: gql`
-          query {
-            budget {
-              accounts {
-                name
-                description
-                type
-                openedOn
-                closedOn
-                number
-                owners
-                address
-                external
-                summary
-                userName
-                password
-                phone
-                url
-              }
-              months 
-              statements {
-                name
-                month
-                inFlows
-                outFlows
-                income
-                totalPayments
-                totalTransfers
-                isClosed
-                isCovered
-                isProjectedCovered
-                hasProjectedTransfer
-                change
-                addSub
-                percentChange
-                unaccounted
-                startBalance {
-                  amount
-                  date
-                  type
-                }
-                endBalance {
-                  amount
-                  date
-                  type
-                }
-                transactions {
-                  toAccountName
-                  isIncome
-                  isExpense
-                  balance {
-                    amount
-                    date
-                    type
-                  }
-                  balanceFromStart
-                  balanceFromEnd
-                  description
-                }
-              }
-              summaries {
-                name
-                month
-                accounts
-                addSub
-                change
-                inFlows
-                outFlows
-                percentChange
-                income
-                totalPayments
-                totalTransfers
-                unaccounted
-                startBalance {
-                  amount
-                  date
-                  type
-                }
-                endBalance {
-                  amount
-                  date
-                  type
-                }
-              }
-            }
-          }`,
-      }).then((result) => {
+  backendClient.loadData().then((result) => {
         clearPopup();
         console.log(result);
         // const newData = transformGqlBudgetData(result.data.budget);
