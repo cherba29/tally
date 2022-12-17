@@ -13,6 +13,9 @@ const defaultOptions: DefaultOptions = {
   },
 };
 
+/**
+ * Gql Backend Client.
+ */
 export class BackendClient {
   private readonly gqlCache: InMemoryCache = new InMemoryCache({});
   private readonly gqlClient: ApolloClient<NormalizedCacheObject> = new ApolloClient({
@@ -21,9 +24,12 @@ export class BackendClient {
     defaultOptions,
   });
 
+  /**
+   * Load data via gql cleint.
+   * @return promise of query result.
+   */
   loadData(): Promise<ApolloQueryResult<Query>> {
-    return this.gqlClient
-    .query<Query>({
+    return this.gqlClient.query<Query>({
       query: gql`
         query {
           budget {
@@ -43,7 +49,7 @@ export class BackendClient {
               phone
               url
             }
-            months 
+            months
             statements {
               name
               month
@@ -109,7 +115,8 @@ export class BackendClient {
               }
             }
           }
-        }`,
+        }
+      `,
     });
   }
 }

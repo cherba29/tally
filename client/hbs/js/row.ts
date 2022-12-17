@@ -16,9 +16,9 @@ export class Row {
    */
   constructor(title: string|TallyAccount, type: string, cells: any[]) {
     this.title = title;
-    this.isSpace = ('SPACE' === type);
-    this.isTotal = ('TOTAL' === type);
-    this.isNormal = ('NORMAL' === type);
+    this.isSpace = 'SPACE' === type;
+    this.isTotal = 'TOTAL' === type;
+    this.isNormal = 'NORMAL' === type;
     this.cells = cells;
   }
 }

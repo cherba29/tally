@@ -1,16 +1,27 @@
-import { Account as TallyAccount, AccountType, Balance, BalanceType, Month } from '@tally-lib';
-import { Statement, SummaryStatement, Transaction } from './base';
-import { GqlBalance, GqlAccount, GqlBudget, GqlStatement, GqlTransaction, GqlSummaryStatement } from '@backend/types';
-import { transformBudgetData, MatrixDataView } from "./utils";
+import {Account, AccountType, Balance, BalanceType, Month} from '@tally-lib';
+import {Statement, SummaryStatement, Transaction} from './base';
+import {
+  GqlBalance,
+  GqlAccount,
+  GqlBudget,
+  GqlStatement,
+  GqlTransaction,
+  GqlSummaryStatement,
+} from '@backend/types';
+import {transformBudgetData, MatrixDataView} from './utils';
 
-/** Convert gqlType Account type. */
-export function gqlToAccount(gqlAccount: GqlAccount): TallyAccount{
-  return new TallyAccount({
+/**
+ * Convert gqlType Account type.
+ * @param gqlAccount - backend object with GqlAccount fields.
+ * @return Account object.
+ */
+function gqlToAccount(gqlAccount: GqlAccount): Account {
+  return new Account({
     name: gqlAccount.name || '',
     description: gqlAccount.description || '',
     openedOn: gqlAccount.openedOn ? Month.fromString(gqlAccount.openedOn) : undefined,
     closedOn: gqlAccount.closedOn ? Month.fromString(gqlAccount.closedOn) : undefined,
-    owners: (gqlAccount.owners || []).filter(item=>item).map(item=>item as string),
+    owners: (gqlAccount.owners || []).filter((item) => item).map((item) => item as string),
     url: gqlAccount.url || '',
     type: (gqlAccount.type || AccountType.EXTERNAL) as AccountType,
     address: gqlAccount.address || undefined,
@@ -21,14 +32,28 @@ export function gqlToAccount(gqlAccount: GqlAccount): TallyAccount{
   });
 }
 
-/** Convert gqlType Balance type. */
-export function gqlToBalance(gqlBalance: GqlBalance|null|undefined): Balance|undefined {
-  if (!gqlBalance || gqlBalance.amount === null) { return undefined; }
-  return new Balance(gqlBalance?.amount ?? 0, new Date(gqlBalance.date), gqlBalance.type as BalanceType);
+/**
+ * Convert gqlType Balance type.
+ * @param gqlBalance - backend object with GqlBalance fields.
+ * @return Balance object.
+ */
+export function gqlToBalance(gqlBalance: GqlBalance | null | undefined): Balance | undefined {
+  if (!gqlBalance || gqlBalance.amount === null) {
+    return undefined;
+  }
+  return new Balance(
+      gqlBalance?.amount ?? 0,
+      new Date(gqlBalance.date),
+    gqlBalance.type as BalanceType,
+  );
 }
 
-/** Convert gqlType Statement type. */
-export function gqlToTransaction(tran: GqlTransaction|null): Transaction {
+/**
+ * Convert gqlType Statement type.
+ * @param tran - backend object with GqlTransaction fields.
+ * @return Transaction object.
+ */
+function gqlToTransaction(tran: GqlTransaction | null): Transaction {
   if (!tran) {
     throw new Error(`Undefined transaction`);
   }
@@ -47,39 +72,45 @@ export function gqlToTransaction(tran: GqlTransaction|null): Transaction {
   };
 }
 
-/** Convert gqlType Statement type. */
-export function gqlToStatement(stmt: GqlStatement): Statement {
+/**
+ * Convert gqlType Statement type.
+ * @param stmt - backend object with GqlStatement fields.
+ * @return Statement object.
+ */
+function gqlToStatement(stmt: GqlStatement): Statement {
   if (stmt.isClosed) {
     return {
       isClosed: true,
     };
   }
   return {
-      inFlows: stmt.inFlows ?? undefined,
-      outFlows: stmt.outFlows ?? undefined,
-      isClosed: stmt.isClosed ?? undefined,
-      isCovered: stmt.isCovered ?? undefined,
-      isProjectedCovered: stmt.isProjectedCovered ?? undefined,
-      hasProjectedTransfer: stmt.hasProjectedTransfer ?? undefined,
-      income: stmt.income ?? undefined,
-      totalPayments: stmt.totalPayments ?? undefined,
-      totalTransfers: stmt.totalTransfers ?? undefined,
-      ...(stmt.change == null ? {} : {change: stmt.change}),
-      ...(stmt.percentChange == null ?
-              {} : {percentChange: stmt.percentChange}),
-      ...(stmt.unaccounted == null ?
-              {} : {unaccounted: stmt.unaccounted}),
-      startBalance: gqlToBalance(stmt.startBalance),
-      endBalance: gqlToBalance(stmt.endBalance),
-      addSub: (stmt.inFlows || 0) + (stmt.outFlows || 0),
-      transactions: (stmt.transactions || []).map((t)=>(gqlToTransaction(t))) ?? [],
-    };
+    inFlows: stmt.inFlows ?? undefined,
+    outFlows: stmt.outFlows ?? undefined,
+    isClosed: stmt.isClosed ?? undefined,
+    isCovered: stmt.isCovered ?? undefined,
+    isProjectedCovered: stmt.isProjectedCovered ?? undefined,
+    hasProjectedTransfer: stmt.hasProjectedTransfer ?? undefined,
+    income: stmt.income ?? undefined,
+    totalPayments: stmt.totalPayments ?? undefined,
+    totalTransfers: stmt.totalTransfers ?? undefined,
+    ...(stmt.change == null ? {} : {change: stmt.change}),
+    ...(stmt.percentChange == null ? {} : {percentChange: stmt.percentChange}),
+    ...(stmt.unaccounted == null ? {} : {unaccounted: stmt.unaccounted}),
+    startBalance: gqlToBalance(stmt.startBalance),
+    endBalance: gqlToBalance(stmt.endBalance),
+    addSub: (stmt.inFlows || 0) + (stmt.outFlows || 0),
+    transactions: (stmt.transactions || []).map((t) => gqlToTransaction(t)) ?? [],
+  };
 }
 
-/** Convert gqlType SummaryStatement type. */
-export function gqlToSummaryStatement(stmt: GqlSummaryStatement): SummaryStatement {
+/**
+ * Convert gqlType SummaryStatement type.
+ * @param stmt - backend object with GqlSummaryStatement fields.
+ * @return SummaryStatement object.
+ */
+function gqlToSummaryStatement(stmt: GqlSummaryStatement): SummaryStatement {
   return {
-    accounts: (stmt.accounts || []).filter(a=>a).map(a=>a as string),
+    accounts: (stmt.accounts || []).filter((a) => a).map((a) => a as string),
     inFlows: stmt.inFlows ?? 0,
     outFlows: stmt.outFlows ?? 0,
     income: stmt.income ?? 0,
@@ -89,8 +120,7 @@ export function gqlToSummaryStatement(stmt: GqlSummaryStatement): SummaryStateme
     startBalance: gqlToBalance(stmt.startBalance),
     endBalance: gqlToBalance(stmt.endBalance),
     ...(stmt.change == null ? {} : {change: stmt.change}),
-    ...(stmt.percentChange == null ?
-            {} : {percentChange: stmt.percentChange}),
+    ...(stmt.percentChange == null ? {} : {percentChange: stmt.percentChange}),
     ...(stmt.unaccounted == null ? {} : {unaccounted: stmt.unaccounted}),
   };
 }
@@ -98,18 +128,18 @@ export function gqlToSummaryStatement(stmt: GqlSummaryStatement): SummaryStateme
 /**
  * Builds dataView structure with months, rows and popup cell data.
  *
- * @param {GqlBudget} data - Server returnred GqlBudget structure.
- * @return {MatrixDataView} dataview structure.
+ * @param data - Server returnred GqlBudget structure.
+ * @return MatrixDataView dataview structure.
  */
-export function transformGqlBudgetData(data: GqlBudget|undefined): MatrixDataView {
-  const accountNameToAccount: {[accountName:string]: TallyAccount} = {};
+export function transformGqlBudgetData(data: GqlBudget | undefined): MatrixDataView {
+  const accountNameToAccount: {[accountName: string]: Account} = {};
   for (const gqlAccount of data?.accounts ?? []) {
     if (!gqlAccount) continue;
     const account = gqlToAccount(gqlAccount);
     accountNameToAccount[account.name] = account;
   }
   // account name => month => statement map.
-  const statements: {[accountName:string]: {[month:string]: Statement}} = {};
+  const statements: {[accountName: string]: {[month: string]: Statement}} = {};
   for (const stmt of data?.statements ?? []) {
     if (!stmt || !stmt.name) continue;
     const entry = statements[stmt.name] || (statements[stmt.name] = {});
@@ -117,14 +147,14 @@ export function transformGqlBudgetData(data: GqlBudget|undefined): MatrixDataVie
   }
   // owner + accout type => month => summary statement map.
   const summaries: {
-    [ownerAccountType:string]: {[month:string]: SummaryStatement}} = {};
+    [ownerAccountType: string]: {[month: string]: SummaryStatement};
+  } = {};
   for (const stmt of data?.summaries ?? []) {
     if (!stmt || !stmt.name) continue;
     const entry = summaries[stmt.name] || (summaries[stmt.name] = {});
     entry[stmt.month] = gqlToSummaryStatement(stmt);
   }
-  return transformBudgetData(
-      data?.months || [], accountNameToAccount, statements, summaries);
+  return transformBudgetData(data?.months || [], accountNameToAccount, statements, summaries);
 
   // return {
   //   months: data.months,

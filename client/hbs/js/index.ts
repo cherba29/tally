@@ -3,19 +3,18 @@ import './style.css';
 import * as $ from 'jquery';
 /* eslint-disable camelcase */
 import * as account_tooltip from 'templates/account-tooltip.hbs';
-import * as balance_summary_tooltip
-  from 'templates/balance-summary-tooltip.hbs';
+import * as balance_summary_tooltip from 'templates/balance-summary-tooltip.hbs';
 import * as balance_tooltip from 'templates/balance-tooltip.hbs';
 import * as summary_template from 'templates/summary.hbs';
 /* eslint-enable camelcase */
 
-import { BackendClient } from './api';
-import { PopupData} from './utils';
-import { JettyResponse, transformJettyBudgetData } from './jetty_utils';
+import {BackendClient} from './api';
+import {PopupData} from './utils';
+import {JettyResponse, transformJettyBudgetData} from './jetty_utils';
 import {transformGqlBudgetData} from './gql_utils';
 
 /** Reset popup. */
-function clearPopup() {
+function clearPopup(): void {
   $('#popup-content').html('');
 }
 
@@ -40,7 +39,7 @@ function createPopupFunc(popup: PopupData) {
 }
 
 /** Loads json and re-renders the page. */
-function reload() {
+function reload(): void {
   const path = '/budget?dir=' + window.location.hash.substring(1);
   console.log('Loading ', path);
   $.getJSON(path, (response: JettyResponse): void => {
@@ -61,53 +60,28 @@ function reload() {
       $('#' + popup.id).click(createPopupFunc(popup));
     }
   }).fail((jqxhr, textStatus, error): void => {
-    console.log( `Request Failed: ${textStatus}, ${error}`);
+    console.log(`Request Failed: ${textStatus}, ${error}`);
   });
 }
 
 const backendClient = new BackendClient();
 
-// function JSONstringifyOrder(obj: {}, space: number) {
-//   var allKeys: Array<string> = [];
-//   var seen: {[key:string]: null} = {};
-//   JSON.stringify(obj, function (key, value) {
-//     if (!(key in seen)) {
-//       allKeys.push(key);
-//       seen[key] = null;
-//     }
-//     return value;
-//   });
-//   allKeys.sort();
-//   return JSON.stringify(obj, allKeys, space);
-// }
-
 /** Loads graphql version of data and re-renders the page. */
-function reloadGql() {
+function reloadGql(): void {
   console.log('Loading graphql');
-  backendClient.loadData().then((result) => {
+  backendClient
+      .loadData()
+      .then((result) => {
         clearPopup();
         console.log(result);
-        // const newData = transformGqlBudgetData(result.data.budget);
-        // const path = '/budget?dir=' + window.location.hash.substring(1);
-        // $.getJSON(path, (response): void => {
-        //   console.log('server response', response)
-        //   if (!response.success) {
-        //     const popupElement = $('#popup-content');
-        //     popupElement.offset({ top: 40, left: 0 });
-        //     popupElement.html('<pre>' + response.message + '</pre>');
-        //     return;
-        //   }
-        //   const oldData = response.data;
-        //   console.log('OLD', JSONstringifyOrder(oldData, 2));
-        //   console.log('NEW', JSONstringifyOrder(newData, 2));
-        // });
         const dataView = transformGqlBudgetData(result.data.budget || undefined);
         $('#content').html(summary_template(dataView));
         // Most cells have popups with details, activate these.
         for (const popup of dataView.popupCells) {
           $('#' + popup.id).click(createPopupFunc(popup));
         }
-      }).catch((error) => {
+      })
+      .catch((error) => {
         const popupElement = $('#popup-content');
         popupElement.offset({top: 40, left: 0});
         popupElement.html('<pre>' + error.message + '</pre>');
