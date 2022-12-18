@@ -38,12 +38,7 @@ export class Cell {
     this.hasProjectedTransfer = stmt.hasProjectedTransfer ?? false;
     this.isProjected = this.isProjected || this.hasProjectedTransfer;
     this.percentChange = stmt.percentChange ?? null;
-    if (stmt.unaccounted) {
-      this.unaccounted = stmt.unaccounted;
-      this.balanced = !this.unaccounted;
-    } else {
-      this.unaccounted = null;
-      this.balanced = true;
-    }
+    this.unaccounted = stmt.unaccounted ?? null;
+    this.balanced = !this.unaccounted;
   }
 }
