@@ -1,4 +1,4 @@
-import {Account, Month} from '@tally-lib';
+import {Account} from '@tally-lib';
 import {Statement, SummaryStatement} from './base';
 import {Cell} from './cell';
 import {Row, Type as RowType} from './row';
@@ -95,11 +95,11 @@ function getSummaryCells(
   };
   for (const month of months) {
     const summaryStmt: SummaryStatement = summaries[month];
-    const id = owner + '_' + name + '_' + month;
-    cellData.cells.push(new Cell(id, summaryStmt));
-    const accounts = 'accounts' in summaryStmt ? summaryStmt.accounts : [];
+    const cell = new Cell(owner, name, month, summaryStmt);
+    cellData.cells.push(cell);
+    const accounts = summaryStmt?.accounts ?? [];
     cellData.popups.push({
-      id,
+      id: cell.id,
       accountName: owner + ' ' + name,
       month,
       summary: summaryStmt,
@@ -170,18 +170,16 @@ export function transformBudgetData(
       dataView.rows.push(
           new Row('*** ' + owner + ' - ' + accountType + ' *** accounts', RowType.SPACE, []),
       );
-      const accountNames = typeAccountNames[accountType].sort((a, b) =>
-        a < b ? -1 : a > b ? 1 : 0,
-      );
+      const accountNames: string[] = typeAccountNames[accountType].sort();
       for (const accountName of accountNames) {
-        const accountStatements = statements[accountName];
-        const cells = [];
+        const accountStatements: {[month: string]: Statement; } = statements[accountName];
+        const cells: Cell[] = [];
         for (const month of months) {
-          const stmt = accountStatements[month];
-          const id = owner + '_' + accountName + '_' + month;
-          cells.push(new Cell(id, stmt));
+          const stmt: Statement = accountStatements[month];
+          const cell = new Cell(owner, accountName, month, stmt);
+          cells.push(cell);
           const popupMonthData: PopupMonthData = {
-            id,
+            id: cell.id,
             accountName,
             month,
             stmt,

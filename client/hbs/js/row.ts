@@ -1,9 +1,15 @@
 import {Account} from '@tally-lib';
+import {Cell} from './cell';
 
-export enum Type  {
-  SPACE = 'SPACE',
-  TOTAL = 'TOTAL',
-  NORMAL = 'NORMAL',
+/** Row type, each is rendered differently. */
+export enum Type {
+  // Empty row with just heading, used for summary.
+  // For each owner summary and then owner/type summary.
+  SPACE,
+  // Row containing totals for summary per month.
+  TOTAL,
+  // Row containing account statements per month.
+  NORMAL,
 }
 
 /** Data for rendering given row. */
@@ -12,15 +18,15 @@ export class Row {
   isSpace: boolean;
   isTotal: boolean;
   isNormal: boolean;
-  cells: any[];
+  cells: Cell[];
 
   /**
    * Build row object.
-   * @param {string|Account} title row title.
-   * @param {string} type row type
-   * @param {any[]} cells list of cells
+   * @param title row title or account itself for NORMAL type.
+   * @param type row type
+   * @param cells list of cells
    */
-  constructor(title: string|Account, type: Type, cells: any[]) {
+  constructor(title: string|Account, type: Type, cells: Cell[]) {
     this.title = title;
     this.isSpace = Type.SPACE === type;
     this.isTotal = Type.TOTAL === type;

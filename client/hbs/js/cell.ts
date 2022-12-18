@@ -17,12 +17,14 @@ export class Cell {
 
   /**
    * Build cell representing the statement.
-   * @param {string} id cell id
-   * @param {Statement} stmt underlying statement.
+   * @param owner account owner, used for id.
+   * @param accountName account name, used for id.
+   * @param month used for id.
+   * @param stmt underlying statement.
    */
-  constructor(id: string, stmt: Statement) {
+  constructor(owner: string, accountName: string, month: string, stmt: Statement) {
     this.isClosed = stmt.isClosed ?? false;
-    this.id = id;
+    this.id = `${owner}_${accountName}_${month}`;
     this.addSub = stmt.addSub ?? null;
     if (stmt.endBalance) {
       this.balance = stmt.endBalance.amount;
