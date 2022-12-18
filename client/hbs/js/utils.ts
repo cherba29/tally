@@ -1,16 +1,16 @@
-import {Account as TallyAccount} from '@tally-lib';
+import {Account, Month} from '@tally-lib';
 import {Statement, SummaryStatement} from './base';
 import {Cell} from './cell';
-import {Row} from './row';
+import {Row, Type as RowType} from './row';
 
 /**
  *  Create map of owner->type->accountname, it will be rendered in this format.
- * @param {Object<string, TallyAccount>} accountNameToAccount
+ * @param {Object<string, Account>} accountNameToAccount
  *   account name->account map
  * @return {Object<string, Object<string, string>>} map of
  *   owner->type->accountname.
  */
-function getOwnerTypeAccountMap(accountNameToAccount: {[accountType: string]: TallyAccount}): {
+function getOwnerTypeAccountMap(accountNameToAccount: {[accountType: string]: Account}): {
   [ownerType: string]: {[accountType: string]: string[]};
 } {
   const ownerTypeAccountNames: {
@@ -18,7 +18,7 @@ function getOwnerTypeAccountMap(accountNameToAccount: {[accountType: string]: Ta
   } = {};
 
   for (const accountName of Object.keys(accountNameToAccount)) {
-    const account: TallyAccount = accountNameToAccount[accountName];
+    const account: Account = accountNameToAccount[accountName];
     for (const owner of account.owners) {
       let typeAccounts: {[accountName: string]: string[]};
       if (owner in ownerTypeAccountNames) {
@@ -61,7 +61,7 @@ interface PopupMonthData {
 
 interface HeadingPopupData {
   id: string;
-  account: TallyAccount;
+  account: Account;
 }
 
 export type PopupData = PopupMonthSummaryData | PopupMonthData | HeadingPopupData;
@@ -124,7 +124,7 @@ export interface MatrixDataView {
  * Builds dataView structure with months, rows and popup cell data.
  *
  * @param {Array<string>} months - descending, continuous list of months to show
- * @param {Object<string, TallyAccount>} accountNameToAccount
+ * @param {Object<string, Account>} accountNameToAccount
  *   account name to account map
  * @param {Object<string, Object<string, Statement>>} statements
  *   table indexed by account name and month of statements
@@ -135,7 +135,7 @@ export interface MatrixDataView {
  */
 export function transformBudgetData(
     months: string[],
-    accountNameToAccount: {[accountName: string]: TallyAccount},
+    accountNameToAccount: {[accountName: string]: Account},
     statements: {[accountName: string]: {[month: string]: Statement}},
     summaries: {
     [ownerAccountType: string]: {[month: string]: SummaryStatement};
@@ -151,7 +151,7 @@ export function transformBudgetData(
 
   for (const owner of ownersSorted) {
     const typeAccountNames = ownerTypeAccountNames[owner];
-    dataView.rows.push(new Row(owner, 'SPACE', []));
+    dataView.rows.push(new Row(owner, RowType.SPACE, []));
     const summaryName = owner + ' SUMMARY';
     if (summaryName in summaries) {
       const cellData = getSummaryCells(
@@ -161,14 +161,14 @@ export function transformBudgetData(
           statements,
           summaries[summaryName],
       );
-      dataView.rows.push(new Row(owner, 'TOTAL', cellData.cells));
+      dataView.rows.push(new Row(owner, RowType.TOTAL, cellData.cells));
       Array.prototype.push.apply(dataView.popupCells, cellData.popups);
     }
     const accountTypes = getKeysSorted(typeAccountNames);
 
     for (const accountType of accountTypes) {
       dataView.rows.push(
-          new Row('*** ' + owner + ' - ' + accountType + ' *** accounts', 'SPACE', []),
+          new Row('*** ' + owner + ' - ' + accountType + ' *** accounts', RowType.SPACE, []),
       );
       const accountNames = typeAccountNames[accountType].sort((a, b) =>
         a < b ? -1 : a > b ? 1 : 0,
@@ -189,7 +189,7 @@ export function transformBudgetData(
           dataView.popupCells.push(popupMonthData);
         }
         const account = accountNameToAccount[accountName];
-        dataView.rows.push(new Row(account, 'NORMAL', cells));
+        dataView.rows.push(new Row(account, RowType.NORMAL, cells));
         dataView.popupCells.push({
           id: account.name,
           account,
@@ -197,7 +197,7 @@ export function transformBudgetData(
       }
       const name = owner + ' ' + accountType;
       const cellData = getSummaryCells(owner, accountType, months, statements, summaries[name]);
-      dataView.rows.push(new Row(name, 'TOTAL', cellData.cells));
+      dataView.rows.push(new Row(name, RowType.TOTAL, cellData.cells));
       Array.prototype.push.apply(dataView.popupCells, cellData.popups);
     }
   }

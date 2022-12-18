@@ -1,8 +1,14 @@
-import {Account as TallyAccount} from '@tally-lib';
+import {Account} from '@tally-lib';
+
+export enum Type  {
+  SPACE = 'SPACE',
+  TOTAL = 'TOTAL',
+  NORMAL = 'NORMAL',
+}
 
 /** Data for rendering given row. */
 export class Row {
-  title: string|TallyAccount;
+  title: string|Account;
   isSpace: boolean;
   isTotal: boolean;
   isNormal: boolean;
@@ -10,15 +16,15 @@ export class Row {
 
   /**
    * Build row object.
-   * @param {string|TallyAccount} title row title.
+   * @param {string|Account} title row title.
    * @param {string} type row type
    * @param {any[]} cells list of cells
    */
-  constructor(title: string|TallyAccount, type: string, cells: any[]) {
+  constructor(title: string|Account, type: Type, cells: any[]) {
     this.title = title;
-    this.isSpace = 'SPACE' === type;
-    this.isTotal = 'TOTAL' === type;
-    this.isNormal = 'NORMAL' === type;
+    this.isSpace = Type.SPACE === type;
+    this.isTotal = Type.TOTAL === type;
+    this.isNormal = Type.NORMAL === type;
     this.cells = cells;
   }
 }
