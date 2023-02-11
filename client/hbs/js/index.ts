@@ -38,11 +38,14 @@ function createPopupFunc(popup: PopupData) {
   };
 }
 
+let lastReloadTimestamp = new Date();
+
 /** Loads json and re-renders the page. */
 function reload(): void {
   const path = '/budget?dir=' + window.location.hash.substring(1);
   console.log('Loading ', path);
   $.getJSON(path, (response: JettyResponse): void => {
+    lastReloadTimestamp = new Date();
     console.log('server response', response);
     if (!response.success) {
       const popupElement = $('#popup-content');
@@ -72,6 +75,7 @@ function reloadGql(): void {
   backendClient
       .loadData()
       .then((result) => {
+        lastReloadTimestamp = new Date();
         console.log(result);
         if (result.errors) {
           const popupElement = $('#popup-content');
@@ -103,3 +107,17 @@ $('#reload-gql').on('click', reloadGql);
 
 // Trigger reload on first load.
 reloadGql();
+
+function pad(n: number) {
+  const str = '0' + n.toString();
+  return str.substring(str.length-2);
+}
+
+// Show how long ago page was reloaded.
+setInterval(()=>{
+  const minutesElement = $('#minutes');
+  const secondsElement = $('#seconds');
+  const diffTimeSec = Math.round((new Date().getTime() - lastReloadTimestamp.getTime()) / 1000);
+  secondsElement.html(pad(diffTimeSec % 60));
+  minutesElement.html(pad(Math.floor(diffTimeSec / 60)));
+}, 1000);
