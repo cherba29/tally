@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { Month, Budget, BudgetBuilder } from '@tally-lib';
+import { Budget, BudgetBuilder } from '@tally-lib';
 import { loadYamlFile } from './loader_yaml';
 import { loadTallyConfig } from './config';
 // import {SummaryStatement} from '../core/summary_statement';
@@ -41,9 +41,10 @@ export function loadBudget(): Budget {
   const budgetBuilder = new BudgetBuilder();
 
   const config = loadTallyConfig();
-  const start = Month.fromString(config.budget_period.start);
-  const end = Month.fromString(config.budget_period.end).next();
-  budgetBuilder.setPeriod(start, end);
+  // Always show one more month, in case user chooses in the config
+  // just single month. It is not meaningful to show only one month
+  // as values from next used for current month.
+  budgetBuilder.setPeriod(config.budget_period.start, config.budget_period.end.next());
 
   const filePaths: string[] = [];
   for (const file_path of readdirSync(process.env.TALLY_FILES)) {

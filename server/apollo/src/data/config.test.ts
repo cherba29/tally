@@ -1,5 +1,6 @@
 import { loadTallyConfig } from './config';
 import mockfs from 'mock-fs';
+import { Month } from '@tally-lib';
 
 describe('Loading config', () => {
   afterEach(() => {
@@ -78,6 +79,21 @@ describe('Loading config', () => {
     );
   });
 
+  test('fails when start is after end', () => {
+    const TALLY_PATH = 'tally/files/path';
+    process.env.TALLY_FILES = TALLY_PATH;
+    mockfs({
+      [TALLY_PATH]: {
+        '_config.yaml': 'budget_period: {start: Nov2021, end: Feb2021}'
+      }
+    });
+    expect(loadTallyConfig).toThrow(
+      new Error(
+        `File "${TALLY_PATH}/_config.yaml" specified end Feb2021 before start Nov2021 in budget_period`
+      )
+    );
+  });
+
   test('succeeds', () => {
     const TALLY_PATH = 'tally/files/path';
     process.env.TALLY_FILES = TALLY_PATH;
@@ -88,8 +104,8 @@ describe('Loading config', () => {
     });
     expect(loadTallyConfig()).toEqual({
       budget_period: {
-        start: 'Nov2019',
-        end: 'Feb2021'
+        start: Month.fromString('Nov2019'),
+        end: Month.fromString('Feb2021')
       }
     });
   });

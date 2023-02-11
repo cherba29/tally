@@ -1,10 +1,11 @@
 import { readFileSync } from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
+import { Month } from '@tally-lib';
 
 interface BudgetPeriod {
-  start: string;
-  end: string;
+  start: Month;
+  end: Month;
 }
 
 interface TallyConfig {
@@ -32,5 +33,14 @@ export function loadTallyConfig(): TallyConfig {
   if (!budget_period.end) {
     throw new Error(`File "${configPath}" does not specify end in budget_period`);
   }
-  return config as TallyConfig;
+  const start = Month.fromString(budget_period.start);
+  const end = Month.fromString(budget_period.end);
+
+  if (start.compareTo(end) > 0) {
+    throw new Error(
+      `File "${configPath}" specified end ${end} before start ${start} in budget_period`
+    );
+  }
+
+  return { budget_period: { start, end } };
 }
