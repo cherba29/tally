@@ -72,8 +72,17 @@ function reloadGql(): void {
   backendClient
       .loadData()
       .then((result) => {
-        clearPopup();
         console.log(result);
+        if (result.errors) {
+          const popupElement = $('#popup-content');
+          popupElement.offset({top: 40, left: 0});
+          for (const error of result.errors) {
+            popupElement.html('<pre>' + error.message + '</pre>');
+          }
+          return;
+        }
+        clearPopup();
+
         const dataView = transformGqlBudgetData(result.data.budget || undefined);
         $('#content').html(summary_template(dataView));
         // Most cells have popups with details, activate these.
