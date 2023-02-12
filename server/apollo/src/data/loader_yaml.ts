@@ -51,6 +51,10 @@ function lookupAccountType(type: string): AccountType | undefined {
   return undefined;
 }
 
+function isValidDate(date: any) {
+  return date && Object.prototype.toString.call(date) === '[object Date]' && !isNaN(date);
+}
+
 function makeBalance(data: BalanceData) {
   let amount = 0;
   let balanceType = BalanceType.UNKNOWN;
@@ -62,10 +66,10 @@ function makeBalance(data: BalanceData) {
     balanceType = BalanceType.PROJECTED;
   } else {
     throw new Error(
-      `Balance ${JSON.stringify(data)} does not have date set type, expected camt or pamt entry.`
+      `Balance ${JSON.stringify(data)} does not have amount type set, expected camt or pamt entry.`
     );
   }
-  if (!data.date) {
+  if (!data.date || !isValidDate(data.date)) {
     throw new Error(`Balance ${JSON.stringify(data)} does not have date set.`);
   }
   return new Balance(amount, data.date, balanceType);
@@ -170,8 +174,13 @@ export function loadYamlFile(
   content: string,
   relative_file_path: string
 ): void {
-  const accountData = yaml.safeLoad(content, {
-    filename: relative_file_path
+  const accountData = yaml.load(content, {
+    filename: relative_file_path,
+    onWarning: (ex: yaml.YAMLException) => {
+      console.warn(ex);
+    },
+    schema: yaml.DEFAULT_SAFE_SCHEMA,
+    json: false
   }) as YamlData | undefined;
   try {
     processYamlData(budgetBuilder, accountData);

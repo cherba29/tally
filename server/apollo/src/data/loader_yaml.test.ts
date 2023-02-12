@@ -203,6 +203,24 @@ describe('loadYaml', () => {
     );
   });
 
+  test('fails with bad balance date', () => {
+    const budgetBuilder = new BudgetBuilder();
+    const content = `
+      name: test-account
+      owner: [ someone ]
+      type: external
+      balances:
+      - { grp: Jan2020, date: 20200101, camt:  0.00 }
+      `;
+    expect(() =>
+      loadYamlFile(budgetBuilder, content, /*relative_file_path=*/ 'path/file.yaml')
+    ).toThrow(
+      new Error(
+        'Balance {"grp":"Jan2020","date":20200101,"camt":0} does not have date set. while processing path/file.yaml'
+      )
+    );
+  });
+
   test('fails without balance type', () => {
     const budgetBuilder = new BudgetBuilder();
     const content = `
@@ -216,7 +234,7 @@ describe('loadYaml', () => {
       loadYamlFile(budgetBuilder, content, /*relative_file_path=*/ 'path/file.yaml')
     ).toThrow(
       new Error(
-        `Balance {"grp":"Jan2020","date":"2020-01-01T00:00:00.000Z","xamt":0} does not have date set type, expected camt or pamt entry. while processing path/file.yaml`
+        `Balance {"grp":"Jan2020","date":"2020-01-01T00:00:00.000Z","xamt":0} does not have amount type set, expected camt or pamt entry. while processing path/file.yaml`
       )
     );
   });
