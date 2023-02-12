@@ -83,6 +83,9 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData | undefine
   if (!accountType) {
     throw new Error(`Unknown type '${data.type}' for account '${data.name}'`);
   }
+  if (!data.owner || data.owner.length === 0) {
+    throw new Error(`Account '${data.name}' has no owners`);
+  }
   const account = new Account({
     name: data.name,
     description: data.desc,
@@ -90,7 +93,7 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData | undefine
     number: data.number,
     openedOn: data.opened_on ? Month.fromString(data.opened_on) : undefined,
     closedOn: data.closed_on ? Month.fromString(data.closed_on) : undefined,
-    owners: data.owner || [],
+    owners: data.owner,
     url: data.url,
     phone: data.phone,
     address: data.address,

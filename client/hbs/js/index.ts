@@ -109,8 +109,7 @@ $('#reload-gql').on('click', reloadGql);
 reloadGql();
 
 function pad(n: number) {
-  const str = '0' + n.toString();
-  return str.substring(str.length-2);
+  return n > 9 ? n.toString() : '0' + n.toString();
 }
 
 // Show how long ago page was reloaded.

@@ -56,6 +56,30 @@ describe('loadYaml', () => {
     expect(console.log).toHaveBeenCalledWith('Account Data', { name: 'test', type: 'SOMETHING' });
   });
 
+  test('fails when account has no owners', () => {
+    jest.spyOn(console, 'error').mockImplementation();
+    jest.spyOn(console, 'log').mockImplementation();
+
+    const budgetBuilder = new BudgetBuilder();
+    expect(() =>
+      loadYamlFile(
+        budgetBuilder,
+        /*content=*/ 'name: test\ntype: external\nowner: []',
+        /*relative_file_path=*/ 'path/file.yaml'
+      )
+    ).toThrow(new Error("Account 'test' has no owners while processing path/file.yaml"));
+    expect(console.error).toHaveBeenCalledTimes(1);
+    expect(console.error).toHaveBeenCalledWith(
+      "Error: Account 'test' has no owners while processing path/file.yaml"
+    );
+    expect(console.log).toHaveBeenCalledTimes(1);
+    expect(console.log).toHaveBeenCalledWith('Account Data', {
+      name: 'test',
+      owner: [],
+      type: 'external'
+    });
+  });
+
   test('empty account', () => {
     const budgetBuilder = new BudgetBuilder();
     const content = `
@@ -102,6 +126,7 @@ describe('loadYaml', () => {
     const budgetBuilder = new BudgetBuilder();
     const content = `
       name: test-account
+      owner: [ someone ]
       type: external
       balances:
       - { grp: Feb2020, date: 2020-02-01, pamt: 10.00 }
@@ -128,6 +153,7 @@ describe('loadYaml', () => {
     const budgetBuilder = new BudgetBuilder();
     const content = `
       name: test-account
+      owner: [ someone ]
       type: external
       balances:
       - { date: 2020-01-01, camt:  0.00 }
@@ -145,6 +171,7 @@ describe('loadYaml', () => {
     const budgetBuilder = new BudgetBuilder();
     const content = `
       name: test-account
+      owner: [ someone ]
       type: external
       balances:
       - { grp: Xxx2020, date: 2020-01-01, camt:  0.00 }
@@ -162,6 +189,7 @@ describe('loadYaml', () => {
     const budgetBuilder = new BudgetBuilder();
     const content = `
       name: test-account
+      owner: [ someone ]
       type: external
       balances:
       - { grp: Jan2020, camt:  0.00 }
@@ -179,6 +207,7 @@ describe('loadYaml', () => {
     const budgetBuilder = new BudgetBuilder();
     const content = `
       name: test-account
+      owner: [ someone ]
       type: external
       balances:
       - { grp: Jan2020, date: 2020-01-01, xamt:  0.00 }
@@ -196,6 +225,7 @@ describe('loadYaml', () => {
     const budgetBuilder = new BudgetBuilder();
     const testAccountData = `
       name: test-account
+      owner: [ someone ]
       type: external
       balances:
       - { grp: Feb2020, date: 2020-02-01, pamt: 10.00 }
@@ -208,6 +238,7 @@ describe('loadYaml', () => {
     loadYamlFile(budgetBuilder, testAccountData, /*relative_file_path=*/ 'path/test.yaml');
     const externalAccountData = `
       name: external
+      owner: [ someone ]
       type: external
       `;
     loadYamlFile(budgetBuilder, externalAccountData, /*relative_file_path=*/ 'path/external.yaml');
@@ -269,6 +300,7 @@ describe('loadYaml', () => {
     const budgetBuilder = new BudgetBuilder();
     const testAccountData = `
       name: test-account
+      owner: [ someone ]
       type: external
       transfers_to:
         external:
@@ -287,6 +319,7 @@ describe('loadYaml', () => {
     const budgetBuilder = new BudgetBuilder();
     const testAccountData = `
       name: test-account
+      owner: [ someone ]
       type: external
       transfers_to:
         external:
@@ -305,6 +338,7 @@ describe('loadYaml', () => {
     const budgetBuilder = new BudgetBuilder();
     const testAccountData = `
       name: test-account
+      owner: [ someone ]
       type: external
       transfers_to:
         external:
