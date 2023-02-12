@@ -61,6 +61,14 @@ export class Month {
     return this.year - other.year;
   }
 
+  /** 
+   * Number of months between two month dates. 
+   * Negative is provided date is larger 
+   */
+  distance(other: Month): number {
+    return (this.year - other.year) * 12 + (this.month - other.month);
+  }
+
   /** Convert string representation to internal representation. */
   static fromString(name: string): Month {
     if (name.length < 4) {
@@ -75,6 +83,10 @@ export class Month {
       throw Error(`Cant get year from "${name}"`);
     }
     return new Month(year, month);
+  }
+
+  static fromDate(date: Date): Month {
+    return new Month(date.getUTCFullYear(), date.getUTCMonth());
   }
 
   /** Creates generator spanning start and end (but not including) months. */

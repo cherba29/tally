@@ -88,6 +88,29 @@ describe('Ordering', () => {
   });
 });
 
+describe('distance', () => {
+  test('same', () => {
+    const monthA = new Month(2019, 11);
+    const monthB = new Month(2019, 11);
+    expect(monthB.distance(monthA)).toBe(0);
+    expect(monthA.distance(monthB)).toBe(0);
+  });
+
+  test('one month apart', () => {
+    const monthA = new Month(2019, 11);
+    const monthB = new Month(2020, 0);
+    expect(monthB.distance(monthA)).toBe(1);
+    expect(monthA.distance(monthB)).toBe(-1);
+  });
+
+  test('one year apart', () => {
+    const monthA = new Month(2019, 11);
+    const monthB = new Month(2020, 11);
+    expect(monthB.distance(monthA)).toBe(12);
+    expect(monthA.distance(monthB)).toBe(-12);
+  });
+});
+
 describe('Naming', () => {
   test('toString', () => {
     const month = new Month(2019, 11);
@@ -110,6 +133,20 @@ describe('Naming', () => {
 
   test('fromString bad year', () => {
     expect(() => Month.fromString('Sep202A')).toThrow('Cant get year from "Sep202A"');
+  });
+});
+
+describe('fromDate', () => {
+  test('first month', () => {
+    const month = Month.fromDate(new Date(Date.UTC(2020, 0, 1)));
+    expect(month.year).toBe(2020);
+    expect(month.month).toBe(1);
+  });
+
+  test('last month', () => {
+    const month = Month.fromDate(new Date(Date.UTC(2020, 11, 31)));
+    expect(month.year).toBe(2020);
+    expect(month.month).toBe(11);
   });
 });
 

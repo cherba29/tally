@@ -347,7 +347,28 @@ describe('loadYaml', () => {
       loadYamlFile(budgetBuilder, testAccountData, /*relative_file_path=*/ 'path/test.yaml')
     ).toThrow(
       new Error(
-        'For account "test-account" transfer to "external" does not have "date" field. while processing path/test.yaml'
+        'For account "test-account" transfer to "external" does not have a ' +
+        'valid "date" field. while processing path/test.yaml'
+      )
+    );
+  });
+
+  test('fails with transfer and too far apart dates', () => {
+    const budgetBuilder = new BudgetBuilder();
+    const testAccountData = `
+      name: test-account
+      owner: [ someone ]
+      type: external
+      transfers_to:
+        external:
+        - { grp: Jan2020, date: 2020-04-01, pamt: 37.50 }
+      `;
+    expect(() =>
+      loadYamlFile(budgetBuilder, testAccountData, /*relative_file_path=*/ 'path/test.yaml')
+    ).toThrow(
+      new Error(
+        'For account "test-account" transfer to "external" for Jan2020 date ' +
+        '2020-04-01 (Apr2020) are too far apart. while processing path/test.yaml'
       )
     );
   });

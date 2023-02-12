@@ -129,9 +129,9 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData | undefine
             `For account "${account.name} transfer to ${account_name}" does not have "grp" field.`
           );
         }
-        if (!transfer_data.date) {
+        if (!transfer_data.date || !isValidDate(transfer_data.date)) {
           throw new Error(
-            `For account "${account.name}" transfer to "${account_name}" does not have "date" field.`
+            `For account "${account.name}" transfer to "${account_name}" does not have a valid "date" field.`
           );
         }
         let balance: Balance | undefined;
@@ -155,14 +155,22 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData | undefine
           );
         }
 
+        const transferMonth = Month.fromString(transfer_data.grp);
+        const balanceMonth = Month.fromDate(balance.date);
+        if (Math.abs(balanceMonth.distance(transferMonth)) > 2) {
+          throw new Error(
+            `For account "${account.name}" transfer to "${account_name}" ` +
+              `for ${transferMonth} date ${balance.date.toISOString().slice(0, 10)} (${balanceMonth}) are too far apart.`);
+        }
         const transfer: TransferData = {
           fromAccount: account.name,
-          fromMonth: Month.fromString(transfer_data.grp),
+          fromMonth: transferMonth,
           toAccount: account_name,
-          toMonth: Month.fromString(transfer_data.grp),
+          toMonth: transferMonth,
           balance,
           description: transfer_data.desc
         };
+
         budgetBuilder.addTransfer(transfer);
       }
     }
