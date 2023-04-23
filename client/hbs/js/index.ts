@@ -18,6 +18,10 @@ function clearPopup(): void {
   $('#popup-content').html('');
 }
 
+function clearErrorContent(): void {
+  $('#error-content').html('');
+}
+
 /** Function to execute to display summary details popup.
  * @param {PopupData} popup data to display
  * @return {function(JQuery.Event): void} popup rendering function.
@@ -48,12 +52,13 @@ function reload(): void {
     lastReloadTimestamp = new Date();
     console.log('server response', response);
     if (!response.success) {
-      const popupElement = $('#popup-content');
+      const popupElement = $('#error-content');
       popupElement.offset({top: 40, left: 0});
       popupElement.html('<pre>' + response.message + '</pre>');
       return;
     }
     clearPopup();
+    clearErrorContent();
 
     // Convert data so it can be rendered.
     const dataView = transformJettyBudgetData(response.data);
@@ -78,7 +83,7 @@ function reloadGql(): void {
         lastReloadTimestamp = new Date();
         console.log(result);
         if (result.errors) {
-          const popupElement = $('#popup-content');
+          const popupElement = $('#error-content');
           popupElement.offset({top: 40, left: 0});
           for (const error of result.errors) {
             popupElement.html('<pre>' + error.message + '</pre>');
@@ -86,6 +91,7 @@ function reloadGql(): void {
           return;
         }
         clearPopup();
+        clearErrorContent();
 
         const dataView = transformGqlBudgetData(result.data.budget || undefined);
         $('#content').html(summary_template(dataView));
