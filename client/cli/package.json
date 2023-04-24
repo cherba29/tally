@@ -1,0 +1,28 @@
+{
+  "name": "cli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "hello": "./build/cli.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "package": "pkg . --targets node14-linux-x64 --output tally"
+  },
+  "pkg": {
+    "scripts": "build/**/*.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^18.16.0",
+    "@types/yargs": "^17.0.24",
+    "pkg": "^5.8.1",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "yargs": "^17.7.1"
+  }
+}
