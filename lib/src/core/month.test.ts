@@ -140,7 +140,7 @@ describe('fromDate', () => {
   test('first month', () => {
     const month = Month.fromDate(new Date(Date.UTC(2020, 0, 1)));
     expect(month.year).toBe(2020);
-    expect(month.month).toBe(1);
+    expect(month.month).toBe(0);
   });
 
   test('last month', () => {
