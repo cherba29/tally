@@ -1,0 +1,6 @@
+bazel-output-base
+node_modules
+client/cli/node_modules
+client/hbs/node_modules
+lib/node_modules
+server/apollo/node_modules

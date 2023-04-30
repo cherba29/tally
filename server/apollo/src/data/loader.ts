@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { Budget, BudgetBuilder } from '@tally-lib';
+import { Budget, BudgetBuilder } from '@tally/lib/core/budget';
 import { loadYamlFile } from './loader_yaml';
 import { loadTallyConfig } from './config';
 // import {SummaryStatement} from '../core/summary_statement';

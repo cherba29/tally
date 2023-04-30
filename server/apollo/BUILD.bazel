@@ -1,0 +1,37 @@
+load("@aspect_rules_js//npm:defs.bzl", "npm_package")
+load("@aspect_rules_js//js:defs.bzl", "js_library", "js_test")
+load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
+load("@npm//:defs.bzl", "npm_link_all_packages")
+
+package(default_visibility = ["//visibility:public"])
+
+ts_project(
+    name = "backend",
+    srcs = glob([
+            "src/**/*.ts",
+        ], exclude = ["src/**/*.test.ts"]),
+    declaration = True,
+    declaration_map = True,
+    source_map = True,
+    composite = True,
+    tsconfig = ":tsconfig.json",
+    validate = True,  # Checks that tsconfig matches this target.
+    deps = [
+      "//:node_modules/@types/node",
+      "//:node_modules/@types/js-yaml",
+      "//:node_modules/apollo-server-express",
+      "//:node_modules/dotenv",
+      "//:node_modules/graphql",
+      "//:node_modules/js-yaml",
+      "//lib",
+      # "//:node_modules/dotenv",
+    ],
+)
+
+npm_package(
+    name = "tally_backend",
+    srcs = [
+        "package.json",
+        ":backend",
+    ]
+)
