@@ -1,0 +1,19 @@
+{
+  "name": "tally",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "cli": "pnpm --filter @tally/cli",
+    "client": "pnpm --filter @tally/client",
+    "lib": "pnpm --filter @tally/lib",
+    "server": "pnpm --filter @tally/apollo"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^18.16.3",
+    "typescript": "^5.0.4"
+  }
+}

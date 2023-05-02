@@ -1,6 +1,7 @@
 {
-  "name": "cli",
+  "name": "@tally/cli",
   "version": "1.0.0",
+  "private": true,
   "description": "",
   "main": "index.js",
   "bin": {
@@ -8,6 +9,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -p .",
     "package": "pkg . --targets node14-linux-x64 --output tally"
   },
   "pkg": {
@@ -23,6 +25,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
+    "@tally/lib": "workspace:*",
     "yargs": "^17.7.1"
   }
 }
