@@ -1,6 +1,6 @@
 import { buildTransactionStatementTable, Type as TransactionType } from './statement/transaction';
 import { buildSummaryStatementTable } from './statement/summary';
-import { BalanceType, Month } from '@tally-lib';
+import { BalanceType, Month } from '@tally/lib';
 import { listFiles, loadBudget } from './data/loader';
 import { GraphQLScalarType, Kind } from 'graphql';
 import { GqlAccount, GqlBudget, GqlStatement, GqlSummaryStatement } from './types';

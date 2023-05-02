@@ -1,4 +1,4 @@
-import {Account, AccountType, Balance, BalanceType, Month} from '@tally-lib';
+import {Account, AccountType, Balance, BalanceType, Month} from '@tally/lib';
 import {Statement, SummaryStatement, Transaction} from './base';
 import {
   GqlBalance,

@@ -1,4 +1,4 @@
-import {BalanceType} from '@tally-lib';
+import {BalanceType} from '@tally/lib';
 import {Statement} from './base';
 
 /** Data for rendering given cell. */

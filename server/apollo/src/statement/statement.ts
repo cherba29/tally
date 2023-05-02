@@ -1,4 +1,4 @@
-import { Balance, Month } from '@tally-lib';
+import { Balance, Month } from '@tally/lib';
 
 // Abstraction for a financial statement for a period of time.
 export abstract class Statement {

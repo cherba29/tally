@@ -6,7 +6,7 @@ import {
   BudgetBuilder,
   Month,
   TransferData
-} from '@tally-lib';
+} from '@tally/lib';
 
 import * as yaml from 'js-yaml';
 

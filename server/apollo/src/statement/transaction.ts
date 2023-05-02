@@ -1,4 +1,4 @@
-import { Account, Balance, BalanceType, Budget, Month, Transfer } from '@tally-lib';
+import { Account, Balance, BalanceType, Budget, Month, Transfer } from '@tally/lib';
 import { Statement } from './statement';
 
 export enum Type {

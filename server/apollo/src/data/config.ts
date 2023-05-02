@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
-import { Month } from '@tally-lib';
+import { Month } from '@tally/lib';
 
 interface BudgetPeriod {
   start: Month;

@@ -1,4 +1,4 @@
-import {Account} from '@tally-lib';
+import {Account} from '@tally/lib';
 import {Statement, SummaryStatement} from './base';
 import {Cell} from './cell';
 import {Row, Type as RowType} from './row';

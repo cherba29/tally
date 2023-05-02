@@ -1,4 +1,4 @@
-import { Account, AccountType, Month } from '@tally-lib';
+import { Account, AccountType, Month } from '@tally/lib';
 import { buildSummaryStatementTable } from './summary';
 import { TransactionStatement } from './transaction';
 

@@ -1,4 +1,4 @@
-import {Balance, BalanceType} from '@tally-lib';
+import {Balance, BalanceType} from '@tally/lib';
 import {gqlToBalance} from './gql_utils';
 
 describe('gqlToBalance', function() {

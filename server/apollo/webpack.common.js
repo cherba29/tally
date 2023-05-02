@@ -17,7 +17,7 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.js'],
     alias: {
-      '@tally-lib': path.resolve(__dirname, '../../lib'),
+      '@tally/lib': path.resolve(__dirname, '../../lib'),
     }
   },
   target: 'node'

@@ -1,5 +1,5 @@
 {
-  "name": "tally",
+  "name": "@tally/client",
   "version": "0.2.0",
   "type": "module",
   "devDependencies": {

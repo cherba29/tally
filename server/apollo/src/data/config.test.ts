@@ -1,6 +1,6 @@
 import { loadTallyConfig } from './config';
 import mockfs from 'mock-fs';
-import { Month } from '@tally-lib';
+import { Month } from '@tally/lib';
 
 describe('Loading config', () => {
   afterEach(() => {

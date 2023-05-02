@@ -1,4 +1,4 @@
-import { Balance, BalanceType, Month } from '@tally-lib';
+import { Balance, BalanceType, Month } from '@tally/lib';
 import { Statement } from './statement';
 
 class TestStatement extends Statement {

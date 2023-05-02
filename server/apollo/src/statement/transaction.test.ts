@@ -1,4 +1,4 @@
-import { Account, AccountType, Balance, BudgetBuilder, Month } from '@tally-lib';
+import { Account, AccountType, Balance, BudgetBuilder, Month } from '@tally/lib';
 import { buildTransactionStatementTable, Type as TransactionType } from './transaction';
 
 describe('Build', () => {
