@@ -17,7 +17,6 @@ const config: webpack.Configuration = {
     extensions: ['.ts', '.js'],
     alias: {
       'templates': __dirname + '/templates',
-      '@tally/lib': path.resolve(__dirname, '../../lib'),
     },
   },
   module: {

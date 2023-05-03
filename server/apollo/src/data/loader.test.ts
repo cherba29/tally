@@ -1,6 +1,6 @@
 import { listFiles, loadBudget } from './loader';
 import mockfs from 'mock-fs';
-import { Month } from '@tally/lib';
+import { Month } from '@tally/lib/core/month';
 
 describe('listFiles', () => {
   afterEach(() => {

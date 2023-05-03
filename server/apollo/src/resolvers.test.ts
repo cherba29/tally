@@ -1,4 +1,4 @@
-import { Month } from '@tally/lib';
+import { Month } from '@tally/lib/core/month';
 import resolvers from './resolvers';
 
 describe('date', () => {

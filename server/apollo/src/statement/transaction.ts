@@ -1,4 +1,8 @@
-import { Account, Balance, BalanceType, Budget, Month, Transfer } from '@tally/lib';
+import { Account } from '@tally/lib/core/account';
+import { Balance, Type as BalanceType } from '@tally/lib/core/balance';
+import { Budget } from '@tally/lib/core/budget';
+import { Month } from '@tally/lib/core/month';
+import { Transfer } from '@tally/lib/core/transfer';
 import { Statement } from './statement';
 
 export enum Type {

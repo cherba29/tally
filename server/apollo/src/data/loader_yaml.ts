@@ -1,12 +1,7 @@
-import {
-  Account,
-  AccountType,
-  Balance,
-  BalanceType,
-  BudgetBuilder,
-  Month,
-  TransferData
-} from '@tally/lib';
+import { Account, Type as AccountType } from '@tally/lib/core/account';
+import { Balance, Type as BalanceType } from '@tally/lib/core/balance';
+import { Month } from '@tally/lib/core/month';
+import { BudgetBuilder, TransferData } from '@tally/lib/core/budget';
 
 import * as yaml from 'js-yaml';
 

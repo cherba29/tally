@@ -1,4 +1,6 @@
-import {Account as TallyAccount, AccountType, Balance, BalanceType, Month} from '@tally/lib';
+import {Month} from '@tally/lib/core/month';
+import {Account as TallyAccount, Type as AccountType} from '@tally/lib/core/account';
+import {Balance, Type as BalanceType} from '@tally/lib/core/balance';
 import {Statement, SummaryStatement} from './base';
 import {transformBudgetData} from './utils';
 
