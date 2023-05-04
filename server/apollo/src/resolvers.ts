@@ -2,7 +2,7 @@ import { buildTransactionStatementTable, Type as TransactionType } from './state
 import { buildSummaryStatementTable } from './statement/summary';
 import { Type as BalanceType } from '@tally/lib/core/balance';
 import { Month } from '@tally/lib/core/month';
-import { listFiles, loadBudget } from './data/loader';
+import { listFiles, loadBudget } from '@tally/lib/data/loader';
 import { GraphQLScalarType, Kind } from 'graphql';
 import { GqlAccount, GqlBudget, GqlStatement, GqlSummaryStatement } from './types';
 
@@ -116,7 +116,7 @@ function buildGqlBudget(): GqlBudget {
   }
   return {
     accounts,
-    months: budget.months.sort((a, b) => -a.compareTo(b)),
+    months: budget.months.sort((a: Month, b: Month) => -a.compareTo(b)),
     statements,
     summaries
   };

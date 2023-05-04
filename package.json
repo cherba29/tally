@@ -7,7 +7,7 @@
     "cli": "pnpm --filter @tally/cli",
     "client": "pnpm --filter @tally/client",
     "lib": "pnpm --filter @tally/lib",
-    "server": "pnpm --filter @tally/apollo"
+    "apollo": "pnpm --filter @tally/apollo"
   },
   "keywords": [],
   "author": "",
