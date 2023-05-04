@@ -1,5 +1,5 @@
 schema: http://localhost:4000/graphql
 generates:
-  ./src/types.d.ts:
+  ./js/gql_types.ts:
     plugins:
       - typescript

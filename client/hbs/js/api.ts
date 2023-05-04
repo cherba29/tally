@@ -1,6 +1,6 @@
 import {ApolloClient, gql, DefaultOptions, ApolloQueryResult} from '@apollo/client/core';
 import {InMemoryCache, NormalizedCacheObject} from '@apollo/client/cache';
-import {Query} from '@backend/types';
+import {Query} from './gql_types';
 
 const defaultOptions: DefaultOptions = {
   watchQuery: {

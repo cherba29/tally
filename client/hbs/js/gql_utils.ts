@@ -9,7 +9,7 @@ import {
   GqlStatement,
   GqlTransaction,
   GqlSummaryStatement,
-} from '@backend/types';
+} from './gql_types';
 import {transformBudgetData, MatrixDataView} from './utils';
 
 /**
