@@ -10,6 +10,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc -p .",
+    "exec": "node ./build/cli.js",
     "package": "pkg . --targets node14-linux-x64 --output tally"
   },
   "pkg": {
@@ -26,6 +27,7 @@
   },
   "dependencies": {
     "@tally/lib": "workspace:*",
+    "dotenv": "^8.2.0",
     "yargs": "^17.7.1"
   }
 }

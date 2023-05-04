@@ -1,4 +1,6 @@
 import type { Arguments, CommandBuilder } from 'yargs';
+import { loadBudget } from '@tally/lib/data/loader';
+import { Budget } from '@tally/lib/core/budget';
 
 type Options = {
   account: string;
@@ -19,5 +21,10 @@ export const handler = (argv: Arguments<Options>): void => {
   const { account, upper } = argv;
   const greeting = `Generating balances for ${account}!\n`;
   process.stdout.write(upper ? greeting.toUpperCase() : greeting);
+  const budget: Budget = loadBudget();
+  for (const [accountName, ] of budget.accounts) {
+    console.log(accountName);
+  }
+
   process.exit(0);
 };

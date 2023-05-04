@@ -15,11 +15,13 @@ importers:
       '@tally/lib': workspace:*
       '@types/node': ^18.16.0
       '@types/yargs': ^17.0.24
+      dotenv: ^8.2.0
       pkg: ^5.8.1
       typescript: ^5.0.4
       yargs: ^17.7.1
     dependencies:
       '@tally/lib': link:../../lib
+      dotenv: 8.6.0
       yargs: 17.7.2
     devDependencies:
       '@types/node': 18.16.3
