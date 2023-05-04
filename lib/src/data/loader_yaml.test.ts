@@ -1,8 +1,8 @@
 /* eslint-disable  @typescript-eslint/no-non-null-assertion */
-import { Type as AccountType } from '@tally/lib/core/account';
-import { Balance, Type as BalanceType } from '@tally/lib/core/balance';
-import { Month } from '@tally/lib/core/month';
-import { BudgetBuilder } from '@tally/lib/core/budget';
+import { Type as AccountType } from '../core/account';
+import { Balance, Type as BalanceType } from '../core/balance';
+import { Month } from '../core/month';
+import { BudgetBuilder } from '../core/budget';
 import { loadYamlFile } from './loader_yaml';
 
 describe('loadYaml', () => {
