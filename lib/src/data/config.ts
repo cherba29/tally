@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs';
 import * as path from 'path';
-import * as yaml from 'js-yaml';
+import { load as yamlLoad } from 'js-yaml';
 import { Month } from '../core/month';
 
 interface BudgetPeriod {
@@ -17,7 +17,7 @@ export function loadTallyConfig(): TallyConfig {
     throw new Error('Process environment variable "TALLY_FILES" has not been specified.');
   }
   const configPath = path.join(process.env.TALLY_FILES, '_config.yaml');
-  const config = yaml.safeLoad(readFileSync(configPath, 'utf-8'));
+  const config = yamlLoad(readFileSync(configPath, 'utf-8'));
   if (!config || typeof config === 'string') {
     throw new Error(`Could not parse file at "${configPath}"`);
   }
