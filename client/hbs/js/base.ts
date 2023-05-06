@@ -1,4 +1,4 @@
-import {Balance} from '@tally-lib';
+import {Balance} from '@tally/lib/core/balance';
 
 export interface Transaction {
   isExpense: boolean;

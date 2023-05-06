@@ -1,10 +1,16 @@
-import type { Arguments, CommandBuilder, CommandModule, Options, ArgumentsCamelCase, number } from 'yargs';
+<<<<<<< HEAD
+import type { Arguments, CommandBuilder, CommandModule, Options, ArgumentsCamelCase } from 'yargs';
+//import type {Account} from '@tally/lib';
+// import { loadBudget } from '@tally/backend/data/loader';
+=======
+import type { Arguments, CommandBuilder, number } from 'yargs';
 import { loadBudget } from '@tally/lib/data/loader';
 import { Account } from '@tally/lib/core/account';
 import { Balance, Type as BalanceType } from '@tally/lib/core/balance';
 import { Budget } from '@tally/lib/core/budget';
 import { Month } from '@tally/lib/core/month';
 import { Transfer } from '@tally/lib/core/transfer';
+>>>>>>> master
 
 interface GenerateOptions extends Options {
   account: string;
@@ -22,8 +28,23 @@ const builder: CommandBuilder<unknown, Arguments> = (yargs) =>
     .positional('account', { type: 'string', demandOption: true })
     .coerce('start-month', Month.fromString);
 
-export const handler = (argv: ArgumentsCamelCase<Arguments>): void => {
-  const { account, startMonth } = argv as unknown as GenerateOptions;
+<<<<<<< HEAD
+export const generate: CommandModule<unknown, Arguments> = {
+  command,
+  describe: desc,
+  builder,
+  handler:  (args: ArgumentsCamelCase<Arguments>): void => {
+    const { account, upper } = args;
+    //const budget = loadBudget();
+    //console.log(budget);
+    const greeting = `Generating balances for account ${account}!\n`;
+    process.stdout.write(upper ? greeting.toUpperCase() : greeting);
+    process.exit(0);
+ 
+  }
+=======
+export const handler = (argv: Arguments<Options>): void => {
+  const { account, startMonth } = argv;
   const budget: Budget = loadBudget();
   process.stdout.write(`Generating balances for ${account} starting from ${startMonth?.toString()}!\n`);
   const acct: Account|undefined = budget.accounts.get(account);
@@ -75,11 +96,5 @@ function nextBalance(
     }
   }
   return balance;
-}
-
-export const generate: CommandModule<unknown, Arguments> = {
-  command,
-  describe: desc,
-  builder,
-  handler
+>>>>>>> master
 }

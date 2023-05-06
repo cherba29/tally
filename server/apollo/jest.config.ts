@@ -8,6 +8,6 @@ export default {
   /** Indicates whether each individual test should be reported during the run. */
   verbose: false,
   moduleNameMapper: {
-    '^@tally-lib$': '<rootDir>/../../lib'
+    '^@tally/lib/(.*)': '<rootDir>/../../lib/build/$1'
   }
 };

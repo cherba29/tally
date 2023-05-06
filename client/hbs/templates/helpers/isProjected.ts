@@ -1,5 +1,5 @@
 import {HelperOptions} from 'handlebars';
-import {Balance, BalanceType} from '@tally-lib';
+import {Balance, Type as BalanceType} from '@tally/lib/core/balance';
 
 /**
  * Determines of balance is projected.

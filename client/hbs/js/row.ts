@@ -1,4 +1,4 @@
-import {Account} from '@tally-lib';
+import {Account} from '@tally/lib/core/account';
 import {Cell} from './cell';
 
 /** Row type, each is rendered differently. */

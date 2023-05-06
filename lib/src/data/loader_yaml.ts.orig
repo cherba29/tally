@@ -1,7 +1,14 @@
+<<<<<<< HEAD:server/apollo/src/data/loader_yaml.ts
 import { Account, Type as AccountType } from '@tally/lib/core/account';
 import { Balance, Type as BalanceType }  from '@tally/lib/core/balance';
 import { Month } from '@tally/lib/core/month';
 import { TransferData, BudgetBuilder } from '@tally/lib/core/budget';
+=======
+import { Account, Type as AccountType } from '../core/account';
+import { Balance, Type as BalanceType } from '../core/balance';
+import { Month } from '../core/month';
+import { BudgetBuilder, TransferData } from '../core/budget';
+>>>>>>> master:lib/src/data/loader_yaml.ts
 
 import * as yaml from 'js-yaml';
 

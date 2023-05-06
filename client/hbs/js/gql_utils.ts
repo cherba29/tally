@@ -1,4 +1,6 @@
-import {Account, AccountType, Balance, BalanceType, Month} from '@tally-lib';
+import {Account, Type as AccountType} from '@tally/lib/core/account';
+import {Balance, Type as BalanceType} from '@tally/lib/core/balance';
+import {Month} from '@tally/lib/core/month';
 import {Statement, SummaryStatement, Transaction} from './base';
 import {
   GqlBalance,
@@ -7,7 +9,7 @@ import {
   GqlStatement,
   GqlTransaction,
   GqlSummaryStatement,
-} from '@backend/types';
+} from './gql_types';
 import {transformBudgetData, MatrixDataView} from './utils';
 
 /**

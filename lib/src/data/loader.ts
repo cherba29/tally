@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { Budget, BudgetBuilder } from '@tally/lib/core/budget';
+import { Budget, BudgetBuilder } from '../core/budget';
 import { loadYamlFile } from './loader_yaml';
 import { loadTallyConfig } from './config';
 // import {SummaryStatement} from '../core/summary_statement';
@@ -50,7 +50,7 @@ export function loadBudget(): Budget {
   for (const file_path of readdirSync(process.env.TALLY_FILES)) {
     const relative_file_path = file_path.slice(process.env.TALLY_FILES.length + 1);
     filePaths.push(relative_file_path);
-    console.log('Loading ' + relative_file_path);
+    // console.log('Loading ' + relative_file_path);
     const content = fs.readFileSync(file_path, 'utf8');
     loadYamlFile(budgetBuilder, content, relative_file_path);
   }

@@ -1,8 +1,21 @@
 {
-  "name": "apollo",
+  "name": "@tally/apollo",
+  "private": true,
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "exports": {
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    }
+  },
+  "types": "index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": ["dist/*"]
+    }
+  },
   "scripts": {
     "build": "webpack --config webpack.development.js",
     "start": "node dist/server",
@@ -42,6 +55,7 @@
     "webpack-node-externals": "^2.5.2"
   },
   "dependencies": {
+    "@tally/lib": "workspace:*",
     "apollo-server-express": "^2.26.0",
     "class-validator": "^0.14.0",
     "dotenv": "^8.2.0",

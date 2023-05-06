@@ -4,8 +4,6 @@
     "baseUrl": ".",
     /* A series of entries which re-map imports to lookup locations relative to the 'baseUrl'. */
     "paths": { 
-      "@backend/*": ["../../server/apollo/src/*"], 
-      "@tally-lib": ["../../lib"],
     },
 
     // "strict": true,        // All strict type-checking options.
@@ -38,7 +36,4 @@
     "node_modules/**/*",
     "public/**/*",
   ],
-  "references": [
-    { "path": "../../lib" }
-  ]
 }

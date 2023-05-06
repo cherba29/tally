@@ -70,6 +70,10 @@ export class Account {
     this.password = data.password;
   }
 
+  toString() {
+    return `Account ${this.name} ${this.type}${this.closedOn ? ` Closed ${this.closedOn}` : ''}`;
+  }
+
   isClosed(month: Month): boolean {
     return !!(
       (

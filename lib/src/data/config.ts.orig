@@ -1,7 +1,12 @@
 import { readFileSync } from 'fs';
 import * as path from 'path';
+<<<<<<< HEAD:server/apollo/src/data/config.ts
 import { load as yamlLoad } from 'js-yaml';
 import { Month } from '@tally/lib/core/month';
+=======
+import * as yaml from 'js-yaml';
+import { Month } from '../core/month';
+>>>>>>> master:lib/src/data/config.ts
 
 interface BudgetPeriod {
   start: Month;
