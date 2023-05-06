@@ -10,7 +10,6 @@ dotenv.config();
 
 yargs(hideBin(process.argv))
   // Use the commands directory to scaffold.
-  // .commandDir('commands')
   // Enable strict mode.
   .command(generate)
   .strict()
