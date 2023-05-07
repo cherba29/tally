@@ -5,20 +5,20 @@ importers:
   .:
     specifiers:
       '@types/node': ^18.16.3
-      typescript: ^5.0.4
+      typescript: 4.9.5
     devDependencies:
       '@types/node': 18.16.3
-      typescript: 5.0.4
+      typescript: 4.9.5
 
   client/cli:
     specifiers:
       '@tally/lib': workspace:*
       '@types/dotenv': ^8.2.0
-      '@types/node': ^18.16.0
+      '@types/node': ^18.16.3
       '@types/yargs': ^17.0.24
       dotenv: ^8.6.0
       pkg: ^5.8.1
-      typescript: ^5.0.4
+      typescript: ^4.9.5
       yargs: ^17.7.1
     dependencies:
       '@tally/lib': link:../../lib
@@ -29,7 +29,7 @@ importers:
       '@types/node': 18.16.3
       '@types/yargs': 17.0.24
       pkg: 5.8.1
-      typescript: 5.0.4
+      typescript: 4.9.5
 
   client/hbs:
     specifiers:
@@ -105,12 +105,12 @@ importers:
       ts-node: ^10.9.1
       typescript: ^4.9.4
     dependencies:
-      '@types/node': 18.16.3
       js-yaml: 3.14.1
     devDependencies:
       '@types/jest': 29.5.1
       '@types/js-yaml': 3.12.7
       '@types/mock-fs': 4.13.1
+      '@types/node': 18.16.3
       jest: 29.5.0_q5eefoz74py6grk3mmr5y7qykq
       mock-fs: 4.14.0
       ts-jest: 29.1.0_doipufordlnvh5g4adbwayvyvy
@@ -11542,12 +11542,6 @@ packages:
   /typescript/4.9.5:
     resolution: {integrity: sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==}
     engines: {node: '>=4.2.0'}
-    hasBin: true
-    dev: true
-
-  /typescript/5.0.4:
-    resolution: {integrity: sha512-cW9T5W9xY37cc+jfEnaUvX91foxtHkza3Nw3wkoF4sSlKn0MONdkdEndig/qPBWXNkmplh3NzayQzCiHM4/hqw==}
-    engines: {node: '>=12.20'}
     hasBin: true
     dev: true
 
