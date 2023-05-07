@@ -1,6 +1,10 @@
 load("@npm//:defs.bzl", "npm_link_all_packages")
-# load("@aspect_rules_js//npm:defs.bzl", "npm_link_package")
-
+load("@aspect_rules_js//npm:defs.bzl", "npm_link_package")
 
 # This macro expands to a npm_link_package for each third-party package in package.json
 npm_link_all_packages(name = "node_modules")
+
+npm_link_package(
+    name = "tally_lib",
+    src = "//lib:tally_lib",
+)

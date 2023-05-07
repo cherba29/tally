@@ -5,6 +5,7 @@ load("@npm//:defs.bzl", "npm_link_all_packages")
 
 package(default_visibility = ["//visibility:public"])
 
+npm_link_all_packages(name = "node_modules")
 
 ts_project(
     name = "lib",
@@ -17,6 +18,9 @@ ts_project(
     tsconfig = ":tsconfig.json",
     validate = True,  # Checks that tsconfig matches this target.
     deps = [
+      ":node_modules/@types/node",
+      ":node_modules/@types/js-yaml",
+      ":node_modules/js-yaml",
     ],
 )
 
@@ -25,5 +29,11 @@ npm_package(
     srcs = [
         "package.json",
         ":lib",
-    ]
+    ],
+    include_runfiles = False,
+    package = "@tally/lib",
+      root_paths = [
+        package_name() + "/src",
+    ],
+    visibility = ["//visibility:public"],
 )

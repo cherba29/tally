@@ -51,10 +51,12 @@ register_copy_to_directory_toolchains()
 # A pnpm workspace so we can test 3p deps
 load("@aspect_rules_js//npm:npm_import.bzl", "npm_translate_lock")
 
+# https://docs-legacy.aspect.build/aspect-build/rules_js/v1.13.0/docs/pnpm.html
 npm_translate_lock(
     name = "npm",
     pnpm_lock = "//:pnpm-lock.yaml",
     verify_node_modules_ignored = "//:.bazelignore",
+    npmrc = "@//:.npmrc",
 )
 
 load("@npm//:repositories.bzl", "npm_repositories")
