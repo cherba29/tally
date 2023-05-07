@@ -1,3 +1,4 @@
+load("@aspect_rules_jest//jest:defs.bzl", "jest_test")
 load("@aspect_rules_js//npm:defs.bzl", "npm_package")
 load("@aspect_rules_js//js:defs.bzl", "js_library", "js_test")
 load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
@@ -23,6 +24,40 @@ ts_project(
       ":node_modules/js-yaml",
     ],
 )
+
+ts_project(
+    name = "compile",
+    srcs = glob(["src/**/*.test.ts"]),
+    validate = True,  # Checks that tsconfig matches this target.
+    declaration = True,
+    declaration_map = True,
+    # composite = True,
+    # tsconfig = ":tsconfig.json",
+    tsconfig = {
+        "compilerOptions": {
+            "inlineSourceMap": True,
+            "esModuleInterop": True,
+        },
+    },
+    deps = [
+      ":lib",
+      ":node_modules/@types/node",
+      ":node_modules/@types/jest",
+      ":node_modules/@types/mock-fs",
+      ":node_modules/mock-fs",
+      ":node_modules/jest",
+    ],
+)
+
+jest_test(
+    name = "account_test",
+    # entry_point = "src/core/account.test.js",
+    data = [
+      ":compile",
+    ],
+    node_modules = ":node_modules",
+)
+
 
 npm_package(
     name = "tally_lib",
