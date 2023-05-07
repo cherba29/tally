@@ -39,3 +39,12 @@ http://localhost:8080/files/hbs/client/js_summary.html#data
 
 where data is path to yaml files to be parsed. It can be relative to current 
 server directory which will be in this case `./server/jetty`.
+
+## Bazel
+
+Running CLI
+
+```
+ bazel run //client/cli:tally_cli  --  generate External --start-month Dec2022
+ ```
+ 
