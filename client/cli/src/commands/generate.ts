@@ -18,6 +18,7 @@ const builder: CommandBuilder<unknown, GenerateOptions> = (yargs: Argv<unknown>)
   yargs
     .options({
       'start-month': { type: 'string', demandOption: true },
+      'use-transfers': { type: 'boolean' },
     })
     .positional('account', { type: 'string', demandOption: true })
     .coerce('start-month', Month.fromString) as unknown as Argv<GenerateOptions>;
@@ -26,7 +27,7 @@ export const generate: CommandModule<unknown, GenerateOptions> = {
   command,
   describe: desc,
   builder,
-  handler:  ({ account, startMonth }): void => {
+  handler:  ({ account, startMonth, useTransfers }): void => {
     const budget: Budget = loadBudget();
     process.stdout.write(`Generating balances for ${account} starting from ${startMonth?.toString()}!\n`);
     const acct: Account|undefined = budget.accounts.get(account);
@@ -38,26 +39,52 @@ export const generate: CommandModule<unknown, GenerateOptions> = {
       process.stderr.write(`The account "${account}" is closed as of ${startMonth} since ${acct.closedOn}.\n`);
       process.exit(1);
     }
+    const accountBalances: Map<string, Balance> = budget.balances.get(account) ?? new Map();
+    const accountTransfers: Map<string, Set<Transfer>> = budget.transfers.get(account) ?? new Map();
+
+    // Find maximum month used by this account.
+    const maxMonth = [...accountBalances.keys(), ...accountTransfers.keys()].map(
+      val => Month.fromString(val)).reduce(
+        (prev, current) => prev.compareTo(current) > 0 ? prev : current);
+    
     // Compute max padding for amounts to be right aligned.
     const ammountLengths: number[] = budget.months.map(
         m => `${budget.balances.get(account)?.get(m.toString())?.amount ?? 0}`.length);
     const padAmtLength = Math.max(...ammountLengths) + 2;  // 1 extra leading space plus "."
 
+    // For each month, compute running predicted balance and actual balance.
     let predictedBalance: Balance|undefined = undefined;
-    for (let currentMonth = startMonth; ; currentMonth = currentMonth.next()) {
-      const currentBalance: Balance|undefined = 
-          budget.balances.get(account)?.get(currentMonth.toString()) ?? predictedBalance;
-      if (!currentBalance) { break; }
-      const amtPrefix = currentBalance.type === BalanceType.PROJECTED ? 'pamt' : 'camt';
-      const amtValue = (currentBalance.amount/100).toFixed(2).padStart(padAmtLength);
-      const dateValue = currentBalance.date.toISOString().slice(0, 10);
-      process.stdout.write(`- { grp: ${currentMonth}, date: ${dateValue}, ${amtPrefix}: ${amtValue} }\n`);
-      const transfers: Set<Transfer>|undefined = budget.transfers.get(account)?.get(currentMonth.toString());
+    for (let currentMonth = startMonth;
+         currentMonth.compareTo(maxMonth) <= 0; 
+         currentMonth = currentMonth.next()) {
+      const recordedBalance = accountBalances.get(currentMonth.toString());
+      const currentBalance: Balance|undefined =
+          useTransfers ? (predictedBalance ?? recordedBalance) : (recordedBalance ?? predictedBalance);
+      if (!currentBalance) { 
+        process.stdout.write(`  - { grp: ${currentMonth} } # has no balance or transfers.\n`);
+        continue; 
+      }
+      printBalanceLine(currentMonth, currentBalance, padAmtLength);
+      // If there is disaggreement print it as a comment.
+      if (predictedBalance && predictedBalance.amount !== currentBalance.amount) {
+        const predictedAmtValue = (predictedBalance.amount/100).toFixed(2).padStart(padAmtLength);
+        const diffAmtValue = ((currentBalance.amount - predictedBalance.amount)/100).toFixed(2).padStart(padAmtLength);
+        process.stdout.write(` # predicted ${predictedAmtValue} unaccounted ${diffAmtValue}`);
+      }
+      process.stdout.write('\n');
+      const transfers: Set<Transfer>|undefined = accountTransfers.get(currentMonth.toString());
       predictedBalance = nextBalance(account, currentBalance, transfers);
     }
 
     process.exit(0);
   }
+}
+
+function printBalanceLine(month: Month, balance: Balance, padAmtLength: number) {
+  const amtPrefix = balance.type === BalanceType.PROJECTED ? 'pamt' : 'camt';
+  const amtValue = (balance.amount/100).toFixed(2).padStart(padAmtLength);
+  const dateValue = balance.date.toISOString().slice(0, 10);
+  process.stdout.write(`  - { grp: ${month}, date: ${dateValue}, ${amtPrefix}: ${amtValue} }`);
 }
 
 function nextBalance(
