@@ -35,17 +35,20 @@ export const generate: CommandModule<unknown, GenerateOptions> = {
       process.stderr.write(`The account "${account}" does not exist.\n`);
       process.exit(1);
     }
-    if (acct.isClosed(startMonth)) {
-      process.stderr.write(`The account "${account}" is closed as of ${startMonth} since ${acct.closedOn}.\n`);
-      process.exit(1);
-    }
     const accountBalances: Map<string, Balance> = budget.balances.get(account) ?? new Map();
     const accountTransfers: Map<string, Set<Transfer>> = budget.transfers.get(account) ?? new Map();
 
-    // Find maximum month used by this account.
-    const maxMonth = [...accountBalances.keys(), ...accountTransfers.keys()].map(
-      val => Month.fromString(val)).reduce(
-        (prev, current) => prev.compareTo(current) > 0 ? prev : current);
+    // Find minimum/maximum month used by this account.
+    const accountMonths = [...accountBalances.keys(), ...accountTransfers.keys()].map(val => Month.fromString(val));
+    const minMonth = accountMonths.reduce((prev, current) => prev.compareTo(current) < 0 ? prev : current);
+    const maxMonth = accountMonths.reduce((prev, current) => prev.compareTo(current) > 0 ? prev : current);
+    if (startMonth.compareTo(minMonth) < 0) {
+      startMonth = minMonth.previous();
+    }
+    if (startMonth.compareTo(maxMonth) > 0) {
+      process.stderr.write(`The account "${account}" has no balances or transactions after ${maxMonth}.\n`);
+      process.exit(1);
+    }
     
     // Compute max padding for amounts to be right aligned.
     const ammountLengths: number[] = budget.months.map(
