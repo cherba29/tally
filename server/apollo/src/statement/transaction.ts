@@ -114,6 +114,14 @@ function makeTranscationStatement(
     return 0;
   });
 
+  const firstTransfer: Transfer|undefined = descTransfers[descTransfers.length - 1];
+  if (firstTransfer && startBalance && firstTransfer.balance.date.getTime() < startBalance.date.getTime()) {
+    throw new Error(
+      `Balance ${month} ${startBalance} for account ${account.name} ` + 
+      `starts after transaction ${firstTransfer.fromAccount.name} --> ${firstTransfer.toAccount.name}/${firstTransfer.balance} ` +
+      `desc "${firstTransfer.description}"`);
+  }
+
   for (const t of descTransfers) {
     statement.hasProjectedTransfer =
       statement.hasProjectedTransfer || t.balance.type == BalanceType.PROJECTED;

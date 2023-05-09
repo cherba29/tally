@@ -72,8 +72,14 @@ export const generate: CommandModule<unknown, GenerateOptions> = {
         process.stdout.write(` # predicted ${predictedAmtValue} unaccounted ${diffAmtValue}`);
       }
       process.stdout.write('\n');
-      const transfers: Set<Transfer>|undefined = accountTransfers.get(currentMonth.toString());
-      predictedBalance = nextBalance(account, currentBalance, transfers);
+      const transfers: Set<Transfer> = accountTransfers.get(currentMonth.toString()) ?? new Set();
+      // Find first date of next month transcation, our predicated balance cannot be older.
+      const nextTransfers = accountTransfers.get(currentMonth.next().toString());
+      const minDateNextMonthTransfer: Date|undefined = nextTransfers ? [...nextTransfers].map(
+        t=>t.balance.date).reduce(
+          (prev, curr)=> prev.getTime() < curr.getTime() ? prev : curr) : undefined;
+      predictedBalance = nextBalance(account, currentBalance, transfers, minDateNextMonthTransfer,
+        useTransfers ? BalanceType.CONFIRMED : BalanceType.PROJECTED);
     }
 
     process.exit(0);
@@ -90,20 +96,28 @@ function printBalanceLine(month: Month, balance: Balance, padAmtLength: number) 
 function nextBalance(
   accountName: string, 
   startBalance: Balance, 
-  transfers: Set<Transfer>|undefined
+  transfers: Set<Transfer>,
+  minDateNextMonthTransfer: Date|undefined,
+  balanceType: BalanceType
 ): Balance| undefined {
-  if (!transfers || transfers.size === 0) { return undefined; }
+  if (transfers.size === 0) { return undefined; }
+  // The balance date is set to max transfer date,
+  // but make sure it is not lower then next month start by default.
   const nextDate = new Date(Date.UTC(
-      startBalance.date.getUTCFullYear(),
+      startBalance.date.getUTCFullYear(), 
       startBalance.date.getUTCMonth() + 1, 
       startBalance.date.getUTCDate()));
-  let balance = new Balance(startBalance.amount, nextDate, BalanceType.PROJECTED);
+  let balance = new Balance(startBalance.amount, startBalance.date, balanceType);
   for (const transfer of transfers) {
     if (transfer.toAccount.name === accountName) {
       balance = Balance.add(balance, transfer.balance);
     } else {
       balance = Balance.subtract(balance, transfer.balance);
     }
+  }
+  // Make sure next balance start does not exceed its minimum transfer date.
+  if (minDateNextMonthTransfer && (balance.date.getTime() > minDateNextMonthTransfer.getTime())) {
+    return new Balance(balance.amount, minDateNextMonthTransfer, balance.type);
   }
   return balance;
 }

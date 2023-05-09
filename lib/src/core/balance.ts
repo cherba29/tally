@@ -24,7 +24,7 @@ export class Balance {
   }
 
   static add(balance1: Balance, balance2: Balance): Balance {
-    const maxDate = balance1.date < balance2.date ? balance2.date : balance1.date;
+    const maxDate = balance1.date.getTime() < balance2.date.getTime() ? balance2.date : balance1.date;
     return new Balance(
       balance1.amount + balance2.amount,
       maxDate,
