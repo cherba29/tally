@@ -179,7 +179,7 @@ export function buildTransactionStatementTable(budget: Budget): TransactionState
   for (const account of budget.accounts.values()) {
     const accountStatements: TransactionStatement[] = [];
     // Make statement outside range so that its attributes relating to previous can be used.
-    let nextMonthStatement = makeStatement(account, months[0].next());
+    let nextMonthStatement = makeStatement(account, months[0]!.next());
     for (const month of months) {
       const statement = makeStatement(account, month);
       statement.endBalance = nextMonthStatement.startBalance;

@@ -49,7 +49,7 @@ describe('Build', () => {
         transactions: []
       }
     ]);
-    expect(table[0].isClosed).toBe(false);
+    expect(table[0]?.isClosed).toBe(false);
   });
 
   test('bad account name on transfer', () => {
@@ -180,7 +180,7 @@ describe('Build', () => {
         ]
       }
     ]);
-    expect(table[0].isClosed).toBe(false);
+    expect(table[0]?.isClosed).toBe(false);
   });
 
   test('two accounts with extenal transfer', () => {
@@ -289,6 +289,6 @@ describe('Build', () => {
         ]
       }
     ]);
-    expect(table[0].isClosed).toBe(false);
+    expect(table[0]?.isClosed).toBe(false);
   });
 });

@@ -1,5 +1,5 @@
-import { buildTransactionStatementTable, Type as TransactionType } from './statement/transaction';
-import { buildSummaryStatementTable } from './statement/summary';
+import { buildTransactionStatementTable, Transaction, Type as TransactionType } from '@tally/lib/statement/transaction';
+import { buildSummaryStatementTable } from '@tally/lib/statement/summary';
 import { Type as BalanceType } from '@tally/lib/core/balance';
 import { Month } from '@tally/lib/core/month';
 import { listFiles, loadBudget } from '@tally/lib/data/loader';
@@ -51,24 +51,24 @@ function buildGqlBudget(): GqlBudget {
       startBalance: {
         amount: statement.startBalance?.amount ?? 0,
         date: statement.startBalance?.date,
-        type: BalanceType[statement.startBalance?.type ?? BalanceType.UNKNOWN]
+        type: BalanceType[(statement.startBalance?.type ?? BalanceType.UNKNOWN) as BalanceType]
       },
       endBalance: {
         amount: statement.endBalance?.amount,
         date: statement.endBalance?.date,
-        type: BalanceType[statement.endBalance?.type ?? BalanceType.UNKNOWN]
+        type: BalanceType[(statement.endBalance?.type ?? BalanceType.UNKNOWN) as BalanceType]
       },
       isCovered: statement.isCovered,
       isProjectedCovered: statement.isProjectedCovered,
       hasProjectedTransfer: statement.hasProjectedTransfer,
-      transactions: statement.transactions.map((t) => ({
+      transactions: statement.transactions.map((t: Transaction) => ({
         toAccountName: t.account.name,
         isExpense: t.type == TransactionType.EXPENSE,
         isIncome: t.type == TransactionType.INCOME,
         balance: {
           amount: t.balance.amount,
           date: t.balance.date,
-          type: BalanceType[t.balance.type]
+          type: BalanceType[t.balance.type as BalanceType]
         },
         balanceFromStart: t.balanceFromStart,
         balanceFromEnd: t.balanceFromEnd,
@@ -102,14 +102,14 @@ function buildGqlBudget(): GqlBudget {
         startBalance: {
           amount: summary.startBalance.amount,
           date: summary.startBalance.date,
-          type: BalanceType[summary.startBalance.type]
+          type: BalanceType[summary.startBalance.type as BalanceType]
         }
       }),
       ...(summary.endBalance && {
         endBalance: {
           amount: summary.endBalance.amount,
           date: summary.endBalance.date,
-          type: BalanceType[summary.endBalance.type]
+          type: BalanceType[summary.endBalance.type as BalanceType]
         }
       })
     });
