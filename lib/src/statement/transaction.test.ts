@@ -1,7 +1,7 @@
-import { Account, Type as AccountType } from '@tally/lib/core/account';
-import { Balance } from '@tally/lib/core/balance';
-import { BudgetBuilder } from '@tally/lib/core/budget';
-import { Month } from '@tally/lib/core/month';
+import { Account, Type as AccountType } from '../core/account';
+import { Balance } from '../core/balance';
+import { BudgetBuilder } from '../core/budget';
+import { Month } from '../core/month';
 import { buildTransactionStatementTable, Type as TransactionType } from './transaction';
 
 describe('Build', () => {
@@ -49,7 +49,7 @@ describe('Build', () => {
         transactions: []
       }
     ]);
-    expect(table[0].isClosed).toBe(false);
+    expect(table[0]?.isClosed).toBe(false);
   });
 
   test('bad account name on transfer', () => {
@@ -180,7 +180,7 @@ describe('Build', () => {
         ]
       }
     ]);
-    expect(table[0].isClosed).toBe(false);
+    expect(table[0]?.isClosed).toBe(false);
   });
 
   test('two accounts with extenal transfer', () => {
@@ -289,6 +289,6 @@ describe('Build', () => {
         ]
       }
     ]);
-    expect(table[0].isClosed).toBe(false);
+    expect(table[0]?.isClosed).toBe(false);
   });
 });

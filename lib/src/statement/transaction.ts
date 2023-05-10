@@ -1,8 +1,8 @@
-import { Account } from '@tally/lib/core/account';
-import { Balance, Type as BalanceType } from '@tally/lib/core/balance';
-import { Budget } from '@tally/lib/core/budget';
-import { Month } from '@tally/lib/core/month';
-import { Transfer } from '@tally/lib/core/transfer';
+import { Account } from '../core/account';
+import { Balance, Type as BalanceType } from '../core/balance';
+import { Budget } from '../core/budget';
+import { Month } from '../core/month';
+import { Transfer } from '../core/transfer';
 import { Statement } from './statement';
 
 export enum Type {
@@ -114,6 +114,14 @@ function makeTranscationStatement(
     return 0;
   });
 
+  const firstTransfer: Transfer|undefined = descTransfers[descTransfers.length - 1];
+  if (firstTransfer && startBalance && firstTransfer.balance.date.getTime() < startBalance.date.getTime()) {
+    throw new Error(
+      `Balance ${month} ${startBalance} for account ${account.name} ` + 
+      `starts after transaction ${firstTransfer.fromAccount.name} --> ${firstTransfer.toAccount.name}/${firstTransfer.balance} ` +
+      `desc "${firstTransfer.description}"`);
+  }
+
   for (const t of descTransfers) {
     statement.hasProjectedTransfer =
       statement.hasProjectedTransfer || t.balance.type == BalanceType.PROJECTED;
@@ -171,7 +179,7 @@ export function buildTransactionStatementTable(budget: Budget): TransactionState
   for (const account of budget.accounts.values()) {
     const accountStatements: TransactionStatement[] = [];
     // Make statement outside range so that its attributes relating to previous can be used.
-    let nextMonthStatement = makeStatement(account, months[0].next());
+    let nextMonthStatement = makeStatement(account, months[0]!.next());
     for (const month of months) {
       const statement = makeStatement(account, month);
       statement.endBalance = nextMonthStatement.startBalance;
