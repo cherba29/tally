@@ -1,5 +1,5 @@
-import { Balance, Type as BalanceType } from '@tally/lib/core/balance';
-import { Month } from '@tally/lib/core/month';
+import { Balance, Type as BalanceType } from '../core/balance';
+import { Month } from '../core/month';
 import { Statement } from './statement';
 
 class TestStatement extends Statement {

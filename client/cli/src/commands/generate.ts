@@ -1,4 +1,4 @@
-import type { Arguments, Argv, CommandBuilder, CommandModule, Options, ArgumentsCamelCase, number } from 'yargs';
+import type { Argv, CommandBuilder, CommandModule } from 'yargs';
 import { loadBudget } from '@tally/lib/data/loader';
 import { Account } from '@tally/lib/core/account';
 import { Balance, Type as BalanceType } from '@tally/lib/core/balance';
@@ -9,6 +9,7 @@ import { Transfer } from '@tally/lib/core/transfer';
 type GenerateOptions = {
   account: string;
   startMonth: Month;
+  useTransfers: boolean;
 };
 
 const command: string = 'generate <account>';
