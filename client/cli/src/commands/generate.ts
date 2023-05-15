@@ -10,6 +10,7 @@ type GenerateOptions = {
   account: string;
   startMonth: Month;
   useTransfers: boolean;
+  showTransfers: boolean;
 };
 
 const command: string = 'generate <account>';
@@ -19,7 +20,8 @@ const builder: CommandBuilder<unknown, GenerateOptions> = (yargs: Argv<unknown>)
   yargs
     .options({
       'start-month': { type: 'string', demandOption: true },
-      'use-transfers': { type: 'boolean' },
+      'use-transfers': { type: 'boolean', default: false },
+      'show-transfers': { type: 'boolean', default: false },
     })
     .positional('account', { type: 'string', demandOption: true })
     .coerce('start-month', Month.fromString) as unknown as Argv<GenerateOptions>;
@@ -28,7 +30,7 @@ export const generate: CommandModule<unknown, GenerateOptions> = {
   command,
   describe: desc,
   builder,
-  handler:  ({ account, startMonth, useTransfers }): void => {
+  handler:  ({ account, startMonth, useTransfers, showTransfers }): void => {
     const budget: Budget = loadBudget();
     process.stdout.write(`Generating balances for ${account} starting from ${startMonth?.toString()}!\n`);
     const acct: Account|undefined = budget.accounts.get(account);
@@ -56,6 +58,7 @@ export const generate: CommandModule<unknown, GenerateOptions> = {
         m => `${budget.balances.get(account)?.get(m.toString())?.amount ?? 0}`.length);
     const padAmtLength = Math.max(...ammountLengths) + 2;  // 1 extra leading space plus "."
 
+    const lines: string[] = [];
     // For each month, compute running predicted balance and actual balance.
     let predictedBalance: Balance|undefined = undefined;
     for (let currentMonth = startMonth;
@@ -65,27 +68,37 @@ export const generate: CommandModule<unknown, GenerateOptions> = {
       const currentBalance: Balance|undefined =
           useTransfers ? (predictedBalance ?? recordedBalance) : (recordedBalance ?? predictedBalance);
       if (!currentBalance) { 
-        process.stdout.write(`  - { grp: ${currentMonth} } # has no balance or transfers.\n`);
+        predictedBalance = undefined;
+        const prevTransfers = accountTransfers.get(currentMonth.previous().toString()) ?? new Set();
+        lines.push(`  - { grp: ${currentMonth} } # has no balance and had ${prevTransfers.size} transfers.`);
         continue; 
       }
-      printBalanceLine(currentMonth, currentBalance, padAmtLength);
+      lines.push(printBalanceLine(currentMonth, currentBalance, padAmtLength));
       // If there is disaggreement print it as a comment.
       if (predictedBalance && predictedBalance.amount !== currentBalance.amount) {
         const predictedAmtValue = (predictedBalance.amount/100).toFixed(2).padStart(padAmtLength);
         const diffAmtValue = ((currentBalance.amount - predictedBalance.amount)/100).toFixed(2).padStart(padAmtLength);
-        process.stdout.write(` # predicted ${predictedAmtValue} unaccounted ${diffAmtValue}`);
+        lines[lines.length-1] += ` # predicted ${predictedAmtValue} unaccounted ${diffAmtValue}`;
       }
-      process.stdout.write('\n');
       const transfers: Set<Transfer> = accountTransfers.get(currentMonth.toString()) ?? new Set();
+      if (showTransfers) {
+        for (const transfer of transfers) {
+          lines.push(`    ${transfer.toMonth} ${transfer.fromAccount.name} --> ${transfer.toAccount.name} ${transfer.balance}`);
+        }
+      }
       // Find first date of next month transcation, our predicated balance cannot be older.
-      const nextTransfers = accountTransfers.get(currentMonth.next().toString());
-      const minDateNextMonthTransfer: Date|undefined = nextTransfers ? [...nextTransfers].map(
+      const nextTransfers = accountTransfers.get(currentMonth.next().toString()) ?? new Set();
+      const minDateNextMonthTransfer: Date|undefined = nextTransfers.size ? [...nextTransfers].map(
         t=>t.balance.date).reduce(
           (prev, curr)=> prev.getTime() < curr.getTime() ? prev : curr) : undefined;
       predictedBalance = nextBalance(account, currentBalance, transfers, minDateNextMonthTransfer,
         useTransfers ? BalanceType.CONFIRMED : BalanceType.PROJECTED);
     }
 
+    lines.reverse();
+    for (const line of lines) {
+      process.stdout.write(line + '\n');
+    }
     process.exit(0);
   }
 }
@@ -94,7 +107,7 @@ function printBalanceLine(month: Month, balance: Balance, padAmtLength: number) 
   const amtPrefix = balance.type === BalanceType.PROJECTED ? 'pamt' : 'camt';
   const amtValue = (balance.amount/100).toFixed(2).padStart(padAmtLength);
   const dateValue = balance.date.toISOString().slice(0, 10);
-  process.stdout.write(`  - { grp: ${month}, date: ${dateValue}, ${amtPrefix}: ${amtValue} }`);
+  return `  - { grp: ${month}, date: ${dateValue}, ${amtPrefix}: ${amtValue} }`;
 }
 
 function nextBalance(
@@ -104,14 +117,14 @@ function nextBalance(
   minDateNextMonthTransfer: Date|undefined,
   balanceType: BalanceType
 ): Balance| undefined {
-  if (transfers.size === 0) { return undefined; }
+  //if (transfers.size === 0) { return undefined; }
   // The balance date is set to max transfer date,
   // but make sure it is not lower then next month start by default.
   const nextDate = new Date(Date.UTC(
       startBalance.date.getUTCFullYear(), 
       startBalance.date.getUTCMonth() + 1, 
       startBalance.date.getUTCDate()));
-  let balance = new Balance(startBalance.amount, startBalance.date, balanceType);
+  let balance = new Balance(startBalance.amount, nextDate, balanceType);
   for (const transfer of transfers) {
     if (transfer.toAccount.name === accountName) {
       balance = Balance.add(balance, transfer.balance);

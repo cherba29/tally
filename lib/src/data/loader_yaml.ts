@@ -112,7 +112,13 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData | undefine
         const message = e instanceof Error ? e.message : 'unknown';
         throw new Error(`Balance ${JSON.stringify(balanceData)} has bad grp setting: ${message}`);
       }
-      budgetBuilder.setBalance(account.name, month.toString(), makeBalance(balanceData));
+      const balance = makeBalance(balanceData);
+      const balanceMonthDiff = Math.abs(
+          balance.date.getUTCFullYear() * 12 + balance.date.getUTCMonth() - month.year * 12 - month.month);
+      if (balanceMonthDiff > 2) {
+        throw new Error(`For ${account.name} account ${balance} and month ${month} are ${balanceMonthDiff} months apart (2 max).`)
+      }
+      budgetBuilder.setBalance(account.name, month.toString(), balance);
     }
   }
   if (data.transfers_to) {
