@@ -1,42 +1,41 @@
 load("@aspect_rules_js//js:defs.bzl", "js_binary", "js_library", "js_test")
+
 # load("@aspect_rules_js//npm:defs.bzl", "npm_link_package")
 load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
 load("@npm//:defs.bzl", "npm_link_all_packages")
-
 
 package(default_visibility = ["//visibility:public"])
 
 npm_link_all_packages(name = "node_modules")
 
-
 ts_project(
     name = "cli_project",
     srcs = glob([
-            "src/**/*.ts",
-        ]),
+        "src/**/*.ts",
+    ]),
     tsconfig = ":tsconfig.json",
     validate = True,  # Checks that tsconfig matches this target.
     deps = [
-      ":node_modules/@types/dotenv",
-      ":node_modules/@types/node",
-      ":node_modules/@types/yargs",
-      ":node_modules/dotenv",
-      ":node_modules/yargs",
-      "//:tally_lib",
+        ":node_modules/@types/dotenv",
+        ":node_modules/@types/node",
+        ":node_modules/@types/yargs",
+        ":node_modules/dotenv",
+        ":node_modules/yargs",
+        "//:tally_lib",
     ],
 )
 
 js_binary(
     name = "tally_cli",
-    entry_point = "src/cli.js",
-    data = [
-        ":cli_project",
-        ".env",
-    ],
     # Run from package directory so to pick up .env file.
     chdir = package_name(),
+    data = [
+        ".env",
+        ":cli_project",
+    ],
+    entry_point = "src/cli.js",
     env = {
-        "BAZEL_BINDIR": ".", # required by the JS rules if we need to use them in the build process
-        "NODE_OPTIONS": "--es-module-specifier-resolution=node"
+        "BAZEL_BINDIR": ".",  # required by the JS rules if we need to use them in the build process
+        "NODE_OPTIONS": "--es-module-specifier-resolution=node",
     },
 )

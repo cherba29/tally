@@ -106,7 +106,7 @@ export class BudgetBuilder {
         toMonth: transferData.toMonth,
         fromMonth: transferData.fromMonth,
         balance: transferData.balance,
-        description: transferData.description
+        description: transferData.description,
       };
       const toMonthTransfers = getMonthTransfers(
         transfers,

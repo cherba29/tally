@@ -15,7 +15,7 @@ function stmtToObj(stmt: Statement) {
     change: stmt.change,
     percentChange: stmt.percentChange,
     unaccounted: stmt.unaccounted,
-    isClosed: stmt.isClosed
+    isClosed: stmt.isClosed,
   };
 }
 
@@ -29,7 +29,7 @@ describe('Creation', () => {
       income: 0,
       outFlows: 0,
       totalPayments: 0,
-      totalTransfers: 0
+      totalTransfers: 0,
     });
     expect(stmt.addSub).toBe(0);
     expect(stmt.change).toBeUndefined();
@@ -58,7 +58,7 @@ describe('Creation', () => {
       startBalance: undefined,
       totalPayments: 0,
       totalTransfers: 0,
-      unaccounted: undefined
+      unaccounted: undefined,
     });
   });
 
@@ -86,7 +86,7 @@ describe('Creation', () => {
       startBalance,
       totalPayments: 0,
       totalTransfers: 0,
-      unaccounted: 930
+      unaccounted: 930,
     });
   });
 });

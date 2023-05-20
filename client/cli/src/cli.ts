@@ -18,5 +18,4 @@ yargs(hideBin(process.argv))
   .command(unaccounted)
   .strict()
   // Useful aliases.
-  .alias({ h: 'help' })
-  .argv;
+  .alias({ h: 'help' }).argv;

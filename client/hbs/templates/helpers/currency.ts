@@ -3,7 +3,7 @@
  * @param {number} value number of cents.
  * @return {string} formatted string for currency.
  */
-export default function(value: number): string {
+export default function (value: number): string {
   if (value === null || value === undefined) {
     return 'n/a';
   }

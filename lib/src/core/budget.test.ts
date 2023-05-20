@@ -17,17 +17,17 @@ test('build simple', () => {
   const account1 = new Account({
     name: 'test-account1',
     type: AccountType.EXTERNAL,
-    owners: []
+    owners: [],
   });
   const account2 = new Account({
     name: 'test-account2',
     type: AccountType.BILL,
-    owners: []
+    owners: [],
   });
   const account3 = new Account({
     name: 'test-account3',
     type: AccountType.BILL,
-    owners: []
+    owners: [],
   });
 
   builder.setAccount(account1);
@@ -54,14 +54,14 @@ test('build simple', () => {
     toMonth: new Month(2019, 10),
     fromAccount: 'test-account2',
     fromMonth: new Month(2019, 10),
-    balance: new Balance(50, new Date(2019, 10, 2), BalanceType.CONFIRMED)
+    balance: new Balance(50, new Date(2019, 10, 2), BalanceType.CONFIRMED),
   });
   builder.addTransfer({
     toAccount: 'test-account3',
     toMonth: new Month(2019, 10),
     fromAccount: 'test-account2',
     fromMonth: new Month(2019, 10),
-    balance: new Balance(70, new Date(2019, 10, 2), BalanceType.CONFIRMED)
+    balance: new Balance(70, new Date(2019, 10, 2), BalanceType.CONFIRMED),
   });
 
   const budget = builder.build();
@@ -78,7 +78,7 @@ test('build budget - duplicate balance', () => {
   const account1 = new Account({
     name: 'test-account1',
     type: AccountType.EXTERNAL,
-    owners: []
+    owners: [],
   });
   builder.setAccount(account1);
   builder.setBalance(
@@ -104,7 +104,7 @@ test('build budget - bad to account', () => {
     toMonth: new Month(2019, 10),
     fromAccount: 'test-account2',
     fromMonth: new Month(2019, 10),
-    balance: new Balance(50, new Date(2019, 11, 2), BalanceType.CONFIRMED)
+    balance: new Balance(50, new Date(2019, 11, 2), BalanceType.CONFIRMED),
   });
   expect(() => builder.build()).toThrow('Unknown account test-account1');
 });
@@ -114,7 +114,7 @@ test('build budget - bad from account', () => {
   const account1 = new Account({
     name: 'test-account1',
     type: AccountType.EXTERNAL,
-    owners: []
+    owners: [],
   });
   builder.setAccount(account1);
   builder.addTransfer({
@@ -122,7 +122,7 @@ test('build budget - bad from account', () => {
     toMonth: new Month(2019, 10),
     fromAccount: 'test-account2',
     fromMonth: new Month(2019, 10),
-    balance: new Balance(50, new Date(2019, 11, 2), BalanceType.CONFIRMED)
+    balance: new Balance(50, new Date(2019, 11, 2), BalanceType.CONFIRMED),
   });
   expect(() => builder.build()).toThrow('Unknown account test-account2');
 });

@@ -97,7 +97,7 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData | undefine
     phone: data.phone,
     address: data.address,
     userName: data.username,
-    password: data.pswd
+    password: data.pswd,
   });
   budgetBuilder.setAccount(account);
   if (data.balances) {
@@ -114,9 +114,15 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData | undefine
       }
       const balance = makeBalance(balanceData);
       const balanceMonthDiff = Math.abs(
-          balance.date.getUTCFullYear() * 12 + balance.date.getUTCMonth() - month.year * 12 - month.month);
+        balance.date.getUTCFullYear() * 12 +
+          balance.date.getUTCMonth() -
+          month.year * 12 -
+          month.month
+      );
       if (balanceMonthDiff > 2) {
-        throw new Error(`For ${account.name} account ${balance} and month ${month} are ${balanceMonthDiff} months apart (2 max).`)
+        throw new Error(
+          `For ${account.name} account ${balance} and month ${month} are ${balanceMonthDiff} months apart (2 max).`
+        );
       }
       budgetBuilder.setBalance(account.name, month.toString(), balance);
     }
@@ -161,7 +167,10 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData | undefine
         if (Math.abs(balanceMonth.distance(transferMonth)) > 2) {
           throw new Error(
             `For account "${account.name}" transfer to "${account_name}" ` +
-              `for ${transferMonth} date ${balance.date.toISOString().slice(0, 10)} (${balanceMonth}) are too far apart.`);
+              `for ${transferMonth} date ${balance.date
+                .toISOString()
+                .slice(0, 10)} (${balanceMonth}) are too far apart.`
+          );
         }
         const transfer: TransferData = {
           fromAccount: account.name,
@@ -169,7 +178,7 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData | undefine
           toAccount: account_name,
           toMonth: transferMonth,
           balance,
-          description: transfer_data.desc
+          description: transfer_data.desc,
         };
 
         budgetBuilder.addTransfer(transfer);
@@ -189,7 +198,7 @@ export function loadYamlFile(
       console.warn(ex);
     },
     schema: yaml.DEFAULT_SAFE_SCHEMA,
-    json: false
+    json: false,
   }) as YamlData | undefined;
   try {
     processYamlData(budgetBuilder, accountData);

@@ -78,34 +78,34 @@ const backendClient = new BackendClient();
 function reloadGql(): void {
   console.log('Loading graphql');
   backendClient
-      .loadData()
-      .then((result) => {
-        lastReloadTimestamp = new Date();
-        console.log(result);
-        if (result.errors) {
-          const popupElement = $('#error-content');
-          popupElement.offset({top: 40, left: 0});
-          for (const error of result.errors) {
-            popupElement.html('<pre>' + error.message + '</pre>');
-          }
-          return;
-        }
-        clearPopup();
-        clearErrorContent();
-
-        const dataView = transformGqlBudgetData(result.data.budget || undefined);
-        $('#content').html(summary_template(dataView));
-        // Most cells have popups with details, activate these.
-        for (const popup of dataView.popupCells) {
-          $('#' + popup.id).click(createPopupFunc(popup));
-        }
-      })
-      .catch((error) => {
-        const popupElement = $('#popup-content');
+    .loadData()
+    .then((result) => {
+      lastReloadTimestamp = new Date();
+      console.log(result);
+      if (result.errors) {
+        const popupElement = $('#error-content');
         popupElement.offset({top: 40, left: 0});
-        popupElement.html('<pre>' + error.message + '</pre>');
-        throw error;
-      });
+        for (const error of result.errors) {
+          popupElement.html('<pre>' + error.message + '</pre>');
+        }
+        return;
+      }
+      clearPopup();
+      clearErrorContent();
+
+      const dataView = transformGqlBudgetData(result.data.budget || undefined);
+      $('#content').html(summary_template(dataView));
+      // Most cells have popups with details, activate these.
+      for (const popup of dataView.popupCells) {
+        $('#' + popup.id).click(createPopupFunc(popup));
+      }
+    })
+    .catch((error) => {
+      const popupElement = $('#popup-content');
+      popupElement.offset({top: 40, left: 0});
+      popupElement.html('<pre>' + error.message + '</pre>');
+      throw error;
+    });
 }
 
 $('#reload').on('click', reload);
@@ -119,7 +119,7 @@ function pad(n: number) {
 }
 
 // Show how long ago page was reloaded.
-setInterval(()=>{
+setInterval(() => {
   const minutesElement = $('#minutes');
   const secondsElement = $('#seconds');
   const diffTimeSec = Math.round((new Date().getTime() - lastReloadTimestamp.getTime()) / 1000);

@@ -44,9 +44,9 @@ export function gqlToBalance(gqlBalance: GqlBalance | null | undefined): Balance
     return undefined;
   }
   return new Balance(
-      gqlBalance?.amount ?? 0,
-      new Date(gqlBalance.date),
-    gqlBalance.type as BalanceType,
+    gqlBalance?.amount ?? 0,
+    new Date(gqlBalance.date),
+    gqlBalance.type as BalanceType
   );
 }
 

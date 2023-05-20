@@ -6,6 +6,7 @@ from any location. Do not expose it online.
 ## Setup
 
 To build js bundle use.
+
 ```
 npm run build
 ```

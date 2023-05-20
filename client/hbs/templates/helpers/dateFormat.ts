@@ -3,7 +3,7 @@
  * @param {Date} value date.
  * @return {string} formatted string for date.
  */
-export default function(value: Date): string {
+export default function (value: Date): string {
   if (value === null || value === undefined) {
     return 'n/a';
   }

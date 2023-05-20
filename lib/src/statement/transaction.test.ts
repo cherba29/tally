@@ -25,7 +25,7 @@ describe('Build', () => {
     const account = new Account({
       name: 'test-account',
       type: AccountType.EXTERNAL,
-      owners: []
+      owners: [],
     });
     builder.setAccount(account);
     const table = buildTransactionStatementTable(builder.build());
@@ -46,8 +46,8 @@ describe('Build', () => {
         startBalance: undefined,
         totalPayments: 0,
         totalTransfers: 0,
-        transactions: []
-      }
+        transactions: [],
+      },
     ]);
     expect(table[0]?.isClosed).toBe(false);
   });
@@ -58,7 +58,7 @@ describe('Build', () => {
     const account1 = new Account({
       name: 'test-account1',
       type: AccountType.CHECKING,
-      owners: ['john']
+      owners: ['john'],
     });
     builder.setAccount(account1);
     builder.addTransfer({
@@ -67,7 +67,7 @@ describe('Build', () => {
       toMonth: Month.fromString('Dec2019'),
       fromMonth: Month.fromString('Dec2019'),
       balance: Balance.projected(2000, '2019-12-05'),
-      description: 'First transfer'
+      description: 'First transfer',
     });
     expect(() => buildTransactionStatementTable(builder.build())).toThrow(
       new Error('Unknown account test-account2')
@@ -80,12 +80,12 @@ describe('Build', () => {
     const account1 = new Account({
       name: 'test-account1',
       type: AccountType.CHECKING,
-      owners: ['john']
+      owners: ['john'],
     });
     const account2 = new Account({
       name: 'test-account2',
       type: AccountType.CREDIT,
-      owners: ['john']
+      owners: ['john'],
     });
 
     builder.setAccount(account1);
@@ -99,7 +99,7 @@ describe('Build', () => {
       toMonth: Month.fromString('Dec2019'),
       fromMonth: Month.fromString('Dec2019'),
       balance: Balance.projected(2000, '2019-12-05'),
-      description: 'First transfer'
+      description: 'First transfer',
     });
 
     builder.addTransfer({
@@ -108,7 +108,7 @@ describe('Build', () => {
       toMonth: Month.fromString('Dec2019'),
       fromMonth: Month.fromString('Dec2019'),
       balance: Balance.projected(1000, '2019-12-05'),
-      description: 'Second transfer'
+      description: 'Second transfer',
     });
 
     const table = buildTransactionStatementTable(builder.build());
@@ -136,7 +136,7 @@ describe('Build', () => {
             type: TransactionType.TRANSFER,
             description: 'First transfer',
             balanceFromEnd: 2020,
-            balanceFromStart: -2990
+            balanceFromStart: -2990,
           },
           {
             account: account2,
@@ -144,9 +144,9 @@ describe('Build', () => {
             type: TransactionType.TRANSFER,
             description: 'Second transfer',
             balanceFromEnd: 3020,
-            balanceFromStart: -990
-          }
-        ]
+            balanceFromStart: -990,
+          },
+        ],
       },
       {
         account: account2,
@@ -169,16 +169,16 @@ describe('Build', () => {
             account: account1,
             balance: Balance.projected(2000, '2019-12-05'),
             type: TransactionType.TRANSFER,
-            description: 'First transfer'
+            description: 'First transfer',
           },
           {
             account: account1,
             balance: Balance.projected(1000, '2019-12-05'),
             type: TransactionType.TRANSFER,
-            description: 'Second transfer'
-          }
-        ]
-      }
+            description: 'Second transfer',
+          },
+        ],
+      },
     ]);
     expect(table[0]?.isClosed).toBe(false);
   });
@@ -189,12 +189,12 @@ describe('Build', () => {
     const account1 = new Account({
       name: 'test-account1',
       type: AccountType.EXTERNAL,
-      owners: []
+      owners: [],
     });
     const account2 = new Account({
       name: 'test-account2',
       type: AccountType.CREDIT,
-      owners: ['john']
+      owners: ['john'],
     });
 
     builder.setAccount(account1);
@@ -208,7 +208,7 @@ describe('Build', () => {
       toMonth: Month.fromString('Dec2019'),
       fromMonth: Month.fromString('Dec2019'),
       balance: Balance.projected(2000, '2019-12-05'),
-      description: 'First transfer'
+      description: 'First transfer',
     });
 
     builder.addTransfer({
@@ -217,7 +217,7 @@ describe('Build', () => {
       toMonth: Month.fromString('Dec2019'),
       fromMonth: Month.fromString('Dec2019'),
       balance: Balance.projected(1000, '2019-12-05'),
-      description: 'Second transfer'
+      description: 'Second transfer',
     });
 
     const table = buildTransactionStatementTable(builder.build());
@@ -245,7 +245,7 @@ describe('Build', () => {
             type: TransactionType.EXPENSE,
             description: 'First transfer',
             balanceFromEnd: 2020,
-            balanceFromStart: -2990
+            balanceFromStart: -2990,
           },
           {
             account: account2,
@@ -253,9 +253,9 @@ describe('Build', () => {
             type: TransactionType.EXPENSE,
             description: 'Second transfer',
             balanceFromEnd: 3020,
-            balanceFromStart: -990
-          }
-        ]
+            balanceFromStart: -990,
+          },
+        ],
       },
       {
         account: account2,
@@ -278,16 +278,16 @@ describe('Build', () => {
             account: account1,
             balance: Balance.projected(2000, '2019-12-05'),
             type: TransactionType.INCOME,
-            description: 'First transfer'
+            description: 'First transfer',
           },
           {
             account: account1,
             balance: Balance.projected(1000, '2019-12-05'),
             type: TransactionType.INCOME,
-            description: 'Second transfer'
-          }
-        ]
-      }
+            description: 'Second transfer',
+          },
+        ],
+      },
     ]);
     expect(table[0]?.isClosed).toBe(false);
   });

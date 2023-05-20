@@ -9,7 +9,7 @@ export enum Type {
   UNKNOWN,
   TRANSFER,
   INCOME,
-  EXPENSE
+  EXPENSE,
 }
 
 export interface Transaction {
@@ -114,12 +114,17 @@ function makeTranscationStatement(
     return 0;
   });
 
-  const firstTransfer: Transfer|undefined = descTransfers[descTransfers.length - 1];
-  if (firstTransfer && startBalance && firstTransfer.balance.date.getTime() < startBalance.date.getTime()) {
+  const firstTransfer: Transfer | undefined = descTransfers[descTransfers.length - 1];
+  if (
+    firstTransfer &&
+    startBalance &&
+    firstTransfer.balance.date.getTime() < startBalance.date.getTime()
+  ) {
     throw new Error(
-      `Balance ${month} ${startBalance} for account ${account.name} ` + 
-      `starts after transaction ${firstTransfer.fromAccount.name} --> ${firstTransfer.toAccount.name}/${firstTransfer.balance} ` +
-      `desc "${firstTransfer.description}"`);
+      `Balance ${month} ${startBalance} for account ${account.name} ` +
+        `starts after transaction ${firstTransfer.fromAccount.name} --> ${firstTransfer.toAccount.name}/${firstTransfer.balance} ` +
+        `desc "${firstTransfer.description}"`
+    );
   }
 
   for (const t of descTransfers) {
@@ -152,7 +157,7 @@ function makeTranscationStatement(
       account: otherAccount,
       description: t.description,
       balance,
-      type: transactionType
+      type: transactionType,
     });
   }
   return statement;

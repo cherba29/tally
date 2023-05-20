@@ -1,10 +1,11 @@
 workspace(
-  name = "tally",
-  # Map the @npm bazel workspace to the node_modules directory. This lets Bazel use the same node_modules as other local tooling.
-  # managed_directories = {"@npm": ["node_modules"]},
+    name = "tally",
+    # Map the @npm bazel workspace to the node_modules directory. This lets Bazel use the same node_modules as other local tooling.
+    # managed_directories = {"@npm": ["node_modules"]},
 )
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 http_archive(
     name = "aspect_rules_ts",
     sha256 = "8eb25d1fdafc0836f5778d33fb8eaac37c64176481d67872b54b0a05de5be5c0",
@@ -20,11 +21,17 @@ http_archive(
 )
 
 http_archive(
-
     name = "aspect_rules_js",
     sha256 = "dcd1567d4a93a8634ec0b888b371a60b93c18d980f77dace02eb176531a71fcf",
     strip_prefix = "rules_js-1.26.0",
     url = "https://github.com/aspect-build/rules_js/releases/download/v1.26.0/rules_js-v1.26.0.tar.gz",
+)
+
+http_archive(
+    name = "aspect_rules_format",
+    sha256 = "c8d04f68082c0eeac2777e15f65048ece2f17d632023bdcc511602f8c5faf177",
+    strip_prefix = "bazel-super-formatter-2.0.0",
+    url = "https://github.com/aspect-build/bazel-super-formatter/archive/refs/tags/v2.0.0.tar.gz",
 )
 
 load("@aspect_rules_js//js:repositories.bzl", "rules_js_dependencies")
@@ -49,6 +56,19 @@ rules_ts_dependencies(
     # load("@aspect_rules_ts//ts:repositories.bzl", "LATEST_VERSION")
     # ts_version = LATEST_VERSION
 )
+
+#########################################
+# rules_format setup                    #
+# Paste to the bottom of your WORKSPACE #
+#########################################
+# Fetches the rules_format dependencies.
+# If you want to have a different version of some dependency,
+# you should fetch it *before* calling this.
+# Alternatively, you can skip calling this function, so long as you've
+# already fetched all the dependencies.
+load("@aspect_rules_format//format:repositories.bzl", "rules_format_dependencies")
+
+rules_format_dependencies()
 
 ###########################
 # aspect_rules_jest setup #
@@ -79,6 +99,18 @@ register_copy_directory_toolchains()
 
 register_copy_to_directory_toolchains()
 
+load("@aspect_rules_format//format:dependencies.bzl", "parse_dependencies")
+
+parse_dependencies()
+
+# Installs toolchains for running programs under Node, Python, etc.
+# Be sure to register your own toolchains before this.
+# Most users should do this LAST in their WORKSPACE to avoid getting our versions of
+# things like the Go toolchain rather than the one you intended.
+load("@aspect_rules_format//format:toolchains.bzl", "format_register_toolchains")
+
+format_register_toolchains()
+
 ###########################################
 # A pnpm workspace so we can test 3p deps
 load("@aspect_rules_js//npm:npm_import.bzl", "npm_translate_lock")
@@ -86,9 +118,9 @@ load("@aspect_rules_js//npm:npm_import.bzl", "npm_translate_lock")
 # https://docs-legacy.aspect.build/aspect-build/rules_js/v1.13.0/docs/pnpm.html
 npm_translate_lock(
     name = "npm",
+    npmrc = "@//:.npmrc",
     pnpm_lock = "//:pnpm-lock.yaml",
     verify_node_modules_ignored = "//:.bazelignore",
-    npmrc = "@//:.npmrc",
 )
 
 load("@npm//:repositories.bzl", "npm_repositories")

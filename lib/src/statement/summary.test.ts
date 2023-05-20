@@ -15,7 +15,7 @@ describe('Build', () => {
       type: AccountType.CHECKING,
       owners: ['john'],
       openedOn: Month.fromString('Jan2019'),
-      closedOn: Month.fromString('Jan2020')
+      closedOn: Month.fromString('Jan2020'),
     });
 
     const stmt = new TransactionStatement(account1, Month.fromString('Mar2021'));
@@ -31,7 +31,7 @@ describe('Build', () => {
         outFlows: 0,
         statements: [],
         totalPayments: 0,
-        totalTransfers: 0
+        totalTransfers: 0,
       },
       {
         startBalance: undefined,
@@ -43,8 +43,8 @@ describe('Build', () => {
         outFlows: 0,
         statements: [],
         totalPayments: 0,
-        totalTransfers: 0
-      }
+        totalTransfers: 0,
+      },
     ]);
   });
 
@@ -53,7 +53,7 @@ describe('Build', () => {
       name: 'test-account1',
       type: AccountType.EXTERNAL,
       owners: ['john'],
-      openedOn: Month.fromString('Jan2019')
+      openedOn: Month.fromString('Jan2019'),
     });
 
     const stmt = new TransactionStatement(account1, Month.fromString('Mar2021'));
@@ -69,8 +69,8 @@ describe('Build', () => {
         outFlows: 0,
         statements: [stmt],
         totalPayments: 0,
-        totalTransfers: 0
-      }
+        totalTransfers: 0,
+      },
     ]);
   });
 
@@ -79,7 +79,7 @@ describe('Build', () => {
       name: 'test-account1',
       type: AccountType.CHECKING,
       owners: ['john'],
-      openedOn: Month.fromString('Jan2021')
+      openedOn: Month.fromString('Jan2021'),
     });
 
     const stmt = new TransactionStatement(account1, Month.fromString('Mar2021'));
@@ -95,7 +95,7 @@ describe('Build', () => {
         outFlows: 0,
         statements: [stmt],
         totalPayments: 0,
-        totalTransfers: 0
+        totalTransfers: 0,
       },
       {
         startBalance: undefined,
@@ -107,8 +107,8 @@ describe('Build', () => {
         outFlows: 0,
         statements: [stmt],
         totalPayments: 0,
-        totalTransfers: 0
-      }
+        totalTransfers: 0,
+      },
     ]);
   });
 });

@@ -1,4 +1,8 @@
-import { buildTransactionStatementTable, Transaction, Type as TransactionType } from '@tally/lib/statement/transaction';
+import {
+  buildTransactionStatementTable,
+  Transaction,
+  Type as TransactionType
+} from '@tally/lib/statement/transaction';
 import { buildSummaryStatementTable } from '@tally/lib/statement/summary';
 import { Type as BalanceType } from '@tally/lib/core/balance';
 import { Month } from '@tally/lib/core/month';

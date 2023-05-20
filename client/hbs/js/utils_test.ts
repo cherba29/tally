@@ -4,8 +4,8 @@ import {Balance, Type as BalanceType} from '@tally/lib/core/balance';
 import {Statement, SummaryStatement} from './base';
 import {transformBudgetData} from './utils';
 
-describe('transformBudgetData', function() {
-  it('works on empty', function() {
+describe('transformBudgetData', function () {
+  it('works on empty', function () {
     const months: string[] = [];
     const accountNameToAccount = {};
     const statements = {};
@@ -19,7 +19,7 @@ describe('transformBudgetData', function() {
     });
   });
 
-  it('works on single', function() {
+  it('works on single', function () {
     const months = ['Sep2014'];
     const account = new TallyAccount({
       name: 'main',

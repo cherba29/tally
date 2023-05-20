@@ -16,7 +16,7 @@ const config: webpack.Configuration = {
     // Add `.ts` as a resolvable extension.
     extensions: ['.ts', '.js'],
     alias: {
-      'templates': __dirname + '/templates',
+      templates: __dirname + '/templates',
     },
   },
   module: {

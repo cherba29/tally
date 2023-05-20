@@ -10,13 +10,13 @@ interface JettyAccount {
   description?: string;
   number?: string;
   owners: string[];
-  openedOn: string|null;
-  closedOn: string|null;
-  url: string|null;
-  username: string|null;
-  password: string|null;
-  phone: string|null;
-  address: string|null;
+  openedOn: string | null;
+  closedOn: string | null;
+  url: string | null;
+  username: string | null;
+  password: string | null;
+  phone: string | null;
+  address: string | null;
   external: boolean;
   summary: boolean;
 }
@@ -121,9 +121,9 @@ function jettyToBalance(jettyBalance: JettyBalance | null | undefined): Balance 
     return undefined;
   }
   return new Balance(
-      jettyBalance.amount,
-      new Date(jettyBalance.date),
-    jettyBalance.type as BalanceType,
+    jettyBalance.amount,
+    new Date(jettyBalance.date),
+    jettyBalance.type as BalanceType
   );
 }
 
@@ -226,7 +226,7 @@ export function transformJettyBudgetData(data: JettyResponseData): MatrixDataVie
   const summaries: {[ownerAccountType: string]: {[month: string]: SummaryStatement}} = {};
   for (const [ownerAccountType, monthToJettySummaryStatement] of Object.entries(data.summaries)) {
     const monthSummaryStatements: {[month: string]: SummaryStatement} = (summaries[
-        ownerAccountType
+      ownerAccountType
     ] = {});
     for (const [month, jettySummaryStatement] of Object.entries(monthToJettySummaryStatement)) {
       monthSummaryStatements[month] = jettyToSummaryStatement(jettySummaryStatement);

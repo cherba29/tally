@@ -20,7 +20,7 @@ describe('listFiles', () => {
     mockfs({
       [TALLY_PATH]: {
         /* empty directory */
-      }
+      },
     });
     expect(listFiles()).toEqual([]);
   });
@@ -33,13 +33,13 @@ describe('listFiles', () => {
         '_config.yaml': '',
         subdir1: {
           'file1.json': '',
-          'file2.yaml': ''
+          'file2.yaml': '',
         },
         subdir2: {
           'file1.json': '',
-          'file2.yaml': ''
-        }
-      }
+          'file2.yaml': '',
+        },
+      },
     });
     expect(listFiles()).toEqual(['_config.yaml', 'subdir1/file2.yaml', 'subdir2/file2.yaml']);
   });
@@ -64,7 +64,7 @@ describe('loadBudget', () => {
     mockfs({
       [TALLY_PATH]: {
         /* empty directory */
-      }
+      },
     });
     expect(loadBudget).toThrow(
       new Error("ENOENT: no such file or directory, open 'tally/files/path/_config.yaml'")
@@ -78,14 +78,14 @@ describe('loadBudget', () => {
     process.env.TALLY_FILES = TALLY_PATH;
     mockfs({
       [TALLY_PATH]: {
-        '_config.yaml': 'budget_period: {start: Nov2019, end: Feb2020}'
-      }
+        '_config.yaml': 'budget_period: {start: Nov2019, end: Feb2020}',
+      },
     });
     expect(loadBudget()).toEqual({
       accounts: new Map(),
       balances: new Map(),
       months: [new Month(2019, 10), new Month(2019, 11), new Month(2020, 0), new Month(2020, 1)],
-      transfers: new Map()
+      transfers: new Map(),
     });
 
     expect(console.log).toHaveBeenCalledTimes(2);

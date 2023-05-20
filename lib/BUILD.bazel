@@ -11,28 +11,30 @@ npm_link_all_packages(name = "node_modules")
 
 ts_project(
     name = "lib",
-    srcs = glob([
+    srcs = glob(
+        [
             "src/**/*.ts",
-        ], exclude = ["src/**/*.test.ts"]),
+        ],
+        exclude = ["src/**/*.test.ts"],
+    ),
+    composite = True,
     declaration = True,
     declaration_map = True,
-    composite = True,
     tsconfig = ":tsconfig.json",
     validate = True,  # Checks that tsconfig matches this target.
     deps = [
-      ":node_modules/@types/node",
-      ":node_modules/@types/js-yaml",
-      ":node_modules/js-yaml",
+        ":node_modules/@types/js-yaml",
+        ":node_modules/@types/node",
+        ":node_modules/js-yaml",
     ],
 )
 
 ts_project(
     name = "compile",
     srcs = glob(["src/**/*.test.ts"]),
-    validate = True,  # Checks that tsconfig matches this target.
+    composite = True,
     declaration = True,
     declaration_map = True,
-    composite = True,
     tsconfig = {
         "compilerOptions": {
             "target": "esnext",
@@ -43,13 +45,14 @@ ts_project(
             "esModuleInterop": True,
         },
     },
+    validate = True,  # Checks that tsconfig matches this target.
     deps = [
-      ":lib",
-      ":node_modules/@types/node",
-      ":node_modules/@types/jest",
-      ":node_modules/@types/mock-fs",
-      ":node_modules/mock-fs",
-      ":node_modules/jest",
+        ":lib",
+        ":node_modules/@types/jest",
+        ":node_modules/@types/mock-fs",
+        ":node_modules/@types/node",
+        ":node_modules/jest",
+        ":node_modules/mock-fs",
     ],
 )
 
@@ -58,17 +61,16 @@ jest_test(
     name = "test",
     config = "jest_config.json",
     data = [
-      ":compile",
-      ":node_modules/@types/jest",
-      ":node_modules/@types/mock-fs",
-      ":node_modules/@types/node",
-      ":node_modules/jest",
-      ":node_modules/mock-fs",
-      ":node_modules/ts-jest",
+        ":compile",
+        ":node_modules/@types/jest",
+        ":node_modules/@types/mock-fs",
+        ":node_modules/@types/node",
+        ":node_modules/jest",
+        ":node_modules/mock-fs",
+        ":node_modules/ts-jest",
     ],
     node_modules = ":node_modules",
 )
-
 
 npm_package(
     name = "tally_lib",
@@ -78,7 +80,7 @@ npm_package(
     ],
     include_runfiles = False,
     package = "@tally/lib",
-      root_paths = [
+    root_paths = [
         package_name() + "/src",
     ],
     visibility = ["//visibility:public"],

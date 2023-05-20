@@ -44,7 +44,8 @@ export function loadBudget(startMonth?: Month, endMonth?: Month): Budget {
   if (startMonth && endMonth) {
     if (startMonth.compareTo(endMonth) >= 0) {
       throw new Error(
-        `Start month ${startMonth} should precede end month ${endMonth} when loading budget`);
+        `Start month ${startMonth} should precede end month ${endMonth} when loading budget`
+      );
     }
     budgetBuilder.setPeriod(startMonth, endMonth);
   } else {

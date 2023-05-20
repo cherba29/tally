@@ -56,7 +56,10 @@ describe('loadYaml', () => {
       "Error: Unknown type 'SOMETHING' for account 'test' while processing path/file.yaml"
     );
     expect(console.log).toHaveBeenCalledTimes(1);
-    expect(console.log).toHaveBeenCalledWith('Account Data', { name: 'test', type: 'SOMETHING' });
+    expect(console.log).toHaveBeenCalledWith('Account Data', {
+      name: 'test',
+      type: 'SOMETHING',
+    });
   });
 
   test('fails when account has no owners', () => {
@@ -79,7 +82,7 @@ describe('loadYaml', () => {
     expect(console.log).toHaveBeenCalledWith('Account Data', {
       name: 'test',
       owner: [],
-      type: 'external'
+      type: 'external',
     });
   });
 
@@ -121,7 +124,7 @@ describe('loadYaml', () => {
       password: 'xxxyyy',
       owners: ['arthur'],
       openedOn: new Month(2019, 10),
-      closedOn: new Month(2020, 2)
+      closedOn: new Month(2020, 2),
     });
   });
 
@@ -282,15 +285,15 @@ describe('loadYaml', () => {
           toAccount: externalAccount,
           fromMonth: Month.fromString('Jan2020'),
           toMonth: Month.fromString('Jan2020'),
-          balance: new Balance(3750, new Date('2020-01-17'), BalanceType.PROJECTED)
+          balance: new Balance(3750, new Date('2020-01-17'), BalanceType.PROJECTED),
         },
         {
           fromAccount: testAccount,
           toAccount: externalAccount,
           fromMonth: Month.fromString('Jan2020'),
           toMonth: Month.fromString('Jan2020'),
-          balance: new Balance(-2248, new Date('2020-01-15'), BalanceType.CONFIRMED)
-        }
+          balance: new Balance(-2248, new Date('2020-01-15'), BalanceType.CONFIRMED),
+        },
       ])
     );
 
@@ -304,15 +307,15 @@ describe('loadYaml', () => {
           toAccount: externalAccount,
           fromMonth: Month.fromString('Jan2020'),
           toMonth: Month.fromString('Jan2020'),
-          balance: new Balance(3750, new Date('2020-01-17'), BalanceType.PROJECTED)
+          balance: new Balance(3750, new Date('2020-01-17'), BalanceType.PROJECTED),
         },
         {
           fromAccount: testAccount,
           toAccount: externalAccount,
           fromMonth: Month.fromString('Jan2020'),
           toMonth: Month.fromString('Jan2020'),
-          balance: new Balance(-2248, new Date('2020-01-15'), BalanceType.CONFIRMED)
-        }
+          balance: new Balance(-2248, new Date('2020-01-15'), BalanceType.CONFIRMED),
+        },
       ])
     );
   });
@@ -351,7 +354,7 @@ describe('loadYaml', () => {
     ).toThrow(
       new Error(
         'For account "test-account" transfer to "external" does not have a ' +
-        'valid "date" field. while processing path/test.yaml'
+          'valid "date" field. while processing path/test.yaml'
       )
     );
   });
@@ -371,7 +374,7 @@ describe('loadYaml', () => {
     ).toThrow(
       new Error(
         'For account "test-account" transfer to "external" for Jan2020 date ' +
-        '2020-04-01 (Apr2020) are too far apart. while processing path/test.yaml'
+          '2020-04-01 (Apr2020) are too far apart. while processing path/test.yaml'
       )
     );
   });

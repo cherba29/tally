@@ -83,11 +83,11 @@ interface CellData {
  * @return {CellData} list of cells and popus.
  */
 function getSummaryCells(
-    owner: string,
-    name: string,
-    months: string[],
-    statements: {[accountName: string]: {[month: string]: Statement}},
-    summaries: {[month: string]: SummaryStatement},
+  owner: string,
+  name: string,
+  months: string[],
+  statements: {[accountName: string]: {[month: string]: Statement}},
+  summaries: {[month: string]: SummaryStatement}
 ): CellData {
   const cellData: CellData = {
     cells: [],
@@ -104,10 +104,10 @@ function getSummaryCells(
       month,
       summary: summaryStmt,
       statements: accounts.map(
-          (accountName: string): StatementEntry => ({
-            name: accountName,
-            stmt: statements[accountName][month],
-          }),
+        (accountName: string): StatementEntry => ({
+          name: accountName,
+          stmt: statements[accountName][month],
+        })
       ),
     });
   }
@@ -134,12 +134,12 @@ export interface MatrixDataView {
  * @return {MatrixDataView} dataview structure.
  */
 export function transformBudgetData(
-    months: string[],
-    accountNameToAccount: {[accountName: string]: Account},
-    statements: {[accountName: string]: {[month: string]: Statement}},
-    summaries: {
+  months: string[],
+  accountNameToAccount: {[accountName: string]: Account},
+  statements: {[accountName: string]: {[month: string]: Statement}},
+  summaries: {
     [ownerAccountType: string]: {[month: string]: SummaryStatement};
-  },
+  }
 ): MatrixDataView {
   const dataView: MatrixDataView = {
     months,
@@ -155,11 +155,11 @@ export function transformBudgetData(
     const summaryName = owner + ' SUMMARY';
     if (summaryName in summaries) {
       const cellData = getSummaryCells(
-          owner,
-          'SUMMARY',
-          months,
-          statements,
-          summaries[summaryName],
+        owner,
+        'SUMMARY',
+        months,
+        statements,
+        summaries[summaryName]
       );
       dataView.rows.push(new Row(owner, RowType.TOTAL, cellData.cells));
       Array.prototype.push.apply(dataView.popupCells, cellData.popups);
@@ -168,11 +168,11 @@ export function transformBudgetData(
 
     for (const accountType of accountTypes) {
       dataView.rows.push(
-          new Row('*** ' + owner + ' - ' + accountType + ' *** accounts', RowType.SPACE, []),
+        new Row('*** ' + owner + ' - ' + accountType + ' *** accounts', RowType.SPACE, [])
       );
       const accountNames: string[] = typeAccountNames[accountType].sort();
       for (const accountName of accountNames) {
-        const accountStatements: {[month: string]: Statement; } = statements[accountName];
+        const accountStatements: {[month: string]: Statement} = statements[accountName];
         const cells: Cell[] = [];
         for (const month of months) {
           const stmt: Statement = accountStatements[month];

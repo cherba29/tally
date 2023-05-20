@@ -11,7 +11,7 @@ export enum Type {
   INVESTMENT = 'investment',
   RETIREMENT = 'retirement',
   SUMMARY = '_summary_',
-  TAX = 'tax_'
+  TAX = 'tax_',
 }
 
 // Typescript cannot reverse map string enums, so prebuild a lookup map.

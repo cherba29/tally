@@ -3,6 +3,6 @@
  * @param {number} index to increment.
  * @return {number} index + 1.
  */
-export default function(index: number): number {
+export default function (index: number): number {
   return index + 1;
-};
+}

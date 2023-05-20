@@ -10,7 +10,7 @@ const MONTH_NAMES = [
   'Sep',
   'Oct',
   'Nov',
-  'Dec'
+  'Dec',
 ];
 const MONTH_NAME_TO_INDEX = Object.fromEntries(MONTH_NAMES.map((x, i) => [x, i]));
 
@@ -61,9 +61,9 @@ export class Month {
     return this.year - other.year;
   }
 
-  /** 
-   * Number of months between two month dates. 
-   * Negative is provided date is larger 
+  /**
+   * Number of months between two month dates.
+   * Negative is provided date is larger
    */
   distance(other: Month): number {
     return (this.year - other.year) * 12 + (this.month - other.month);
