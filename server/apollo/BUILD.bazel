@@ -1,0 +1,79 @@
+load("@aspect_rules_jest//jest:defs.bzl", "jest_test")
+load("@aspect_rules_js//npm:defs.bzl", "npm_package")
+load("@aspect_rules_js//js:defs.bzl", "js_library", "js_test")
+load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
+load("@npm//:defs.bzl", "npm_link_all_packages")
+load("@bazel_skylib//rules:write_file.bzl", "write_file")
+
+package(default_visibility = ["//visibility:public"])
+
+npm_link_all_packages(name = "node_modules")
+
+ts_project(
+    name = "lib",
+    srcs = glob(
+        [
+            "src/**/*.ts",
+        ],
+        exclude = ["src/**/*.test.ts"],
+    ),
+    composite = True,
+    tsconfig = ":tsconfig.json",
+    validate = True,  # Checks that tsconfig matches this target.
+    deps = [
+        ":node_modules/@types/dotenv",
+        ":node_modules/@types/express",
+        ":node_modules/@types/graphql",
+        ":node_modules/@types/js-yaml",
+        ":node_modules/@types/node",
+        ":node_modules/js-yaml",
+        ":node_modules/dotenv",
+        ":node_modules/apollo-server-express",
+        ":node_modules/graphql",
+        "//:tally_lib",
+    ],
+)
+
+ts_project(
+    name = "compile",
+    srcs = glob(["src/**/*.test.ts"]),
+    data = glob(["src/testdata/**/*"]),
+    composite = True,
+    declaration = True,
+    declaration_map = True,
+    tsconfig = {
+        "compilerOptions": {
+            "target": "esnext",
+            "module": "commonjs",
+            "moduleResolution": "node",
+            "composite": True,
+            "inlineSourceMap": True,
+            "esModuleInterop": True,
+        },
+    },
+    validate = True,  # Checks that tsconfig matches this target.
+    deps = [
+        ":lib",
+        ":node_modules/@types/jest",
+        ":node_modules/@types/mock-fs",
+        ":node_modules/@types/node",
+        ":node_modules/jest",
+        ":node_modules/mock-fs",
+    ],
+)
+
+# See bazel-testlogs/lib/test/test.log
+jest_test(
+    name = "test",
+    config = "jest_config.json",
+    data = [
+        ":compile",
+        ":node_modules/@types/jest",
+        ":node_modules/@types/mock-fs",
+        ":node_modules/@types/node",
+        ":node_modules/jest",
+        ":node_modules/mock-fs",
+        ":node_modules/ts-jest",
+    ],
+    node_modules = ":node_modules",
+)

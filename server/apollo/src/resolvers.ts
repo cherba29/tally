@@ -7,7 +7,7 @@ import { buildSummaryStatementTable } from '@tally/lib/statement/summary';
 import { Type as BalanceType } from '@tally/lib/core/balance';
 import { Month } from '@tally/lib/core/month';
 import { listFiles, loadBudget } from '@tally/lib/data/loader';
-import { GraphQLScalarType, Kind } from 'graphql';
+import { GraphQLScalarType, Kind, ValueNode } from 'graphql';
 import { GqlAccount, GqlBudget, GqlStatement, GqlSummaryStatement } from './types';
 
 function buildGqlBudget(): GqlBudget {
@@ -141,7 +141,7 @@ export default {
     serialize(value: Date): string {
       return value.toISOString().split('T')[0];
     },
-    parseLiteral(ast): Date | null {
+    parseLiteral(ast: ValueNode): Date | null {
       if (ast.kind === Kind.STRING) {
         return new Date(ast.value);
       }
@@ -158,7 +158,7 @@ export default {
     serialize(value: Month): string {
       return value.toString();
     },
-    parseLiteral(ast): Month | null {
+    parseLiteral(ast: ValueNode): Month | null {
       if (ast.kind === Kind.STRING) {
         return Month.fromString(ast.value);
       }
