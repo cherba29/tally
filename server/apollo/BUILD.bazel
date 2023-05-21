@@ -24,10 +24,10 @@ ts_project(
         ":node_modules/@types/express",
         ":node_modules/@types/js-yaml",
         ":node_modules/@types/node",
-        ":node_modules/js-yaml",
-        ":node_modules/dotenv",
         ":node_modules/apollo-server-express",
+        ":node_modules/dotenv",
         ":node_modules/graphql",
+        ":node_modules/js-yaml",
         "//:tally_lib",
     ],
 )
@@ -35,14 +35,14 @@ ts_project(
 ts_project(
     name = "compile",
     srcs = glob(["src/**/*.test.ts"]),
-    data = glob(["src/testdata/**/*"]),
     composite = True,
+    data = glob(["src/testdata/**/*"]),
     declaration = True,
     declaration_map = True,
     tsconfig = {
         "compilerOptions": {
             "target": "esnext",
-            "module": "commonjs",
+            "module": "esnext",
             "moduleResolution": "node",
             "composite": True,
             "inlineSourceMap": True,
@@ -65,13 +65,16 @@ jest_test(
     name = "test",
     config = "jest_config.json",
     data = [
+        "babel.config.js",
         ":compile",
+        ":node_modules/@babel/core",
+        ":node_modules/@babel/preset-env",
         ":node_modules/@types/jest",
         ":node_modules/@types/mock-fs",
         ":node_modules/@types/node",
+        ":node_modules/babel-jest",
         ":node_modules/jest",
         ":node_modules/mock-fs",
-        ":node_modules/ts-jest",
     ],
     node_modules = ":node_modules",
 )
