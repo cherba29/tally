@@ -22,7 +22,6 @@ ts_project(
     validate = True,  # Checks that tsconfig matches this target.
     deps = [
         ":node_modules/@types/express",
-        ":node_modules/@types/graphql",
         ":node_modules/@types/js-yaml",
         ":node_modules/@types/node",
         ":node_modules/js-yaml",

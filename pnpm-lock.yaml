@@ -128,7 +128,6 @@ importers:
       '@graphql-codegen/typescript': ^2.8.8
       '@tally/lib': workspace:*
       '@types/express': ^4.17.17
-      '@types/graphql': ^14.5.0
       '@types/jest': ^26.0.24
       '@types/js-yaml': ^3.12.7
       '@types/mock-fs': ^4.13.1
@@ -172,7 +171,6 @@ importers:
       '@graphql-codegen/cli': 2.16.5_l33svohmr7btyhaznlaaptr5bu
       '@graphql-codegen/typescript': 2.8.8_graphql@15.8.0
       '@types/express': 4.17.17
-      '@types/graphql': 14.5.0
       '@types/jest': 26.0.24
       '@types/js-yaml': 3.12.7
       '@types/mock-fs': 4.13.1
@@ -2738,13 +2736,6 @@ packages:
     resolution: {integrity: sha512-Sig0SNORX9fdW+bQuTEovKj3uHcUL6LQKbCrrqb1X7J6/ReAbhCXRAhc+SMejhLELFj2QcyuxmUooZ4bt5ReSw==}
     dependencies:
       '@types/node': 16.18.31
-    dev: true
-
-  /@types/graphql/14.5.0:
-    resolution: {integrity: sha512-MOkzsEp1Jk5bXuAsHsUi6BVv0zCO+7/2PTiZMXWDSsMXvNU6w/PLMQT2vHn8hy2i0JqojPz1Sz6rsFjHtsU0lA==}
-    deprecated: This is a stub types definition. graphql provides its own type definitions, so you do not need this installed.
-    dependencies:
-      graphql: 15.8.0
     dev: true
 
   /@types/http-assert/1.5.3:
