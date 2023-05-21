@@ -15,7 +15,6 @@ ts_project(
     tsconfig = ":tsconfig.json",
     validate = True,  # Checks that tsconfig matches this target.
     deps = [
-        ":node_modules/@types/dotenv",
         ":node_modules/@types/node",
         ":node_modules/@types/yargs",
         ":node_modules/dotenv",

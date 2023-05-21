@@ -21,7 +21,6 @@ ts_project(
     tsconfig = ":tsconfig.json",
     validate = True,  # Checks that tsconfig matches this target.
     deps = [
-        ":node_modules/@types/dotenv",
         ":node_modules/@types/express",
         ":node_modules/@types/graphql",
         ":node_modules/@types/js-yaml",
