@@ -197,7 +197,7 @@ export function loadYamlFile(
     onWarning: (ex: yaml.YAMLException) => {
       console.warn(ex);
     },
-    schema: yaml.DEFAULT_SAFE_SCHEMA,
+    schema: yaml.DEFAULT_SCHEMA,
     json: false,
   }) as YamlData | undefined;
   try {

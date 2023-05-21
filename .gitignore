@@ -2,6 +2,7 @@ bazel-*
 node_modules/
 
 *.class
+*.orig
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/

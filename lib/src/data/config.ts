@@ -18,7 +18,7 @@ export function loadTallyConfig(): TallyConfig {
   }
   const configPath = path.join(process.env.TALLY_FILES, '_config.yaml');
   const config = yamlLoad(readFileSync(configPath, 'utf-8'));
-  if (!config || typeof config === 'string') {
+  if (!config || typeof config !== 'object') {
     throw new Error(`Could not parse file at "${configPath}"`);
   }
   if (!('budget_period' in config)) {
