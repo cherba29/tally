@@ -135,11 +135,17 @@ export default {
   Date: new GraphQLScalarType({
     name: 'Date',
     description: 'Date representation in YYYY-MM-DD format.',
-    parseValue(value: string): Date {
-      return new Date(value); // value from the client
+    parseValue(value: unknown): Date {
+      if (typeof value === 'string') {
+        return new Date(value); // value from the client
+      }
+      throw new Error('GraphQL Date Scalar parser expected a `string`');
     },
-    serialize(value: Date): string {
-      return value.toISOString().split('T')[0];
+    serialize(value: unknown): string {
+      if (value instanceof Date) {
+        return value.toISOString().split('T')[0];
+      }
+      throw Error('GraphQL Date Scalar serializer expected a `Date` object');
     },
     parseLiteral(ast: ValueNode): Date | null {
       if (ast.kind === Kind.STRING) {
@@ -152,11 +158,17 @@ export default {
   GqlMonth: new GraphQLScalarType({
     name: 'GqlMonth',
     description: 'Month representation in XxxYYYY format.',
-    parseValue(value: string): Month {
-      return Month.fromString(value); // value from the client
+    parseValue(value: unknown): Month {
+      if (typeof value === 'string') {
+        return Month.fromString(value); // value from the client
+      }
+      throw new Error('GraphQL GqlMonth Scalar parser expected a `string`');
     },
-    serialize(value: Month): string {
-      return value.toString();
+    serialize(value: unknown): string {
+      if (value instanceof Month) {
+        return value.toString();
+      }
+      throw Error('GraphQL GqlMonth Scalar serializer expected a `Month` object');
     },
     parseLiteral(ast: ValueNode): Month | null {
       if (ast.kind === Kind.STRING) {
