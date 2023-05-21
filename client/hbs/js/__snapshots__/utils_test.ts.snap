@@ -1,16 +1,16 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`transformBudgetData works on single 1`] = `
-Object {
-  "months": Array [
+{
+  "months": [
     "Sep2014",
   ],
-  "popupCells": Array [
-    Object {
+  "popupCells": [
+    {
       "accountName": "main",
       "id": "owner1_main_Sep2014",
       "month": "Sep2014",
-      "stmt": Object {
+      "stmt": {
         "addSub": 100,
         "endBalance": Balance {
           "amount": 3000,
@@ -32,11 +32,11 @@ Object {
         },
         "totalPayments": 0,
         "totalTransfers": 0,
-        "transactions": Array [],
+        "transactions": [],
         "unaccounted": 500,
       },
     },
-    Object {
+    {
       "account": Account {
         "address": "some place",
         "closedOn": undefined,
@@ -47,7 +47,7 @@ Object {
           "month": 7,
           "year": 2014,
         },
-        "owners": Array [
+        "owners": [
           "owner1",
           "owner2",
         ],
@@ -59,14 +59,14 @@ Object {
       },
       "id": "main",
     },
-    Object {
+    {
       "accountName": "owner1 credit",
       "id": "owner1_credit_Sep2014",
       "month": "Sep2014",
-      "statements": Array [
-        Object {
+      "statements": [
+        {
           "name": "main",
-          "stmt": Object {
+          "stmt": {
             "addSub": 100,
             "endBalance": Balance {
               "amount": 3000,
@@ -88,13 +88,13 @@ Object {
             },
             "totalPayments": 0,
             "totalTransfers": 0,
-            "transactions": Array [],
+            "transactions": [],
             "unaccounted": 500,
           },
         },
       ],
-      "summary": Object {
-        "accounts": Array [
+      "summary": {
+        "accounts": [
           "main",
         ],
         "addSub": 100,
@@ -118,15 +118,15 @@ Object {
         },
         "totalPayments": 0,
         "totalTransfers": 0,
-        "transactions": Array [],
+        "transactions": [],
         "unaccounted": 200,
       },
     },
-    Object {
+    {
       "accountName": "main",
       "id": "owner2_main_Sep2014",
       "month": "Sep2014",
-      "stmt": Object {
+      "stmt": {
         "addSub": 100,
         "endBalance": Balance {
           "amount": 3000,
@@ -148,11 +148,11 @@ Object {
         },
         "totalPayments": 0,
         "totalTransfers": 0,
-        "transactions": Array [],
+        "transactions": [],
         "unaccounted": 500,
       },
     },
-    Object {
+    {
       "account": Account {
         "address": "some place",
         "closedOn": undefined,
@@ -163,7 +163,7 @@ Object {
           "month": 7,
           "year": 2014,
         },
-        "owners": Array [
+        "owners": [
           "owner1",
           "owner2",
         ],
@@ -175,14 +175,14 @@ Object {
       },
       "id": "main",
     },
-    Object {
+    {
       "accountName": "owner2 credit",
       "id": "owner2_credit_Sep2014",
       "month": "Sep2014",
-      "statements": Array [
-        Object {
+      "statements": [
+        {
           "name": "main",
-          "stmt": Object {
+          "stmt": {
             "addSub": 100,
             "endBalance": Balance {
               "amount": 3000,
@@ -204,13 +204,13 @@ Object {
             },
             "totalPayments": 0,
             "totalTransfers": 0,
-            "transactions": Array [],
+            "transactions": [],
             "unaccounted": 500,
           },
         },
       ],
-      "summary": Object {
-        "accounts": Array [
+      "summary": {
+        "accounts": [
           "main",
         ],
         "addSub": 100,
@@ -234,28 +234,28 @@ Object {
         },
         "totalPayments": 0,
         "totalTransfers": 0,
-        "transactions": Array [],
+        "transactions": [],
         "unaccounted": 200,
       },
     },
   ],
-  "rows": Array [
+  "rows": [
     Row {
-      "cells": Array [],
+      "cells": [],
       "isNormal": false,
       "isSpace": true,
       "isTotal": false,
       "title": "owner1",
     },
     Row {
-      "cells": Array [],
+      "cells": [],
       "isNormal": false,
       "isSpace": true,
       "isTotal": false,
       "title": "*** owner1 - credit *** accounts",
     },
     Row {
-      "cells": Array [
+      "cells": [
         Cell {
           "addSub": 100,
           "balance": 3000,
@@ -283,7 +283,7 @@ Object {
           "month": 7,
           "year": 2014,
         },
-        "owners": Array [
+        "owners": [
           "owner1",
           "owner2",
         ],
@@ -295,7 +295,7 @@ Object {
       },
     },
     Row {
-      "cells": Array [
+      "cells": [
         Cell {
           "addSub": 100,
           "balance": 3000,
@@ -316,21 +316,21 @@ Object {
       "title": "owner1 credit",
     },
     Row {
-      "cells": Array [],
+      "cells": [],
       "isNormal": false,
       "isSpace": true,
       "isTotal": false,
       "title": "owner2",
     },
     Row {
-      "cells": Array [],
+      "cells": [],
       "isNormal": false,
       "isSpace": true,
       "isTotal": false,
       "title": "*** owner2 - credit *** accounts",
     },
     Row {
-      "cells": Array [
+      "cells": [
         Cell {
           "addSub": 100,
           "balance": 3000,
@@ -358,7 +358,7 @@ Object {
           "month": 7,
           "year": 2014,
         },
-        "owners": Array [
+        "owners": [
           "owner1",
           "owner2",
         ],
@@ -370,7 +370,7 @@ Object {
       },
     },
     Row {
-      "cells": Array [
+      "cells": [
         Cell {
           "addSub": 100,
           "balance": 3000,
