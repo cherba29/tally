@@ -58,10 +58,8 @@ ts_project(
 	deps = [
     	":lib",
     	":node_modules/@types/jest",
-    	":node_modules/@types/mock-fs",
     	":node_modules/@types/node",
     	":node_modules/jest",
-    	":node_modules/mock-fs",
 	],
 )
 
@@ -75,11 +73,9 @@ jest_test(
       ":node_modules/@babel/core",
       ":node_modules/@babel/preset-env",
     	":node_modules/@types/jest",
-    	":node_modules/@types/mock-fs",
     	":node_modules/@types/node",
       ":node_modules/babel-jest",
     	":node_modules/jest",
-    	":node_modules/mock-fs",
 	],
 	node_modules = ":node_modules",
 )
