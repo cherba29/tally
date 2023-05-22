@@ -4,7 +4,8 @@
   "collectCoverage": true,
   "coverageDirectory": "coverage",
   "coverageProvider": "v8",
+  "testRegex": [".*\\.test.ts$"],
   "transform": {
-    "^.+\\.(js|jsx)$": "babel-jest"
+    "^.+\\.(ts|tsx)$": "ts-jest"
   }
 }
