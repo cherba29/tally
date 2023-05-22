@@ -6,7 +6,7 @@ import 'webpack-dev-server';
 const config: webpack.Configuration = {
   mode: 'development',
   devtool: 'inline-source-map',
-  entry: './js/index.ts',
+  entry: './src/index.ts',
   output: {
     publicPath: 'public',
     filename: 'bundle.js',

@@ -159,7 +159,7 @@ export default {
   // ],
 
   // The regexp pattern or array of patterns that Jest uses to detect test files
-  testRegex: ['.*_test.ts$'],
+  testRegex: ['.*\\.test.ts$'],
 
   // This option allows the use of a custom results processor
   // testResultsProcessor: undefined,
