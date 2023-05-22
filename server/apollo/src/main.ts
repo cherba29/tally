@@ -34,7 +34,7 @@ process.on('unhandledRejection', (e) => {
 const server = new ApolloServer<MyContext>({
   resolvers,
   typeDefs,
-  plugins: [ApolloServerPluginCacheControl({ defaultMaxAge: 5, calculateHttpHeaders: false })],
+  plugins: [ApolloServerPluginCacheControl({ defaultMaxAge: 5, calculateHttpHeaders: false })]
 });
 
 await server.start();
@@ -46,11 +46,10 @@ app.use(
   cors<cors.CorsRequest>(),
   json(),
   expressMiddleware(server, {
-    context: async ({ req }) => ({ token: req.headers.token }),
-  }),
+    context: async ({ req }) => ({ token: req.headers.token })
+  })
 );
 app.use('/app', express.static(__dirname + '/../../../client/hbs'));
 
 await new Promise<void>((resolve) => httpServer.listen({ port: 4000 }, resolve));
 console.log(`🚀 Server ready at http://localhost:4000/graphql`);
-

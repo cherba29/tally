@@ -1,33 +1,52 @@
 # tally
 
-Financial ledger based on simple text files
+Personal financial ledger based on simple text (yaml) files.
 
-```
-gradle eclipse
-```
+There are many other similar tools (see https://plaintextaccounting.org/).
+While other tools primary focus is reporting and tracking,
+this tool is more about accounting andtracking obligations like making sure
+all the bills are paid, with projections for cashflow for next few months.
 
-## Conventions
-
-Style guide: https://google.github.io/styleguide/javaguide.html
-
-Line wrapper: https://google.github.io/styleguide/javaguide.html#s4.4-column-limit
+It consists of backend micro-service with web-ui interface.
 
 ## Setup
 
 ### Initial
 
 ```
-npm update
+sudo apt-get install bazel
+sudo apt install npm
+sudo npm install -g pnpm
+```
+
+```
+cd tally
+pnpm -r install
+echo 'TALLY_FILES="<PATH TO DATA YAML FILES>' > client/cli/.env
+cp client/cli/.env server/apollo
+bazel test //...
 ```
 
 Build client side:
 
 ```
-cd client/hbs
-npm run build
+pnpm lib build
+pnpm client build
+pnpm apollo build
 ```
 
-Start server with
+## Run
+
+### Start (nodejs) server
+
+```
+cd server/apollo
+node dist/server
+```
+
+access server via http://localhost:4000/app/js_summary.html
+
+### Start (java) server -- deprecated
 
 ```
 cd tally
@@ -52,5 +71,4 @@ Running CLI
 
 ```
  bazel run @aspect_rules_format//format
- ```
- 
+```

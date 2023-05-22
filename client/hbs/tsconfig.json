@@ -16,7 +16,9 @@
       "es2017",
       "dom" // dom for "console" declaration.
     ],
+    "composite": true,
     "declaration": true,
+    "declarationMap": true,
     "removeComments": false,
     "inlineSourceMap": true,
     "moduleResolution": "node",

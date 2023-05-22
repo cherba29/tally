@@ -10,72 +10,72 @@ package(default_visibility = ["//visibility:public"])
 npm_link_all_packages(name = "node_modules")
 
 ts_project(
-	name = "lib",
-	srcs = glob(
-    	[
-        	"src/**/*.ts",
-    	],
-    	exclude = ["src/**/*.test.ts"],
-	),
-	composite = True,
-	tsconfig = ":tsconfig.json",
-	validate = True,  # Checks that tsconfig matches this target.
-	deps = [
-    	":node_modules/@apollo/server",
-    	":node_modules/@types/body-parser",
-    	":node_modules/@types/cors",
-    	":node_modules/@types/express",
-    	":node_modules/@types/js-yaml",
-    	":node_modules/@types/node",
-    	":node_modules/body-parser",
-    	":node_modules/cors",
-    	":node_modules/graphql-tag",
-    	":node_modules/js-yaml",
-    	":node_modules/dotenv",
-    	":node_modules/graphql",
-    	"//:tally_lib",
-	],
+    name = "lib",
+    srcs = glob(
+        [
+            "src/**/*.ts",
+        ],
+        exclude = ["src/**/*.test.ts"],
+    ),
+    composite = True,
+    tsconfig = ":tsconfig.json",
+    validate = True,  # Checks that tsconfig matches this target.
+    deps = [
+        ":node_modules/@apollo/server",
+        ":node_modules/@types/body-parser",
+        ":node_modules/@types/cors",
+        ":node_modules/@types/express",
+        ":node_modules/@types/js-yaml",
+        ":node_modules/@types/node",
+        ":node_modules/body-parser",
+        ":node_modules/cors",
+        ":node_modules/dotenv",
+        ":node_modules/graphql",
+        ":node_modules/graphql-tag",
+        ":node_modules/js-yaml",
+        "//:tally_lib",
+    ],
 )
 
 ts_project(
-	name = "compile",
-	srcs = glob(["src/**/*.test.ts"]),
-	data = glob(["src/testdata/**/*"]),
-	composite = True,
-	declaration = True,
-	declaration_map = True,
-	tsconfig = {
-    	"compilerOptions": {
-        	"target": "esnext",
-        	"module": "esnext",
-        	"moduleResolution": "node",
-        	"composite": True,
-        	"inlineSourceMap": True,
-        	"esModuleInterop": True,
-    	},
-	},
-	validate = True,  # Checks that tsconfig matches this target.
-	deps = [
-    	":lib",
-    	":node_modules/@types/jest",
-    	":node_modules/@types/node",
-    	":node_modules/jest",
-	],
+    name = "compile",
+    srcs = glob(["src/**/*.test.ts"]),
+    composite = True,
+    data = glob(["src/testdata/**/*"]),
+    declaration = True,
+    declaration_map = True,
+    tsconfig = {
+        "compilerOptions": {
+            "target": "esnext",
+            "module": "esnext",
+            "moduleResolution": "node",
+            "composite": True,
+            "inlineSourceMap": True,
+            "esModuleInterop": True,
+        },
+    },
+    validate = True,  # Checks that tsconfig matches this target.
+    deps = [
+        ":lib",
+        ":node_modules/@types/jest",
+        ":node_modules/@types/node",
+        ":node_modules/jest",
+    ],
 )
 
 # See bazel-testlogs/lib/test/test.log
 jest_test(
-	name = "test",
-	config = "jest_config.json",
-	data = [
-    	"babel.config.js",
-    	":compile",
-      ":node_modules/@babel/core",
-      ":node_modules/@babel/preset-env",
-    	":node_modules/@types/jest",
-    	":node_modules/@types/node",
-      ":node_modules/babel-jest",
-    	":node_modules/jest",
-	],
-	node_modules = ":node_modules",
+    name = "test",
+    config = "jest_config.json",
+    data = [
+        "babel.config.js",
+        ":compile",
+        ":node_modules/@babel/core",
+        ":node_modules/@babel/preset-env",
+        ":node_modules/@types/jest",
+        ":node_modules/@types/node",
+        ":node_modules/babel-jest",
+        ":node_modules/jest",
+    ],
+    node_modules = ":node_modules",
 )
