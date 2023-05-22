@@ -1,3 +1,4 @@
+import { afterEach, describe, expect, jest, test } from '@jest/globals';
 import { listFiles, loadBudget } from './loader';
 import mockfs from 'mock-fs';
 import { Month } from '../core/month';
@@ -72,7 +73,7 @@ describe('loadBudget', () => {
   });
 
   test('empty', () => {
-    jest.spyOn(console, 'log').mockImplementation();
+    jest.spyOn(console, 'log').mockImplementation(() => {});
 
     const TALLY_PATH = 'tally/files/path';
     process.env.TALLY_FILES = TALLY_PATH;

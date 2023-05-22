@@ -19,12 +19,12 @@
   },
   "scripts": {
     "build": "tsc -p .",
-    "test": "jest",
+    "test": "jest --config jest_config.json",
     "test-update-snapshot": "jest --updateSnapshot"
   },
   "keywords": [],
   "devDependencies": {
-    "@types/jest": "^29.5.1",
+    "@jest/globals": "^29.5.0",
     "@types/js-yaml": "^4.0.5",
     "@types/mock-fs": "^4.13.1",
     "@types/node": "^20.2.1",

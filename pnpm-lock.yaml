@@ -99,7 +99,7 @@ importers:
 
   lib:
     specifiers:
-      '@types/jest': ^29.5.1
+      '@jest/globals': ^29.5.0
       '@types/js-yaml': ^4.0.5
       '@types/mock-fs': ^4.13.1
       '@types/node': ^20.2.1
@@ -114,7 +114,7 @@ importers:
     dependencies:
       js-yaml: 4.1.0
     devDependencies:
-      '@types/jest': 29.5.1
+      '@jest/globals': 29.5.0
       '@types/js-yaml': 4.0.5
       '@types/mock-fs': 4.13.1
       '@types/node': 20.2.1

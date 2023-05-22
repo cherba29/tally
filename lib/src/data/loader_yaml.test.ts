@@ -1,4 +1,5 @@
 /* eslint-disable  @typescript-eslint/no-non-null-assertion */
+import { afterEach, describe, expect, jest, test } from '@jest/globals';
 import { Type as AccountType } from '../core/account';
 import { Balance, Type as BalanceType } from '../core/balance';
 import { Month } from '../core/month';
@@ -18,8 +19,8 @@ describe('loadYaml', () => {
   });
 
   test('fails when no account type', () => {
-    jest.spyOn(console, 'error').mockImplementation();
-    jest.spyOn(console, 'log').mockImplementation();
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'log').mockImplementation(() => {});
 
     const budgetBuilder = new BudgetBuilder();
     expect(() =>
@@ -38,8 +39,8 @@ describe('loadYaml', () => {
   });
 
   test('fails when unknown account type', () => {
-    jest.spyOn(console, 'error').mockImplementation();
-    jest.spyOn(console, 'log').mockImplementation();
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'log').mockImplementation(() => {});
 
     const budgetBuilder = new BudgetBuilder();
     expect(() =>
@@ -63,8 +64,8 @@ describe('loadYaml', () => {
   });
 
   test('fails when account has no owners', () => {
-    jest.spyOn(console, 'error').mockImplementation();
-    jest.spyOn(console, 'log').mockImplementation();
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    jest.spyOn(console, 'log').mockImplementation(() => {});
 
     const budgetBuilder = new BudgetBuilder();
     expect(() =>

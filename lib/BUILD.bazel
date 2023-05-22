@@ -29,45 +29,20 @@ ts_project(
     ],
 )
 
-ts_project(
-    name = "compile",
-    srcs = glob(["src/**/*.test.ts"]),
-    composite = True,
-    declaration = True,
-    declaration_map = True,
-    tsconfig = {
-        "compilerOptions": {
-            "target": "esnext",
-            "module": "commonjs",
-            "moduleResolution": "node",
-            "composite": True,
-            "inlineSourceMap": True,
-            "esModuleInterop": True,
-        },
-    },
-    validate = True,  # Checks that tsconfig matches this target.
-    deps = [
-        ":lib",
-        ":node_modules/@types/jest",
-        ":node_modules/@types/mock-fs",
-        ":node_modules/@types/node",
-        ":node_modules/jest",
-        ":node_modules/mock-fs",
-    ],
-)
-
 # See bazel-testlogs/lib/test/test.log
 jest_test(
     name = "test",
     config = "jest_config.json",
-    data = [
-        ":compile",
-        ":node_modules/@types/jest",
+    data = glob(["src/**/*.ts"]) + [
+        ":node_modules/@jest/globals",
         ":node_modules/@types/mock-fs",
+        ":node_modules/@types/js-yaml",
         ":node_modules/@types/node",
         ":node_modules/jest",
+        ":node_modules/js-yaml",
         ":node_modules/mock-fs",
         ":node_modules/ts-jest",
+        ":tsconfig.json",
     ],
     node_modules = ":node_modules",
 )
