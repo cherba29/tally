@@ -49,7 +49,7 @@ app.use(
     context: async ({ req }) => ({ token: req.headers.token })
   })
 );
-app.use('/app', express.static(__dirname + '/../../../client/hbs'));
+app.use('/app', express.static(process.cwd() + '/../../../client/hbs'));
 
 await new Promise<void>((resolve) => httpServer.listen({ port: 4000 }, resolve));
 console.log(`🚀 Server ready at http://localhost:4000/graphql`);
