@@ -1,6 +1,7 @@
+load("@aspect_rules_esbuild//esbuild:defs.bzl", "esbuild")
 load("@aspect_rules_jest//jest:defs.bzl", "jest_test")
 load("@aspect_rules_js//npm:defs.bzl", "npm_package")
-load("@aspect_rules_js//js:defs.bzl", "js_library", "js_test")
+load("@aspect_rules_js//js:defs.bzl", "js_binary", "js_library", "js_test")
 load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
 load("@npm//:defs.bzl", "npm_link_all_packages")
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
@@ -19,6 +20,7 @@ LIB_DEPS = [
     ":node_modules/body-parser",
     ":node_modules/cors",
     ":node_modules/dotenv",
+    ":node_modules/express",
     ":node_modules/graphql",
     ":node_modules/graphql-tag",
     ":node_modules/js-yaml",
@@ -50,4 +52,40 @@ jest_test(
         ":tsconfig.json",
     ],
     node_modules = ":node_modules",
+)
+
+esbuild(
+    name = "main_bundle",
+    srcs = glob(
+        [
+            "src/**/*.ts",
+        ],
+        exclude = ["src/**/*.test.ts"],
+    ),
+    config = {
+        "banner": {
+            # See discussion in https://github.com/evanw/esbuild/pull/2067.
+            "js": "import { createRequire } from 'module'; const require = createRequire(import.meta.url);",
+        },
+    },
+    entry_point = "src/main.ts",
+    format = "esm",
+    output = "main_bundle.mjs",
+    platform = "node",
+    sourcemap = "external",  # to easily diff against other files
+    target = "esnext",
+    deps = LIB_DEPS,
+)
+
+js_binary(
+    name = "server",
+    data = [
+        ":main_bundle",
+        "//client/hbs:bundle",
+    ],
+    entry_point = "main_bundle.mjs",
+    env = {
+        "TALLY_FILES": "$$BUILD_WORKSPACE_DIRECTORY/data",
+        "CLIENT_BUNDLE": "$$BUILD_WORKSPACE_DIRECTORY/$(BINDIR)/client/hbs",
+    },
 )

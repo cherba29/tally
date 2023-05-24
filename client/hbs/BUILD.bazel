@@ -9,6 +9,14 @@ package(default_visibility = ["//visibility:public"])
 
 npm_link_all_packages(name = "node_modules")
 
+LIB_DEPS = [
+    ":node_modules/@apollo/client",
+    ":node_modules/@types/jquery",
+    ":node_modules/@types/node",
+    ":node_modules/jquery",
+    "//:tally_lib",
+]
+
 ts_project(
     name = "lib",
     srcs = glob(
@@ -22,31 +30,31 @@ ts_project(
     declaration_map = True,
     tsconfig = ":tsconfig.json",
     validate = True,  # Checks that tsconfig matches this target.
-    deps = [
-        ":node_modules/@apollo/client",
-        ":node_modules/@types/jquery",
-        ":node_modules/@types/node",
-        ":node_modules/jquery",
-        "//:tally_lib",
-    ],
+    deps = LIB_DEPS,
 )
 
 # See bazel-testlogs/lib/test/test.log
 jest_test(
     name = "test",
     config = "jest_config.json",
-    data = glob(["src/**/*.ts"]) + [
+    data = glob(["src/**/*.ts"]) + LIB_DEPS + [
         ":node_modules/@jest/globals",
-        ":node_modules/@types/node",
         ":node_modules/jest",
         ":node_modules/ts-jest",
-        "//:tally_lib",
     ],
     node_modules = ":node_modules",
     snapshots = glob(
         ["src/**/__snapshots__"],
         exclude_directories = 0,
     ),
+)
+
+js_library(
+    name = "bundle",
+    srcs = [
+        "js_summary.html",
+        "public/bundle.js",
+    ],
 )
 
 npm_package(

@@ -4,7 +4,7 @@ Personal financial ledger based on simple text (yaml) files.
 
 There are many other similar tools (see https://plaintextaccounting.org/).
 While other tools primary focus is reporting and tracking,
-this tool is more about accounting andtracking obligations like making sure
+this tool is more about month-to-month accounting and tracking obligations like making sure
 all the bills are paid, with projections for cashflow for next few months.
 
 It consists of backend micro-service with web-ui interface.
@@ -21,9 +21,8 @@ sudo npm install -g pnpm
 
 ```
 cd tally
+ln -s <path data directory> data
 pnpm -r install
-echo 'TALLY_FILES="<PATH TO DATA YAML FILES>' > client/cli/.env
-cp client/cli/.env server/apollo
 bazel test //...
 ```
 
@@ -40,8 +39,13 @@ pnpm apollo build
 ### Start (nodejs) server
 
 ```
-cd server/apollo
-node dist/server
+bazel run //server/apollo:server
+```
+
+or
+
+```
+pnpm apollo start
 ```
 
 access server via http://localhost:4000/app/js_summary.html
@@ -59,16 +63,20 @@ http://localhost:8080/files/hbs/client/js_summary.html#data
 where data is path to yaml files to be parsed. It can be relative to current
 server directory which will be in this case `./server/jetty`.
 
-## Bazel
-
-Running CLI
+## CLI
 
 ```
  bazel run //client/cli:tally_cli  --  generate External --start-month Dec2022
 ```
 
+or
+
+```
+pnpm cli exect generate External --start-month Dec2022
+```
+
 ## Format files
 
 ```
- bazel run @aspect_rules_format//format
+bazel run @aspect_rules_format//format
 ```

@@ -8,3 +8,8 @@ npm_link_package(
     name = "tally_lib",
     src = "//lib:tally_lib",
 )
+
+filegroup(
+    name = "data",
+    srcs = glob(["data/**/*"]),
+)

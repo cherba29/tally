@@ -21,6 +21,12 @@ if (!process.env.TALLY_FILES) {
   throw Error('Process environment variable "TALLY_FILES" has not been specified.');
 }
 
+console.log('Serving data from: ', process.env.TALLY_FILES);
+
+if (!process.env.CLIENT_BUNDLE) {
+  throw Error('Process environment variable "CLIENT_BUNDLE" has not been specified.');
+}
+
 process.on('uncaughtException', (e) => {
   console.log(e);
   process.exit(1);
@@ -49,7 +55,8 @@ app.use(
     context: async ({ req }) => ({ token: req.headers.token })
   })
 );
-app.use('/app', express.static(process.cwd() + '/../../../client/hbs'));
+console.log('Serving web UI from: ', process.env.CLIENT_BUNDLE);
+app.use('/app', express.static(process.env.CLIENT_BUNDLE));
 
 await new Promise<void>((resolve) => httpServer.listen({ port: 4000 }, resolve));
 console.log(`🚀 Server ready at http://localhost:4000/graphql`);

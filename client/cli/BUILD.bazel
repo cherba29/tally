@@ -32,7 +32,7 @@ js_binary(
     ],
     entry_point = "src/cli.js",
     env = {
-        "BAZEL_BINDIR": ".",  # required by the JS rules if we need to use them in the build process
+        "TALLY_FILES": "$$BUILD_WORKSPACE_DIRECTORY/data",
         "NODE_OPTIONS": "--es-module-specifier-resolution=node",
     },
 )
