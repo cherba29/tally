@@ -56,6 +56,7 @@ export function loadBudget(startMonth?: Month, endMonth?: Month): Budget {
     budgetBuilder.setPeriod(config.budget_period.start, config.budget_period.end.next());
   }
   const filePaths: string[] = [];
+  const startTimeMs: number = Date.now();
   for (const file_path of readdirSync(process.env.TALLY_FILES)) {
     const relative_file_path = file_path.slice(process.env.TALLY_FILES.length + 1);
     filePaths.push(relative_file_path);
@@ -63,6 +64,6 @@ export function loadBudget(startMonth?: Month, endMonth?: Month): Budget {
     const content = fs.readFileSync(file_path, 'utf8');
     loadYamlFile(budgetBuilder, content, relative_file_path);
   }
-  console.log(`Done loading ${filePaths.length} file(s)`);
+  console.log(`Done loading ${filePaths.length} file(s) in ${Date.now() - startTimeMs}ms`);
   return budgetBuilder.build();
 }
