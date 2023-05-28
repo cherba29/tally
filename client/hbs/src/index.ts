@@ -3,7 +3,6 @@ import './style.css';
 import * as $ from 'jquery';
 /* eslint-disable camelcase */
 import * as balance_summary_tooltip from 'templates/balance-summary-tooltip.hbs';
-import * as balance_tooltip from 'templates/balance-tooltip.hbs';
 import * as summary_template from 'templates/summary.hbs';
 /* eslint-enable camelcase */
 
@@ -11,7 +10,8 @@ import {BackendClient} from './api';
 import {PopupData} from './utils';
 import {JettyResponse, transformJettyBudgetData} from './jetty_utils';
 import {transformGqlBudgetData} from './gql_utils';
-import { AccountTooltip } from './account-tooltiip';
+import {AccountTooltip} from './account-tooltip';
+import {BalanceTooltip} from './balance-tooltip';
 
 /** Reset popup. */
 function clearPopup(): void {
@@ -36,8 +36,10 @@ function createPopupFunc(popup: PopupData) {
       popupElement.html(balance_summary_tooltip(popup));
     } else if ('account' in popup) {
       popupElement.append(new AccountTooltip(popup.account, clearPopup));
-    } else {
-      popupElement.html(balance_tooltip(popup));
+    } else if ('stmt' in popup) {
+      popupElement.append(
+        new BalanceTooltip(popup.accountName, popup.month, popup.stmt, clearPopup)
+      );
     }
     $('#' + popup.id + '_close').click(clearPopup);
   };

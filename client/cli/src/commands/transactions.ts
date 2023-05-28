@@ -53,17 +53,21 @@ export const commandModule: CommandModule<unknown, Options> = {
       if (account && stmtAccount.name !== account) {
         continue;
       }
-      
+
       entries = entries.concat(transactionStatement.transactions);
     }
     entries.sort((a, b) => {
       const timeDiff = a.balance.date.getTime() - b.balance.date.getTime();
-      if (timeDiff !== 0) { return timeDiff; }
+      if (timeDiff !== 0) {
+        return timeDiff;
+      }
       return Math.abs(a.balance.amount) - Math.abs(b.balance.amount);
     });
     for (const t of entries.slice(0, limit)) {
       process.stdout.write(
-        `${t.balance.date.toISOString().slice(0, 10)} ${(t.balance.amount/100).toFixed(2).padStart(8)}  ${t.account.name.padEnd(20)} ${t.description}\n`
+        `${t.balance.date.toISOString().slice(0, 10)} ${(t.balance.amount / 100)
+          .toFixed(2)
+          .padStart(8)}  ${t.account.name.padEnd(20)} ${t.description}\n`
       );
     }
     process.exit(0);
