@@ -15,7 +15,7 @@ import {transformGqlBudgetData} from './gql_utils';
 
 /** Reset popup. */
 function clearPopup(): void {
-  $('#popup-content').html('');
+  $('#popup-content').html('').css('display', 'none');
 }
 
 function clearErrorContent(): void {
@@ -30,6 +30,7 @@ function createPopupFunc(popup: PopupData) {
   return (e: JQuery.Event): void => {
     console.log('popup', popup);
     const popupElement = $('#popup-content');
+    popupElement.css('display', 'inline');
     popupElement.offset({top: (e.pageY ?? 0) + 10, left: e.pageX});
     if ('summary' in popup) {
       popupElement.html(balance_summary_tooltip(popup));
