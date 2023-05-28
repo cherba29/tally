@@ -2,7 +2,6 @@ import './style.css';
 
 import * as $ from 'jquery';
 /* eslint-disable camelcase */
-import * as account_tooltip from 'templates/account-tooltip.hbs';
 import * as balance_summary_tooltip from 'templates/balance-summary-tooltip.hbs';
 import * as balance_tooltip from 'templates/balance-tooltip.hbs';
 import * as summary_template from 'templates/summary.hbs';
@@ -12,6 +11,7 @@ import {BackendClient} from './api';
 import {PopupData} from './utils';
 import {JettyResponse, transformJettyBudgetData} from './jetty_utils';
 import {transformGqlBudgetData} from './gql_utils';
+import { AccountTooltip } from './account-tooltiip';
 
 /** Reset popup. */
 function clearPopup(): void {
@@ -30,12 +30,12 @@ function createPopupFunc(popup: PopupData) {
   return (e: JQuery.Event): void => {
     console.log('popup', popup);
     const popupElement = $('#popup-content');
-    popupElement.css('display', 'inline');
+    popupElement.html('').css('display', 'inline');
     popupElement.offset({top: (e.pageY ?? 0) + 10, left: e.pageX});
     if ('summary' in popup) {
       popupElement.html(balance_summary_tooltip(popup));
     } else if ('account' in popup) {
-      popupElement.html(account_tooltip(popup));
+      popupElement.append(new AccountTooltip(popup.account, clearPopup));
     } else {
       popupElement.html(balance_tooltip(popup));
     }
