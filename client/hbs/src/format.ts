@@ -14,6 +14,6 @@ export function currency(value: number | undefined | null): string {
   return (value / 100.0).toFixed(2).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1,');
 }
 
-export function isProjected(balance: Balance): boolean {
+export function isProjected(balance: Balance | undefined | null): boolean {
   return (balance?.type ?? BalanceType.UNKNOWN) !== BalanceType.CONFIRMED;
 }

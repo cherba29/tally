@@ -47,7 +47,7 @@ interface PopupMonthSummaryData {
   statements?: StatementEntry[];
 }
 
-interface StatementEntry {
+export interface StatementEntry {
   name: string;
   stmt: Statement;
 }
