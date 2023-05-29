@@ -24,13 +24,6 @@ const config: webpack.Configuration = {
       // all files with a `.ts` extension will be handled by `ts-loader`
       {test: /\.ts$/, loader: 'ts-loader'},
       {
-        test: /\.hbs/,
-        loader: 'handlebars-loader',
-        options: {
-          helperDirs: path.join(__dirname, '/templates/helpers'),
-        },
-      },
-      {
         test: /\.css$/i,
         use: ['style-loader', 'css-loader'],
       },

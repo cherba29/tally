@@ -1,17 +1,15 @@
 import './style.css';
 
 import * as $ from 'jquery';
-/* eslint-disable camelcase */
-import * as summary_template from 'templates/summary.hbs';
-/* eslint-enable camelcase */
 
 import {BackendClient} from './api';
-import {PopupData} from './utils';
+import {MatrixDataView, PopupData} from './utils';
 import {JettyResponse, transformJettyBudgetData} from './jetty_utils';
 import {transformGqlBudgetData} from './gql_utils';
 import {AccountTooltip} from './account-tooltip';
 import {BalanceTooltip} from './balance-tooltip';
 import {BalanceSummaryTooltip} from './balance-summary-tooltip';
+import {SummaryTable} from './summary-table';
 
 /** Reset popup. */
 function clearPopup(): void {
@@ -22,38 +20,49 @@ function clearErrorContent(): void {
   $('#error-content').html('');
 }
 
-/** Function to execute to display summary details popup.
- * @param {PopupData} popup data to display
- * @return {function(JQuery.Event): void} popup rendering function.
- */
-function createPopupFunc(popup: PopupData) {
-  return (e: JQuery.Event): void => {
-    console.log('popup', popup);
-    const popupElement = $('#popup-content');
-    popupElement.html('').css('display', 'inline');
-    popupElement.offset({top: (e.pageY ?? 0) + 10, left: e.pageX});
-    if ('summary' in popup) {
-      popupElement.append(
-        new BalanceSummaryTooltip(
-          popup.accountName,
-          popup.month,
-          popup.statements || [],
-          popup.summary,
-          clearPopup
-        )
-      );
-    } else if ('account' in popup) {
-      popupElement.append(new AccountTooltip(popup.account, clearPopup));
-    } else if ('stmt' in popup) {
-      popupElement.append(
-        new BalanceTooltip(popup.accountName, popup.month, popup.stmt, clearPopup)
-      );
-    }
-    $('#' + popup.id + '_close').click(clearPopup);
-  };
+function createPopup(xOffset: number, yOffset: number, content: PopupData) {
+  console.log('popup content', content);
+  const popupElement = $('#popup-content');
+  popupElement.html('').css('display', 'inline');
+  popupElement.offset({top: yOffset + 10, left: xOffset});
+  if ('summary' in content) {
+    popupElement.append(
+      new BalanceSummaryTooltip(
+        content.accountName,
+        content.month,
+        content.statements || [],
+        content.summary,
+        clearPopup
+      )
+    );
+  } else if ('account' in content) {
+    popupElement.append(new AccountTooltip(content.account, clearPopup));
+  } else if ('stmt' in content) {
+    popupElement.append(
+      new BalanceTooltip(content.accountName, content.month, content.stmt, clearPopup)
+    );
+  }
 }
 
 let lastReloadTimestamp = new Date();
+
+function renderSummaryTable(dataView: MatrixDataView) {
+  const popupMap = new Map(dataView.popupCells.map((c) => [c.id, c]));
+  const summaryTable = new SummaryTable(
+    dataView.months,
+    dataView.rows,
+    (e: MouseEvent, id: string) => {
+      const popupContent = popupMap.get(id);
+      console.log('### Clicked on ', id, e, popupContent);
+      if (popupContent) {
+        createPopup(e.clientX, e.clientY, popupContent);
+      } else {
+        throw new Error(`Popup data for ${id} not found.`);
+      }
+    }
+  );
+  $('#content').html('').append(summaryTable);
+}
 
 /** Loads json and re-renders the page. */
 function reload(): void {
@@ -73,11 +82,7 @@ function reload(): void {
 
     // Convert data so it can be rendered.
     const dataView = transformJettyBudgetData(response.data);
-    $('#content').html(summary_template(dataView));
-    // Most cells have popups with details, activate these.
-    for (const popup of dataView.popupCells) {
-      $('#' + popup.id).click(createPopupFunc(popup));
-    }
+    renderSummaryTable(dataView);
   }).fail((jqxhr, textStatus, error): void => {
     console.log(`Request Failed: ${textStatus}, ${error}`);
   });
@@ -105,11 +110,7 @@ function reloadGql(): void {
       clearErrorContent();
 
       const dataView = transformGqlBudgetData(result.data.budget || undefined);
-      $('#content').html(summary_template(dataView));
-      // Most cells have popups with details, activate these.
-      for (const popup of dataView.popupCells) {
-        $('#' + popup.id).click(createPopupFunc(popup));
-      }
+      renderSummaryTable(dataView);
     })
     .catch((error) => {
       const popupElement = $('#popup-content');
