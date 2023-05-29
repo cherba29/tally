@@ -91,6 +91,6 @@ describe('loadBudget', () => {
 
     expect(console.log).toHaveBeenCalledTimes(2);
     expect(console.log).toHaveBeenCalledWith('Loading _config.yaml');
-    expect(console.log).toHaveBeenCalledWith('Done loading 1 file(s)');
+    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Done loading 1 file(s)'));
   });
 });

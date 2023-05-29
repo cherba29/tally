@@ -14,6 +14,7 @@ LIB_DEPS = [
     ":node_modules/@types/jquery",
     ":node_modules/@types/node",
     ":node_modules/jquery",
+    ":node_modules/lit",
     "//:tally_lib",
 ]
 
