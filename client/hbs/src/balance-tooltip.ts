@@ -1,8 +1,11 @@
 import {LitElement, css, html, nothing} from 'lit';
+import {classMap, ClassInfo} from 'lit/directives/class-map.js';
 import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
 import {customElement} from 'lit/decorators.js';
+
 import {dateFormat, currency, isProjected} from './format';
 import {Statement, Transaction} from './base';
+import {Balance} from '@tally/lib/core/balance';
 
 @customElement('balance-tooltip')
 export class BalanceTooltip extends LitElement {
@@ -15,6 +18,14 @@ export class BalanceTooltip extends LitElement {
     }
     .highlight:hover {
       background-color: #40c340;
+    }
+    .projected {
+      background-color: #ddf;
+      text-align: right;
+    }
+    .confirmed {
+      background-color: #dd4;
+      text-align: right;
     }
   `;
 
@@ -33,6 +44,13 @@ export class BalanceTooltip extends LitElement {
     });
     const transactionCode = (t: Transaction): string =>
       t.isExpense ? 'E' : t.isIncome ? 'I' : 'T';
+    const projectedClass = (b: Balance | undefined): ClassInfo => {
+        const projected = isProjected(b);
+        return {
+          projected,
+          confirmed: !projected,
+        };
+      };
     return html`
       <span @click="${this.onCloseButton}">XXX</span>
       <span style="float:right;">${this.accountName} - ${this.month}</span>
@@ -49,11 +67,12 @@ export class BalanceTooltip extends LitElement {
           (t, index) =>
             html`<tr class="highlight">
               <td style="min-width:175px">
-                ${index + 1} ${isProjected(t.balance) ? html`**` : nothing}${t.toAccountName}
-                <span style="font-size:80%">${t.description}</span>
+                ${index + 1} ${t.toAccountName}
+                <span style="font-size:75%">${t.description}</span>
               </td>
               <td align="middle" style=${styleMap(transactionColor(t))}>${transactionCode(t)}</td>
-              <td align="right" style="min-width:40px">${currency(t.balance.amount)}</td>
+              <td class=${classMap(projectedClass(t.balance))}
+                  style="min-width:40px">${currency(t.balance.amount)}</td>
               <td align="middle" style="min-width:60px">${dateFormat(t.balance.date)}</td>
               <td align="right" style="min-width:50px">${currency(t.balanceFromEnd)}</td>
               <td align="right" style="min-width:50px">${currency(t.balanceFromStart)}</td>

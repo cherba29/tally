@@ -1,11 +1,9 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {customElement, property} from 'lit/decorators.js';
-import {Account} from '@tally/lib/core/account';
+import {customElement} from 'lit/decorators.js';
 import {Balance} from '@tally/lib/core/balance';
-import {Statement, SummaryStatement} from './base';
+import {SummaryStatement} from './base';
 import {StatementEntry} from './utils';
 import {dateFormat, currency, isProjected} from './format';
-import {ifDefined} from 'lit/directives/if-defined.js';
 import {classMap, ClassInfo} from 'lit/directives/class-map.js';
 
 @customElement('balance-summary-tooltip')
