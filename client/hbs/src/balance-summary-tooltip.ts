@@ -1,5 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {customElement} from 'lit/decorators.js';
+import {customElement, property} from 'lit/decorators.js';
 import {Balance} from '@tally/lib/core/balance';
 import {SummaryStatement} from './base';
 import {StatementEntry} from './utils';
@@ -28,15 +28,20 @@ export class BalanceSummaryTooltip extends LitElement {
     }
   `;
 
-  constructor(
-    readonly accountName: string,
-    readonly month: string,
-    readonly statementEntries: StatementEntry[],
-    readonly summary: SummaryStatement | undefined,
-    readonly onCloseButton: () => void
-  ) {
-    super();
-  }
+  @property({attribute: false})
+  accountName: string = '';
+
+  @property({attribute: false})
+  month: string = '';
+
+  @property({attribute: false})
+  statementEntries: StatementEntry[] = [];
+
+  @property({attribute: false})
+  summary: SummaryStatement | undefined = undefined;
+
+  @property({attribute: false})
+  onCloseButton: () => void = () => {};
 
   render() {
     const projectedClass = (b: Balance | undefined): ClassInfo => {
@@ -114,5 +119,11 @@ export class BalanceSummaryTooltip extends LitElement {
         </tbody>
       </table>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'balance-summary-tooltip': BalanceSummaryTooltip;
   }
 }

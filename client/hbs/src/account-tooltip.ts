@@ -1,4 +1,4 @@
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {Account} from '@tally/lib/core/account';
 
@@ -13,15 +13,16 @@ export class AccountTooltip extends LitElement {
     }
   `;
 
-  @property()
-  account: Account;
+  @property({attribute: false})
+  account: Account | undefined = undefined;
 
-  constructor(account: Account, readonly onCloseButton: () => void) {
-    super();
-    this.account = account;
-  }
+  @property({attribute: false})
+  onCloseButton: () => void = () => {};
 
   render() {
+    if (!this.account) {
+      return nothing;
+    }
     return html`
       <span @click="${this.onCloseButton}">XXX</span>
       <table>
@@ -63,5 +64,11 @@ export class AccountTooltip extends LitElement {
         </tr>
       </table>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'account-tooltip': AccountTooltip;
   }
 }

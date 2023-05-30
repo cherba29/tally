@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
-import {customElement} from 'lit/decorators.js';
+import {customElement, property} from 'lit/decorators.js';
 import {dateFormat, currency, isProjected} from './format';
 import {Cell} from './cell';
 import {Row, Type as RowType} from './row';
@@ -69,13 +69,14 @@ export class SummaryTable extends LitElement {
     }
   `;
 
-  constructor(
-    readonly months: string[],
-    readonly rows: Row[],
-    readonly onCellClick: (e: MouseEvent, id: string) => void
-  ) {
-    super();
-  }
+  @property({attribute: false})
+  months: string[] = [];
+
+  @property({attribute: false})
+  rows: Row[] = [];
+
+  @property({attribute: false})
+  onCellClick: (e: MouseEvent, id: string) => void = (e: MouseEvent, id: string) => {};
 
   render() {
     const projectedClass = (c: Cell): ClassInfo => {
@@ -191,5 +192,11 @@ export class SummaryTable extends LitElement {
         </tbody>
       </table>
     `;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'summary-table': SummaryTable;
   }
 }

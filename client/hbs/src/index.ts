@@ -26,21 +26,25 @@ function createPopup(xOffset: number, yOffset: number, content: PopupData) {
   popupElement.html('').css('display', 'inline');
   popupElement.offset({top: yOffset + 10, left: xOffset});
   if ('summary' in content) {
-    popupElement.append(
-      new BalanceSummaryTooltip(
-        content.accountName,
-        content.month,
-        content.statements || [],
-        content.summary,
-        clearPopup
-      )
-    );
+    const balanceSummaryTooltip = new BalanceSummaryTooltip();
+    balanceSummaryTooltip.accountName = content.accountName;
+    balanceSummaryTooltip.month = content.month;
+    balanceSummaryTooltip.statementEntries = content.statements || [];
+    balanceSummaryTooltip.summary = content.summary;
+    balanceSummaryTooltip.onCloseButton = clearPopup;
+    popupElement.append(balanceSummaryTooltip);
   } else if ('account' in content) {
-    popupElement.append(new AccountTooltip(content.account, clearPopup));
+    const accountTooltip = new AccountTooltip();
+    accountTooltip.account = content.account;
+    accountTooltip.onCloseButton = clearPopup;
+    popupElement.append(accountTooltip);
   } else if ('stmt' in content) {
-    popupElement.append(
-      new BalanceTooltip(content.accountName, content.month, content.stmt, clearPopup)
-    );
+    const balanceTooltip = new BalanceTooltip();
+    balanceTooltip.accountName = content.accountName;
+    balanceTooltip.month = content.month;
+    balanceTooltip.stmt = content.stmt;
+    balanceTooltip.onCloseButton = clearPopup;
+    popupElement.append(balanceTooltip);
   }
 }
 
@@ -48,19 +52,17 @@ let lastReloadTimestamp = new Date();
 
 function renderSummaryTable(dataView: MatrixDataView) {
   const popupMap = new Map(dataView.popupCells.map((c) => [c.id, c]));
-  const summaryTable = new SummaryTable(
-    dataView.months,
-    dataView.rows,
-    (e: MouseEvent, id: string) => {
-      const popupContent = popupMap.get(id);
-      console.log('### Clicked on ', id, e, popupContent);
-      if (popupContent) {
-        createPopup(e.clientX, e.clientY, popupContent);
-      } else {
-        throw new Error(`Popup data for ${id} not found.`);
-      }
+  const summaryTable = new SummaryTable();
+  summaryTable.months = dataView.months;
+  summaryTable.rows = dataView.rows;
+  summaryTable.onCellClick = (e: MouseEvent, id: string) => {
+    const popupContent = popupMap.get(id);
+    if (popupContent) {
+      createPopup(e.clientX, e.clientY, popupContent);
+    } else {
+      throw new Error(`Popup data for ${id} not found.`);
     }
-  );
+  };
   $('#content').html('').append(summaryTable);
 }
 
