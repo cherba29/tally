@@ -7,6 +7,11 @@ import {Row, Type as RowType} from './row';
 import {Account} from '@tally/lib/core/account';
 import {classMap, ClassInfo} from 'lit/directives/class-map.js';
 
+export type CellClickEventData = {
+  cellId: string;
+  mouseEvent: MouseEvent;
+};
+
 @customElement('summary-table')
 export class SummaryTable extends LitElement {
   static styles = css`
@@ -75,8 +80,14 @@ export class SummaryTable extends LitElement {
   @property({attribute: false})
   rows: Row[] = [];
 
-  @property({attribute: false})
-  onCellClick: (e: MouseEvent, id: string) => void = (e: MouseEvent, id: string) => {};
+  onCellClick(e: MouseEvent, id: string) {
+    const options: CustomEventInit<CellClickEventData> = {
+      detail: {cellId: id, mouseEvent: e},
+      bubbles: true,
+      composed: true,
+    };
+    this.dispatchEvent(new CustomEvent('cellclick', options));
+  }
 
   render() {
     const projectedClass = (c: Cell): ClassInfo => {

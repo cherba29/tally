@@ -31,19 +31,19 @@ function createPopup(xOffset: number, yOffset: number, content: PopupData) {
     balanceSummaryTooltip.month = content.month;
     balanceSummaryTooltip.statementEntries = content.statements || [];
     balanceSummaryTooltip.summary = content.summary;
-    balanceSummaryTooltip.onCloseButton = clearPopup;
+    balanceSummaryTooltip.addEventListener('close', (e: Event) => clearPopup());
     popupElement.append(balanceSummaryTooltip);
   } else if ('account' in content) {
     const accountTooltip = new AccountTooltip();
     accountTooltip.account = content.account;
-    accountTooltip.onCloseButton = clearPopup;
+    accountTooltip.addEventListener('close', (e: Event) => clearPopup());
     popupElement.append(accountTooltip);
   } else if ('stmt' in content) {
     const balanceTooltip = new BalanceTooltip();
     balanceTooltip.accountName = content.accountName;
     balanceTooltip.month = content.month;
     balanceTooltip.stmt = content.stmt;
-    balanceTooltip.onCloseButton = clearPopup;
+    balanceTooltip.addEventListener('close', (e: Event) => clearPopup());
     popupElement.append(balanceTooltip);
   }
 }

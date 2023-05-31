@@ -16,9 +16,9 @@ export class AccountTooltip extends LitElement {
   @property({attribute: false})
   account: Account | undefined = undefined;
 
-  @property({attribute: false})
-  onCloseButton: () => void = () => {};
-
+  onCloseButton() {
+    this.dispatchEvent(new CustomEvent('close'));
+  }
   render() {
     if (!this.account) {
       return nothing;

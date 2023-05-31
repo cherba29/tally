@@ -40,8 +40,9 @@ export class BalanceSummaryTooltip extends LitElement {
   @property({attribute: false})
   summary: SummaryStatement | undefined = undefined;
 
-  @property({attribute: false})
-  onCloseButton: () => void = () => {};
+  onCloseButton() {
+    this.dispatchEvent(new CustomEvent('close'));
+  }
 
   render() {
     const projectedClass = (b: Balance | undefined): ClassInfo => {

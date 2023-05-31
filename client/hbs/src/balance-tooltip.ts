@@ -38,8 +38,9 @@ export class BalanceTooltip extends LitElement {
   @property({attribute: false})
   stmt: Statement | undefined = undefined;
 
-  @property({attribute: false})
-  onCloseButton: () => void = () => {};
+  onCloseButton() {
+    this.dispatchEvent(new CustomEvent('close'));
+  }
 
   render() {
     const transactionColor = (t: Transaction): StyleInfo => ({
