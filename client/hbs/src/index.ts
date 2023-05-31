@@ -10,6 +10,7 @@ import {AccountTooltip} from './account-tooltip';
 import {BalanceTooltip} from './balance-tooltip';
 import {BalanceSummaryTooltip} from './balance-summary-tooltip';
 import {SummaryTable} from './summary-table';
+import './tally-app';
 
 /** Reset popup. */
 function clearPopup(): void {

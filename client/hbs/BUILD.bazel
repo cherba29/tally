@@ -53,6 +53,7 @@ jest_test(
 js_library(
     name = "bundle",
     srcs = [
+        "index.html",
         "js_summary.html",
         "public/bundle.js",
     ],
