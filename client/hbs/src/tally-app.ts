@@ -15,9 +15,6 @@ import {CellClickEventData} from './summary-table';
 @customElement('tally-app')
 export class TallyApp extends LitElement {
   static styles = css`
-    * {
-      font-size: 80%;
-    }
     .toolTip {
       position: absolute;
       padding: 5px;
@@ -51,6 +48,7 @@ export class TallyApp extends LitElement {
       this.minutes = pad(Math.floor(diffTimeSec / 60));
       this.requestUpdate();
     }, 1000);
+    this.reloadGql();
   }
   disconnectedCallback() {
     super.disconnectedCallback();
@@ -58,7 +56,6 @@ export class TallyApp extends LitElement {
   }
 
   render() {
-    console.log('### render errorMessage=', this.errorMessage);
     const popupStyle: StyleInfo = {
       display: this.popupData ? null : 'none',
       top: this.popupOffset.top + 'px',
@@ -66,7 +63,7 @@ export class TallyApp extends LitElement {
     };
 
     return html`
-      <div style="position: fixed">
+      <div style="position: fixed;font-size: 80%;">
         <button @click="${this.reloadGql}">Reload GQL</button>
         <label id="minutes">${this.minutes}</label>:<label id="seconds">${this.seconds}</label>
       </div>
@@ -74,7 +71,7 @@ export class TallyApp extends LitElement {
         <pre>${this.errorMessage}</pre>
       </div>
       <div class="toolTip" style=${styleMap(popupStyle)}>${this.tooltipFragment()}</div>
-      <summary-table
+      <summary-table style="font-size: 80%;"
         .months=${this.months}
         .rows=${this.rows}
         @cellclick=${this.onCellClick}
