@@ -9,12 +9,13 @@ import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
 import './account-tooltip';
 import './balance-tooltip';
 import './balance-summary-tooltip';
+import './summary-table';
 import {CellClickEventData} from './summary-table';
 
 @customElement('tally-app')
 export class TallyApp extends LitElement {
   static styles = css`
-    body {
+    * {
       font-size: 80%;
     }
     .toolTip {

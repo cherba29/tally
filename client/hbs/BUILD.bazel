@@ -1,3 +1,4 @@
+load("@aspect_rules_esbuild//esbuild:defs.bzl", "esbuild")
 load("@aspect_rules_jest//jest:defs.bzl", "jest_test")
 load("@aspect_rules_js//npm:defs.bzl", "npm_package")
 load("@aspect_rules_js//js:defs.bzl", "js_library", "js_test")
@@ -34,6 +35,24 @@ ts_project(
     deps = LIB_DEPS,
 )
 
+esbuild(
+    name = "esbundle",
+    srcs = glob(
+        [
+            "src/**/*.ts",
+            "src/**/*.css",
+        ],
+        exclude = ["src/**/*.test.ts"],
+    ) + ["index.html"],
+    entry_point = "src/tally-app.ts",
+    format = "esm",
+    output = "bundle.mjs",
+    platform = "browser",
+    target = "esnext",
+    deps = LIB_DEPS,
+)
+
+
 # See bazel-testlogs/lib/test/test.log
 jest_test(
     name = "test",
@@ -56,6 +75,7 @@ js_library(
         "index.html",
         "js_summary.html",
         "public/bundle.js",
+        ":esbundle",
     ],
 )
 

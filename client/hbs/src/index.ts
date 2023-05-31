@@ -1,6 +1,6 @@
 import './style.css';
 
-import * as $ from 'jquery';
+import jq from 'jquery';
 
 import {BackendClient} from './api';
 import {MatrixDataView, PopupData} from './utils';
@@ -10,20 +10,19 @@ import {AccountTooltip} from './account-tooltip';
 import {BalanceTooltip} from './balance-tooltip';
 import {BalanceSummaryTooltip} from './balance-summary-tooltip';
 import {SummaryTable} from './summary-table';
-import './tally-app';
 
 /** Reset popup. */
 function clearPopup(): void {
-  $('#popup-content').html('').css('display', 'none');
+  jq('#popup-content').html('').css('display', 'none');
 }
 
 function clearErrorContent(): void {
-  $('#error-content').html('');
+  jq('#error-content').html('');
 }
 
 function createPopup(xOffset: number, yOffset: number, content: PopupData) {
   console.log('popup content', content);
-  const popupElement = $('#popup-content');
+  const popupElement = jq('#popup-content');
   popupElement.html('').css('display', 'inline');
   popupElement.offset({top: yOffset + 10, left: xOffset});
   if ('summary' in content) {
@@ -64,18 +63,18 @@ function renderSummaryTable(dataView: MatrixDataView) {
       throw new Error(`Popup data for ${id} not found.`);
     }
   };
-  $('#content').html('').append(summaryTable);
+  jq('#content').html('').append(summaryTable);
 }
 
 /** Loads json and re-renders the page. */
 function reload(): void {
   const path = '/budget?dir=' + window.location.hash.substring(1);
   console.log('Loading ', path);
-  $.getJSON(path, (response: JettyResponse): void => {
+  jq.getJSON(path, (response: JettyResponse): void => {
     lastReloadTimestamp = new Date();
     console.log('server response', response);
     if (!response.success) {
-      const popupElement = $('#error-content');
+      const popupElement = jq('#error-content');
       popupElement.offset({top: 40, left: 0});
       popupElement.html('<pre>' + response.message + '</pre>');
       return;
@@ -102,7 +101,7 @@ function reloadGql(): void {
       lastReloadTimestamp = new Date();
       console.log(result);
       if (result.errors) {
-        const popupElement = $('#error-content');
+        const popupElement = jq('#error-content');
         popupElement.offset({top: 40, left: 0});
         for (const error of result.errors) {
           popupElement.html('<pre>' + error.message + '</pre>');
@@ -116,15 +115,15 @@ function reloadGql(): void {
       renderSummaryTable(dataView);
     })
     .catch((error) => {
-      const popupElement = $('#popup-content');
+      const popupElement = jq('#popup-content');
       popupElement.offset({top: 40, left: 0});
       popupElement.html('<pre>' + error.message + '</pre>');
       throw error;
     });
 }
 
-$('#reload').on('click', reload);
-$('#reload-gql').on('click', reloadGql);
+jq('#reload').on('click', reload);
+jq('#reload-gql').on('click', reloadGql);
 
 // Trigger reload on first load.
 reloadGql();
@@ -135,8 +134,8 @@ function pad(n: number) {
 
 // Show how long ago page was reloaded.
 setInterval(() => {
-  const minutesElement = $('#minutes');
-  const secondsElement = $('#seconds');
+  const minutesElement = jq('#minutes');
+  const secondsElement = jq('#seconds');
   const diffTimeSec = Math.round((new Date().getTime() - lastReloadTimestamp.getTime()) / 1000);
   secondsElement.html(pad(diffTimeSec % 60));
   minutesElement.html(pad(Math.floor(diffTimeSec / 60)));
