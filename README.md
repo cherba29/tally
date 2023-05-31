@@ -14,9 +14,8 @@ It consists of backend micro-service with web-ui interface.
 ### Initial
 
 ```
-sudo apt-get install bazel
 sudo apt install npm
-sudo npm install -g pnpm
+sudo npm install -g pnpm @bazel/bazelisk @bazel/ibazel
 ```
 
 ```

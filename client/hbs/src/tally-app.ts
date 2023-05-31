@@ -64,7 +64,7 @@ export class TallyApp extends LitElement {
 
     return html`
       <div style="position: fixed;font-size: 80%;">
-        <button @click="${this.reloadGql}">Reload GQL</button>
+        <button @click="${this.reloadGql}">Reload Data</button>
         <label id="minutes">${this.minutes}</label>:<label id="seconds">${this.seconds}</label>
       </div>
       <div style="padding-top: 20px; color: red; font-size: 16px">

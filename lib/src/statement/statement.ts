@@ -49,7 +49,8 @@ export abstract class Statement {
   get percentChange(): number | undefined {
     const startAmount = this.startBalance?.amount;
     const change = this.change;
-    return change && startAmount && (100 * change) / startAmount;
+    if (change === undefined || !startAmount) return undefined;
+    return (100 * change) / startAmount;
   }
 
   get unaccounted(): number | undefined {
