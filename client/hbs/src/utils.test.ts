@@ -15,7 +15,7 @@ describe('transformBudgetData', function () {
 
     expect(dataView).toEqual({
       months: [],
-      rows: [],
+      rows: {},
       popupCells: [],
     });
   });

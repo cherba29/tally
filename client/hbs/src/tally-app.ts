@@ -2,7 +2,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import {customElement} from 'lit/decorators.js';
 import {Row} from './row';
 import {BackendClient} from './api';
-import {PopupData} from './utils';
+import {PopupData, Rows} from './utils';
 import {transformGqlBudgetData} from './gql_utils';
 import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
 
@@ -22,6 +22,9 @@ export class TallyApp extends LitElement {
       background-color: #ffff80;
       font: 10px/12px Arial, Helvetica, sans-serif;
     }
+    .tabcontent {
+      border-top: none;
+    }
   `;
 
   private backendClient = new BackendClient();
@@ -33,10 +36,11 @@ export class TallyApp extends LitElement {
   private minutes: string = '00';
   private seconds: string = '00';
   private months: string[] = [];
-  private rows: Row[] = [];
+  private rows: Rows = {};
   private lastReloadTimestamp = new Date();
   private popupData: PopupData | undefined = undefined;
   private popupOffset = {top: 0, left: 0};
+  private currentOwner: string | undefined = undefined;
 
   connectedCallback() {
     super.connectedCallback();
@@ -61,6 +65,9 @@ export class TallyApp extends LitElement {
       top: this.popupOffset.top + 'px',
       left: this.popupOffset.left + 'px',
     };
+    const tabStyle = (owner: string): StyleInfo => ({
+      display: this.currentOwner === owner ? null : 'none',
+    });
 
     return html`
       <div style="position: fixed;font-size: 80%;">
@@ -71,13 +78,27 @@ export class TallyApp extends LitElement {
         <pre>${this.errorMessage}</pre>
       </div>
       <div class="toolTip" style=${styleMap(popupStyle)}>${this.tooltipFragment()}</div>
-      <summary-table
-        style="font-size: 80%;"
-        .months=${this.months}
-        .rows=${this.rows}
-        @cellclick=${this.onCellClick}
-      ></summary-table>
+      <div>
+        ${Object.keys(this.rows)
+          .sort()
+          .map((owner) => html`<button @click=${() => this.tabClick(owner)}>${owner[0]}</button>`)}
+      </div>
+      ${Object.entries(this.rows).map(([owner, rows]) => {
+        return html`<div class="tabcontent" style=${styleMap(tabStyle(owner))}>
+          <summary-table
+            style="font-size: 80%;"
+            .months=${this.months}
+            .rows=${rows}
+            @cellclick=${this.onCellClick}
+          ></summary-table>
+        </div>`;
+      })}
     `;
+  }
+
+  tabClick(owner: string) {
+    this.currentOwner = owner;
+    this.requestUpdate();
   }
 
   tooltipFragment() {
@@ -140,6 +161,9 @@ export class TallyApp extends LitElement {
           const dataView = transformGqlBudgetData(result.data.budget || undefined);
           this.months = dataView.months;
           this.rows = dataView.rows;
+          if (this.currentOwner === undefined) {
+            this.currentOwner = Object.keys(this.rows).sort()[0];
+          }
           this.popupMap = new Map(dataView.popupCells.map((c) => [c.id, c]));
         }
         this.requestUpdate();

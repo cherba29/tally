@@ -54,7 +54,10 @@ function renderSummaryTable(dataView: MatrixDataView) {
   const popupMap = new Map(dataView.popupCells.map((c) => [c.id, c]));
   const summaryTable = new SummaryTable();
   summaryTable.months = dataView.months;
-  summaryTable.rows = dataView.rows;
+  summaryTable.rows = Object.keys(dataView.rows)
+    .sort()
+    .map((key) => dataView.rows[key])
+    .flat();
   summaryTable.onCellClick = (e: MouseEvent, id: string) => {
     const popupContent = popupMap.get(id);
     if (popupContent) {
