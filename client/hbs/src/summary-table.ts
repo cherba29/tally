@@ -185,9 +185,9 @@ export class SummaryTable extends LitElement {
                       class="balance ${classMap(projectedClass(c))}"
                       style=${styleMap(coveredStyle(c))}
                     >
-                      ${c.hasProjectedTransfer ? html`**` : nothing}${currency(c.balance)}
+                      ${c.hasProjectedTransfer ? html`&#9730;` : nothing}${currency(c.balance)}
                     </td>
-                    <td class="change">${c.percentChange}</td>
+                    <td class="change">${c.percentChange ?? html`&#8734;`}</td>
                     <td
                       class="${classMap(unaccountedClass(c))}"
                       style="border-right:2px double #a00"

@@ -52,7 +52,6 @@ esbuild(
     deps = LIB_DEPS,
 )
 
-
 # See bazel-testlogs/lib/test/test.log
 jest_test(
     name = "test",

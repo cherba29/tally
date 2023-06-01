@@ -71,7 +71,8 @@ export class TallyApp extends LitElement {
         <pre>${this.errorMessage}</pre>
       </div>
       <div class="toolTip" style=${styleMap(popupStyle)}>${this.tooltipFragment()}</div>
-      <summary-table style="font-size: 80%;"
+      <summary-table
+        style="font-size: 80%;"
         .months=${this.months}
         .rows=${this.rows}
         @cellclick=${this.onCellClick}

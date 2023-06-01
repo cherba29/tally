@@ -108,7 +108,7 @@ export class BalanceSummaryTooltip extends LitElement {
               ${currency(this.summary?.endBalance?.amount)}
             </td>
             <td align="right">${currency(this.summary?.change)}</td>
-            <td align="right">${this.summary?.percentChange ?? nothing}}</td>
+            <td align="right">${this.summary?.percentChange ?? nothing}</td>
             <td align="right">${currency(this.summary?.inFlows)}</td>
             <td align="right">${currency(this.summary?.outFlows)}</td>
             <td align="right">${currency(this.summary?.addSub)}</td>

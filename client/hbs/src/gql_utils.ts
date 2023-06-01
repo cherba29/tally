@@ -40,7 +40,7 @@ function gqlToAccount(gqlAccount: GqlAccount): Account {
  * @return Balance object.
  */
 export function gqlToBalance(gqlBalance: GqlBalance | null | undefined): Balance | undefined {
-  if (!gqlBalance || gqlBalance.amount === null) {
+  if (!gqlBalance || gqlBalance.amount === null || gqlBalance.date === null) {
     return undefined;
   }
   return new Balance(
