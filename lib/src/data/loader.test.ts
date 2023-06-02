@@ -53,13 +53,13 @@ describe('loadBudget', () => {
     jest.clearAllMocks();
   });
 
-  test('fails if environment path is not set', () => {
-    expect(loadBudget).toThrow(
+  test('fails if environment path is not set', async () => {
+    await expect(loadBudget()).rejects.toThrow(
       new Error('Process environment variable "TALLY_FILES" has not been specified.')
     );
   });
 
-  test('fails without config', () => {
+  test('fails without config', async () => {
     const TALLY_PATH = 'tally/files/path';
     process.env.TALLY_FILES = TALLY_PATH;
     mockfs({
@@ -67,12 +67,12 @@ describe('loadBudget', () => {
         /* empty directory */
       },
     });
-    expect(loadBudget).toThrow(
+    await expect(loadBudget()).rejects.toThrow(
       new Error("ENOENT: no such file or directory, open 'tally/files/path/_config.yaml'")
     );
   });
 
-  test('empty', () => {
+  test('empty', async () => {
     jest.spyOn(console, 'log').mockImplementation(() => {});
 
     const TALLY_PATH = 'tally/files/path';
@@ -82,7 +82,7 @@ describe('loadBudget', () => {
         '_config.yaml': 'budget_period: {start: Nov2019, end: Feb2020}',
       },
     });
-    expect(loadBudget()).toEqual({
+    await expect(loadBudget()).resolves.toEqual({
       accounts: new Map(),
       balances: new Map(),
       months: [new Month(2019, 10), new Month(2019, 11), new Month(2020, 0), new Month(2020, 1)],

@@ -40,8 +40,8 @@ export const commandModule: CommandModule<unknown, Options> = {
   command,
   describe: desc,
   builder,
-  handler: ({ owner, account, startMonth, endMonth, limit }): void => {
-    const budget: Budget = loadBudget(startMonth, endMonth);
+  handler: async ({ owner, account, startMonth, endMonth, limit }): Promise<void> => {
+    const budget: Budget = await loadBudget(startMonth, endMonth);
     const statementTable: TransactionStatement[] = buildTransactionStatementTable(budget);
     const unaccountedEntries: UnaccountedEntry[] = [];
     for (const transactionStatement of statementTable) {

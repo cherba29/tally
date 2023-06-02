@@ -47,20 +47,7 @@ or
 pnpm apollo start
 ```
 
-access server via http://localhost:4000/app/js_summary.html
-
-### Start (java) server -- deprecated
-
-```
-cd tally
-gradle -p server/jetty runT --offline
-```
-
-Load page for example by navigating to
-http://localhost:8080/files/hbs/client/js_summary.html#data
-
-where data is path to yaml files to be parsed. It can be relative to current
-server directory which will be in this case `./server/jetty`.
+access server via http://localhost:4000/app
 
 ## CLI
 

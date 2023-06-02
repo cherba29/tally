@@ -10,8 +10,8 @@ import { listFiles, loadBudget } from '@tally/lib/data/loader';
 import { GraphQLScalarType, Kind, ValueNode } from 'graphql';
 import { GqlAccount, GqlBudget, GqlStatement, GqlSummaryStatement } from './types';
 
-function buildGqlBudget(): GqlBudget {
-  const budget = loadBudget();
+async function buildGqlBudget(): Promise<GqlBudget> {
+  const budget = await loadBudget();
 
   const accounts: GqlAccount[] = [];
   for (const account of budget.findActiveAccounts()) {

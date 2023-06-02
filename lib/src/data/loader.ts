@@ -5,7 +5,6 @@ import { Budget, BudgetBuilder } from '../core/budget';
 import { Month } from '../core/month';
 import { loadYamlFile } from './loader_yaml';
 import { loadTallyConfig } from './config';
-// import {SummaryStatement} from '../core/summary_statement';
 
 function* readdirSync(file_path: string): Generator<string> {
   if (fs.statSync(file_path).isDirectory()) {
@@ -35,7 +34,7 @@ export function listFiles(): string[] {
   return filePaths;
 }
 
-export function loadBudget(startMonth?: Month, endMonth?: Month): Budget {
+export async function loadBudget(startMonth?: Month, endMonth?: Month): Promise<Budget> {
   if (!process.env.TALLY_FILES) {
     throw Error('Process environment variable "TALLY_FILES" has not been specified.');
   }
