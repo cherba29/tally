@@ -44,7 +44,7 @@ esbuild(
         ],
         exclude = ["src/**/*.test.ts"],
     ) + ["index.html"],
-    entry_point = "src/tally-app.ts",
+    entry_point = "src/components/tally-app.ts",
     format = "esm",
     output = "bundle.mjs",
     platform = "browser",

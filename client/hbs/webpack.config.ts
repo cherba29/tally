@@ -6,7 +6,7 @@ import 'webpack-dev-server';
 const config: webpack.Configuration = {
   mode: 'development',
   devtool: 'inline-source-map',
-  entry: './src/index.ts',
+  entry: './src/components/tally-app.ts',
   output: {
     publicPath: 'public',
     filename: 'bundle.js',

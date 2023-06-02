@@ -1,9 +1,8 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {customElement} from 'lit/decorators.js';
-import {Row} from './row';
-import {BackendClient} from './api';
-import {PopupData, Rows} from './utils';
-import {transformGqlBudgetData} from './gql_utils';
+import {BackendClient} from '../api';
+import {PopupData, Rows} from '../utils';
+import {transformGqlBudgetData} from '../gql_utils';
 import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
 
 import './account-tooltip';

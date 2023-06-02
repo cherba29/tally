@@ -3,8 +3,8 @@ import {classMap, ClassInfo} from 'lit/directives/class-map.js';
 import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
 import {customElement, property} from 'lit/decorators.js';
 
-import {dateFormat, currency, isProjected} from './format';
-import {Statement, Transaction} from './base';
+import {dateFormat, currency, isProjected} from '../format';
+import {Statement, Transaction} from '../base';
 import {Balance} from '@tally/lib/core/balance';
 
 @customElement('balance-tooltip')
