@@ -62,12 +62,7 @@ esbuild(
         ],
         exclude = ["src/**/*.test.ts"],
     ),
-    config = {
-        "banner": {
-            # See discussion in https://github.com/evanw/esbuild/pull/2067.
-            "js": "import { createRequire } from 'module'; const require = createRequire(import.meta.url);",
-        },
-    },
+    config = "esbuild.config.mjs",
     entry_point = "src/main.ts",
     format = "esm",
     output = "main_bundle.mjs",
