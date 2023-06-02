@@ -9,6 +9,12 @@ package(default_visibility = ["//visibility:public"])
 
 npm_link_all_packages(name = "node_modules")
 
+LIB_DEPS = [
+    ":node_modules/@types/js-yaml",
+    ":node_modules/@types/node",
+    ":node_modules/js-yaml",
+]
+
 ts_project(
     name = "lib",
     srcs = glob(
@@ -22,24 +28,17 @@ ts_project(
     declaration_map = True,
     tsconfig = ":tsconfig.json",
     validate = True,  # Checks that tsconfig matches this target.
-    deps = [
-        ":node_modules/@types/js-yaml",
-        ":node_modules/@types/node",
-        ":node_modules/js-yaml",
-    ],
+    deps = LIB_DEPS,
 )
 
 # See bazel-testlogs/lib/test/test.log
 jest_test(
     name = "test",
     config = "jest_config.json",
-    data = glob(["src/**/*.ts"]) + [
+    data = glob(["src/**/*.ts"]) + LIB_DEPS + [
         ":node_modules/@jest/globals",
         ":node_modules/@types/mock-fs",
-        ":node_modules/@types/js-yaml",
-        ":node_modules/@types/node",
         ":node_modules/jest",
-        ":node_modules/js-yaml",
         ":node_modules/mock-fs",
         ":node_modules/ts-jest",
         ":tsconfig.json",
