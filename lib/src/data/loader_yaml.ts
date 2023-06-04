@@ -20,7 +20,7 @@ interface TransferYamlData {
   desc?: string;
 }
 
-interface YamlData {
+export interface YamlData {
   name?: string;
   desc?: string;
   number?: string;
@@ -187,19 +187,22 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData | undefine
   }
 }
 
-export function loadYamlFile(
-  budgetBuilder: BudgetBuilder,
-  content: string,
-  relative_file_path: string
-): void {
-  const accountData = yaml.load(content, {
-    filename: relative_file_path,
+export function parseYamlContent(content: string, relativeFilePath: string): YamlData | undefined {
+  return yaml.load(content, {
+    filename: relativeFilePath,
     onWarning: (ex: yaml.YAMLException) => {
       console.warn(ex);
     },
     schema: yaml.DEFAULT_SCHEMA,
     json: false,
   }) as YamlData | undefined;
+}
+
+export function loadYamlFile(
+  budgetBuilder: BudgetBuilder,
+  accountData: YamlData | undefined,
+  relative_file_path: string
+): void {
   try {
     processYamlData(budgetBuilder, accountData);
   } catch (e) {

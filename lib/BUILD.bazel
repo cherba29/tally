@@ -13,6 +13,7 @@ LIB_DEPS = [
     ":node_modules/@types/js-yaml",
     ":node_modules/@types/node",
     ":node_modules/js-yaml",
+    ":node_modules/chokidar",
 ]
 
 ts_project(

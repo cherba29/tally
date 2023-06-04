@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, jest, test } from '@jest/globals';
-import { listFiles, loadBudget } from './loader';
+import { listFiles, loadBudget, unwatchBudgetFiles } from './loader';
 import mockfs from 'mock-fs';
 import { Month } from '../core/month';
 
@@ -48,6 +48,7 @@ describe('listFiles', () => {
 
 describe('loadBudget', () => {
   afterEach(() => {
+    unwatchBudgetFiles();
     mockfs.restore();
     delete process.env.TALLY_FILES;
     jest.clearAllMocks();
@@ -89,7 +90,7 @@ describe('loadBudget', () => {
       transfers: new Map(),
     });
 
-    expect(console.log).toHaveBeenCalledTimes(2);
+    expect(console.log).toHaveBeenCalledTimes(3);
     expect(console.log).toHaveBeenCalledWith('Loading _config.yaml');
     expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Done loading 1 file(s)'));
   });

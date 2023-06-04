@@ -37,6 +37,7 @@
     "typescript": "^5.0.4"
   },
   "dependencies": {
+    "chokidar": "^3.5.3",
     "js-yaml": "^4.1.0"
   }
 }

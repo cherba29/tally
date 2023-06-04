@@ -6,6 +6,7 @@ import express from 'express';
 import http from 'http';
 import cors from 'cors';
 import { json } from 'body-parser';
+import { loadBudget } from '@tally/lib/data/loader';
 
 import resolvers from './resolvers';
 import typeDefs from './type-defs';
@@ -59,4 +60,7 @@ console.log('Serving web UI from: ', process.env.CLIENT_BUNDLE);
 app.use('/app', express.static(process.env.CLIENT_BUNDLE));
 
 await new Promise<void>((resolve) => httpServer.listen({ port: 4000 }, resolve));
-console.log(`🚀 Server ready at http://localhost:4000/graphql`);
+// Preload the budget on server start.
+await loadBudget();
+console.log(`🚀 UI ready at http://localhost:4000/app`);
+console.log(`🚀 GraphQl ready at http://localhost:4000/graphql`);

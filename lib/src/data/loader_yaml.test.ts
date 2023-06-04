@@ -4,7 +4,7 @@ import { Type as AccountType } from '../core/account';
 import { Balance, Type as BalanceType } from '../core/balance';
 import { Month } from '../core/month';
 import { BudgetBuilder } from '../core/budget';
-import { loadYamlFile } from './loader_yaml';
+import { loadYamlFile, parseYamlContent } from './loader_yaml';
 
 describe('loadYaml', () => {
   afterEach(() => {
@@ -13,7 +13,8 @@ describe('loadYaml', () => {
 
   test('empty', () => {
     const budgetBuilder = new BudgetBuilder();
-    loadYamlFile(budgetBuilder, /*content=*/ '', /*relative_file_path=*/ 'path/file.yaml');
+    const relativeFilePath = 'path/file.yaml';
+    loadYamlFile(budgetBuilder, parseYamlContent('', relativeFilePath), relativeFilePath);
     const budget = budgetBuilder.build();
     expect(budget.accounts.size).toBe(0);
   });
@@ -23,11 +24,12 @@ describe('loadYaml', () => {
     jest.spyOn(console, 'log').mockImplementation(() => {});
 
     const budgetBuilder = new BudgetBuilder();
+    const relativeFilePath = 'path/file.yaml';
     expect(() =>
       loadYamlFile(
         budgetBuilder,
-        /*content=*/ 'name: test',
-        /*relative_file_path=*/ 'path/file.yaml'
+        parseYamlContent('name: test', relativeFilePath),
+        relativeFilePath
       )
     ).toThrow(new Error("Type is not set for account 'test' while processing path/file.yaml"));
     expect(console.error).toHaveBeenCalledTimes(1);
@@ -43,11 +45,12 @@ describe('loadYaml', () => {
     jest.spyOn(console, 'log').mockImplementation(() => {});
 
     const budgetBuilder = new BudgetBuilder();
+    const relativeFilePath = 'path/file.yaml';
     expect(() =>
       loadYamlFile(
         budgetBuilder,
-        /*content=*/ 'name: test\ntype: SOMETHING',
-        /*relative_file_path=*/ 'path/file.yaml'
+        parseYamlContent('name: test\ntype: SOMETHING', relativeFilePath),
+        relativeFilePath
       )
     ).toThrow(
       new Error("Unknown type 'SOMETHING' for account 'test' while processing path/file.yaml")
@@ -68,11 +71,12 @@ describe('loadYaml', () => {
     jest.spyOn(console, 'log').mockImplementation(() => {});
 
     const budgetBuilder = new BudgetBuilder();
+    const relativeFilePath = 'path/file.yaml';
     expect(() =>
       loadYamlFile(
         budgetBuilder,
-        /*content=*/ 'name: test\ntype: external\nowner: []',
-        /*relative_file_path=*/ 'path/file.yaml'
+        parseYamlContent('name: test\ntype: external\nowner: []', relativeFilePath),
+        relativeFilePath
       )
     ).toThrow(new Error("Account 'test' has no owners while processing path/file.yaml"));
     expect(console.error).toHaveBeenCalledTimes(1);
@@ -89,6 +93,7 @@ describe('loadYaml', () => {
 
   test('empty account', () => {
     const budgetBuilder = new BudgetBuilder();
+    const relativeFilePath = 'path/file.yaml';
     const content = `
       name: test-account
       desc: 'Testing account'
@@ -105,7 +110,7 @@ describe('loadYaml', () => {
       transfers_to:
         external:
       `;
-    loadYamlFile(budgetBuilder, content, /*relative_file_path=*/ 'path/file.yaml');
+    loadYamlFile(budgetBuilder, parseYamlContent(content, relativeFilePath), relativeFilePath);
     const budget = budgetBuilder.build();
     expect(budget.accounts.size).toBe(1);
     expect(budget.balances.size).toBe(0);
@@ -131,6 +136,7 @@ describe('loadYaml', () => {
 
   test('account with balances', () => {
     const budgetBuilder = new BudgetBuilder();
+    const relativeFilePath = 'path/test.yaml';
     const content = `
       name: test-account
       owner: [ someone ]
@@ -139,7 +145,7 @@ describe('loadYaml', () => {
       - { grp: Feb2020, date: 2020-02-01, pamt: 10.00 }
       - { grp: Jan2020, date: 2020-01-01, camt:  0.00 }
       `;
-    loadYamlFile(budgetBuilder, content, /*relative_file_path=*/ 'path/file.yaml');
+    loadYamlFile(budgetBuilder, parseYamlContent(content, relativeFilePath), relativeFilePath);
     const budget = budgetBuilder.build();
     expect(budget.accounts.size).toBe(1);
     expect(budget.balances.size).toBe(1);
@@ -158,6 +164,7 @@ describe('loadYaml', () => {
 
   test('fails without balance month', () => {
     const budgetBuilder = new BudgetBuilder();
+    const relativeFilePath = 'path/file.yaml';
     const content = `
       name: test-account
       owner: [ someone ]
@@ -166,7 +173,7 @@ describe('loadYaml', () => {
       - { date: 2020-01-01, camt:  0.00 }
       `;
     expect(() =>
-      loadYamlFile(budgetBuilder, content, /*relative_file_path=*/ 'path/file.yaml')
+      loadYamlFile(budgetBuilder, parseYamlContent(content, relativeFilePath), relativeFilePath)
     ).toThrow(
       new Error(
         'Balance entry {"date":"2020-01-01T00:00:00.000Z","camt":0} has no grp setting. while processing path/file.yaml'
@@ -176,6 +183,7 @@ describe('loadYaml', () => {
 
   test('fails with bad balance month', () => {
     const budgetBuilder = new BudgetBuilder();
+    const relativeFilePath = 'path/file.yaml';
     const content = `
       name: test-account
       owner: [ someone ]
@@ -184,7 +192,7 @@ describe('loadYaml', () => {
       - { grp: Xxx2020, date: 2020-01-01, camt:  0.00 }
       `;
     expect(() =>
-      loadYamlFile(budgetBuilder, content, /*relative_file_path=*/ 'path/file.yaml')
+      loadYamlFile(budgetBuilder, parseYamlContent(content, relativeFilePath), relativeFilePath)
     ).toThrow(
       new Error(
         'Balance {"grp":"Xxx2020","date":"2020-01-01T00:00:00.000Z","camt":0} has bad grp setting: Cant find month for "Xxx2020" while processing path/file.yaml'
@@ -194,6 +202,7 @@ describe('loadYaml', () => {
 
   test('fails without balance date', () => {
     const budgetBuilder = new BudgetBuilder();
+    const relativeFilePath = 'path/file.yaml';
     const content = `
       name: test-account
       owner: [ someone ]
@@ -202,7 +211,7 @@ describe('loadYaml', () => {
       - { grp: Jan2020, camt:  0.00 }
       `;
     expect(() =>
-      loadYamlFile(budgetBuilder, content, /*relative_file_path=*/ 'path/file.yaml')
+      loadYamlFile(budgetBuilder, parseYamlContent(content, relativeFilePath), relativeFilePath)
     ).toThrow(
       new Error(
         'Balance {"grp":"Jan2020","camt":0} does not have date set. while processing path/file.yaml'
@@ -212,6 +221,7 @@ describe('loadYaml', () => {
 
   test('fails with bad balance date', () => {
     const budgetBuilder = new BudgetBuilder();
+    const relativeFilePath = 'path/file.yaml';
     const content = `
       name: test-account
       owner: [ someone ]
@@ -220,7 +230,7 @@ describe('loadYaml', () => {
       - { grp: Jan2020, date: 20200101, camt:  0.00 }
       `;
     expect(() =>
-      loadYamlFile(budgetBuilder, content, /*relative_file_path=*/ 'path/file.yaml')
+      loadYamlFile(budgetBuilder, parseYamlContent(content, relativeFilePath), relativeFilePath)
     ).toThrow(
       new Error(
         'Balance {"grp":"Jan2020","date":20200101,"camt":0} does not have date set. while processing path/file.yaml'
@@ -230,6 +240,7 @@ describe('loadYaml', () => {
 
   test('fails without balance type', () => {
     const budgetBuilder = new BudgetBuilder();
+    const relativeFilePath = 'path/file.yaml';
     const content = `
       name: test-account
       owner: [ someone ]
@@ -238,7 +249,7 @@ describe('loadYaml', () => {
       - { grp: Jan2020, date: 2020-01-01, xamt:  0.00 }
       `;
     expect(() =>
-      loadYamlFile(budgetBuilder, content, /*relative_file_path=*/ 'path/file.yaml')
+      loadYamlFile(budgetBuilder, parseYamlContent(content, relativeFilePath), relativeFilePath)
     ).toThrow(
       new Error(
         `Balance {"grp":"Jan2020","date":"2020-01-01T00:00:00.000Z","xamt":0} does not have amount type set, expected camt or pamt entry. while processing path/file.yaml`
@@ -248,6 +259,7 @@ describe('loadYaml', () => {
 
   test('with projected and confirmed transfers', () => {
     const budgetBuilder = new BudgetBuilder();
+    const relativeFilePath = 'path/file.yaml';
     const testAccountData = `
       name: test-account
       owner: [ someone ]
@@ -260,13 +272,21 @@ describe('loadYaml', () => {
         - { grp: Jan2020, date: 2020-01-17, pamt: 37.50 }
         - { grp: Jan2020, date: 2020-01-15, camt: -22.48 }
       `;
-    loadYamlFile(budgetBuilder, testAccountData, /*relative_file_path=*/ 'path/test.yaml');
+    loadYamlFile(
+      budgetBuilder,
+      parseYamlContent(testAccountData, relativeFilePath),
+      relativeFilePath
+    );
     const externalAccountData = `
       name: external
       owner: [ someone ]
       type: external
       `;
-    loadYamlFile(budgetBuilder, externalAccountData, /*relative_file_path=*/ 'path/external.yaml');
+    loadYamlFile(
+      budgetBuilder,
+      parseYamlContent(externalAccountData, relativeFilePath),
+      relativeFilePath
+    );
 
     const budget = budgetBuilder.build();
     expect(budget.accounts.size).toBe(2);
@@ -323,6 +343,7 @@ describe('loadYaml', () => {
 
   test('fails with transfer and no grp', () => {
     const budgetBuilder = new BudgetBuilder();
+    const relativeFilePath = 'path/test.yaml';
     const testAccountData = `
       name: test-account
       owner: [ someone ]
@@ -332,7 +353,11 @@ describe('loadYaml', () => {
         - { date: 2020-01-17, pamt: 37.50 }
       `;
     expect(() =>
-      loadYamlFile(budgetBuilder, testAccountData, /*relative_file_path=*/ 'path/test.yaml')
+      loadYamlFile(
+        budgetBuilder,
+        parseYamlContent(testAccountData, relativeFilePath),
+        relativeFilePath
+      )
     ).toThrow(
       new Error(
         'For account "test-account transfer to external" does not have "grp" field. while processing path/test.yaml'
@@ -342,6 +367,7 @@ describe('loadYaml', () => {
 
   test('fails with transfer and no date', () => {
     const budgetBuilder = new BudgetBuilder();
+    const relativeFilePath = 'path/test.yaml';
     const testAccountData = `
       name: test-account
       owner: [ someone ]
@@ -351,7 +377,11 @@ describe('loadYaml', () => {
         - { grp: Jan2020, pamt: 37.50 }
       `;
     expect(() =>
-      loadYamlFile(budgetBuilder, testAccountData, /*relative_file_path=*/ 'path/test.yaml')
+      loadYamlFile(
+        budgetBuilder,
+        parseYamlContent(testAccountData, relativeFilePath),
+        relativeFilePath
+      )
     ).toThrow(
       new Error(
         'For account "test-account" transfer to "external" does not have a ' +
@@ -362,6 +392,7 @@ describe('loadYaml', () => {
 
   test('fails with transfer and too far apart dates', () => {
     const budgetBuilder = new BudgetBuilder();
+    const relativeFilePath = 'path/test.yaml';
     const testAccountData = `
       name: test-account
       owner: [ someone ]
@@ -371,7 +402,11 @@ describe('loadYaml', () => {
         - { grp: Jan2020, date: 2020-04-01, pamt: 37.50 }
       `;
     expect(() =>
-      loadYamlFile(budgetBuilder, testAccountData, /*relative_file_path=*/ 'path/test.yaml')
+      loadYamlFile(
+        budgetBuilder,
+        parseYamlContent(testAccountData, relativeFilePath),
+        relativeFilePath
+      )
     ).toThrow(
       new Error(
         'For account "test-account" transfer to "external" for Jan2020 date ' +
@@ -382,6 +417,7 @@ describe('loadYaml', () => {
 
   test('fails with transfer and no balance', () => {
     const budgetBuilder = new BudgetBuilder();
+    const relativeFilePath = 'path/test.yaml';
     const testAccountData = `
       name: test-account
       owner: [ someone ]
@@ -391,7 +427,11 @@ describe('loadYaml', () => {
         - { grp: Jan2020, date: 2020-01-17 }
       `;
     expect(() =>
-      loadYamlFile(budgetBuilder, testAccountData, /*relative_file_path=*/ 'path/test.yaml')
+      loadYamlFile(
+        budgetBuilder,
+        parseYamlContent(testAccountData, relativeFilePath),
+        relativeFilePath
+      )
     ).toThrow(
       new Error(
         'For account "test-account" transfer to "external" does not have "pamt" or "camt" field:' +

@@ -11,6 +11,7 @@ import { GraphQLScalarType, Kind, ValueNode } from 'graphql';
 import { GqlAccount, GqlBudget, GqlStatement, GqlSummaryStatement } from './types';
 
 async function buildGqlBudget(): Promise<GqlBudget> {
+  const startTimeMs: number = Date.now();
   const budget = await loadBudget();
 
   const accounts: GqlAccount[] = [];
@@ -118,6 +119,7 @@ async function buildGqlBudget(): Promise<GqlBudget> {
       })
     });
   }
+  console.log(`gql budget in ${Date.now() - startTimeMs}ms`);
   return {
     accounts,
     months: budget.months.sort((a: Month, b: Month) => -a.compareTo(b)),
