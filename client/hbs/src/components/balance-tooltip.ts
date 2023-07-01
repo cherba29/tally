@@ -1,4 +1,4 @@
-import {LitElement, css, html, nothing} from 'lit';
+import {LitElement, css, html, TemplateResult} from 'lit';
 import {classMap, ClassInfo} from 'lit/directives/class-map.js';
 import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
 import {customElement, property} from 'lit/decorators.js';
@@ -46,8 +46,12 @@ export class BalanceTooltip extends LitElement {
     const transactionColor = (t: Transaction): StyleInfo => ({
       backgroundColor: t.isExpense ? '#caa' : t.isIncome ? '#aca' : null,
     });
-    const transactionCode = (t: Transaction): string =>
-      t.isExpense ? 'E' : t.isIncome ? 'I' : 'T';
+    const transactionCode = (t: Transaction): TemplateResult => {
+      if (t.isExpense) return html`E &#x2192;`;
+      if (t.isIncome) return html`I &#x2190;`;
+      if (t.balance.amount > 0) return html`T &#x2190;`;
+      return html`T &#x2192;`;
+    };
     const projectedClass = (b: Balance | undefined): ClassInfo => {
       const projected = isProjected(b);
       return {
