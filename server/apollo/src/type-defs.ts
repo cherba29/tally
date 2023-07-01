@@ -76,7 +76,6 @@ export default gql`
     isExpense: Boolean
     balance: GqlBalance
     balanceFromStart: Int
-    balanceFromEnd: Int
     description: String
   }
 

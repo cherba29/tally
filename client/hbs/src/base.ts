@@ -6,7 +6,6 @@ export interface Transaction {
   toAccountName: string;
   balance: Balance;
   balanceFromStart: number;
-  balanceFromEnd: number;
   description: string;
 }
 

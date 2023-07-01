@@ -107,7 +107,6 @@ export type GqlSummaryStatement = {
 export type GqlTransaction = {
   __typename?: 'GqlTransaction';
   balance?: Maybe<GqlBalance>;
-  balanceFromEnd?: Maybe<Scalars['Int']>;
   balanceFromStart?: Maybe<Scalars['Int']>;
   description?: Maybe<Scalars['String']>;
   isExpense?: Maybe<Scalars['Boolean']>;

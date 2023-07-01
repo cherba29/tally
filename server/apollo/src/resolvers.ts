@@ -76,7 +76,6 @@ async function buildGqlBudget(): Promise<GqlBudget> {
           type: BalanceType[t.balance.type as BalanceType]
         },
         balanceFromStart: t.balanceFromStart,
-        balanceFromEnd: t.balanceFromEnd,
         description: t.description
       })),
       isClosed:

@@ -86,7 +86,6 @@ export class BackendClient {
                   type
                 }
                 balanceFromStart
-                balanceFromEnd
                 description
               }
             }

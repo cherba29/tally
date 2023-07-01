@@ -69,7 +69,6 @@ function gqlToTransaction(tran: GqlTransaction | null): Transaction {
     isIncome: tran.isIncome ?? false,
     balance,
     balanceFromStart: tran.balanceFromStart || 0,
-    balanceFromEnd: tran.balanceFromEnd || 0,
     description: tran.description || '',
   };
 }

@@ -136,7 +136,6 @@ describe('Build', () => {
             balance: Balance.projected(-2000, '2019-12-05'),
             type: TransactionType.TRANSFER,
             description: 'First transfer',
-            balanceFromEnd: 2020,
             balanceFromStart: -2990,
           },
           {
@@ -144,7 +143,6 @@ describe('Build', () => {
             balance: Balance.projected(-1000, '2019-12-05'),
             type: TransactionType.TRANSFER,
             description: 'Second transfer',
-            balanceFromEnd: 3020,
             balanceFromStart: -990,
           },
         ],
@@ -245,7 +243,6 @@ describe('Build', () => {
             balance: Balance.projected(-2000, '2019-12-05'),
             type: TransactionType.EXPENSE,
             description: 'First transfer',
-            balanceFromEnd: 2020,
             balanceFromStart: -2990,
           },
           {
@@ -253,7 +250,6 @@ describe('Build', () => {
             balance: Balance.projected(-1000, '2019-12-05'),
             type: TransactionType.EXPENSE,
             description: 'Second transfer',
-            balanceFromEnd: 3020,
             balanceFromStart: -990,
           },
         ],

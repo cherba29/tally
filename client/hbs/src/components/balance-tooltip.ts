@@ -65,7 +65,6 @@ export class BalanceTooltip extends LitElement {
           <th></th>
           <th>${dateFormat(this.stmt?.endBalance?.date)}</th>
           <th align="right">${currency(this.stmt?.endBalance?.amount)}</th>
-          <th></th>
         </tr>
         ${this.stmt?.transactions?.map(
           (t, index) =>
@@ -79,7 +78,6 @@ export class BalanceTooltip extends LitElement {
                 ${currency(t.balance.amount)}
               </td>
               <td align="middle" style="min-width:60px">${dateFormat(t.balance.date)}</td>
-              <td align="right" style="min-width:50px">${currency(t.balanceFromEnd)}</td>
               <td align="right" style="min-width:50px">${currency(t.balanceFromStart)}</td>
             </tr>`
         )}
@@ -88,14 +86,12 @@ export class BalanceTooltip extends LitElement {
           <th></th>
           <th></th>
           <th>${dateFormat(this.stmt?.startBalance?.date)}</th>
-          <th></th>
           <th align="right" style="width:50px">${currency(this.stmt?.startBalance?.amount)}</th>
         </tr>
         <tr>
           <td align="right"><b>Income</b></td>
           <td></td>
           <td align="right">${currency(this.stmt?.income)}</td>
-          <td></td>
           <td></td>
           <td></td>
         </tr>
@@ -105,13 +101,11 @@ export class BalanceTooltip extends LitElement {
           <td align="right">${currency(this.stmt?.totalPayments)}</td>
           <td></td>
           <td></td>
-          <td></td>
         </tr>
         <tr>
           <td align="right"><b>Transfers</b></td>
           <td></td>
           <td align="right">${currency(this.stmt?.totalTransfers)}</td>
-          <td></td>
           <td></td>
           <td></td>
         </tr>
@@ -121,13 +115,11 @@ export class BalanceTooltip extends LitElement {
           <td align="right">${currency(this.stmt?.inFlows)}</td>
           <td></td>
           <td></td>
-          <td></td>
         </tr>
         <tr>
           <td align="right"><b>Outflows</b></td>
           <td></td>
           <td align="right">${currency(this.stmt?.outFlows)}</td>
-          <td></td>
           <td></td>
           <td></td>
         </tr>
@@ -137,13 +129,11 @@ export class BalanceTooltip extends LitElement {
           <td align="right">${currency(this.stmt?.addSub)}</td>
           <td></td>
           <td></td>
-          <td></td>
         </tr>
         <tr>
           <td align="right"><b>Unaccounted</b></td>
           <td></td>
           <td align="right">${currency(this.stmt?.unaccounted)}</td>
-          <td></td>
           <td></td>
           <td></td>
         </tr>

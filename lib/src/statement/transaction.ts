@@ -18,7 +18,6 @@ export interface Transaction {
   description?: string;
   type: Type;
   balanceFromStart?: number;
-  balanceFromEnd?: number;
 }
 
 // Extension of Statement for transactions over an account.
@@ -199,11 +198,6 @@ export function buildTransactionStatementTable(budget: Budget): TransactionState
         statement.transactions.reduceRight((prevBalance, t) => {
           return (t.balanceFromStart = prevBalance + t.balance.amount);
         }, statement.startBalance.amount);
-      }
-      if (statement.endBalance) {
-        statement.transactions.reduce((prevBalance, t) => {
-          return (t.balanceFromEnd = prevBalance - t.balance.amount);
-        }, statement.endBalance.amount);
       }
       accountStatements.push(statement);
     }
