@@ -9,6 +9,7 @@ export default gql`
     budget: GqlBudget
     table(owner: String): GqlTable
     summary(owner: String!, accountType: String!, month: GqlMonth!): GqlSummaryData
+    statement(owner: String!, account: String!, month: GqlMonth!): GqlStatement
   }
 
   type GqlAccount {

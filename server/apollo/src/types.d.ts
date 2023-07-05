@@ -150,8 +150,21 @@ export type Query = {
   __typename?: 'Query';
   budget?: Maybe<GqlBudget>;
   files?: Maybe<Array<Maybe<Scalars['String']>>>;
+  statement?: Maybe<GqlStatement>;
   summary?: Maybe<GqlSummaryData>;
   table?: Maybe<GqlTable>;
+};
+
+export type QueryStatementArgs = {
+  account: Scalars['String'];
+  month: Scalars['GqlMonth'];
+  owner: Scalars['String'];
+};
+
+export type QuerySummaryArgs = {
+  accountType: Scalars['String'];
+  month: Scalars['GqlMonth'];
+  owner: Scalars['String'];
 };
 
 export type QuerySummaryArgs = {

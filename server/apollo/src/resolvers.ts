@@ -19,7 +19,8 @@ import {
   GqlTableCell,
   GqlTableRow,
   QueryTableArgs,
-  QuerySummaryArgs
+  QuerySummaryArgs,
+  QueryStatementArgs
 } from './types';
 import { Account } from '@tally/lib';
 
@@ -299,12 +300,33 @@ async function buildSummaryData(_: any, args: QuerySummaryArgs): Promise<GqlSumm
   return payload;
 }
 
+async function buildStatement(_: any, args: QueryStatementArgs): Promise<GqlStatement> {
+  const startTimeMs: number = Date.now();
+  const budget = await loadBudget();
+  const transactionStatementTable: TransactionStatement[] = buildTransactionStatementTable(
+    budget,
+    args.owner
+  );
+  const statements = transactionStatementTable.filter(
+    (stmt) => stmt.account.name === args.account && stmt.month.toString() === args.month.toString()
+  );
+  if (statements.length !== 1) {
+    throw new Error(
+      `Found ${statements.length} statements for ${args.owner} ${args.account} ${args.month}`
+    );
+  }
+  const payload = toGqlStatement(statements[0]);
+  console.log(`gql table in ${Date.now() - startTimeMs}ms`);
+  return payload;
+}
+
 export default {
   Query: {
     files: listFiles,
     budget: buildGqlBudget,
     table: buildGqlTable,
-    summary: buildSummaryData
+    summary: buildSummaryData,
+    statement: buildStatement
   },
 
   Date: new GraphQLScalarType({
