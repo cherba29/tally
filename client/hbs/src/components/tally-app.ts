@@ -1,7 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {customElement} from 'lit/decorators.js';
 import {BackendClient} from '../api';
-import {PopupData, PopupMonthSummaryData, Rows} from '../utils';
+import {PopupData, PopupMonthData, PopupMonthSummaryData, Rows} from '../utils';
 import {
   transformGqlBudgetData,
   gqlToAccount,
@@ -169,6 +169,25 @@ export class TallyApp extends LitElement {
                 name: stmt?.name ?? '',
                 stmt: gqlToStatement(stmt!),
               })),
+            };
+            this.popupData = popupData;
+            this.popupOffset = {
+              top: e.detail.mouseEvent.pageY + 10,
+              left: e.detail.mouseEvent.pageX,
+            };
+            this.requestUpdate();
+          });
+      } else if (e.detail.month) {
+        this.backendClient
+          .loadStatement(this.currentOwner ?? '', e.detail.accountName ?? '', e.detail.month ?? '')
+          .then((result) => {
+            console.log(`PopupData for ${e.detail.cellId}`, result);
+            const statement = result.data.statement;
+            const popupData: PopupMonthData = {
+              id: e.detail.cellId,
+              accountName: e.detail.accountName ?? '',
+              month: e.detail.month ?? '',
+              stmt: gqlToStatement(statement!),
             };
             this.popupData = popupData;
             this.popupOffset = {

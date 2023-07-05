@@ -245,4 +245,61 @@ export class BackendClient {
       },
     });
   }
+
+  /**
+   * Load data via gql client.
+   * @return promise of query result.
+   */
+  loadStatement(owner: string, account: string, month: string): Promise<ApolloQueryResult<Query>> {
+    return this.gqlClient.query<Query>({
+      query: gql`
+        query statement($owner: String!, $account: String!, $month: GqlMonth!) {
+          statement(owner: $owner, account: $account, month: $month) {
+            name
+            month
+            inFlows
+            outFlows
+            income
+            totalPayments
+            totalTransfers
+            isClosed
+            isCovered
+            isProjectedCovered
+            hasProjectedTransfer
+            change
+            addSub
+            percentChange
+            unaccounted
+            startBalance {
+              amount
+              date
+              type
+            }
+            endBalance {
+              amount
+              date
+              type
+            }
+            transactions {
+              toAccountName
+              isIncome
+              isExpense
+              balance {
+                amount
+                date
+                type
+              }
+              balanceFromStart
+              description
+            }
+          }
+        }
+      `,
+      variables: {
+        owner,
+        account,
+        month,
+      },
+    });
+  }
 }
