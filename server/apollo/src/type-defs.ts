@@ -8,6 +8,7 @@ export default gql`
     files: [String]
     budget: GqlBudget
     table(owner: String): GqlTable
+    summary(owner: String!, accountType: String!, month: GqlMonth!): GqlSummaryData
   }
 
   type GqlAccount {
@@ -116,6 +117,11 @@ export default gql`
     unaccounted: Int
     endBalance: GqlBalance
     startBalance: GqlBalance
+  }
+
+  type GqlSummaryData {
+    statements: [GqlStatement]
+    total: GqlSummaryStatement
   }
 
   type GqlBudget {

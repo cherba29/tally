@@ -1,8 +1,8 @@
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
-export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
+export type Exact<T extends {[key: string]: unknown}> = {[K in keyof T]: T[K]};
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> & {[SubKey in K]?: Maybe<T[SubKey]>};
+export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & {[SubKey in K]: Maybe<T[SubKey]>};
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -80,6 +80,12 @@ export type GqlStatement = {
   unaccounted?: Maybe<Scalars['Float']>;
 };
 
+export type GqlSummaryData = {
+  __typename?: 'GqlSummaryData';
+  statements?: Maybe<Array<Maybe<GqlStatement>>>;
+  total?: Maybe<GqlSummaryStatement>;
+};
+
 export type GqlSummaryStatement = {
   __typename?: 'GqlSummaryStatement';
   accounts?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -144,9 +150,15 @@ export type Query = {
   __typename?: 'Query';
   budget?: Maybe<GqlBudget>;
   files?: Maybe<Array<Maybe<Scalars['String']>>>;
+  summary?: Maybe<GqlSummaryData>;
   table?: Maybe<GqlTable>;
 };
 
+export type QuerySummaryArgs = {
+  accountType: Scalars['String'];
+  month: Scalars['GqlMonth'];
+  owner: Scalars['String'];
+};
 
 export type QueryTableArgs = {
   owner?: InputMaybe<Scalars['String']>;

@@ -14,10 +14,12 @@ import {
   GqlBudget,
   GqlStatement,
   GqlSummaryStatement,
+  GqlSummaryData,
   GqlTable,
   GqlTableCell,
   GqlTableRow,
-  QueryTableArgs
+  QueryTableArgs,
+  QuerySummaryArgs
 } from './types';
 import { Account } from '@tally/lib';
 
@@ -266,11 +268,43 @@ async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTable> {
   };
 }
 
+async function buildSummaryData(_: any, args: QuerySummaryArgs): Promise<GqlSummaryData> {
+  const startTimeMs: number = Date.now();
+  const budget = await loadBudget();
+  const transactionStatementTable: TransactionStatement[] = buildTransactionStatementTable(
+    budget,
+    args.owner
+  );
+  const summaryStatementTable = buildSummaryStatementTable(transactionStatementTable, args.owner);
+  const summaryName =
+    args.owner + ' ' + (args.accountType === args.owner ? 'SUMMARY' : args.accountType);
+  let summary = undefined;
+  for (const stmt of summaryStatementTable) {
+    // console.log(`### '${stmt.name}' and '${stmt.month}'`);
+    if (stmt.name === summaryName && stmt.month.toString() === args.month.toString()) {
+      summary = stmt;
+      break;
+    }
+  }
+  if (!summary) {
+    throw new Error(
+      `Summary ${args.accountType} for ${args.owner} for month ${args.month} not found.`
+    );
+  }
+  const payload = {
+    statements: summary.statements.map((stmt) => toGqlStatement(stmt as TransactionStatement)),
+    total: toGqlSummaryStatement(summary)
+  };
+  console.log(`gql table in ${Date.now() - startTimeMs}ms`);
+  return payload;
+}
+
 export default {
   Query: {
     files: listFiles,
     budget: buildGqlBudget,
-    table: buildGqlTable
+    table: buildGqlTable,
+    summary: buildSummaryData
   },
 
   Date: new GraphQLScalarType({

@@ -80,6 +80,12 @@ export type GqlStatement = {
   unaccounted?: Maybe<Scalars['Float']>;
 };
 
+export type GqlSummaryData = {
+  __typename?: 'GqlSummaryData';
+  statements?: Maybe<Array<Maybe<GqlStatement>>>;
+  total?: Maybe<GqlSummaryStatement>;
+};
+
 export type GqlSummaryStatement = {
   __typename?: 'GqlSummaryStatement';
   accounts?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -144,9 +150,15 @@ export type Query = {
   __typename?: 'Query';
   budget?: Maybe<GqlBudget>;
   files?: Maybe<Array<Maybe<Scalars['String']>>>;
+  summary?: Maybe<GqlSummaryData>;
   table?: Maybe<GqlTable>;
 };
 
+export type QuerySummaryArgs = {
+  accountType: Scalars['String'];
+  month: Scalars['GqlMonth'];
+  owner: Scalars['String'];
+};
 
 export type QueryTableArgs = {
   owner?: InputMaybe<Scalars['String']>;
