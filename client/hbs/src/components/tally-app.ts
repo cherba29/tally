@@ -40,6 +40,7 @@ export class TallyApp extends LitElement {
   private popupData: PopupData | undefined = undefined;
   private popupOffset = {top: 0, left: 0};
   private currentOwner: string | undefined = undefined;
+  private owners: string[] = [];
 
   connectedCallback() {
     super.connectedCallback();
@@ -78,9 +79,9 @@ export class TallyApp extends LitElement {
       </div>
       <div class="toolTip" style=${styleMap(popupStyle)}>${this.tooltipFragment()}</div>
       <div>
-        ${Object.keys(this.rows)
-          .sort()
-          .map((owner) => html`<button @click=${() => this.tabClick(owner)}>${owner[0]}</button>`)}
+        ${this.owners.map(
+          (owner) => html`<button @click=${() => this.tabClick(owner)}>${owner[0]}</button>`
+        )}
       </div>
       ${Object.entries(this.rows).map(([owner, rows]) => {
         return html`<div class="tabcontent" style=${styleMap(tabStyle(owner))}>
@@ -163,6 +164,7 @@ export class TallyApp extends LitElement {
           if (this.currentOwner === undefined) {
             this.currentOwner = Object.keys(this.rows).sort()[0];
           }
+          this.owners = Object.keys(this.rows).sort();
           this.popupMap = new Map(dataView.popupCells.map((c) => [c.id, c]));
         }
         this.requestUpdate();
