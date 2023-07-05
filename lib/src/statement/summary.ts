@@ -44,7 +44,8 @@ export class SummaryStatement extends Statement {
 }
 
 export function* buildSummaryStatementTable(
-  statements: TransactionStatement[]
+  statements: TransactionStatement[],
+  selectedOwner?: string
 ): Generator<SummaryStatement> {
   // Map of 'summary name' -> month -> 'summary statement'.
   const summaryStatements = new Map<string, Map<string, SummaryStatement>>();
@@ -65,6 +66,9 @@ export function* buildSummaryStatementTable(
 
   for (const statement of statements) {
     for (const owner of statement.account.owners) {
+      if (selectedOwner && owner !== selectedOwner) {
+        continue;
+      }
       for (const summaryName of [owner + ' ' + statement.account.typeIdName, owner + ' SUMMARY']) {
         if (statement.account.isExternal && summaryName.includes('SUMMARY')) {
           continue;

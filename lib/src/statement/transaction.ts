@@ -162,7 +162,10 @@ function makeTranscationStatement(
   return statement;
 }
 
-export function buildTransactionStatementTable(budget: Budget): TransactionStatement[] {
+export function buildTransactionStatementTable(
+  budget: Budget,
+  owner?: string
+): TransactionStatement[] {
   const statementTable: TransactionStatement[] = [];
 
   const makeStatement = (account: Account, month: Month): TransactionStatement => {
@@ -181,6 +184,9 @@ export function buildTransactionStatementTable(budget: Budget): TransactionState
   }
 
   for (const account of budget.accounts.values()) {
+    if (owner && !account.owners.includes(owner)) {
+      continue;
+    }
     const accountStatements: TransactionStatement[] = [];
     // Make statement outside range so that its attributes relating to previous can be used.
     let nextMonthStatement = makeStatement(account, months[0]!.next());
