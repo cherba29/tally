@@ -108,7 +108,12 @@ export class TallyApp extends LitElement {
 
   tabClick(owner: string) {
     this.currentOwner = owner;
-    this.requestUpdate();
+    if (this.popupMap.size === 0) {
+      // If data was loading individually.
+      this.reloadTable();
+    } else {
+      this.requestUpdate();
+    }
   }
 
   tooltipFragment() {

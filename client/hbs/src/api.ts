@@ -126,8 +126,8 @@ export class BackendClient {
   loadTable(owner?: string): Promise<ApolloQueryResult<Query>> {
     return this.gqlClient.query<Query>({
       query: gql`
-        query {
-          table {
+        query table($owner: String!) {
+          table(owner: $owner) {
             currentOwner
             owners
             months
@@ -168,6 +168,9 @@ export class BackendClient {
           }
         }
       `,
+      variables: {
+        owner,
+      },
     });
   }
 
