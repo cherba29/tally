@@ -1,10 +1,9 @@
 import {
-  buildTransactionStatementTable,
   Transaction,
   TransactionStatement,
   Type as TransactionType
 } from '@tally/lib/statement/transaction';
-import { buildSummaryStatementTable, SummaryStatement } from '@tally/lib/statement/summary';
+import { SummaryStatement } from '@tally/lib/statement/summary';
 import { Type as BalanceType } from '@tally/lib/core/balance';
 import { Month } from '@tally/lib/core/month';
 import { listFiles, loadBudget } from '@tally/lib/data/loader';
@@ -123,18 +122,18 @@ function toGqlSummaryStatement(summary: SummaryStatement): GqlSummaryStatement {
 
 async function buildGqlBudget(): Promise<GqlBudget> {
   const startTimeMs: number = Date.now();
-  const budget = await loadBudget();
+  const payload = await loadBudget();
 
-  const accounts: GqlAccount[] = budget.findActiveAccounts().map(toGqlAccount);
+  const accounts: GqlAccount[] = payload.budget.findActiveAccounts().map(toGqlAccount);
   accounts.sort((a, b) => (a.name == b.name ? 0 : (a.name ?? '') < (b.name ?? '') ? -1 : 1));
 
-  const transactionStatementTable = buildTransactionStatementTable(budget);
+  const transactionStatementTable = payload.statements;
   const statements: GqlStatement[] = [];
   for (const statement of transactionStatementTable) {
     statements.push(toGqlStatement(statement));
   }
 
-  const summaryStatementTable = buildSummaryStatementTable(transactionStatementTable);
+  const summaryStatementTable = payload.summaries;
   const summaries: GqlSummaryStatement[] = [];
   for (const summary of summaryStatementTable) {
     summaries.push(toGqlSummaryStatement(summary));
@@ -142,7 +141,7 @@ async function buildGqlBudget(): Promise<GqlBudget> {
   console.log(`gql budget in ${Date.now() - startTimeMs}ms`);
   return {
     accounts,
-    months: budget.months.sort((a: Month, b: Month) => -a.compareTo(b)),
+    months: payload.budget.months.sort((a: Month, b: Month) => -a.compareTo(b)),
     statements,
     summaries
   };
@@ -150,15 +149,12 @@ async function buildGqlBudget(): Promise<GqlBudget> {
 
 async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTable> {
   const startTimeMs: number = Date.now();
-  const budget = await loadBudget();
-  const months = budget.months.sort((a: Month, b: Month) => -a.compareTo(b));
-  const activeAccounts = budget.findActiveAccounts();
+  const payload = await loadBudget();
+  const months = payload.budget.months.sort((a: Month, b: Month) => -a.compareTo(b));
+  const activeAccounts = payload.budget.findActiveAccounts();
   const owners = [...new Set(activeAccounts.map((account) => account.owners).flat())].sort();
   const owner = args.owner || owners[0];
-  const transactionStatementTable: TransactionStatement[] = buildTransactionStatementTable(
-    budget,
-    owner
-  );
+  const transactionStatementTable: TransactionStatement[] = payload.statements;
   const accoutToMonthToTransactionStatement = new Map<string, Map<string, TransactionStatement>>();
   for (const stmt of transactionStatementTable) {
     let monthToStatement = accoutToMonthToTransactionStatement.get(stmt.account.name);
@@ -168,7 +164,7 @@ async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTable> {
     }
     monthToStatement.set(stmt.month.toString(), stmt);
   }
-  const summaryStatementTable = buildSummaryStatementTable(transactionStatementTable, owner);
+  const summaryStatementTable = payload.summaries;
   const summaryNameMonthMap = new Map<string, Map<string, SummaryStatement>>();
   for (const summary of summaryStatementTable) {
     let monthToSummary = summaryNameMonthMap.get(summary.name);
@@ -271,12 +267,8 @@ async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTable> {
 
 async function buildSummaryData(_: any, args: QuerySummaryArgs): Promise<GqlSummaryData> {
   const startTimeMs: number = Date.now();
-  const budget = await loadBudget();
-  const transactionStatementTable: TransactionStatement[] = buildTransactionStatementTable(
-    budget,
-    args.owner
-  );
-  const summaryStatementTable = buildSummaryStatementTable(transactionStatementTable, args.owner);
+  const payload = await loadBudget();
+  const summaryStatementTable = payload.summaries;
   const summaryName =
     args.owner + ' ' + (args.accountType === args.owner ? 'SUMMARY' : args.accountType);
   let summary = undefined;
@@ -292,22 +284,18 @@ async function buildSummaryData(_: any, args: QuerySummaryArgs): Promise<GqlSumm
       `Summary ${args.accountType} for ${args.owner} for month ${args.month} not found.`
     );
   }
-  const payload = {
+  const result = {
     statements: summary.statements.map((stmt) => toGqlStatement(stmt as TransactionStatement)),
     total: toGqlSummaryStatement(summary)
   };
-  console.log(`gql table in ${Date.now() - startTimeMs}ms`);
-  return payload;
+  console.log(`gql summary data in ${Date.now() - startTimeMs}ms`);
+  return result;
 }
 
 async function buildStatement(_: any, args: QueryStatementArgs): Promise<GqlStatement> {
   const startTimeMs: number = Date.now();
-  const budget = await loadBudget();
-  const transactionStatementTable: TransactionStatement[] = buildTransactionStatementTable(
-    budget,
-    args.owner
-  );
-  const statements = transactionStatementTable.filter(
+  const payload = await loadBudget();
+  const statements = payload.statements.filter(
     (stmt) => stmt.account.name === args.account && stmt.month.toString() === args.month.toString()
   );
   if (statements.length !== 1) {
@@ -315,9 +303,9 @@ async function buildStatement(_: any, args: QueryStatementArgs): Promise<GqlStat
       `Found ${statements.length} statements for ${args.owner} ${args.account} ${args.month}`
     );
   }
-  const payload = toGqlStatement(statements[0]);
-  console.log(`gql table in ${Date.now() - startTimeMs}ms`);
-  return payload;
+  const result = toGqlStatement(statements[0]);
+  console.log(`gql statement in ${Date.now() - startTimeMs}ms`);
+  return result;
 }
 
 export default {

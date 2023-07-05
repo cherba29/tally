@@ -6,6 +6,8 @@ import { Budget, BudgetBuilder } from '../core/budget';
 import { Month } from '../core/month';
 import { loadYamlFile, parseYamlContent, YamlData } from './loader_yaml';
 import { loadTallyConfig } from './config';
+import { TransactionStatement, buildTransactionStatementTable } from '../statement/transaction';
+import { SummaryStatement, buildSummaryStatementTable } from '../statement/summary';
 
 function* readdirSync(file_path: string): Generator<string> {
   if (fs.statSync(file_path).isDirectory()) {
@@ -44,6 +46,8 @@ let watchedPath: string | undefined = undefined;
 let watcher: chokidar.FSWatcher | undefined = undefined;
 const parsedAccountData = new Map<string, YamlData | undefined>();
 let budget: Budget | undefined = undefined;
+let statements: TransactionStatement[] | undefined = undefined;
+let summaries: SummaryStatement[] | undefined = undefined;
 
 export function unwatchBudgetFiles() {
   watchedPath = undefined;
@@ -51,11 +55,19 @@ export function unwatchBudgetFiles() {
   watcher = undefined;
   parsedAccountData.clear();
   budget = undefined;
+  statements = undefined;
+  summaries = undefined;
 }
 
-export async function loadBudget(startMonth?: Month, endMonth?: Month): Promise<Budget> {
-  if (budget !== undefined) {
-    return budget;
+export interface DataPayload {
+  budget: Budget;
+  statements: TransactionStatement[];
+  summaries: SummaryStatement[];
+}
+
+export async function loadBudget(startMonth?: Month, endMonth?: Month): Promise<DataPayload> {
+  if (budget !== undefined && statements !== undefined && summaries !== undefined) {
+    return { budget, statements, summaries };
   }
   if (!process.env.TALLY_FILES) {
     throw Error('Process environment variable "TALLY_FILES" has not been specified.');
@@ -92,6 +104,9 @@ export async function loadBudget(startMonth?: Month, endMonth?: Month): Promise<
   }
   console.log(`Done loading ${filePaths.length} file(s) in ${Date.now() - startTimeMs}ms`);
   if (watcher === undefined || watchedPath !== pathToData) {
+    if (watcher) {
+      unwatchBudgetFiles();
+    }
     watchedPath = pathToData;
     watcher = chokidar
       .watch(pathToData, {})
@@ -130,5 +145,7 @@ export async function loadBudget(startMonth?: Month, endMonth?: Month): Promise<
     console.log(`Watching ${process.env.TALLY_FILES}`);
   }
   budget = budgetBuilder.build();
-  return budget;
+  statements = buildTransactionStatementTable(budget);
+  summaries = [...buildSummaryStatementTable(statements)];
+  return { budget, statements, summaries };
 }

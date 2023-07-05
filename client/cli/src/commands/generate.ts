@@ -31,7 +31,7 @@ export const generate: CommandModule<unknown, GenerateOptions> = {
   describe: desc,
   builder,
   handler: async ({ account, startMonth, useTransfers, showTransfers }): Promise<void> => {
-    const budget: Budget = await loadBudget();
+    const budget: Budget = (await loadBudget()).budget;
     process.stdout.write(
       `Generating balances for ${account} starting from ${startMonth?.toString()}!\n`
     );

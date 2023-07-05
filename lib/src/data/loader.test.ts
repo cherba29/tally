@@ -84,10 +84,14 @@ describe('loadBudget', () => {
       },
     });
     await expect(loadBudget()).resolves.toEqual({
-      accounts: new Map(),
-      balances: new Map(),
-      months: [new Month(2019, 10), new Month(2019, 11), new Month(2020, 0), new Month(2020, 1)],
-      transfers: new Map(),
+      budget: {
+        accounts: new Map(),
+        balances: new Map(),
+        months: [new Month(2019, 10), new Month(2019, 11), new Month(2020, 0), new Month(2020, 1)],
+        transfers: new Map(),
+      },
+      statements: [],
+      summaries: [],
     });
 
     expect(console.log).toHaveBeenCalledTimes(3);
