@@ -7,6 +7,7 @@ export default gql`
   type Query {
     files: [String]
     budget: GqlBudget
+    table(owner: String): GqlTable
   }
 
   type GqlAccount {
@@ -122,5 +123,35 @@ export default gql`
     months: [GqlMonth]
     statements: [GqlStatement]
     summaries: [GqlSummaryStatement]
+  }
+
+  # Below are types matching views.
+  type GqlTableCell {
+    isClosed: Boolean
+    addSub: Int
+    balance: Int
+    isProjected: Boolean
+    isCovered: Boolean
+    isProjectedCovered: Boolean
+    hasProjectedTransfer: Boolean
+    percentChange: Float
+    unaccounted: Int
+    balanced: Boolean
+  }
+
+  type GqlTableRow {
+    title: String
+    account: GqlAccount
+    isSpace: Boolean
+    isTotal: Boolean
+    isNormal: Boolean
+    cells: [GqlTableCell]
+  }
+
+  type GqlTable {
+    currentOwner: String
+    owners: [String]
+    months: [GqlMonth]
+    rows: [GqlTableRow]
   }
 `;

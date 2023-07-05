@@ -12,13 +12,7 @@ export type Scalars = {
   Float: number;
   Date: any;
   GqlMonth: any;
-  Upload: any;
 };
-
-export enum CacheControlScope {
-  Private = 'PRIVATE',
-  Public = 'PUBLIC'
-}
 
 export type GqlAccount = {
   __typename?: 'GqlAccount';
@@ -104,6 +98,38 @@ export type GqlSummaryStatement = {
   unaccounted?: Maybe<Scalars['Int']>;
 };
 
+export type GqlTable = {
+  __typename?: 'GqlTable';
+  currentOwner?: Maybe<Scalars['String']>;
+  months?: Maybe<Array<Maybe<Scalars['GqlMonth']>>>;
+  owners?: Maybe<Array<Maybe<Scalars['String']>>>;
+  rows?: Maybe<Array<Maybe<GqlTableRow>>>;
+};
+
+export type GqlTableCell = {
+  __typename?: 'GqlTableCell';
+  addSub?: Maybe<Scalars['Int']>;
+  balance?: Maybe<Scalars['Int']>;
+  balanced?: Maybe<Scalars['Boolean']>;
+  hasProjectedTransfer?: Maybe<Scalars['Boolean']>;
+  isClosed?: Maybe<Scalars['Boolean']>;
+  isCovered?: Maybe<Scalars['Boolean']>;
+  isProjected?: Maybe<Scalars['Boolean']>;
+  isProjectedCovered?: Maybe<Scalars['Boolean']>;
+  percentChange?: Maybe<Scalars['Float']>;
+  unaccounted?: Maybe<Scalars['Int']>;
+};
+
+export type GqlTableRow = {
+  __typename?: 'GqlTableRow';
+  account?: Maybe<GqlAccount>;
+  cells?: Maybe<Array<Maybe<GqlTableCell>>>;
+  isNormal?: Maybe<Scalars['Boolean']>;
+  isSpace?: Maybe<Scalars['Boolean']>;
+  isTotal?: Maybe<Scalars['Boolean']>;
+  title?: Maybe<Scalars['String']>;
+};
+
 export type GqlTransaction = {
   __typename?: 'GqlTransaction';
   balance?: Maybe<GqlBalance>;
@@ -118,4 +144,10 @@ export type Query = {
   __typename?: 'Query';
   budget?: Maybe<GqlBudget>;
   files?: Maybe<Array<Maybe<Scalars['String']>>>;
+  table?: Maybe<GqlTable>;
+};
+
+
+export type QueryTableArgs = {
+  owner?: InputMaybe<Scalars['String']>;
 };

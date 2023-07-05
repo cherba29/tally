@@ -1,4 +1,5 @@
 import { Month } from '@tally/lib/core/month';
+import { unwatchBudgetFiles } from '@tally/lib/data/loader';
 import resolvers from './resolvers';
 
 describe('date', () => {
@@ -21,6 +22,22 @@ describe('query', () => {
   });
 
   afterEach(() => {
+    delete process.env.TALLY_FILES;
+  });
+});
+
+describe('gqlTable', () => {
+  beforeEach(() => {
+    process.env.TALLY_FILES = 'server/apollo/src/testdata/tally';
+  });
+
+  test('load', async () => {
+    const data = await resolvers.Query.table(undefined, { owner: 'john' });
+    expect(data).toMatchSnapshot();
+  });
+
+  afterEach(() => {
+    unwatchBudgetFiles();
     delete process.env.TALLY_FILES;
   });
 });

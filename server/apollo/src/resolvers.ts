@@ -1,14 +1,24 @@
 import {
   buildTransactionStatementTable,
   Transaction,
+  TransactionStatement,
   Type as TransactionType
 } from '@tally/lib/statement/transaction';
-import { buildSummaryStatementTable } from '@tally/lib/statement/summary';
+import { buildSummaryStatementTable, SummaryStatement } from '@tally/lib/statement/summary';
 import { Type as BalanceType } from '@tally/lib/core/balance';
 import { Month } from '@tally/lib/core/month';
 import { listFiles, loadBudget } from '@tally/lib/data/loader';
 import { GraphQLScalarType, Kind, ValueNode } from 'graphql';
-import { GqlAccount, GqlBudget, GqlStatement, GqlSummaryStatement } from './types';
+import {
+  GqlAccount,
+  GqlBudget,
+  GqlStatement,
+  GqlSummaryStatement,
+  GqlTable,
+  GqlTableCell,
+  GqlTableRow,
+  QueryTableArgs
+} from './types';
 import { Account } from '@tally/lib';
 
 function toGqlAccount(account: Account): GqlAccount {
@@ -135,10 +145,132 @@ async function buildGqlBudget(): Promise<GqlBudget> {
   };
 }
 
+async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTable> {
+  const startTimeMs: number = Date.now();
+  const budget = await loadBudget();
+  const months = budget.months.sort((a: Month, b: Month) => -a.compareTo(b));
+  const activeAccounts = budget.findActiveAccounts();
+  const owners = [...new Set(activeAccounts.map((account) => account.owners).flat())].sort();
+  const owner = args.owner || owners[0];
+  const transactionStatementTable: TransactionStatement[] = buildTransactionStatementTable(
+    budget,
+    owner
+  );
+  const accoutToMonthToTransactionStatement = new Map<string, Map<string, TransactionStatement>>();
+  for (const stmt of transactionStatementTable) {
+    let monthToStatement = accoutToMonthToTransactionStatement.get(stmt.account.name);
+    if (!monthToStatement) {
+      monthToStatement = new Map<string, TransactionStatement>();
+      accoutToMonthToTransactionStatement.set(stmt.account.name, monthToStatement);
+    }
+    monthToStatement.set(stmt.month.toString(), stmt);
+  }
+  const summaryStatementTable = buildSummaryStatementTable(transactionStatementTable, owner);
+  const summaryNameMonthMap = new Map<string, Map<string, SummaryStatement>>();
+  for (const summary of summaryStatementTable) {
+    let monthToSummary = summaryNameMonthMap.get(summary.name);
+    if (!monthToSummary) {
+      monthToSummary = new Map();
+      summaryNameMonthMap.set(summary.name, monthToSummary);
+    }
+    monthToSummary.set(summary.month.toString(), summary);
+  }
+  const rows: GqlTableRow[] = [];
+  // Insert Total summary row
+  {
+    const cells: GqlTableCell[] = [];
+    const summaryMonthMap = summaryNameMonthMap.get(owner + ' SUMMARY');
+    for (const month of months) {
+      const summary = summaryMonthMap?.get(month.toString());
+      if (summary) {
+        cells.push({
+          addSub: summary.addSub,
+          balance: summary.endBalance?.amount,
+          percentChange:
+            summary.percentChange &&
+            Math.round((summary.percentChange + Number.EPSILON) * 100) / 100,
+          unaccounted: summary.unaccounted,
+          isProjected: summary.endBalance?.type !== BalanceType.CONFIRMED,
+          balanced: !summary.unaccounted
+        });
+      } else {
+        cells.push({});
+      }
+    }
+    rows.push({ title: owner, isTotal: true, cells });
+  }
+
+  // Group accounts per type
+  const accounts = activeAccounts.filter((a) => a.owners.includes(owner));
+  const accountTypesToAccounts = new Map<string, Account[]>();
+  for (const account of accounts) {
+    const accountTypeId = account.typeIdName;
+    let accountsOfType = accountTypesToAccounts.get(accountTypeId);
+    if (!accountsOfType) {
+      accountsOfType = [account];
+      accountTypesToAccounts.set(accountTypeId, accountsOfType);
+    } else {
+      accountsOfType.push(account);
+    }
+  }
+  for (const accountType of [...accountTypesToAccounts.keys()].sort()) {
+    rows.push({ title: accountType + ' accounts', isSpace: true, cells: [] });
+    const groupedAccounts =
+      accountTypesToAccounts.get(accountType)?.sort((a, b) => (a.name > b.name ? 1 : -1)) ?? [];
+    for (const account of groupedAccounts) {
+      const cells: GqlTableCell[] = [];
+      for (const month of months) {
+        const stmt = accoutToMonthToTransactionStatement.get(account.name)?.get(month.toString());
+        cells.push({
+          isClosed: stmt?.isClosed,
+          addSub: stmt?.addSub,
+          balance: stmt?.endBalance?.amount,
+          isProjected:
+            (stmt?.endBalance && stmt?.endBalance.type !== BalanceType.CONFIRMED) ||
+            stmt?.hasProjectedTransfer,
+          isCovered: stmt?.isCovered,
+          isProjectedCovered: stmt?.isProjectedCovered,
+          hasProjectedTransfer: stmt?.hasProjectedTransfer,
+          percentChange:
+            stmt?.percentChange && Math.round((stmt.percentChange + Number.EPSILON) * 100) / 100,
+          unaccounted: stmt?.unaccounted,
+          balanced: !stmt?.unaccounted
+        });
+      }
+      rows.push({ title: account.name, account: toGqlAccount(account), isNormal: true, cells });
+    }
+    // Summary for each account type.
+    const summaryMonthMap = summaryNameMonthMap.get(owner + ' ' + accountType);
+    const cells: GqlTableCell[] = [];
+    for (const month of months) {
+      const stmt = summaryMonthMap?.get(month.toString());
+      cells.push({
+        isClosed: stmt?.isClosed,
+        addSub: stmt?.addSub,
+        balance: stmt?.endBalance?.amount,
+        isProjected: stmt?.endBalance?.type !== BalanceType.CONFIRMED,
+        percentChange:
+          stmt?.percentChange && Math.round((stmt.percentChange + Number.EPSILON) * 100) / 100,
+        unaccounted: stmt?.unaccounted,
+        balanced: !stmt?.unaccounted
+      });
+    }
+    rows.push({ title: accountType, isTotal: true, cells });
+  }
+  console.log(`gql table in ${Date.now() - startTimeMs}ms`);
+  return {
+    currentOwner: owner,
+    owners,
+    months,
+    rows
+  };
+}
+
 export default {
   Query: {
     files: listFiles,
-    budget: buildGqlBudget
+    budget: buildGqlBudget,
+    table: buildGqlTable
   },
 
   Date: new GraphQLScalarType({
