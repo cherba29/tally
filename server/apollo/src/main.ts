@@ -48,6 +48,11 @@ await server.start();
 
 const app = express();
 const httpServer = http.createServer(app);
+// Seting up connection takes a few seconds on the client.
+// https://nodejs.org/api/http.html#serverkeepalivetimeout
+httpServer.keepAliveTimeout = (60 * 1000) + 1000;
+// https://nodejs.org/api/http.html#serverheaderstimeout
+httpServer.headersTimeout = (60 * 1000) + 2000;
 app.use(
   '/graphql',
   cors<cors.CorsRequest>(),
