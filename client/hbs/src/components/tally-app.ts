@@ -2,7 +2,8 @@ import {LitElement, css, html, nothing} from 'lit';
 import {customElement} from 'lit/decorators.js';
 import {BackendClient} from '../api';
 import {PopupData, Rows} from '../utils';
-import {transformGqlBudgetData} from '../gql_utils';
+import {transformGqlBudgetData, gqlToAccount,} from '../gql_utils';
+import {Maybe, GqlTableRow, GqlTableCell} from '../gql_types';
 import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
 
 import './account-tooltip';
@@ -10,6 +11,9 @@ import './balance-tooltip';
 import './balance-summary-tooltip';
 import './summary-table';
 import {CellClickEventData} from './summary-table';
+import {Month} from '@tally/lib';
+import {Row} from '../row';
+import {Cell} from '../cell';
 
 @customElement('tally-app')
 export class TallyApp extends LitElement {
@@ -72,6 +76,7 @@ export class TallyApp extends LitElement {
     return html`
       <div style="position: fixed;font-size: 80%;">
         <button @click="${this.reloadGql}">Reload Data</button>
+        <button @click="${this.reloadTable}">Reload Table</button>
         <label id="minutes">${this.minutes}</label>:<label id="seconds">${this.seconds}</label>
       </div>
       <div style="padding-top: 20px; color: red; font-size: 16px">
@@ -175,8 +180,66 @@ export class TallyApp extends LitElement {
         throw error;
       });
   }
+
+  private reloadTable() {
+    console.log('tally-app Loading graphql table');
+    this.backendClient
+      .loadTable(this.currentOwner)
+      .then((result) => {
+        this.lastReloadTimestamp = new Date();
+        console.log(result);
+        if (result.errors) {
+          this.errorMessage = result.errors.map((e) => e.message).join('\n');
+        } else {
+          this.popupData = undefined; // Closes any open popups.
+          this.errorMessage = '';
+          const table = result.data.table;
+          this.currentOwner = table?.currentOwner ?? undefined;
+          this.owners = table?.owners?.filter((owner) => !!owner).map((owner) => owner!) ?? [];
+          this.months = table?.months?.map((value) => value.toString()) || [];
+          this.rows = {
+            [this.currentOwner ?? '']: table?.rows?.map((r) => convertRow(r, this.months)) || [],
+          };
+          this.popupMap = new Map<string, PopupData>();
+        }
+        this.requestUpdate();
+      })
+      .catch((error) => {
+        this.errorMessage = error.message;
+        this.requestUpdate();
+        throw error;
+      });
+  }
 }
 
 function pad(n: number) {
   return n > 9 ? n.toString() : '0' + n.toString();
+}
+
+function convertRow(row: Maybe<GqlTableRow>, months: string[]): Row {
+  return {
+    title: row?.title ?? '',
+    account: row?.account ? gqlToAccount(row?.account) : undefined,
+    isNormal: row?.isNormal ?? false,
+    isTotal: row?.isTotal ?? false,
+    isSpace: row?.isSpace ?? false,
+    cells: row?.cells?.map((c, i) => convertCell(c, months[i])) ?? [],
+  };
+}
+
+function convertCell(cell: Maybe<GqlTableCell>, month: string): Cell {
+  return {
+    id: '',
+    month,
+    addSub: cell?.addSub ?? null,
+    isClosed: cell?.isClosed ?? false,
+    balance: cell?.balance ?? null,
+    isProjected: cell?.isProjected ?? false,
+    isCovered: cell?.isCovered ?? false,
+    isProjectedCovered: cell?.isProjectedCovered ?? false,
+    hasProjectedTransfer: cell?.hasProjectedTransfer ?? false,
+    percentChange: cell?.percentChange ?? null,
+    unaccounted: cell?.unaccounted ?? null,
+    balanced: cell?.balanced ?? false,
+  };
 }

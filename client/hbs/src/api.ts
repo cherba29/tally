@@ -25,7 +25,7 @@ export class BackendClient {
   });
 
   /**
-   * Load data via gql cleint.
+   * Load data via gql client.
    * @return promise of query result.
    */
   loadData(): Promise<ApolloQueryResult<Query>> {
@@ -111,6 +111,58 @@ export class BackendClient {
                 amount
                 date
                 type
+              }
+            }
+          }
+        }
+      `,
+    });
+  }
+
+  /**
+   * Load summary table data via gql client.
+   * @return promise of query result.
+   */
+  loadTable(owner?: string): Promise<ApolloQueryResult<Query>> {
+    return this.gqlClient.query<Query>({
+      query: gql`
+        query {
+          table {
+            currentOwner
+            owners
+            months
+            rows {
+              title
+              account {
+                name
+                description
+                type
+                openedOn
+                closedOn
+                number
+                owners
+                address
+                external
+                summary
+                userName
+                password
+                phone
+                url
+              }
+              isSpace
+              isTotal
+              isNormal
+              cells {
+                isClosed
+                addSub
+                balance
+                isProjected
+                isCovered
+                isProjectedCovered
+                hasProjectedTransfer
+                percentChange
+                unaccounted
+                balanced
               }
             }
           }

@@ -17,7 +17,7 @@ import {transformBudgetData, MatrixDataView} from './utils';
  * @param gqlAccount - backend object with GqlAccount fields.
  * @return Account object.
  */
-function gqlToAccount(gqlAccount: GqlAccount): Account {
+export function gqlToAccount(gqlAccount: GqlAccount): Account {
   return new Account({
     name: gqlAccount.name || '',
     description: gqlAccount.description || '',
@@ -156,11 +156,4 @@ export function transformGqlBudgetData(data: GqlBudget | undefined): MatrixDataV
     entry[stmt.month] = gqlToSummaryStatement(stmt);
   }
   return transformBudgetData(data?.months || [], accountNameToAccount, statements, summaries);
-
-  // return {
-  //   months: data.months,
-  //   accountNameToAccount,
-  //   statements,
-  //   summaries
-  // };
 }
