@@ -4,6 +4,7 @@ import {Statement} from './base';
 /** Data for rendering given cell. */
 export class Cell {
   readonly id: string;
+  readonly month: string;
   readonly isClosed: boolean;
   readonly addSub: number | null;
   readonly balance: number | null;
@@ -25,6 +26,7 @@ export class Cell {
   constructor(owner: string, accountName: string, month: string, stmt: Statement) {
     this.isClosed = stmt.isClosed ?? false;
     this.id = `${owner}_${accountName}_${month}`;
+    this.month = month;
     this.addSub = stmt.addSub ?? null;
     if (stmt.endBalance) {
       this.balance = stmt.endBalance.amount;

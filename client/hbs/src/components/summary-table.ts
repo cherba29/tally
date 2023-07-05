@@ -10,6 +10,9 @@ import {classMap, ClassInfo} from 'lit/directives/class-map.js';
 export type CellClickEventData = {
   cellId: string;
   mouseEvent: MouseEvent;
+  accountName?: string;
+  month?: string;
+  isSummary?: boolean;
 };
 
 @customElement('summary-table')
@@ -80,9 +83,33 @@ export class SummaryTable extends LitElement {
   @property({attribute: false})
   rows: Row[] = [];
 
-  onCellClick(e: MouseEvent, id: string) {
+  onCellClick(
+    mouseEvent: MouseEvent,
+    cellId: string,
+    accountName: string,
+    month: string,
+    isSummary: boolean
+  ) {
     const options: CustomEventInit<CellClickEventData> = {
-      detail: {cellId: id, mouseEvent: e},
+      detail: {
+        cellId,
+        mouseEvent,
+        accountName,
+        month,
+        isSummary,
+      },
+      bubbles: true,
+      composed: true,
+    };
+    this.dispatchEvent(new CustomEvent('cellclick', options));
+  }
+
+  onTitleCellClick(e: MouseEvent, id: string) {
+    const options: CustomEventInit<CellClickEventData> = {
+      detail: {
+        cellId: id,
+        mouseEvent: e,
+      },
       bubbles: true,
       composed: true,
     };
@@ -143,7 +170,8 @@ export class SummaryTable extends LitElement {
                     <td class="add_sub">${currency(c.addSub)}</td>
                     <td
                       id="${c.id}"
-                      @click="${(e: MouseEvent) => this.onCellClick(e, c.id)}"
+                      @click="${(e: MouseEvent) =>
+                        this.onCellClick(e, c.id, r.title, c.month, true)}"
                       style="font-weight:700;font-size:75%;"
                       class="balance ${classMap(projectedClass(c))}"
                     >
@@ -164,7 +192,7 @@ export class SummaryTable extends LitElement {
               return html`<tr>
                 <td
                   id="${account.name}"
-                  @click="${(e: MouseEvent) => this.onCellClick(e, account.name)}"
+                  @click="${(e: MouseEvent) => this.onTitleCellClick(e, account.name)}"
                 >
                   ${account.url
                     ? html`<a href="${account.url}" target="_blank">${account.name}</a>`
@@ -181,7 +209,8 @@ export class SummaryTable extends LitElement {
                   return html`<td class="add_sub">${currency(c.addSub)}</td>
                     <td
                       id="${c.id}"
-                      @click="${(e: MouseEvent) => this.onCellClick(e, c.id)}"
+                      @click="${(e: MouseEvent) =>
+                        this.onCellClick(e, c.id, r.title, c.month, false)}"
                       class="balance ${classMap(projectedClass(c))}"
                       style=${styleMap(coveredStyle(c))}
                     >
