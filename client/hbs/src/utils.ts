@@ -59,7 +59,7 @@ export interface PopupMonthData {
   stmt: Statement;
 }
 
-interface HeadingPopupData {
+export interface HeadingPopupData {
   id: string;
   account: Account;
 }

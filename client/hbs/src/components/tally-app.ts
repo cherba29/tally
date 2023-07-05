@@ -1,7 +1,7 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {customElement} from 'lit/decorators.js';
 import {BackendClient} from '../api';
-import {PopupData, PopupMonthData, PopupMonthSummaryData, Rows} from '../utils';
+import {HeadingPopupData, PopupData, PopupMonthData, PopupMonthSummaryData, Rows} from '../utils';
 import {
   transformGqlBudgetData,
   gqlToAccount,
@@ -197,7 +197,13 @@ export class TallyApp extends LitElement {
             this.requestUpdate();
           });
       } else {
-        throw new Error(`Popup data for ${e.detail.cellId} not found.`);
+        const popupData: HeadingPopupData = {
+          id: e.detail.cellId,
+          account: e.detail.account!,
+        };
+        this.popupData = popupData;
+        this.popupOffset = {top: e.detail.mouseEvent.pageY + 10, left: e.detail.mouseEvent.pageX};
+        this.requestUpdate();
       }
     } else {
       this.popupOffset = {top: e.detail.mouseEvent.pageY + 10, left: e.detail.mouseEvent.pageX};
