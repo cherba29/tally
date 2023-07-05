@@ -1,8 +1,13 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {customElement} from 'lit/decorators.js';
 import {BackendClient} from '../api';
-import {PopupData, Rows} from '../utils';
-import {transformGqlBudgetData, gqlToAccount,} from '../gql_utils';
+import {PopupData, PopupMonthSummaryData, Rows} from '../utils';
+import {
+  transformGqlBudgetData,
+  gqlToAccount,
+  gqlToSummaryStatement,
+  gqlToStatement,
+} from '../gql_utils';
 import {Maybe, GqlTableRow, GqlTableCell} from '../gql_types';
 import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
 
@@ -144,10 +149,41 @@ export class TallyApp extends LitElement {
   private onCellClick(e: CustomEvent<CellClickEventData>) {
     this.popupData = this.popupMap.get(e.detail.cellId);
     if (!this.popupData) {
-      throw new Error(`Popup data for ${e.detail.cellId} not found.`);
+      if (e.detail.isSummary) {
+        this.backendClient
+          .loadSummaryData(
+            this.currentOwner ?? '',
+            e.detail.accountName ?? '',
+            e.detail.month ?? ''
+          )
+          .then((result) => {
+            console.log(`PopupData for ${e.detail.cellId}`, result);
+            const summaryStatement = result.data.summary?.total;
+            const statements = result.data.summary?.statements;
+            const popupData: PopupMonthSummaryData = {
+              id: e.detail.cellId,
+              accountName: e.detail.accountName ?? '',
+              month: e.detail.month ?? '',
+              summary: (summaryStatement && gqlToSummaryStatement(summaryStatement)) ?? undefined,
+              statements: (statements || []).map((stmt) => ({
+                name: stmt?.name ?? '',
+                stmt: gqlToStatement(stmt!),
+              })),
+            };
+            this.popupData = popupData;
+            this.popupOffset = {
+              top: e.detail.mouseEvent.pageY + 10,
+              left: e.detail.mouseEvent.pageX,
+            };
+            this.requestUpdate();
+          });
+      } else {
+        throw new Error(`Popup data for ${e.detail.cellId} not found.`);
+      }
+    } else {
+      this.popupOffset = {top: e.detail.mouseEvent.pageY + 10, left: e.detail.mouseEvent.pageX};
+      this.requestUpdate();
     }
-    this.popupOffset = {top: e.detail.mouseEvent.pageY + 10, left: e.detail.mouseEvent.pageX};
-    this.requestUpdate();
   }
 
   private reloadGql() {

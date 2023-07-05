@@ -170,4 +170,79 @@ export class BackendClient {
       `,
     });
   }
+
+  /**
+   * Load summary (popup) data data via gql client.
+   * @return promise of query result.
+   */
+  loadSummaryData(
+    owner: string,
+    accountType: string,
+    month: string
+  ): Promise<ApolloQueryResult<Query>> {
+    return this.gqlClient.query<Query>({
+      query: gql`
+        query summary($owner: String!, $accountType: String!, $month: GqlMonth!) {
+          summary(owner: $owner, accountType: $accountType, month: $month) {
+            statements {
+              addSub
+              change
+              endBalance {
+                amount
+                date
+                type
+              }
+              hasProjectedTransfer
+              inFlows
+              income
+              isClosed
+              isCovered
+              isProjectedCovered
+              month
+              name
+              outFlows
+              percentChange
+              startBalance {
+                amount
+                date
+                type
+              }
+              totalPayments
+              totalTransfers
+              unaccounted
+            }
+            total {
+              accounts
+              addSub
+              change
+              endBalance {
+                amount
+                date
+                type
+              }
+              inFlows
+              income
+              month
+              name
+              outFlows
+              percentChange
+              startBalance {
+                amount
+                date
+                type
+              }
+              totalPayments
+              totalTransfers
+              unaccounted
+            }
+          }
+        }
+      `,
+      variables: {
+        owner,
+        accountType,
+        month,
+      },
+    });
+  }
 }

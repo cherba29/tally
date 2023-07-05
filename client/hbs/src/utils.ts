@@ -39,7 +39,7 @@ function getOwnerTypeAccountMap(accountNameToAccount: {[accountType: string]: Ac
   return ownerTypeAccountNames;
 }
 
-interface PopupMonthSummaryData {
+export interface PopupMonthSummaryData {
   id: string;
   accountName: string;
   month: string;

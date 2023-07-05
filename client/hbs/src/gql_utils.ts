@@ -78,7 +78,7 @@ function gqlToTransaction(tran: GqlTransaction | null): Transaction {
  * @param stmt - backend object with GqlStatement fields.
  * @return Statement object.
  */
-function gqlToStatement(stmt: GqlStatement): Statement {
+export function gqlToStatement(stmt: GqlStatement): Statement {
   if (stmt.isClosed) {
     return {
       isClosed: true,
@@ -109,7 +109,7 @@ function gqlToStatement(stmt: GqlStatement): Statement {
  * @param stmt - backend object with GqlSummaryStatement fields.
  * @return SummaryStatement object.
  */
-function gqlToSummaryStatement(stmt: GqlSummaryStatement): SummaryStatement {
+export function gqlToSummaryStatement(stmt: GqlSummaryStatement): SummaryStatement {
   return {
     accounts: (stmt.accounts || []).filter((a) => a).map((a) => a as string),
     inFlows: stmt.inFlows ?? 0,
