@@ -11,6 +11,7 @@ export type CellClickEventData = {
   cellId: string;
   mouseEvent: MouseEvent;
   accountName?: string;
+  account?: Account;
   month?: string;
   isSummary?: boolean;
 };
@@ -104,11 +105,12 @@ export class SummaryTable extends LitElement {
     this.dispatchEvent(new CustomEvent('cellclick', options));
   }
 
-  onTitleCellClick(e: MouseEvent, id: string) {
+  onTitleCellClick(e: MouseEvent, id: string, account?: Account) {
     const options: CustomEventInit<CellClickEventData> = {
       detail: {
         cellId: id,
         mouseEvent: e,
+        account,
       },
       bubbles: true,
       composed: true,
@@ -192,7 +194,7 @@ export class SummaryTable extends LitElement {
               return html`<tr>
                 <td
                   id="${account.name}"
-                  @click="${(e: MouseEvent) => this.onTitleCellClick(e, account.name)}"
+                  @click="${(e: MouseEvent) => this.onTitleCellClick(e, account.name, r.account)}"
                 >
                   ${account.url
                     ? html`<a href="${account.url}" target="_blank">${account.name}</a>`
