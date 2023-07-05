@@ -14,7 +14,8 @@ export enum Type {
 
 /** Data for rendering given row. */
 export class Row {
-  title: string | Account;
+  title: string;
+  account?: Account;
   isSpace: boolean;
   isTotal: boolean;
   isNormal: boolean;
@@ -26,8 +27,9 @@ export class Row {
    * @param type row type
    * @param cells list of cells
    */
-  constructor(title: string | Account, type: Type, cells: Cell[]) {
+  constructor(title: string, account: Account | undefined, type: Type, cells: Cell[]) {
     this.title = title;
+    this.account = account;
     this.isSpace = Type.SPACE === type;
     this.isTotal = Type.TOTAL === type;
     this.isNormal = Type.NORMAL === type;

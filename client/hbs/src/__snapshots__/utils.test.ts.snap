@@ -242,13 +242,7 @@ exports[`transformBudgetData works on single 1`] = `
   "rows": {
     "owner1": [
       Row {
-        "cells": [],
-        "isNormal": false,
-        "isSpace": true,
-        "isTotal": false,
-        "title": "owner1",
-      },
-      Row {
+        "account": undefined,
         "cells": [],
         "isNormal": false,
         "isSpace": true,
@@ -256,25 +250,7 @@ exports[`transformBudgetData works on single 1`] = `
         "title": "credit accounts",
       },
       Row {
-        "cells": [
-          Cell {
-            "addSub": 100,
-            "balance": 3000,
-            "balanced": false,
-            "hasProjectedTransfer": true,
-            "id": "owner1_main_Sep2014",
-            "isClosed": true,
-            "isCovered": true,
-            "isProjected": true,
-            "isProjectedCovered": true,
-            "percentChange": 1.4,
-            "unaccounted": 500,
-          },
-        ],
-        "isNormal": true,
-        "isSpace": false,
-        "isTotal": false,
-        "title": Account {
+        "account": Account {
           "address": "some place",
           "closedOn": undefined,
           "description": "Main account",
@@ -294,8 +270,28 @@ exports[`transformBudgetData works on single 1`] = `
           "url": "http://somewhere",
           "userName": "user1",
         },
+        "cells": [
+          Cell {
+            "addSub": 100,
+            "balance": 3000,
+            "balanced": false,
+            "hasProjectedTransfer": true,
+            "id": "owner1_main_Sep2014",
+            "isClosed": true,
+            "isCovered": true,
+            "isProjected": true,
+            "isProjectedCovered": true,
+            "percentChange": 1.4,
+            "unaccounted": 500,
+          },
+        ],
+        "isNormal": true,
+        "isSpace": false,
+        "isTotal": false,
+        "title": "main",
       },
       Row {
+        "account": undefined,
         "cells": [
           Cell {
             "addSub": 100,
@@ -319,13 +315,7 @@ exports[`transformBudgetData works on single 1`] = `
     ],
     "owner2": [
       Row {
-        "cells": [],
-        "isNormal": false,
-        "isSpace": true,
-        "isTotal": false,
-        "title": "owner2",
-      },
-      Row {
+        "account": undefined,
         "cells": [],
         "isNormal": false,
         "isSpace": true,
@@ -333,25 +323,7 @@ exports[`transformBudgetData works on single 1`] = `
         "title": "credit accounts",
       },
       Row {
-        "cells": [
-          Cell {
-            "addSub": 100,
-            "balance": 3000,
-            "balanced": false,
-            "hasProjectedTransfer": true,
-            "id": "owner2_main_Sep2014",
-            "isClosed": true,
-            "isCovered": true,
-            "isProjected": true,
-            "isProjectedCovered": true,
-            "percentChange": 1.4,
-            "unaccounted": 500,
-          },
-        ],
-        "isNormal": true,
-        "isSpace": false,
-        "isTotal": false,
-        "title": Account {
+        "account": Account {
           "address": "some place",
           "closedOn": undefined,
           "description": "Main account",
@@ -371,8 +343,28 @@ exports[`transformBudgetData works on single 1`] = `
           "url": "http://somewhere",
           "userName": "user1",
         },
+        "cells": [
+          Cell {
+            "addSub": 100,
+            "balance": 3000,
+            "balanced": false,
+            "hasProjectedTransfer": true,
+            "id": "owner2_main_Sep2014",
+            "isClosed": true,
+            "isCovered": true,
+            "isProjected": true,
+            "isProjectedCovered": true,
+            "percentChange": 1.4,
+            "unaccounted": 500,
+          },
+        ],
+        "isNormal": true,
+        "isSpace": false,
+        "isTotal": false,
+        "title": "main",
       },
       Row {
+        "account": undefined,
         "cells": [
           Cell {
             "addSub": 100,

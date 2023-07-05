@@ -160,7 +160,7 @@ export class SummaryTable extends LitElement {
                 })}
               </tr>`;
             } else if (r.isNormal) {
-              const account = r.title as Account;
+              const account = r.account!;
               return html`<tr>
                 <td
                   id="${account.name}"

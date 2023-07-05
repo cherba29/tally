@@ -159,7 +159,6 @@ export function transformBudgetData(
     if (!ownerRows) {
       dataView.rows[owner] = ownerRows = [];
     }
-    ownerRows.push(new Row(owner, RowType.SPACE, []));
     const summaryName = owner + ' SUMMARY';
     if (summaryName in summaries) {
       const cellData = getSummaryCells(
@@ -169,13 +168,13 @@ export function transformBudgetData(
         statements,
         summaries[summaryName]
       );
-      ownerRows.push(new Row(owner, RowType.TOTAL, cellData.cells));
+      ownerRows.push(new Row(owner, undefined, RowType.TOTAL, cellData.cells));
       Array.prototype.push.apply(dataView.popupCells, cellData.popups);
     }
     const accountTypes = getKeysSorted(typeAccountNames);
 
     for (const accountType of accountTypes) {
-      ownerRows.push(new Row(accountType + ' accounts', RowType.SPACE, []));
+      ownerRows.push(new Row(accountType + ' accounts', undefined, RowType.SPACE, []));
       const accountNames: string[] = typeAccountNames[accountType].sort();
       for (const accountName of accountNames) {
         const accountStatements: {[month: string]: Statement} = statements[accountName];
@@ -193,7 +192,7 @@ export function transformBudgetData(
           dataView.popupCells.push(popupMonthData);
         }
         const account = accountNameToAccount[accountName];
-        ownerRows.push(new Row(account, RowType.NORMAL, cells));
+        ownerRows.push(new Row(account.name, account, RowType.NORMAL, cells));
         dataView.popupCells.push({
           id: account.name,
           account,
@@ -201,7 +200,7 @@ export function transformBudgetData(
       }
       const name = owner + ' ' + accountType;
       const cellData = getSummaryCells(owner, accountType, months, statements, summaries[name]);
-      ownerRows.push(new Row(accountType, RowType.TOTAL, cellData.cells));
+      ownerRows.push(new Row(accountType, undefined, RowType.TOTAL, cellData.cells));
       Array.prototype.push.apply(dataView.popupCells, cellData.popups);
     }
   }
