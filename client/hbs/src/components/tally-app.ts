@@ -2,12 +2,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import {customElement} from 'lit/decorators.js';
 import {BackendClient} from '../api';
 import {HeadingPopupData, PopupData, PopupMonthData, PopupMonthSummaryData, Rows} from '../utils';
-import {
-  transformGqlBudgetData,
-  gqlToAccount,
-  gqlToSummaryStatement,
-  gqlToStatement,
-} from '../gql_utils';
+import {transformGqlBudgetData, gqlToSummaryStatement, gqlToStatement} from '../gql_utils';
 import {Maybe, GqlTableRow, GqlTableCell} from '../gql_types';
 import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
 
@@ -285,11 +280,11 @@ function pad(n: number) {
 function convertRow(row: Maybe<GqlTableRow>, months: string[]): Row {
   return {
     title: row?.title ?? '',
-    account: row?.account ? gqlToAccount(row?.account) : undefined,
+    account: row?.account ?? undefined,
     isNormal: row?.isNormal ?? false,
     isTotal: row?.isTotal ?? false,
     isSpace: row?.isSpace ?? false,
-    cells: row?.cells?.map((c, i) => convertCell(c, months[i])) ?? [],
+    cells: row?.cells?.map((c, i) => convertCell(c, months[i]!)) ?? [],
   };
 }
 

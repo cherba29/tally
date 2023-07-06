@@ -1,4 +1,4 @@
-import {Account} from '@tally/lib/core/account';
+import {GqlAccount} from './gql_types';
 import {Cell} from './cell';
 
 /** Row type, each is rendered differently. */
@@ -15,7 +15,7 @@ export enum Type {
 /** Data for rendering given row. */
 export class Row {
   title: string;
-  account?: Account;
+  account?: GqlAccount;
   isSpace: boolean;
   isTotal: boolean;
   isNormal: boolean;
@@ -27,7 +27,7 @@ export class Row {
    * @param type row type
    * @param cells list of cells
    */
-  constructor(title: string, account: Account | undefined, type: Type, cells: Cell[]) {
+  constructor(title: string, account: GqlAccount | undefined, type: Type, cells: Cell[]) {
     this.title = title;
     this.account = account;
     this.isSpace = Type.SPACE === type;

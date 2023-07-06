@@ -4,14 +4,14 @@ import {customElement, property} from 'lit/decorators.js';
 import {currency} from '../format';
 import {Cell} from '../cell';
 import {Row} from '../row';
-import {Account} from '@tally/lib/core/account';
+import {GqlAccount} from 'src/gql_types';
 import {classMap, ClassInfo} from 'lit/directives/class-map.js';
 
 export type CellClickEventData = {
   cellId: string;
   mouseEvent: MouseEvent;
   accountName?: string;
-  account?: Account;
+  account?: GqlAccount | null;
   month?: string;
   isSummary?: boolean;
 };
@@ -105,10 +105,14 @@ export class SummaryTable extends LitElement {
     this.dispatchEvent(new CustomEvent('cellclick', options));
   }
 
-  onTitleCellClick(e: MouseEvent, id: string, account?: Account) {
+  onTitleCellClick(
+    e: MouseEvent,
+    id: string | null | undefined,
+    account: GqlAccount | undefined | null
+  ) {
     const options: CustomEventInit<CellClickEventData> = {
       detail: {
-        cellId: id,
+        cellId: id ?? '',
         mouseEvent: e,
         account,
       },

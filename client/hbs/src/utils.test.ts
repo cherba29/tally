@@ -1,9 +1,9 @@
 import {describe, expect, it} from '@jest/globals';
 import {Month} from '@tally/lib/core/month';
-import {Account as TallyAccount, Type as AccountType} from '@tally/lib/core/account';
 import {Balance, Type as BalanceType} from '@tally/lib/core/balance';
 import {Statement, SummaryStatement} from './base';
 import {transformBudgetData} from './utils';
+import {GqlAccount} from './gql_types';
 
 describe('transformBudgetData', function () {
   it('works on empty', function () {
@@ -22,7 +22,7 @@ describe('transformBudgetData', function () {
 
   it('works on single', function () {
     const months = ['Sep2014'];
-    const account = new TallyAccount({
+    const account: GqlAccount = {
       name: 'main',
       address: 'some place',
       closedOn: undefined,
@@ -32,11 +32,11 @@ describe('transformBudgetData', function () {
       owners: ['owner1', 'owner2'],
       password: 'password',
       phone: '123-456-7890',
-      type: AccountType.CREDIT,
+      type: 'credit',
       url: 'http://somewhere',
       userName: 'user1',
-    });
-    const accountNameToAccount: {[accountName: string]: TallyAccount} = {
+    };
+    const accountNameToAccount: {[accountName: string]: GqlAccount} = {
       main: account,
     };
     const statement: Statement = {

@@ -37,7 +37,7 @@ exports[`transformBudgetData works on single 1`] = `
       },
     },
     {
-      "account": Account {
+      "account": {
         "address": "some place",
         "closedOn": undefined,
         "description": "Main account",
@@ -153,7 +153,7 @@ exports[`transformBudgetData works on single 1`] = `
       },
     },
     {
-      "account": Account {
+      "account": {
         "address": "some place",
         "closedOn": undefined,
         "description": "Main account",
@@ -250,7 +250,7 @@ exports[`transformBudgetData works on single 1`] = `
         "title": "credit accounts",
       },
       Row {
-        "account": Account {
+        "account": {
           "address": "some place",
           "closedOn": undefined,
           "description": "Main account",
@@ -325,7 +325,7 @@ exports[`transformBudgetData works on single 1`] = `
         "title": "credit accounts",
       },
       Row {
-        "account": Account {
+        "account": {
           "address": "some place",
           "closedOn": undefined,
           "description": "Main account",

@@ -13,28 +13,6 @@ import {
 import {transformBudgetData, MatrixDataView} from './utils';
 
 /**
- * Convert gqlType Account type.
- * @param gqlAccount - backend object with GqlAccount fields.
- * @return Account object.
- */
-export function gqlToAccount(gqlAccount: GqlAccount): Account {
-  return new Account({
-    name: gqlAccount.name || '',
-    description: gqlAccount.description || '',
-    openedOn: gqlAccount.openedOn ? Month.fromString(gqlAccount.openedOn) : undefined,
-    closedOn: gqlAccount.closedOn ? Month.fromString(gqlAccount.closedOn) : undefined,
-    owners: (gqlAccount.owners || []).filter((item) => item).map((item) => item as string),
-    url: gqlAccount.url || '',
-    type: (gqlAccount.type || AccountType.EXTERNAL) as AccountType,
-    address: gqlAccount.address || undefined,
-    userName: gqlAccount.userName || undefined,
-    number: gqlAccount.number || undefined,
-    phone: gqlAccount.phone || undefined,
-    password: gqlAccount.password || undefined,
-  });
-}
-
-/**
  * Convert gqlType Balance type.
  * @param gqlBalance - backend object with GqlBalance fields.
  * @return Balance object.
@@ -133,11 +111,10 @@ export function gqlToSummaryStatement(stmt: GqlSummaryStatement): SummaryStateme
  * @return MatrixDataView dataview structure.
  */
 export function transformGqlBudgetData(data: GqlBudget | undefined): MatrixDataView {
-  const accountNameToAccount: {[accountName: string]: Account} = {};
+  const accountNameToAccount: {[accountName: string]: GqlAccount} = {};
   for (const gqlAccount of data?.accounts ?? []) {
     if (!gqlAccount) continue;
-    const account = gqlToAccount(gqlAccount);
-    accountNameToAccount[account.name] = account;
+    accountNameToAccount[gqlAccount.name ?? ''] = gqlAccount;
   }
   // account name => month => statement map.
   const statements: {[accountName: string]: {[month: string]: Statement}} = {};

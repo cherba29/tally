@@ -1,7 +1,7 @@
-import {Account} from '@tally/lib/core/account';
 import {Statement, SummaryStatement} from './base';
 import {Cell} from './cell';
 import {Row, Type as RowType} from './row';
+import {GqlAccount} from './gql_types';
 
 /**
  *  Create map of owner->type->accountname, it will be rendered in this format.
@@ -10,7 +10,7 @@ import {Row, Type as RowType} from './row';
  * @return {Object<string, Object<string, string>>} map of
  *   owner->type->accountname.
  */
-function getOwnerTypeAccountMap(accountNameToAccount: {[accountType: string]: Account}): {
+function getOwnerTypeAccountMap(accountNameToAccount: {[accountType: string]: GqlAccount}): {
   [ownerType: string]: {[accountType: string]: string[]};
 } {
   const ownerTypeAccountNames: {
@@ -18,8 +18,14 @@ function getOwnerTypeAccountMap(accountNameToAccount: {[accountType: string]: Ac
   } = {};
 
   for (const accountName of Object.keys(accountNameToAccount)) {
-    const account: Account = accountNameToAccount[accountName];
-    for (const owner of account.owners) {
+    const account: GqlAccount = accountNameToAccount[accountName];
+    if (!account || !account.type || !account.name) {
+      continue;
+    }
+    for (const owner of account.owners ?? []) {
+      if (!owner) {
+        continue;
+      }
       let typeAccounts: {[accountName: string]: string[]};
       if (owner in ownerTypeAccountNames) {
         typeAccounts = ownerTypeAccountNames[owner];
@@ -61,7 +67,7 @@ export interface PopupMonthData {
 
 export interface HeadingPopupData {
   id: string;
-  account: Account;
+  account: GqlAccount;
 }
 
 export type PopupData = PopupMonthSummaryData | PopupMonthData | HeadingPopupData;
@@ -139,7 +145,7 @@ export interface MatrixDataView {
  */
 export function transformBudgetData(
   months: string[],
-  accountNameToAccount: {[accountName: string]: Account},
+  accountNameToAccount: {[accountName: string]: GqlAccount},
   statements: {[accountName: string]: {[month: string]: Statement}},
   summaries: {
     [ownerAccountType: string]: {[month: string]: SummaryStatement};
@@ -192,14 +198,21 @@ export function transformBudgetData(
           dataView.popupCells.push(popupMonthData);
         }
         const account = accountNameToAccount[accountName];
-        ownerRows.push(new Row(account.name, account, RowType.NORMAL, cells));
+        ownerRows.push(new Row(account.name ?? '', account, RowType.NORMAL, cells));
         dataView.popupCells.push({
-          id: account.name,
+          id: account.name ?? '',
           account,
         });
       }
-      const name = owner + ' ' + accountType;
-      const cellData = getSummaryCells(owner, accountType, months, statements, summaries[name]);
+      const summary: {[month: string]: SummaryStatement} = summaries[owner + ' ' + accountType];
+      if (!summary) {
+        throw new Error(
+          `Could not find summary '${owner + ' ' + accountType}'. Available are ${Object.keys(
+            summaries
+          )}`
+        );
+      }
+      const cellData = getSummaryCells(owner, accountType, months, statements, summary);
       ownerRows.push(new Row(accountType, undefined, RowType.TOTAL, cellData.cells));
       Array.prototype.push.apply(dataView.popupCells, cellData.popups);
     }
