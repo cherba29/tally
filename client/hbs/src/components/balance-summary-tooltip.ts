@@ -1,10 +1,10 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import {Balance} from '@tally/lib/core/balance';
 import {SummaryStatement} from '../base';
 import {StatementEntry} from '../utils';
 import {dateFormat, currency, isProjected} from '../format';
 import {classMap, ClassInfo} from 'lit/directives/class-map.js';
+import {GqlBalance} from 'src/gql_types';
 
 @customElement('balance-summary-tooltip')
 export class BalanceSummaryTooltip extends LitElement {
@@ -45,7 +45,7 @@ export class BalanceSummaryTooltip extends LitElement {
   }
 
   render() {
-    const projectedClass = (b: Balance | undefined): ClassInfo => {
+    const projectedClass = (b: GqlBalance | undefined | null): ClassInfo => {
       const projected = isProjected(b);
       return {
         projected,

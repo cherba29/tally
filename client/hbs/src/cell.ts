@@ -1,5 +1,5 @@
 import {Type as BalanceType} from '@tally/lib/core/balance';
-import {Statement} from './base';
+import {GqlStatement} from './gql_types';
 
 /** Data for rendering given cell. */
 export class Cell {
@@ -23,13 +23,13 @@ export class Cell {
    * @param month used for id.
    * @param stmt underlying statement.
    */
-  constructor(owner: string, accountName: string, month: string, stmt: Statement) {
+  constructor(owner: string, accountName: string, month: string, stmt: GqlStatement) {
     this.isClosed = stmt.isClosed ?? false;
     this.id = `${owner}_${accountName}_${month}`;
     this.month = month;
     this.addSub = stmt.addSub ?? null;
     if (stmt.endBalance) {
-      this.balance = stmt.endBalance.amount;
+      this.balance = stmt.endBalance.amount ?? null;
       this.isProjected = stmt.endBalance.type !== BalanceType.CONFIRMED;
     } else {
       this.balance = null;

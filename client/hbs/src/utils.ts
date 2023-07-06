@@ -1,7 +1,7 @@
-import {Statement, SummaryStatement} from './base';
+import {SummaryStatement} from './base';
 import {Cell} from './cell';
 import {Row, Type as RowType} from './row';
-import {GqlAccount} from './gql_types';
+import {GqlAccount, GqlStatement} from './gql_types';
 
 /**
  *  Create map of owner->type->accountname, it will be rendered in this format.
@@ -55,14 +55,14 @@ export interface PopupMonthSummaryData {
 
 export interface StatementEntry {
   name: string;
-  stmt: Statement;
+  stmt: GqlStatement;
 }
 
 export interface PopupMonthData {
   id: string;
   accountName: string;
   month: string;
-  stmt: Statement;
+  stmt: GqlStatement;
 }
 
 export interface HeadingPopupData {
@@ -92,7 +92,7 @@ function getSummaryCells(
   owner: string,
   name: string,
   months: string[],
-  statements: {[accountName: string]: {[month: string]: Statement}},
+  statements: {[accountName: string]: {[month: string]: GqlStatement}},
   summaries: {[month: string]: SummaryStatement}
 ): CellData {
   const cellData: CellData = {
@@ -146,7 +146,7 @@ export interface MatrixDataView {
 export function transformBudgetData(
   months: string[],
   accountNameToAccount: {[accountName: string]: GqlAccount},
-  statements: {[accountName: string]: {[month: string]: Statement}},
+  statements: {[accountName: string]: {[month: string]: GqlStatement}},
   summaries: {
     [ownerAccountType: string]: {[month: string]: SummaryStatement};
   }
@@ -183,10 +183,10 @@ export function transformBudgetData(
       ownerRows.push(new Row(accountType + ' accounts', undefined, RowType.SPACE, []));
       const accountNames: string[] = typeAccountNames[accountType].sort();
       for (const accountName of accountNames) {
-        const accountStatements: {[month: string]: Statement} = statements[accountName];
+        const accountStatements: {[month: string]: GqlStatement} = statements[accountName];
         const cells: Cell[] = [];
         for (const month of months) {
-          const stmt: Statement = accountStatements[month];
+          const stmt: GqlStatement = accountStatements[month];
           const cell = new Cell(owner, accountName, month, stmt);
           cells.push(cell);
           const popupMonthData: PopupMonthData = {

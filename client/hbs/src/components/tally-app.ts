@@ -2,7 +2,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import {customElement} from 'lit/decorators.js';
 import {BackendClient} from '../api';
 import {HeadingPopupData, PopupData, PopupMonthData, PopupMonthSummaryData, Rows} from '../utils';
-import {transformGqlBudgetData, gqlToSummaryStatement, gqlToStatement} from '../gql_utils';
+import {transformGqlBudgetData, gqlToSummaryStatement} from '../gql_utils';
 import {Maybe, GqlTableRow, GqlTableCell} from '../gql_types';
 import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
 
@@ -167,7 +167,7 @@ export class TallyApp extends LitElement {
               summary: (summaryStatement && gqlToSummaryStatement(summaryStatement)) ?? undefined,
               statements: (statements || []).map((stmt) => ({
                 name: stmt?.name ?? '',
-                stmt: gqlToStatement(stmt!),
+                stmt: stmt!,
               })),
             };
             this.popupData = popupData;
@@ -187,7 +187,7 @@ export class TallyApp extends LitElement {
               id: e.detail.cellId,
               accountName: e.detail.accountName ?? '',
               month: e.detail.month ?? '',
-              stmt: gqlToStatement(statement!),
+              stmt: statement!,
             };
             this.popupData = popupData;
             this.popupOffset = {

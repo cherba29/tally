@@ -1,14 +1,8 @@
 import {Account, Type as AccountType} from '@tally/lib/core/account';
 import {Balance, Type as BalanceType} from '@tally/lib/core/balance';
 import {Month} from '@tally/lib/core/month';
-import {Statement, SummaryStatement} from './base';
-import {
-  GqlBalance,
-  GqlAccount,
-  GqlBudget,
-  GqlStatement,
-  GqlSummaryStatement,
-} from './gql_types';
+import {SummaryStatement} from './base';
+import {GqlBalance, GqlAccount, GqlBudget, GqlStatement, GqlSummaryStatement} from './gql_types';
 import {transformBudgetData, MatrixDataView} from './utils';
 
 /**
@@ -25,37 +19,6 @@ export function gqlToBalance(gqlBalance: GqlBalance | null | undefined): Balance
     new Date(gqlBalance.date),
     gqlBalance.type as BalanceType
   );
-}
-
-/**
- * Convert gqlType Statement type.
- * @param stmt - backend object with GqlStatement fields.
- * @return Statement object.
- */
-export function gqlToStatement(stmt: GqlStatement): Statement {
-  if (stmt.isClosed) {
-    return {
-      isClosed: true,
-    };
-  }
-  return {
-    inFlows: stmt.inFlows ?? undefined,
-    outFlows: stmt.outFlows ?? undefined,
-    isClosed: stmt.isClosed ?? undefined,
-    isCovered: stmt.isCovered ?? undefined,
-    isProjectedCovered: stmt.isProjectedCovered ?? undefined,
-    hasProjectedTransfer: stmt.hasProjectedTransfer ?? undefined,
-    income: stmt.income ?? undefined,
-    totalPayments: stmt.totalPayments ?? undefined,
-    totalTransfers: stmt.totalTransfers ?? undefined,
-    ...(stmt.change == null ? {} : {change: stmt.change}),
-    ...(stmt.percentChange == null ? {} : {percentChange: stmt.percentChange}),
-    ...(stmt.unaccounted == null ? {} : {unaccounted: stmt.unaccounted}),
-    startBalance: gqlToBalance(stmt.startBalance),
-    endBalance: gqlToBalance(stmt.endBalance),
-    addSub: (stmt.inFlows || 0) + (stmt.outFlows || 0),
-    transactions: stmt.transactions?.map((t) => t!) ?? [],
-  };
 }
 
 /**
@@ -93,11 +56,11 @@ export function transformGqlBudgetData(data: GqlBudget | undefined): MatrixDataV
     accountNameToAccount[gqlAccount.name ?? ''] = gqlAccount;
   }
   // account name => month => statement map.
-  const statements: {[accountName: string]: {[month: string]: Statement}} = {};
+  const statements: {[accountName: string]: {[month: string]: GqlStatement}} = {};
   for (const stmt of data?.statements ?? []) {
     if (!stmt || !stmt.name) continue;
     const entry = statements[stmt.name] || (statements[stmt.name] = {});
-    entry[stmt.month] = gqlToStatement(stmt);
+    entry[stmt.month] = stmt;
   }
   // owner + accout type => month => summary statement map.
   const summaries: {
