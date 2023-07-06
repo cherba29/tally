@@ -1,17 +1,17 @@
 import {Type as BalanceType} from '@tally/lib/core/balance';
-import {GqlStatement} from './gql_types';
+import {GqlStatement, GqlSummaryStatement} from './gql_types';
 
 /** Data for rendering given cell. */
 export class Cell {
   readonly id: string;
   readonly month: string;
-  readonly isClosed: boolean;
+  readonly isClosed?: boolean;
   readonly addSub: number | null;
   readonly balance: number | null;
   readonly isProjected: boolean;
-  readonly isCovered: boolean;
-  readonly isProjectedCovered: boolean;
-  readonly hasProjectedTransfer: boolean;
+  readonly isCovered?: boolean;
+  readonly isProjectedCovered?: boolean;
+  readonly hasProjectedTransfer?: boolean;
   readonly percentChange: number | null;
   readonly unaccounted: number | null;
   readonly balanced: boolean;
@@ -23,8 +23,12 @@ export class Cell {
    * @param month used for id.
    * @param stmt underlying statement.
    */
-  constructor(owner: string, accountName: string, month: string, stmt: GqlStatement) {
-    this.isClosed = stmt.isClosed ?? false;
+  constructor(
+    owner: string,
+    accountName: string,
+    month: string,
+    stmt: GqlStatement | GqlSummaryStatement
+  ) {
     this.id = `${owner}_${accountName}_${month}`;
     this.month = month;
     this.addSub = stmt.addSub ?? null;
@@ -35,10 +39,13 @@ export class Cell {
       this.balance = null;
       this.isProjected = false;
     }
-    this.isCovered = stmt.isCovered ?? false;
-    this.isProjectedCovered = stmt.isProjectedCovered ?? false;
-    this.hasProjectedTransfer = stmt.hasProjectedTransfer ?? false;
-    this.isProjected = this.isProjected || this.hasProjectedTransfer;
+    if ('isClosed' in stmt) {
+      this.isClosed = stmt.isClosed ?? false;
+      this.isCovered = stmt.isCovered ?? false;
+      this.isProjectedCovered = stmt.isProjectedCovered ?? false;
+      this.hasProjectedTransfer = stmt.hasProjectedTransfer ?? false;
+      this.isProjected = this.isProjected || this.hasProjectedTransfer;
+    }
     this.percentChange = stmt.percentChange ?? null;
     this.unaccounted = stmt.unaccounted ?? null;
     this.balanced = !this.unaccounted;

@@ -1,7 +1,6 @@
-import {SummaryStatement} from './base';
 import {Cell} from './cell';
 import {Row, Type as RowType} from './row';
-import {GqlAccount, GqlStatement} from './gql_types';
+import {GqlAccount, GqlStatement, GqlSummaryStatement} from './gql_types';
 
 /**
  *  Create map of owner->type->accountname, it will be rendered in this format.
@@ -49,7 +48,7 @@ export interface PopupMonthSummaryData {
   id: string;
   accountName: string;
   month: string;
-  summary?: SummaryStatement;
+  summary?: GqlSummaryStatement;
   statements?: StatementEntry[];
 }
 
@@ -79,28 +78,26 @@ interface CellData {
 
 /**
  * Computes data for summary cells.
- * @param {string} owner the id/name for the owner.
- * @param {string} name account type id
- * @param {Array<string>} months list of month names to compute summary for.
- * @param {Object<string, Object<string, Statement>>} statements
- *   mapping of statements by account and month.
- * @param {Object<String, SummaryStatement>} summaries
- *   mapping of summaries by month.
- * @return {CellData} list of cells and popus.
+ * @param owner the id/name for the owner.
+ * @param name account type id
+ * @param months list of month names to compute summary for.
+ * @param statements mapping of statements by account and month.
+ * @param summaries mapping of summaries by month.
+ * @return list of cells and popus.
  */
 function getSummaryCells(
   owner: string,
   name: string,
   months: string[],
   statements: {[accountName: string]: {[month: string]: GqlStatement}},
-  summaries: {[month: string]: SummaryStatement}
+  summaries: {[month: string]: GqlSummaryStatement}
 ): CellData {
   const cellData: CellData = {
     cells: [],
     popups: [],
   };
   for (const month of months) {
-    const summaryStmt: SummaryStatement = summaries[month];
+    const summaryStmt: GqlSummaryStatement = summaries[month];
     const cell = new Cell(owner, name, month, summaryStmt);
     cellData.cells.push(cell);
     const accounts = summaryStmt?.accounts ?? [];
@@ -110,9 +107,9 @@ function getSummaryCells(
       month,
       summary: summaryStmt,
       statements: accounts.map(
-        (accountName: string): StatementEntry => ({
-          name: accountName,
-          stmt: statements[accountName][month],
+        (accountName: string | null): StatementEntry => ({
+          name: accountName!,
+          stmt: statements[accountName!][month],
         })
       ),
     });
@@ -133,22 +130,19 @@ export interface MatrixDataView {
 /**
  * Builds dataView structure with months, rows and popup cell data.
  *
- * @param {Array<string>} months - descending, continuous list of months to show
- * @param {Object<string, Account>} accountNameToAccount
- *   account name to account map
- * @param {Object<string, Object<string, Statement>>} statements
- *   table indexed by account name and month of statements
- * @param {Object<string, Object<string, SummaryStatement>>} summaries
- *   table indexed by owner name + account type and month of
+ * @param months - descending, continuous list of months to show
+ * @param accountNameToAccount account name to account map
+ * @param statements table indexed by account name and month of statements
+ * @param summaries table indexed by owner name + account type and month of
  *   statement summaries.
- * @return {MatrixDataView} dataview structure.
+ * @return dataview structure.
  */
 export function transformBudgetData(
   months: string[],
   accountNameToAccount: {[accountName: string]: GqlAccount},
   statements: {[accountName: string]: {[month: string]: GqlStatement}},
   summaries: {
-    [ownerAccountType: string]: {[month: string]: SummaryStatement};
+    [ownerAccountType: string]: {[month: string]: GqlSummaryStatement};
   }
 ): MatrixDataView {
   const dataView: MatrixDataView = {
@@ -204,7 +198,7 @@ export function transformBudgetData(
           account,
         });
       }
-      const summary: {[month: string]: SummaryStatement} = summaries[owner + ' ' + accountType];
+      const summary: {[month: string]: GqlSummaryStatement} = summaries[owner + ' ' + accountType];
       if (!summary) {
         throw new Error(
           `Could not find summary '${owner + ' ' + accountType}'. Available are ${Object.keys(

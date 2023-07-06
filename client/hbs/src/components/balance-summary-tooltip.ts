@@ -1,10 +1,9 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import {SummaryStatement} from '../base';
 import {StatementEntry} from '../utils';
 import {dateFormat, currency, isProjected} from '../format';
 import {classMap, ClassInfo} from 'lit/directives/class-map.js';
-import {GqlBalance} from 'src/gql_types';
+import {GqlBalance, GqlSummaryStatement} from 'src/gql_types';
 
 @customElement('balance-summary-tooltip')
 export class BalanceSummaryTooltip extends LitElement {
@@ -38,7 +37,7 @@ export class BalanceSummaryTooltip extends LitElement {
   statementEntries: StatementEntry[] = [];
 
   @property({attribute: false})
-  summary: SummaryStatement | undefined = undefined;
+  summary: GqlSummaryStatement | undefined = undefined;
 
   onCloseButton() {
     this.dispatchEvent(new CustomEvent('close'));

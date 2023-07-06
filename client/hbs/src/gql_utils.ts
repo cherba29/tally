@@ -1,47 +1,5 @@
-import {Account, Type as AccountType} from '@tally/lib/core/account';
-import {Balance, Type as BalanceType} from '@tally/lib/core/balance';
-import {Month} from '@tally/lib/core/month';
-import {SummaryStatement} from './base';
-import {GqlBalance, GqlAccount, GqlBudget, GqlStatement, GqlSummaryStatement} from './gql_types';
+import {GqlAccount, GqlBudget, GqlStatement, GqlSummaryStatement} from './gql_types';
 import {transformBudgetData, MatrixDataView} from './utils';
-
-/**
- * Convert gqlType Balance type.
- * @param gqlBalance - backend object with GqlBalance fields.
- * @return Balance object.
- */
-export function gqlToBalance(gqlBalance: GqlBalance | null | undefined): Balance | undefined {
-  if (!gqlBalance || gqlBalance.amount === null || gqlBalance.date === null) {
-    return undefined;
-  }
-  return new Balance(
-    gqlBalance?.amount ?? 0,
-    new Date(gqlBalance.date),
-    gqlBalance.type as BalanceType
-  );
-}
-
-/**
- * Convert gqlType SummaryStatement type.
- * @param stmt - backend object with GqlSummaryStatement fields.
- * @return SummaryStatement object.
- */
-export function gqlToSummaryStatement(stmt: GqlSummaryStatement): SummaryStatement {
-  return {
-    accounts: (stmt.accounts || []).filter((a) => a).map((a) => a as string),
-    inFlows: stmt.inFlows ?? 0,
-    outFlows: stmt.outFlows ?? 0,
-    income: stmt.income ?? 0,
-    totalPayments: stmt.totalPayments ?? 0,
-    totalTransfers: stmt.totalTransfers ?? 0,
-    addSub: stmt.addSub ?? 0,
-    startBalance: gqlToBalance(stmt.startBalance),
-    endBalance: gqlToBalance(stmt.endBalance),
-    ...(stmt.change == null ? {} : {change: stmt.change}),
-    ...(stmt.percentChange == null ? {} : {percentChange: stmt.percentChange}),
-    ...(stmt.unaccounted == null ? {} : {unaccounted: stmt.unaccounted}),
-  };
-}
 
 /**
  * Builds dataView structure with months, rows and popup cell data.
@@ -64,12 +22,12 @@ export function transformGqlBudgetData(data: GqlBudget | undefined): MatrixDataV
   }
   // owner + accout type => month => summary statement map.
   const summaries: {
-    [ownerAccountType: string]: {[month: string]: SummaryStatement};
+    [ownerAccountType: string]: {[month: string]: GqlSummaryStatement};
   } = {};
   for (const stmt of data?.summaries ?? []) {
     if (!stmt || !stmt.name) continue;
     const entry = summaries[stmt.name] || (summaries[stmt.name] = {});
-    entry[stmt.month] = gqlToSummaryStatement(stmt);
+    entry[stmt.month] = stmt;
   }
   return transformBudgetData(data?.months || [], accountNameToAccount, statements, summaries);
 }

@@ -1,9 +1,8 @@
 import {describe, expect, it} from '@jest/globals';
 import {Month} from '@tally/lib/core/month';
 import {Balance, Type as BalanceType} from '@tally/lib/core/balance';
-import {SummaryStatement} from './base';
 import {transformBudgetData} from './utils';
-import {GqlAccount, GqlStatement} from './gql_types';
+import {GqlAccount, GqlStatement, GqlSummaryStatement} from './gql_types';
 
 describe('transformBudgetData', function () {
   it('works on empty', function () {
@@ -60,11 +59,10 @@ describe('transformBudgetData', function () {
       main: {Sep2014: statement},
     };
     const summaries: {
-      [ownerAccountType: string]: {[month: string]: SummaryStatement};
+      [ownerAccountType: string]: {[month: string]: GqlSummaryStatement};
     } = {
       'owner1 credit': {
         Sep2014: {
-          isClosed: true,
           accounts: ['main'],
           addSub: 100,
           inFlows: 150,
@@ -74,17 +72,12 @@ describe('transformBudgetData', function () {
           totalTransfers: 0,
           startBalance: new Balance(2900, new Date('2020-04-03'), BalanceType.PROJECTED),
           endBalance: new Balance(3000, new Date('2020-04-30'), BalanceType.PROJECTED),
-          isCovered: true,
-          isProjectedCovered: true,
-          hasProjectedTransfer: true,
           percentChange: 1.4,
           unaccounted: 200,
-          transactions: [],
         },
       },
       'owner2 credit': {
         Sep2014: {
-          isClosed: true,
           accounts: ['main'],
           addSub: 100,
           inFlows: 150,
@@ -94,12 +87,8 @@ describe('transformBudgetData', function () {
           totalTransfers: 0,
           startBalance: new Balance(2900, new Date('2020-04-30'), BalanceType.PROJECTED),
           endBalance: new Balance(3000, new Date('2020-04-03'), BalanceType.PROJECTED),
-          isCovered: true,
-          isProjectedCovered: true,
-          hasProjectedTransfer: true,
           percentChange: 1.4,
           unaccounted: 200,
-          transactions: [],
         },
       },
     };
