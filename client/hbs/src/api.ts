@@ -123,7 +123,7 @@ export class BackendClient {
    * Load summary table data via gql client.
    * @return promise of query result.
    */
-  loadTable(owner?: string): Promise<ApolloQueryResult<Query>> {
+  loadTable(owner: string): Promise<ApolloQueryResult<Query>> {
     return this.gqlClient.query<Query>({
       query: gql`
         query table($owner: String!) {

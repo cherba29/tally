@@ -1,5 +1,72 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`gqlSummary load 1`] = `
+{
+  "statements": [
+    {
+      "addSub": 0,
+      "change": -58,
+      "endBalance": {
+        "amount": -1500,
+        "date": 2015-03-02T00:00:00.000Z,
+        "type": "PROJECTED",
+      },
+      "hasProjectedTransfer": false,
+      "inFlows": 0,
+      "income": 0,
+      "isClosed": false,
+      "isCovered": false,
+      "isProjectedCovered": false,
+      "month": Month {
+        "month": 1,
+        "year": 2015,
+      },
+      "name": "gas",
+      "outFlows": 0,
+      "percentChange": 4.02,
+      "startBalance": {
+        "amount": -1442,
+        "date": 2015-02-02T00:00:00.000Z,
+        "type": "CONFIRMED",
+      },
+      "totalPayments": 0,
+      "totalTransfers": 0,
+      "transactions": [],
+      "unaccounted": -58,
+    },
+  ],
+  "total": {
+    "accounts": [
+      "gas",
+    ],
+    "addSub": 0,
+    "change": -58,
+    "endBalance": {
+      "amount": -1500,
+      "date": 2015-03-02T00:00:00.000Z,
+      "type": "PROJECTED",
+    },
+    "inFlows": 0,
+    "income": 0,
+    "month": Month {
+      "month": 1,
+      "year": 2015,
+    },
+    "name": "john BILL",
+    "outFlows": 0,
+    "percentChange": 4.02,
+    "startBalance": {
+      "amount": -1442,
+      "date": 2015-02-02T00:00:00.000Z,
+      "type": "CONFIRMED",
+    },
+    "totalPayments": 0,
+    "totalTransfers": 0,
+    "unaccounted": -58,
+  },
+}
+`;
+
 exports[`gqlTable load 1`] = `
 {
   "currentOwner": "john",

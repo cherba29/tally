@@ -61,7 +61,7 @@ export class TallyApp extends LitElement {
       this.minutes = pad(Math.floor(diffTimeSec / 60));
       this.requestUpdate();
     }, 1000);
-    this.reloadGql();
+    this.reloadTable();
   }
   disconnectedCallback() {
     super.disconnectedCallback();
@@ -80,8 +80,8 @@ export class TallyApp extends LitElement {
 
     return html`
       <div style="position: fixed;font-size: 80%;">
-        <button @click="${this.reloadGql}">Reload Data</button>
         <button @click="${this.reloadTable}">Reload Table</button>
+        <button @click="${this.reloadGql}">Reload Data</button>
         <label id="minutes">${this.minutes}</label>:<label id="seconds">${this.seconds}</label>
       </div>
       <div style="padding-top: 20px; color: red; font-size: 16px">
@@ -250,7 +250,7 @@ export class TallyApp extends LitElement {
   private reloadTable() {
     console.log('tally-app Loading graphql table');
     this.backendClient
-      .loadTable(this.currentOwner)
+      .loadTable(this.currentOwner ?? '')
       .then((result) => {
         this.lastReloadTimestamp = new Date();
         console.log(result);

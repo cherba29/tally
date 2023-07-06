@@ -285,7 +285,9 @@ async function buildSummaryData(_: any, args: QuerySummaryArgs): Promise<GqlSumm
     );
   }
   const result = {
-    statements: summary.statements.map((stmt) => toGqlStatement(stmt as TransactionStatement)),
+    statements: summary.statements
+      .sort((a, b) => (a.name < b.name ? -1 : 1))
+      .map((stmt) => toGqlStatement(stmt as TransactionStatement)),
     total: toGqlSummaryStatement(summary)
   };
   console.log(`gql summary data in ${Date.now() - startTimeMs}ms`);

@@ -41,3 +41,23 @@ describe('gqlTable', () => {
     delete process.env.TALLY_FILES;
   });
 });
+
+describe('gqlSummary', () => {
+  beforeEach(() => {
+    process.env.TALLY_FILES = 'server/apollo/src/testdata/tally';
+  });
+
+  test('load', async () => {
+    const data = await resolvers.Query.summary(undefined, {
+      owner: 'john',
+      month: 'Feb2015',
+      accountType: 'BILL'
+    });
+    expect(data).toMatchSnapshot();
+  });
+
+  afterEach(() => {
+    unwatchBudgetFiles();
+    delete process.env.TALLY_FILES;
+  });
+});
