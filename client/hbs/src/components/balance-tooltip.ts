@@ -4,8 +4,9 @@ import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
 import {customElement, property} from 'lit/decorators.js';
 
 import {dateFormat, currency, isProjected} from '../format';
-import {Statement, Transaction} from '../base';
+import {Statement} from '../base';
 import {Balance} from '@tally/lib/core/balance';
+import {GqlBalance, GqlTransaction} from 'src/gql_types';
 
 @customElement('balance-tooltip')
 export class BalanceTooltip extends LitElement {
@@ -43,16 +44,16 @@ export class BalanceTooltip extends LitElement {
   }
 
   render() {
-    const transactionColor = (t: Transaction): StyleInfo => ({
+    const transactionColor = (t: GqlTransaction): StyleInfo => ({
       backgroundColor: t.isExpense ? '#caa' : t.isIncome ? '#aca' : null,
     });
-    const transactionCode = (t: Transaction): TemplateResult => {
+    const transactionCode = (t: GqlTransaction): TemplateResult => {
       if (t.isExpense) return html`E &#x2192;`;
       if (t.isIncome) return html`I &#x2190;`;
-      if (t.balance.amount > 0) return html`T &#x2190;`;
+      if (t.balance?.amount ?? 0 > 0) return html`T &#x2190;`;
       return html`T &#x2192;`;
     };
-    const projectedClass = (b: Balance | undefined): ClassInfo => {
+    const projectedClass = (b: GqlBalance | null | undefined): ClassInfo => {
       const projected = isProjected(b);
       return {
         projected,
@@ -79,9 +80,9 @@ export class BalanceTooltip extends LitElement {
               </td>
               <td align="middle" style=${styleMap(transactionColor(t))}>${transactionCode(t)}</td>
               <td class=${classMap(projectedClass(t.balance))} style="min-width:40px">
-                ${currency(t.balance.amount)}
+                ${currency(t.balance?.amount)}
               </td>
-              <td align="middle" style="min-width:60px">${dateFormat(t.balance.date)}</td>
+              <td align="middle" style="min-width:60px">${dateFormat(t.balance?.date)}</td>
               <td align="right" style="min-width:50px">${currency(t.balanceFromStart)}</td>
             </tr>`
         )}

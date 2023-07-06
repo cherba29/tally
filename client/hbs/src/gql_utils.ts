@@ -1,13 +1,12 @@
 import {Account, Type as AccountType} from '@tally/lib/core/account';
 import {Balance, Type as BalanceType} from '@tally/lib/core/balance';
 import {Month} from '@tally/lib/core/month';
-import {Statement, SummaryStatement, Transaction} from './base';
+import {Statement, SummaryStatement} from './base';
 import {
   GqlBalance,
   GqlAccount,
   GqlBudget,
   GqlStatement,
-  GqlTransaction,
   GqlSummaryStatement,
 } from './gql_types';
 import {transformBudgetData, MatrixDataView} from './utils';
@@ -26,29 +25,6 @@ export function gqlToBalance(gqlBalance: GqlBalance | null | undefined): Balance
     new Date(gqlBalance.date),
     gqlBalance.type as BalanceType
   );
-}
-
-/**
- * Convert gqlType Statement type.
- * @param tran - backend object with GqlTransaction fields.
- * @return Transaction object.
- */
-function gqlToTransaction(tran: GqlTransaction | null): Transaction {
-  if (!tran) {
-    throw new Error(`Undefined transaction`);
-  }
-  const balance = gqlToBalance(tran.balance ?? null);
-  if (!balance) {
-    throw new Error(`Undefined balance in transaction to ${tran.toAccountName}`);
-  }
-  return {
-    toAccountName: tran.toAccountName || '',
-    isExpense: tran.isExpense ?? false,
-    isIncome: tran.isIncome ?? false,
-    balance,
-    balanceFromStart: tran.balanceFromStart || 0,
-    description: tran.description || '',
-  };
 }
 
 /**
@@ -78,7 +54,7 @@ export function gqlToStatement(stmt: GqlStatement): Statement {
     startBalance: gqlToBalance(stmt.startBalance),
     endBalance: gqlToBalance(stmt.endBalance),
     addSub: (stmt.inFlows || 0) + (stmt.outFlows || 0),
-    transactions: (stmt.transactions || []).map((t) => gqlToTransaction(t)) ?? [],
+    transactions: stmt.transactions?.map((t) => t!) ?? [],
   };
 }
 

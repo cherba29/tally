@@ -1,13 +1,5 @@
 import {Balance} from '@tally/lib/core/balance';
-
-export interface Transaction {
-  isExpense: boolean;
-  isIncome: boolean;
-  toAccountName: string;
-  balance: Balance;
-  balanceFromStart: number;
-  description: string;
-}
+import {GqlTransaction} from './gql_types';
 
 export interface Statement {
   inFlows?: number;
@@ -25,7 +17,7 @@ export interface Statement {
   change?: number;
   percentChange?: number;
   unaccounted?: number;
-  transactions?: Transaction[];
+  transactions?: GqlTransaction[];
 }
 
 export interface SummaryStatement {
@@ -45,5 +37,5 @@ export interface SummaryStatement {
   change?: number;
   percentChange?: number;
   unaccounted?: number;
-  transactions?: Transaction[];
+  transactions?: GqlTransaction[];
 }
