@@ -136,6 +136,8 @@ export async function loadBudget(startMonth?: Month, endMonth?: Month): Promise<
         );
         try {
           budget = changedBudgetBuilder.build();
+          statements = buildTransactionStatementTable(budget);
+          summaries = [...buildSummaryStatementTable(statements)];
         } catch (e) {
           console.error(`Failed to build budget ${e}`);
           return;
