@@ -4,7 +4,7 @@ import {Account} from '@tally/lib/core/account';
 
 @customElement('account-tooltip')
 export class AccountTooltip extends LitElement {
-  static styles = css`
+  static override styles = css`
     td {
       border-left: 1px solid #c3c3c3;
       border-top: 1px solid #c3c3c3;
@@ -19,7 +19,7 @@ export class AccountTooltip extends LitElement {
   onCloseButton() {
     this.dispatchEvent(new CustomEvent('close'));
   }
-  render() {
+  override render() {
     if (!this.account) {
       return nothing;
     }

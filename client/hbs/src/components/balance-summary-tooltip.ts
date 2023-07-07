@@ -7,7 +7,7 @@ import {GqlBalance, GqlSummaryStatement} from 'src/gql_types';
 
 @customElement('balance-summary-tooltip')
 export class BalanceSummaryTooltip extends LitElement {
-  static styles = css`
+  static override styles = css`
     td {
       border-left: 1px solid #c3c3c3;
       border-top: 1px solid #c3c3c3;
@@ -43,7 +43,7 @@ export class BalanceSummaryTooltip extends LitElement {
     this.dispatchEvent(new CustomEvent('close'));
   }
 
-  render() {
+  override render() {
     const projectedClass = (b: GqlBalance | undefined | null): ClassInfo => {
       const projected = isProjected(b);
       return {

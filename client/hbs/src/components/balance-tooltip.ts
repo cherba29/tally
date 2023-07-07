@@ -8,7 +8,7 @@ import {GqlBalance, GqlStatement, GqlTransaction} from 'src/gql_types';
 
 @customElement('balance-tooltip')
 export class BalanceTooltip extends LitElement {
-  static styles = css`
+  static override styles = css`
     td {
       border-left: 1px solid #c3c3c3;
       border-top: 1px solid #c3c3c3;
@@ -41,7 +41,7 @@ export class BalanceTooltip extends LitElement {
     this.dispatchEvent(new CustomEvent('close'));
   }
 
-  render() {
+  override render() {
     const transactionColor = (t: GqlTransaction | undefined | null): StyleInfo => ({
       backgroundColor: t?.isExpense ? '#caa' : t?.isIncome ? '#aca' : null,
     });

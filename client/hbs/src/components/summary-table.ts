@@ -15,7 +15,7 @@ export type CellClickEventData = {
 
 @customElement('summary-table')
 export class SummaryTable extends LitElement {
-  static styles = css`
+  static override styles = css`
     body {
       font-size: 80%;
     }
@@ -112,7 +112,7 @@ export class SummaryTable extends LitElement {
     this.dispatchEvent(new CustomEvent('cellclick', options));
   }
 
-  render() {
+  override render() {
     const projectedClass = (c: GqlTableCell): ClassInfo => {
       return {projected: c.isProjected ?? false};
     };
@@ -134,7 +134,7 @@ export class SummaryTable extends LitElement {
           <tr>
             <th></th>
             ${this.months.map(
-              (m) =>
+              () =>
                 html`<th>+/-</th>
                   <th>$Bal</th>
                   <th>Chg%</th>
@@ -148,7 +148,7 @@ export class SummaryTable extends LitElement {
               return html`<tr>
                 <td class="account_type">${r.title}</td>
                 ${this.months.map(
-                  (m) => html`<td colspan="4" style="border-right:2px double #a00"></td>`
+                  () => html`<td colspan="4" style="border-right:2px double #a00"></td>`
                 )}
               </tr>`;
             } else if (r.isTotal) {

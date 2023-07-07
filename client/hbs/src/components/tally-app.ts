@@ -2,7 +2,6 @@ import {LitElement, css, html, nothing} from 'lit';
 import {customElement} from 'lit/decorators.js';
 import {BackendClient} from '../api';
 import {HeadingPopupData, PopupData, PopupMonthData, PopupMonthSummaryData, Rows} from '../utils';
-import {Maybe, GqlTableRow, GqlTableCell} from '../gql_types';
 import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
 
 import './account-tooltip';
@@ -13,7 +12,7 @@ import {CellClickEventData} from './summary-table';
 
 @customElement('tally-app')
 export class TallyApp extends LitElement {
-  static styles = css`
+  static override styles = css`
     .toolTip {
       position: absolute;
       padding: 5px;
@@ -42,7 +41,7 @@ export class TallyApp extends LitElement {
   private currentOwner: string | undefined = undefined;
   private owners: string[] = [];
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.timerId = setInterval(() => {
       const diffTimeSec = Math.round(
@@ -54,12 +53,12 @@ export class TallyApp extends LitElement {
     }, 1000);
     this.reloadTable();
   }
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
     clearInterval(this.timerId);
   }
 
-  render() {
+  override render() {
     const popupStyle: StyleInfo = {
       display: this.popupData ? null : 'none',
       top: this.popupOffset.top + 'px',
