@@ -2,13 +2,10 @@ import {LitElement, css, html, nothing} from 'lit';
 import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
 import {customElement, property} from 'lit/decorators.js';
 import {currency} from '../format';
-import {Cell} from '../cell';
-import {Row} from '../row';
-import {GqlAccount} from 'src/gql_types';
+import {GqlAccount, GqlTableRow, GqlTableCell} from 'src/gql_types';
 import {classMap, ClassInfo} from 'lit/directives/class-map.js';
 
 export type CellClickEventData = {
-  cellId: string;
   mouseEvent: MouseEvent;
   accountName?: string;
   account?: GqlAccount | null;
@@ -82,20 +79,18 @@ export class SummaryTable extends LitElement {
   months: string[] = [];
 
   @property({attribute: false})
-  rows: Row[] = [];
+  rows: GqlTableRow[] = [];
 
   onCellClick(
     mouseEvent: MouseEvent,
-    cellId: string,
-    accountName: string,
+    accountName: string | undefined | null,
     month: string,
     isSummary: boolean
   ) {
     const options: CustomEventInit<CellClickEventData> = {
       detail: {
-        cellId,
         mouseEvent,
-        accountName,
+        accountName: accountName ?? undefined,
         month,
         isSummary,
       },
@@ -105,14 +100,9 @@ export class SummaryTable extends LitElement {
     this.dispatchEvent(new CustomEvent('cellclick', options));
   }
 
-  onTitleCellClick(
-    e: MouseEvent,
-    id: string | null | undefined,
-    account: GqlAccount | undefined | null
-  ) {
+  onTitleCellClick(e: MouseEvent, account: GqlAccount | undefined | null) {
     const options: CustomEventInit<CellClickEventData> = {
       detail: {
-        cellId: id ?? '',
         mouseEvent: e,
         account,
       },
@@ -123,13 +113,13 @@ export class SummaryTable extends LitElement {
   }
 
   render() {
-    const projectedClass = (c: Cell): ClassInfo => {
-      return {projected: c.isProjected};
+    const projectedClass = (c: GqlTableCell): ClassInfo => {
+      return {projected: c.isProjected ?? false};
     };
-    const unaccountedClass = (c: Cell): ClassInfo => {
-      return {accounted: c.balanced, unaccounted: !c.balanced};
+    const unaccountedClass = (c: GqlTableCell): ClassInfo => {
+      return {accounted: c.balanced ?? false, unaccounted: !c.balanced};
     };
-    const coveredStyle = (c: Cell): StyleInfo => ({
+    const coveredStyle = (c: GqlTableCell): StyleInfo => ({
       color: c.isCovered ? null : c.isProjectedCovered ? '#fa0' : '#f00',
       fontWeight: c.isCovered ? null : 700,
     });
@@ -164,8 +154,8 @@ export class SummaryTable extends LitElement {
             } else if (r.isTotal) {
               return html`<tr>
                 <td><b>${r.title}/Total</b></td>
-                ${r.cells.map((c) => {
-                  if (c.isClosed) {
+                ${(r.cells ?? []).map((c) => {
+                  if (!c || c.isClosed) {
                     return html`<td
                       colspan="4"
                       class="closed"
@@ -175,9 +165,7 @@ export class SummaryTable extends LitElement {
                   return html`
                     <td class="add_sub">${currency(c.addSub)}</td>
                     <td
-                      id="${c.id}"
-                      @click="${(e: MouseEvent) =>
-                        this.onCellClick(e, c.id, r.title, c.month, true)}"
+                      @click="${(e: MouseEvent) => this.onCellClick(e, r.title, c.month, true)}"
                       style="font-weight:700;font-size:75%;"
                       class="balance ${classMap(projectedClass(c))}"
                     >
@@ -198,14 +186,14 @@ export class SummaryTable extends LitElement {
               return html`<tr>
                 <td
                   id="${account.name}"
-                  @click="${(e: MouseEvent) => this.onTitleCellClick(e, account.name, r.account)}"
+                  @click="${(e: MouseEvent) => this.onTitleCellClick(e, r.account)}"
                 >
                   ${account.url
                     ? html`<a href="${account.url}" target="_blank">${account.name}</a>`
                     : account.name}
                 </td>
-                ${r.cells.map((c) => {
-                  if (c.isClosed) {
+                ${(r.cells ?? []).map((c) => {
+                  if (!c || c.isClosed) {
                     return html`<td
                       colspan="4"
                       class="closed"
@@ -214,9 +202,7 @@ export class SummaryTable extends LitElement {
                   }
                   return html`<td class="add_sub">${currency(c.addSub)}</td>
                     <td
-                      id="${c.id}"
-                      @click="${(e: MouseEvent) =>
-                        this.onCellClick(e, c.id, r.title, c.month, false)}"
+                      @click="${(e: MouseEvent) => this.onCellClick(e, r.title, c.month, false)}"
                       class="balance ${classMap(projectedClass(c))}"
                       style=${styleMap(coveredStyle(c))}
                     >

@@ -126,6 +126,7 @@ export default gql`
 
   # Below are types matching views.
   type GqlTableCell {
+    month: GqlMonth
     isClosed: Boolean
     addSub: Int
     balance: Int

@@ -10,8 +10,6 @@ import './balance-tooltip';
 import './balance-summary-tooltip';
 import './summary-table';
 import {CellClickEventData} from './summary-table';
-import {Row} from '../row';
-import {Cell} from '../cell';
 
 @customElement('tally-app')
 export class TallyApp extends LitElement {
@@ -134,7 +132,7 @@ export class TallyApp extends LitElement {
       >
       </balance-tooltip>`;
     } else {
-      throw new Error(`Unknown type of popup data for ${this.popupData.id} ${this.popupData}.`);
+      throw new Error(`Unknown type of popup data ${this.popupData}.`);
     }
   }
 
@@ -144,65 +142,52 @@ export class TallyApp extends LitElement {
   }
 
   private onCellClick(e: CustomEvent<CellClickEventData>) {
-    this.popupData = this.popupMap.get(e.detail.cellId);
-    if (!this.popupData) {
-      if (e.detail.isSummary) {
-        this.backendClient
-          .loadSummaryData(
-            this.currentOwner ?? '',
-            e.detail.accountName ?? '',
-            e.detail.month ?? ''
-          )
-          .then((result) => {
-            console.log(`PopupData for ${e.detail.cellId}`, result);
-            const summaryStatement = result.data.summary?.total;
-            const statements = result.data.summary?.statements;
-            const popupData: PopupMonthSummaryData = {
-              id: e.detail.cellId,
-              accountName: e.detail.accountName ?? '',
-              month: e.detail.month ?? '',
-              summary: summaryStatement ?? undefined,
-              statements: (statements || []).map((stmt) => ({
-                name: stmt?.name ?? '',
-                stmt: stmt!,
-              })),
-            };
-            this.popupData = popupData;
-            this.popupOffset = {
-              top: e.detail.mouseEvent.pageY + 10,
-              left: e.detail.mouseEvent.pageX,
-            };
-            this.requestUpdate();
-          });
-      } else if (e.detail.month) {
-        this.backendClient
-          .loadStatement(this.currentOwner ?? '', e.detail.accountName ?? '', e.detail.month ?? '')
-          .then((result) => {
-            console.log(`PopupData for ${e.detail.cellId}`, result);
-            const statement = result.data.statement;
-            const popupData: PopupMonthData = {
-              id: e.detail.cellId,
-              accountName: e.detail.accountName ?? '',
-              month: e.detail.month ?? '',
-              stmt: statement!,
-            };
-            this.popupData = popupData;
-            this.popupOffset = {
-              top: e.detail.mouseEvent.pageY + 10,
-              left: e.detail.mouseEvent.pageX,
-            };
-            this.requestUpdate();
-          });
-      } else {
-        const popupData: HeadingPopupData = {
-          id: e.detail.cellId,
-          account: e.detail.account!,
-        };
-        this.popupData = popupData;
-        this.popupOffset = {top: e.detail.mouseEvent.pageY + 10, left: e.detail.mouseEvent.pageX};
-        this.requestUpdate();
-      }
+    if (e.detail.isSummary) {
+      this.backendClient
+        .loadSummaryData(this.currentOwner ?? '', e.detail.accountName ?? '', e.detail.month ?? '')
+        .then((result) => {
+          console.log(`PopupData for ${e.detail}`, result);
+          const summaryStatement = result.data.summary?.total;
+          const statements = result.data.summary?.statements;
+          const popupData: PopupMonthSummaryData = {
+            accountName: e.detail.accountName ?? '',
+            month: e.detail.month ?? '',
+            summary: summaryStatement ?? undefined,
+            statements: (statements || []).map((stmt) => ({
+              name: stmt?.name ?? '',
+              stmt: stmt!,
+            })),
+          };
+          this.popupData = popupData;
+          this.popupOffset = {
+            top: e.detail.mouseEvent.pageY + 10,
+            left: e.detail.mouseEvent.pageX,
+          };
+          this.requestUpdate();
+        });
+    } else if (e.detail.month) {
+      this.backendClient
+        .loadStatement(this.currentOwner ?? '', e.detail.accountName ?? '', e.detail.month ?? '')
+        .then((result) => {
+          console.log(`PopupData for ${e.detail}`, result);
+          const statement = result.data.statement;
+          const popupData: PopupMonthData = {
+            accountName: e.detail.accountName ?? '',
+            month: e.detail.month ?? '',
+            stmt: statement!,
+          };
+          this.popupData = popupData;
+          this.popupOffset = {
+            top: e.detail.mouseEvent.pageY + 10,
+            left: e.detail.mouseEvent.pageX,
+          };
+          this.requestUpdate();
+        });
     } else {
+      const popupData: HeadingPopupData = {
+        account: e.detail.account!,
+      };
+      this.popupData = popupData;
       this.popupOffset = {top: e.detail.mouseEvent.pageY + 10, left: e.detail.mouseEvent.pageX};
       this.requestUpdate();
     }
@@ -225,7 +210,7 @@ export class TallyApp extends LitElement {
           this.owners = table?.owners?.filter((owner) => !!owner).map((owner) => owner!) ?? [];
           this.months = table?.months?.map((value) => value.toString()) || [];
           this.rows = {
-            [this.currentOwner ?? '']: table?.rows?.map((r) => convertRow(r, this.months)) || [],
+            [this.currentOwner ?? '']: (table?.rows || []).map((r) => r!),
           };
           this.popupMap = new Map<string, PopupData>();
         }
@@ -241,32 +226,4 @@ export class TallyApp extends LitElement {
 
 function pad(n: number) {
   return n > 9 ? n.toString() : '0' + n.toString();
-}
-
-function convertRow(row: Maybe<GqlTableRow>, months: string[]): Row {
-  return {
-    title: row?.title ?? '',
-    account: row?.account ?? undefined,
-    isNormal: row?.isNormal ?? false,
-    isTotal: row?.isTotal ?? false,
-    isSpace: row?.isSpace ?? false,
-    cells: row?.cells?.map((c, i) => convertCell(c, months[i]!)) ?? [],
-  };
-}
-
-function convertCell(cell: Maybe<GqlTableCell>, month: string): Cell {
-  return {
-    id: '',
-    month,
-    addSub: cell?.addSub ?? null,
-    isClosed: cell?.isClosed ?? false,
-    balance: cell?.balance ?? null,
-    isProjected: cell?.isProjected ?? false,
-    isCovered: cell?.isCovered ?? false,
-    isProjectedCovered: cell?.isProjectedCovered ?? false,
-    hasProjectedTransfer: cell?.hasProjectedTransfer ?? false,
-    percentChange: cell?.percentChange ?? null,
-    unaccounted: cell?.unaccounted ?? null,
-    balanced: cell?.balanced ?? false,
-  };
 }

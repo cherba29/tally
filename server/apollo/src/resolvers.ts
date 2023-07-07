@@ -155,6 +155,7 @@ async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTable> {
       const summary = summaryMonthMap?.get(month.toString());
       if (summary) {
         cells.push({
+          month,
           addSub: summary.addSub,
           balance: summary.endBalance?.amount,
           percentChange:
@@ -193,6 +194,7 @@ async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTable> {
       for (const month of months) {
         const stmt = accoutToMonthToTransactionStatement.get(account.name)?.get(month.toString());
         cells.push({
+          month,
           isClosed: stmt?.isClosed,
           addSub: stmt?.addSub,
           balance: stmt?.endBalance?.amount,
@@ -216,6 +218,7 @@ async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTable> {
     for (const month of months) {
       const stmt = summaryMonthMap?.get(month.toString());
       cells.push({
+        month,
         isClosed: stmt?.isClosed,
         addSub: stmt?.addSub,
         balance: stmt?.endBalance?.amount,

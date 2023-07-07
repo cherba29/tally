@@ -114,6 +114,7 @@ export type GqlTableCell = {
   isCovered?: Maybe<Scalars['Boolean']>;
   isProjected?: Maybe<Scalars['Boolean']>;
   isProjectedCovered?: Maybe<Scalars['Boolean']>;
+  month?: Maybe<Scalars['GqlMonth']>;
   percentChange?: Maybe<Scalars['Float']>;
   unaccounted?: Maybe<Scalars['Int']>;
 };

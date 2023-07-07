@@ -58,6 +58,7 @@ export class BackendClient {
               isTotal
               isNormal
               cells {
+                month
                 isClosed
                 addSub
                 balance
