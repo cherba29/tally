@@ -10,7 +10,6 @@ import { listFiles, loadBudget } from '@tally/lib/data/loader';
 import { GraphQLScalarType, Kind, ValueNode } from 'graphql';
 import {
   GqlAccount,
-  GqlBudget,
   GqlStatement,
   GqlSummaryStatement,
   GqlSummaryData,
@@ -117,33 +116,6 @@ function toGqlSummaryStatement(summary: SummaryStatement): GqlSummaryStatement {
         type: BalanceType[summary.endBalance.type as BalanceType]
       }
     })
-  };
-}
-
-async function buildGqlBudget(): Promise<GqlBudget> {
-  const startTimeMs: number = Date.now();
-  const payload = await loadBudget();
-
-  const accounts: GqlAccount[] = payload.budget.findActiveAccounts().map(toGqlAccount);
-  accounts.sort((a, b) => (a.name == b.name ? 0 : (a.name ?? '') < (b.name ?? '') ? -1 : 1));
-
-  const transactionStatementTable = payload.statements;
-  const statements: GqlStatement[] = [];
-  for (const statement of transactionStatementTable) {
-    statements.push(toGqlStatement(statement));
-  }
-
-  const summaryStatementTable = payload.summaries;
-  const summaries: GqlSummaryStatement[] = [];
-  for (const summary of summaryStatementTable) {
-    summaries.push(toGqlSummaryStatement(summary));
-  }
-  console.log(`gql budget in ${Date.now() - startTimeMs}ms`);
-  return {
-    accounts,
-    months: payload.budget.months.sort((a: Month, b: Month) => -a.compareTo(b)),
-    statements,
-    summaries
   };
 }
 
@@ -313,7 +285,6 @@ async function buildStatement(_: any, args: QueryStatementArgs): Promise<GqlStat
 export default {
   Query: {
     files: listFiles,
-    budget: buildGqlBudget,
     table: buildGqlTable,
     summary: buildSummaryData,
     statement: buildStatement

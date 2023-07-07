@@ -14,18 +14,6 @@ describe('GqlMonth', () => {
   });
 });
 
-describe('query', () => {
-  test('buildBudget', async () => {
-    await expect(resolvers.Query.budget()).rejects.toThrowError(
-      new Error('Process environment variable "TALLY_FILES" has not been specified.')
-    );
-  });
-
-  afterEach(() => {
-    delete process.env.TALLY_FILES;
-  });
-});
-
 describe('gqlTable', () => {
   beforeEach(() => {
     process.env.TALLY_FILES = 'server/apollo/src/testdata/tally';

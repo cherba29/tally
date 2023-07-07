@@ -6,7 +6,6 @@ export default gql`
 
   type Query {
     files: [String]
-    budget: GqlBudget
     table(owner: String): GqlTable
     summary(owner: String!, accountType: String!, month: GqlMonth!): GqlSummaryData
     statement(owner: String!, account: String!, month: GqlMonth!): GqlStatement
@@ -123,13 +122,6 @@ export default gql`
   type GqlSummaryData {
     statements: [GqlStatement]
     total: GqlSummaryStatement
-  }
-
-  type GqlBudget {
-    accounts: [GqlAccount]
-    months: [GqlMonth]
-    statements: [GqlStatement]
-    summaries: [GqlSummaryStatement]
   }
 
   # Below are types matching views.

@@ -2,7 +2,6 @@ import {LitElement, css, html, nothing} from 'lit';
 import {customElement} from 'lit/decorators.js';
 import {BackendClient} from '../api';
 import {HeadingPopupData, PopupData, PopupMonthData, PopupMonthSummaryData, Rows} from '../utils';
-import {transformGqlBudgetData} from '../gql_utils';
 import {Maybe, GqlTableRow, GqlTableCell} from '../gql_types';
 import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
 
@@ -11,7 +10,6 @@ import './balance-tooltip';
 import './balance-summary-tooltip';
 import './summary-table';
 import {CellClickEventData} from './summary-table';
-import {Month} from '@tally/lib';
 import {Row} from '../row';
 import {Cell} from '../cell';
 
@@ -76,7 +74,6 @@ export class TallyApp extends LitElement {
     return html`
       <div style="position: fixed;font-size: 80%;">
         <button @click="${this.reloadTable}">Reload Table</button>
-        <button @click="${this.reloadGql}">Reload Data</button>
         <label id="minutes">${this.minutes}</label>:<label id="seconds">${this.seconds}</label>
       </div>
       <div style="padding-top: 20px; color: red; font-size: 16px">
@@ -209,37 +206,6 @@ export class TallyApp extends LitElement {
       this.popupOffset = {top: e.detail.mouseEvent.pageY + 10, left: e.detail.mouseEvent.pageX};
       this.requestUpdate();
     }
-  }
-
-  private reloadGql() {
-    console.log('tally-app Loading graphql');
-    this.backendClient
-      .loadData()
-      .then((result) => {
-        this.lastReloadTimestamp = new Date();
-        console.log(result);
-        if (result.errors) {
-          this.errorMessage = result.errors.map((e) => e.message).join('\n');
-        } else {
-          this.popupData = undefined; // Closes any open popups.
-          this.errorMessage = '';
-
-          const dataView = transformGqlBudgetData(result.data.budget || undefined);
-          this.months = dataView.months;
-          this.rows = dataView.rows;
-          if (this.currentOwner === undefined) {
-            this.currentOwner = Object.keys(this.rows).sort()[0];
-          }
-          this.owners = Object.keys(this.rows).sort();
-          this.popupMap = new Map(dataView.popupCells.map((c) => [c.id, c]));
-        }
-        this.requestUpdate();
-      })
-      .catch((error) => {
-        this.errorMessage = error.message;
-        this.requestUpdate();
-        throw error;
-      });
   }
 
   private reloadTable() {
