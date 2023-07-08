@@ -160,5 +160,7 @@ export type QuerySummaryArgs = {
 };
 
 export type QueryTableArgs = {
+  endMonth: Scalars['GqlMonth'];
   owner?: InputMaybe<Scalars['String']>;
+  startMonth: Scalars['GqlMonth'];
 };

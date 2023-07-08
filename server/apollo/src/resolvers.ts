@@ -121,8 +121,12 @@ function toGqlSummaryStatement(summary: SummaryStatement): GqlSummaryStatement {
 
 async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTable> {
   const startTimeMs: number = Date.now();
+  const startMonth = args.startMonth.previous();
+  const endMonth = args.endMonth.next();
   const payload = await loadBudget();
-  const months = payload.budget.months.sort((a: Month, b: Month) => -a.compareTo(b));
+  const months = payload.budget.months
+    .filter((m) => m.isLess(endMonth) && startMonth.isLess(m))
+    .sort((a: Month, b: Month) => -a.compareTo(b));
   const activeAccounts = payload.budget.findActiveAccounts();
   const owners = [...new Set(activeAccounts.map((account) => account.owners).flat())].sort();
   const owner = args.owner || owners[0];
@@ -191,8 +195,10 @@ async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTable> {
       accountTypesToAccounts.get(accountType)?.sort((a, b) => (a.name > b.name ? 1 : -1)) ?? [];
     for (const account of groupedAccounts) {
       const cells: GqlTableCell[] = [];
+      let isClosed = true;
       for (const month of months) {
         const stmt = accoutToMonthToTransactionStatement.get(account.name)?.get(month.toString());
+        isClosed = isClosed && (stmt?.isClosed ?? false);
         cells.push({
           month,
           isClosed: stmt?.isClosed,
@@ -210,13 +216,18 @@ async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTable> {
           balanced: !stmt?.unaccounted
         });
       }
-      rows.push({ title: account.name, account: toGqlAccount(account), isNormal: true, cells });
+      if (!isClosed) {
+        // Dont add accounts which are closed over selected timeframe.
+        rows.push({ title: account.name, account: toGqlAccount(account), isNormal: true, cells });
+      }
     }
     // Summary for each account type.
     const summaryMonthMap = summaryNameMonthMap.get(owner + ' ' + accountType);
     const cells: GqlTableCell[] = [];
+    let isClosed = true;
     for (const month of months) {
       const stmt = summaryMonthMap?.get(month.toString());
+      isClosed = isClosed && (stmt?.isClosed ?? false);
       cells.push({
         month,
         isClosed: stmt?.isClosed,
@@ -229,9 +240,12 @@ async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTable> {
         balanced: !stmt?.unaccounted
       });
     }
-    rows.push({ title: accountType, isTotal: true, cells });
+    if (!isClosed) {
+      // Dont add accounts which are closed over selected timeframe.
+      rows.push({ title: accountType, isTotal: true, cells });
+    }
   }
-  console.log(`gql table in ${Date.now() - startTimeMs}ms`);
+  console.log(`gql table ${args.endMonth}--${args.startMonth} in ${Date.now() - startTimeMs}ms`);
   return {
     currentOwner: owner,
     owners,

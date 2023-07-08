@@ -114,7 +114,7 @@ describe('loadYaml', () => {
     const budget = budgetBuilder.build();
     expect(budget.accounts.size).toBe(1);
     expect(budget.balances.size).toBe(0);
-    expect(budget.months.length).toBe(0);
+    expect(budget.months.length).toBe(5);
     expect(budget.transfers.size).toBe(0);
 
     const account = budget.accounts.get('test-account');
@@ -149,7 +149,7 @@ describe('loadYaml', () => {
     const budget = budgetBuilder.build();
     expect(budget.accounts.size).toBe(1);
     expect(budget.balances.size).toBe(1);
-    expect(budget.months.length).toBe(0);
+    expect(budget.months.length).toBe(2);
     expect(budget.transfers.size).toBe(0);
 
     const balances = budget.balances.get('test-account')!;
@@ -293,7 +293,7 @@ describe('loadYaml', () => {
     const testAccount = budget.accounts.get('test-account');
     const externalAccount = budget.accounts.get('external');
     expect(budget.balances.size).toBe(1);
-    expect(budget.months.length).toBe(0);
+    expect(budget.months.length).toBe(2);
     expect(budget.transfers.size).toBe(2);
 
     const testAccountTransfers = budget.transfers.get('test-account')!;

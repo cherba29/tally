@@ -20,7 +20,11 @@ describe('gqlTable', () => {
   });
 
   test('load', async () => {
-    const data = await resolvers.Query.table(undefined, { owner: 'john' });
+    const data = await resolvers.Query.table(undefined, {
+      owner: 'john',
+      startMonth: Month.fromString('Dec2014'),
+      endMonth: Month.fromString('Apr2015')
+    });
     expect(data).toMatchSnapshot();
   });
 

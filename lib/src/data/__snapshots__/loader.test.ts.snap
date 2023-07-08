@@ -1,0 +1,135 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`loadBudget just account 1`] = `
+{
+  "budget": Budget {
+    "accounts": Map {
+      "test-account" => Account {
+        "address": undefined,
+        "closedOn": undefined,
+        "description": undefined,
+        "name": "test-account",
+        "number": undefined,
+        "openedOn": Month {
+          "month": 2,
+          "year": 2019,
+        },
+        "owners": [
+          "someone",
+        ],
+        "password": undefined,
+        "phone": undefined,
+        "type": "external",
+        "url": undefined,
+        "userName": undefined,
+      },
+    },
+    "balances": Map {},
+    "months": [
+      Month {
+        "month": 2,
+        "year": 2019,
+      },
+    ],
+    "transfers": Map {},
+  },
+  "statements": [
+    TransactionStatement {
+      "account": Account {
+        "address": undefined,
+        "closedOn": undefined,
+        "description": undefined,
+        "name": "test-account",
+        "number": undefined,
+        "openedOn": Month {
+          "month": 2,
+          "year": 2019,
+        },
+        "owners": [
+          "someone",
+        ],
+        "password": undefined,
+        "phone": undefined,
+        "type": "external",
+        "url": undefined,
+        "userName": undefined,
+      },
+      "coversPrevious": false,
+      "coversProjectedPrevious": false,
+      "endBalance": undefined,
+      "hasProjectedTransfer": false,
+      "inFlows": 0,
+      "income": 0,
+      "isCovered": true,
+      "isProjectedCovered": true,
+      "month": Month {
+        "month": 2,
+        "year": 2019,
+      },
+      "name": "test-account",
+      "outFlows": 0,
+      "startBalance": undefined,
+      "totalPayments": 0,
+      "totalTransfers": 0,
+      "transactions": [],
+    },
+  ],
+  "summaries": [
+    SummaryStatement {
+      "endBalance": undefined,
+      "inFlows": 0,
+      "income": 0,
+      "month": Month {
+        "month": 2,
+        "year": 2019,
+      },
+      "name": "someone EXTERNAL",
+      "outFlows": 0,
+      "startBalance": undefined,
+      "statements": [
+        TransactionStatement {
+          "account": Account {
+            "address": undefined,
+            "closedOn": undefined,
+            "description": undefined,
+            "name": "test-account",
+            "number": undefined,
+            "openedOn": Month {
+              "month": 2,
+              "year": 2019,
+            },
+            "owners": [
+              "someone",
+            ],
+            "password": undefined,
+            "phone": undefined,
+            "type": "external",
+            "url": undefined,
+            "userName": undefined,
+          },
+          "coversPrevious": false,
+          "coversProjectedPrevious": false,
+          "endBalance": undefined,
+          "hasProjectedTransfer": false,
+          "inFlows": 0,
+          "income": 0,
+          "isCovered": true,
+          "isProjectedCovered": true,
+          "month": Month {
+            "month": 2,
+            "year": 2019,
+          },
+          "name": "test-account",
+          "outFlows": 0,
+          "startBalance": undefined,
+          "totalPayments": 0,
+          "totalTransfers": 0,
+          "transactions": [],
+        },
+      ],
+      "totalPayments": 0,
+      "totalTransfers": 0,
+    },
+  ],
+}
+`;

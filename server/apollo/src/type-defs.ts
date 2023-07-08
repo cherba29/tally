@@ -6,7 +6,7 @@ export default gql`
 
   type Query {
     files: [String]
-    table(owner: String): GqlTable
+    table(owner: String, startMonth: GqlMonth!, endMonth: GqlMonth!): GqlTable
     summary(owner: String!, accountType: String!, month: GqlMonth!): GqlSummaryData
     statement(owner: String!, account: String!, month: GqlMonth!): GqlStatement
   }

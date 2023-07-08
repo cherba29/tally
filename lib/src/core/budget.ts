@@ -54,20 +54,24 @@ function getMonthTransfers<T>(
 }
 
 export class BudgetBuilder {
-  // Period over which the budget is defined.
-  months: Month[] = [];
+  private minMonth: Month | undefined = undefined;
+  private maxMonth: Month | undefined = undefined;
   // Account name to account map.
   readonly accounts = new Map<string, Account>();
   // Account name -> month -> balance map.
   readonly balances = new Map<string, Map<string, Balance>>();
   readonly transfers: TransferData[] = [];
 
-  setPeriod(start: Month, end: Month): void {
-    this.months = Array.from(Month.generate(start, end));
-  }
-
   setAccount(account: Account): void {
     this.accounts.set(account.name, account);
+    if (account.openedOn) {
+      this.minMonth = this.minMonth ? Month.min(this.minMonth, account.openedOn) : account.openedOn;
+      this.maxMonth = this.maxMonth ? Month.max(this.maxMonth, account.openedOn) : account.openedOn;
+    }
+    if (account.closedOn) {
+      this.minMonth = this.minMonth ? Month.min(this.minMonth, account.closedOn) : account.closedOn;
+      this.maxMonth = this.maxMonth ? Month.max(this.maxMonth, account.closedOn) : account.closedOn;
+    }
   }
 
   setBalance(accountName: string, month: string, balance: Balance): void {
@@ -83,10 +87,23 @@ export class BudgetBuilder {
       );
     }
     balances.set(month, balance);
+    const parsedMonth = Month.fromString(month);
+    this.minMonth = this.minMonth ? Month.min(this.minMonth, parsedMonth) : parsedMonth;
+    this.maxMonth = this.maxMonth ? Month.max(this.maxMonth, parsedMonth) : parsedMonth;
   }
 
   addTransfer(transferData: TransferData): void {
     this.transfers.push(transferData);
+    this.minMonth = Month.min(
+      this.minMonth || transferData.toMonth,
+      transferData.toMonth,
+      transferData.fromMonth
+    );
+    this.maxMonth = Month.max(
+      this.maxMonth || transferData.toMonth,
+      transferData.toMonth,
+      transferData.fromMonth
+    );
   }
 
   build(): Budget {
@@ -121,6 +138,14 @@ export class BudgetBuilder {
       );
       fromMonthTransfers.add(transfer);
     }
-    return new Budget(this.months, this.accounts, this.balances, transfers);
+    return new Budget(
+      (this.minMonth &&
+        this.maxMonth &&
+        Array.from(Month.generate(this.minMonth, this.maxMonth.next()))) ||
+        [],
+      this.accounts,
+      this.balances,
+      transfers
+    );
   }
 }

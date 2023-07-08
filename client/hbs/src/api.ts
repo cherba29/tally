@@ -28,11 +28,16 @@ export class BackendClient {
    * Load summary table data via gql client.
    * @return promise of query result.
    */
-  loadTable(owner: string): Promise<ApolloQueryResult<Query>> {
+  loadTable(
+    owner: string,
+    startMonth: string,
+    endMonth: string
+  ): Promise<ApolloQueryResult<Query>> {
+    console.log('### ', owner, startMonth, endMonth);
     return this.gqlClient.query<Query>({
       query: gql`
-        query table($owner: String!) {
-          table(owner: $owner) {
+        query table($owner: String!, $startMonth: GqlMonth!, $endMonth: GqlMonth!) {
+          table(owner: $owner, startMonth: $startMonth, endMonth: $endMonth) {
             currentOwner
             owners
             months
@@ -76,6 +81,8 @@ export class BackendClient {
       `,
       variables: {
         owner,
+        startMonth,
+        endMonth,
       },
     });
   }

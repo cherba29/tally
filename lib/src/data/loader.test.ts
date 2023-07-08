@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, jest, test } from '@jest/globals';
 import { listFiles, loadBudget, unwatchBudgetFiles } from './loader';
 import mockfs from 'mock-fs';
-import { Month } from '../core/month';
 
 describe('listFiles', () => {
   afterEach(() => {
@@ -31,7 +30,6 @@ describe('listFiles', () => {
     process.env.TALLY_FILES = TALLY_PATH;
     mockfs({
       [TALLY_PATH]: {
-        '_config.yaml': '',
         subdir1: {
           'file1.json': '',
           'file2.yaml': '',
@@ -42,7 +40,7 @@ describe('listFiles', () => {
         },
       },
     });
-    expect(listFiles()).toEqual(['_config.yaml', 'subdir1/file2.yaml', 'subdir2/file2.yaml']);
+    expect(listFiles()).toEqual(['subdir1/file2.yaml', 'subdir2/file2.yaml']);
   });
 });
 
@@ -60,42 +58,25 @@ describe('loadBudget', () => {
     );
   });
 
-  test('fails without config', async () => {
-    const TALLY_PATH = 'tally/files/path';
-    process.env.TALLY_FILES = TALLY_PATH;
-    mockfs({
-      [TALLY_PATH]: {
-        /* empty directory */
-      },
-    });
-    await expect(loadBudget()).rejects.toThrow(
-      new Error("ENOENT: no such file or directory, open 'tally/files/path/_config.yaml'")
-    );
-  });
-
-  test('empty', async () => {
+  test('just account', async () => {
     jest.spyOn(console, 'log').mockImplementation(() => {});
 
     const TALLY_PATH = 'tally/files/path';
     process.env.TALLY_FILES = TALLY_PATH;
     mockfs({
       [TALLY_PATH]: {
-        '_config.yaml': 'budget_period: {start: Nov2019, end: Feb2020}',
+        'file2.yaml': `
+          name: test-account
+          owner: [ someone ]
+          type: external
+          opened_on: Mar2019
+        `.replace(/^ +/g, ''),
       },
     });
-    await expect(loadBudget()).resolves.toEqual({
-      budget: {
-        accounts: new Map(),
-        balances: new Map(),
-        months: [new Month(2019, 10), new Month(2019, 11), new Month(2020, 0), new Month(2020, 1)],
-        transfers: new Map(),
-      },
-      statements: [],
-      summaries: [],
-    });
+    const result = await loadBudget();
+    expect(result).toMatchSnapshot();
 
     expect(console.log).toHaveBeenCalledTimes(3);
-    expect(console.log).toHaveBeenCalledWith('Loading _config.yaml');
     expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Done loading 1 file(s)'));
   });
 });

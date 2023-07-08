@@ -45,6 +45,10 @@ jest_test(
         ":tsconfig.json",
     ],
     node_modules = ":node_modules",
+    snapshots = glob(
+        ["src/**/__snapshots__"],
+        exclude_directories = 0,
+    ),
 )
 
 npm_package(

@@ -33,18 +33,16 @@ export class Month {
     return `${MONTH_NAMES[this.month]}${this.year}`;
   }
 
-  next(): Month {
-    if (this.month >= 11) {
-      return new Month(this.year + 1, 0);
-    }
-    return new Month(this.year, this.month + 1);
+  next(amount = 1): Month {
+    const months = this.year * 12 + this.month + amount;
+    const month = months % 12;
+    return new Month((months - month) / 12, month);
   }
 
-  previous(): Month {
-    if (this.month == 0) {
-      return new Month(this.year - 1, 11);
-    }
-    return new Month(this.year, this.month - 1);
+  previous(amount = 1): Month {
+    const months = this.year * 12 + this.month - amount;
+    const month = months % 12;
+    return new Month((months - month) / 12, month);
   }
 
   isLess(other: Month): boolean {
@@ -67,6 +65,14 @@ export class Month {
    */
   distance(other: Month): number {
     return (this.year - other.year) * 12 + (this.month - other.month);
+  }
+
+  static min(...args: Month[]): Month {
+    return args.reduce((a, b) => (a.isLess(b) ? a : b));
+  }
+
+  static max(...args: Month[]): Month {
+    return args.reduce((a, b) => (a.isLess(b) ? b : a));
   }
 
   /** Convert string representation to internal representation. */

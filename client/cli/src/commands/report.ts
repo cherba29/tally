@@ -54,12 +54,16 @@ export const report: CommandModule<unknown, ReportOptions> = {
   describe: desc,
   builder,
   handler: async ({ account, startMonth, endMonth }): Promise<void> => {
-    const budget: Budget = (await loadBudget(startMonth, endMonth)).budget;
+    const budget: Budget = (await loadBudget()).budget;
     process.stdout.write(HEADER_ROW.join(',') + '\n');
     const statementTable: TransactionStatement[] = buildTransactionStatementTable(budget);
     for (const transactionStatement of statementTable) {
       const stmtAccount: Account = transactionStatement.account;
-      if (stmtAccount.name !== account) {
+      if (
+        stmtAccount.name !== account ||
+        transactionStatement.month.isLess(startMonth) ||
+        endMonth.isLess(transactionStatement.month)
+      ) {
         continue;
       }
       const row: string[] = [

@@ -9,6 +9,7 @@ import './balance-tooltip';
 import './balance-summary-tooltip';
 import './summary-table';
 import {CellClickEventData} from './summary-table';
+import {Month} from '@tally/lib';
 
 @customElement('tally-app')
 export class TallyApp extends LitElement {
@@ -30,6 +31,8 @@ export class TallyApp extends LitElement {
   private timerId: NodeJS.Timer | undefined = undefined;
 
   // Rendered values.
+  private startMonth: Month = Month.fromDate(new Date()).previous(12);
+  private endMonth: Month = Month.fromDate(new Date()).next(3);
   private errorMessage: string = '';
   private minutes: string = '00';
   private seconds: string = '00';
@@ -51,6 +54,9 @@ export class TallyApp extends LitElement {
       this.minutes = pad(Math.floor(diffTimeSec / 60));
       this.requestUpdate();
     }, 1000);
+    this.startMonth = Month.fromDate(new Date()).previous(12);
+    this.endMonth = Month.fromDate(new Date()).next(3);
+    console.log('###', this.startMonth, this.endMonth);
     this.reloadTable();
   }
   override disconnectedCallback() {
@@ -70,6 +76,22 @@ export class TallyApp extends LitElement {
 
     return html`
       <div style="position: fixed;font-size: 80%;">
+        <button @click="${() => this.updateRange(0, 12)}">&lt;&lt;</button>
+        <button @click="${() => this.updateRange(0, 1)}">&lt;</button>
+        ${this.endMonth}
+        <button @click="${() => this.updateRange(0, -1)}">&gt;</button>
+        <button @click="${() => this.updateRange(0, -12)}">&gt;&gt;</button>
+        &mdash;
+        <button @click="${() => this.updateRange(12, 0)}">&lt;&lt;</button>
+        <button @click="${() => this.updateRange(1, 0)}">&lt;</button>
+        ${this.startMonth}
+        <button @click="${() => this.updateRange(-1, 0)}">&gt;</button>
+        <button @click="${() => this.updateRange(-12, 0)}">&gt;&gt;</button>
+
+        <button @click="${() => this.updateRange(12, 12)}">&lt;&lt;</button>
+        <button @click="${() => this.updateRange(1, 1)}">&lt;</button>
+        <button @click="${() => this.updateRange(-1, -1)}">&gt;</button>
+        <button @click="${() => this.updateRange(-12, -12)}">&gt;&gt;</button>
         <button @click="${this.reloadTable}">Reload Table</button>
         <label id="minutes">${this.minutes}</label>:<label id="seconds">${this.seconds}</label>
       </div>
@@ -93,6 +115,12 @@ export class TallyApp extends LitElement {
         </div>`;
       })}
     `;
+  }
+
+  updateRange(startDelta: number, endDelta: number) {
+    this.startMonth = this.startMonth.next(startDelta);
+    this.endMonth = this.endMonth.next(endDelta);
+    this.reloadTable();
   }
 
   tabClick(owner: string) {
@@ -195,7 +223,7 @@ export class TallyApp extends LitElement {
   private reloadTable() {
     console.log('tally-app Loading graphql table');
     this.backendClient
-      .loadTable(this.currentOwner ?? '')
+      .loadTable(this.currentOwner ?? '', this.startMonth.toString(), this.endMonth.toString())
       .then((result) => {
         this.lastReloadTimestamp = new Date();
         console.log(result);

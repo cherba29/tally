@@ -34,7 +34,6 @@ test('build simple', () => {
   builder.setAccount(account1);
   builder.setAccount(account2);
   builder.setAccount(account3);
-  builder.setPeriod(new Month(2019, 10), new Month(2020, 2));
   builder.setBalance(
     'test-account1',
     'Nov2019',
@@ -70,7 +69,7 @@ test('build simple', () => {
   expect(builder.accounts.get('test-account1')).toEqual(account1);
   expect(builder.accounts.get('test-account2')).toEqual(account2);
   expect(budget.balances.size).toBe(2);
-  expect(budget.months).toEqual(['Nov2019', 'Dec2019', 'Jan2020', 'Feb2020'].map(Month.fromString));
+  expect(budget.months).toEqual(['Nov2019', 'Dec2019'].map(Month.fromString));
   expect(budget.transfers.size).toBe(3);
 });
 

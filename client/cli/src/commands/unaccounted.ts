@@ -41,7 +41,7 @@ export const commandModule: CommandModule<unknown, Options> = {
   describe: desc,
   builder,
   handler: async ({ owner, account, startMonth, endMonth, limit }): Promise<void> => {
-    const budget: Budget = (await loadBudget(startMonth, endMonth)).budget;
+    const budget: Budget = (await loadBudget()).budget;
     const statementTable: TransactionStatement[] = buildTransactionStatementTable(budget);
     const unaccountedEntries: UnaccountedEntry[] = [];
     for (const transactionStatement of statementTable) {
@@ -53,6 +53,12 @@ export const commandModule: CommandModule<unknown, Options> = {
         continue;
       }
       if (account && stmtAccount.name !== account) {
+        continue;
+      }
+      if (startMonth && transactionStatement.month.isLess(startMonth)) {
+        continue;
+      }
+      if (endMonth && endMonth.isLess(transactionStatement.month)) {
         continue;
       }
       const unaccounted = transactionStatement?.unaccounted;

@@ -3,9 +3,7 @@ import * as path from 'path';
 import * as chokidar from 'chokidar';
 
 import { Budget, BudgetBuilder } from '../core/budget';
-import { Month } from '../core/month';
 import { loadYamlFile, parseYamlContent, YamlData } from './loader_yaml';
-import { loadTallyConfig } from './config';
 import { TransactionStatement, buildTransactionStatementTable } from '../statement/transaction';
 import { SummaryStatement, buildSummaryStatementTable } from '../statement/summary';
 
@@ -65,7 +63,7 @@ export interface DataPayload {
   summaries: SummaryStatement[];
 }
 
-export async function loadBudget(startMonth?: Month, endMonth?: Month): Promise<DataPayload> {
+export async function loadBudget(): Promise<DataPayload> {
   if (budget !== undefined && statements !== undefined && summaries !== undefined) {
     return { budget, statements, summaries };
   }
@@ -73,22 +71,6 @@ export async function loadBudget(startMonth?: Month, endMonth?: Month): Promise<
     throw Error('Process environment variable "TALLY_FILES" has not been specified.');
   }
   const budgetBuilder = new BudgetBuilder();
-
-  if (startMonth && endMonth) {
-    if (startMonth.compareTo(endMonth) >= 0) {
-      throw new Error(
-        `Start month ${startMonth} should precede end month ${endMonth} when loading budget`
-      );
-    }
-  } else {
-    const config = loadTallyConfig();
-    // Always show one more month, in case user chooses in the config
-    // just single month. It is not meaningful to show only one month
-    // as values from next used for current month.
-    startMonth = config.budget_period.start;
-    endMonth = config.budget_period.end.next();
-  }
-  budgetBuilder.setPeriod(startMonth, endMonth);
 
   const filePaths: string[] = [];
   const startTimeMs: number = Date.now();
@@ -116,7 +98,6 @@ export async function loadBudget(startMonth?: Month, endMonth?: Month): Promise<
         }
         console.log(`${eventType} for ${fileStat}`);
         const changedBudgetBuilder = new BudgetBuilder();
-        changedBudgetBuilder.setPeriod(startMonth!, endMonth!);
         const startTimeMs: number = Date.now();
         const content = fs.readFileSync(`${fileStat}`, 'utf8');
         const relativeFilePath = `${fileStat}`.slice(pathToData.length + 1);
