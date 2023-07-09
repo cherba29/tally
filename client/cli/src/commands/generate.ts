@@ -20,8 +20,21 @@ const builder: CommandBuilder<unknown, GenerateOptions> = (yargs: Argv<unknown>)
   yargs
     .options({
       'start-month': { type: 'string', demandOption: true },
-      'use-transfers': { type: 'boolean', default: false },
-      'show-transfers': { type: 'boolean', default: false },
+      'use-transfers': {
+        type: 'boolean',
+        default: false,
+        description: 'Ignore balance entries and use existing transfer to compute them.',
+      },
+      'show-transfers': {
+        type: 'boolean',
+        default: false,
+        description: 'Show existing transfers for debugging.',
+      },
+      'with-annual-flush': {
+        type: 'boolean',
+        default: false,
+        description: 'Generate annual flush transfers. (Make sure to remove existing transfers)',
+      },
     })
     .positional('account', { type: 'string', demandOption: true })
     .coerce('start-month', Month.fromString) as unknown as Argv<GenerateOptions>;
@@ -30,7 +43,13 @@ export const generate: CommandModule<unknown, GenerateOptions> = {
   command,
   describe: desc,
   builder,
-  handler: async ({ account, startMonth, useTransfers, showTransfers }): Promise<void> => {
+  handler: async ({
+    account,
+    startMonth,
+    useTransfers,
+    showTransfers,
+    withAnnualFlush,
+  }): Promise<void> => {
     const budget: Budget = (await loadBudget()).budget;
     process.stdout.write(
       `Generating balances for ${account} starting from ${startMonth?.toString()}!\n`
@@ -70,6 +89,7 @@ export const generate: CommandModule<unknown, GenerateOptions> = {
     const padAmtLength = Math.max(...ammountLengths) + 2; // 1 extra leading space plus "."
 
     const lines: string[] = [];
+    const flushLines: string[] = [];
     // For each month, compute running predicted balance and actual balance.
     let predictedBalance: Balance | undefined = undefined;
     for (
@@ -78,7 +98,7 @@ export const generate: CommandModule<unknown, GenerateOptions> = {
       currentMonth = currentMonth.next()
     ) {
       const recordedBalance = accountBalances.get(currentMonth.toString());
-      const currentBalance: Balance | undefined = useTransfers
+      let currentBalance: Balance | undefined = useTransfers
         ? predictedBalance ?? recordedBalance
         : recordedBalance ?? predictedBalance;
       if (!currentBalance) {
@@ -113,6 +133,16 @@ export const generate: CommandModule<unknown, GenerateOptions> = {
             .map((t) => t.balance.date)
             .reduce((prev, curr) => (prev.getTime() < curr.getTime() ? prev : curr))
         : undefined;
+      if (withAnnualFlush && currentMonth.month === 0) {
+        const firstMonth = currentMonth;
+        const amtValue = (currentBalance.amount / 100).toFixed(2).padStart(padAmtLength);
+        flushLines.push(
+          `    - { grp: ${firstMonth}, date: ${
+            firstMonth.year
+          }-01-02, camt: ${amtValue}, desc: "Total for ${currentMonth.year - 1}" }`
+        );
+        currentBalance = new Balance(0, currentBalance.date, currentBalance.type);
+      }
       predictedBalance = nextBalance(
         account,
         currentBalance,
@@ -124,6 +154,10 @@ export const generate: CommandModule<unknown, GenerateOptions> = {
 
     lines.reverse();
     for (const line of lines) {
+      process.stdout.write(line + '\n');
+    }
+    flushLines.reverse();
+    for (const line of flushLines) {
       process.stdout.write(line + '\n');
     }
     process.exit(0);
