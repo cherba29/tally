@@ -7,6 +7,7 @@ import {
   TransactionStatement,
   buildTransactionStatementTable,
 } from '@tally/lib/statement/transaction';
+import { Type as BalanceType } from '@tally/lib/core/balance';
 
 type Options = {
   owner: string | undefined;
@@ -30,6 +31,7 @@ const builder: CommandBuilder<unknown, Options> = (yargs: Argv<unknown>) =>
       owner: { type: 'string' },
       'start-month': { type: 'string' },
       'end-month': { type: 'string' },
+      'include-projected': { type: 'boolean', default: false },
       limit: { type: 'number', default: 20 },
     })
     .positional('account', { type: 'string' })
@@ -40,7 +42,14 @@ export const commandModule: CommandModule<unknown, Options> = {
   command,
   describe: desc,
   builder,
-  handler: async ({ owner, account, startMonth, endMonth, limit }): Promise<void> => {
+  handler: async ({
+    owner,
+    account,
+    startMonth,
+    endMonth,
+    includeProjected,
+    limit,
+  }): Promise<void> => {
     const budget: Budget = (await loadBudget()).budget;
     const statementTable: TransactionStatement[] = buildTransactionStatementTable(budget);
     const unaccountedEntries: UnaccountedEntry[] = [];
@@ -62,7 +71,10 @@ export const commandModule: CommandModule<unknown, Options> = {
         continue;
       }
       const unaccounted = transactionStatement?.unaccounted;
-      if (unaccounted !== 0) {
+      if (
+        unaccounted !== 0 &&
+        (includeProjected || transactionStatement.endBalance?.type === BalanceType.CONFIRMED)
+      ) {
         unaccountedEntries.push({
           account: stmtAccount,
           statement: transactionStatement,
