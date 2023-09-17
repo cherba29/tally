@@ -52,6 +52,18 @@ export class Month {
     return this.year < other.year;
   }
 
+  isBetween(start: Month|undefined, end: Month|undefined): boolean {
+    if (start) {
+      if (this.year < start.year) return false;
+      if (this.month < start.month) return false;
+    }
+    if (end) {
+      if (this.year > end.year) return false;
+      if (this.month > end.month) return false;
+    }
+    return true;
+  }
+
   compareTo(other: Month): number {
     if (this.year === other.year) {
       return this.month - other.month;

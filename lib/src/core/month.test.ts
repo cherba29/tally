@@ -87,6 +87,23 @@ describe('Ordering', () => {
     expect(monthB.compareTo(monthA)).toBe(0);
     expect(monthA.compareTo(monthB)).toBe(0);
   });
+
+  test('isBetween - before', () => {
+    const monthA = new Month(2019, 10);
+    const monthB = new Month(2022, 10);
+    expect(new Month(2018, 11).isBetween(monthA, monthB)).toBeFalsy();
+    expect(new Month(2019, 9).isBetween(monthA, monthB)).toBeFalsy();
+    expect(new Month(2019, 10).isBetween(monthA, monthB)).toBeTruthy();
+    expect(new Month(2020, 1).isBetween(undefined, monthA)).toBeFalsy();
+  });
+
+  test('isBetween - after', () => {
+    const monthA = new Month(2019, 10);
+    const monthB = new Month(2022, 10);
+    expect(new Month(2022, 10).isBetween(monthA, monthB)).toBeTruthy();
+    expect(new Month(2022, 11).isBetween(monthA, monthB)).toBeFalsy();
+    expect(new Month(2023, 1).isBetween(monthA, monthB)).toBeFalsy();
+  });
 });
 
 describe('distance', () => {
