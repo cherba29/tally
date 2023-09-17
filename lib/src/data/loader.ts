@@ -42,7 +42,7 @@ export function listFiles(): string[] {
 
 let watchedPath: string | undefined = undefined;
 let watcher: chokidar.FSWatcher | undefined = undefined;
-const parsedAccountData = new Map<string, YamlData | undefined>();
+const parsedAccountData = new Map<string, YamlData>();
 let budget: Budget | undefined = undefined;
 let statements: TransactionStatement[] | undefined = undefined;
 let summaries: SummaryStatement[] | undefined = undefined;
@@ -81,6 +81,9 @@ export async function loadBudget(): Promise<DataPayload> {
     console.log('Loading ' + relative_file_path);
     const content = fs.readFileSync(file_path, 'utf8');
     const accountData = parseYamlContent(content, relative_file_path);
+    if (accountData === undefined) {
+      throw Error(`Failed to parse ${relative_file_path}`);
+    }
     parsedAccountData.set(relative_file_path, accountData);
     loadYamlFile(budgetBuilder, accountData, relative_file_path);
   }
@@ -91,24 +94,36 @@ export async function loadBudget(): Promise<DataPayload> {
     }
     watchedPath = pathToData;
     watcher = chokidar
-      .watch(pathToData, {})
+      .watch(pathToData, {
+        persistent: true,
+        // Multiple change events can be emitted as a larger file is being written.
+        awaitWriteFinish: {
+          stabilityThreshold: 300
+        } 
+      })
       .on('all', async (eventType: string, fileStat: fs.Stats | undefined) => {
         if (!fileStat || ['add', 'addDir'].includes(eventType)) {
           return;
         }
         console.log(`${eventType} for ${fileStat}`);
-        const changedBudgetBuilder = new BudgetBuilder();
         const startTimeMs: number = Date.now();
         const content = fs.readFileSync(`${fileStat}`, 'utf8');
         const relativeFilePath = `${fileStat}`.slice(pathToData.length + 1);
         const accountData = parseYamlContent(content, relativeFilePath);
+        if (accountData === undefined) {
+          throw Error(`Failed to parse ${relativeFilePath} content of size ${content.length} fileStat: ${fileStat}`);
+        }
         parsedAccountData.set(relativeFilePath, accountData);
 
+        const changedBudgetBuilder = new BudgetBuilder();
         for (const [filePath, accountData] of parsedAccountData) {
           try {
             loadYamlFile(changedBudgetBuilder, accountData, filePath);
+            if (!changedBudgetBuilder.accounts.has(accountData?.name ?? '')) {
+              console.warn(`warning: ${filePath} is not an account file.`);
+            }
           } catch (e) {
-            console.error(`Failed to add ${filePath}, ${e}`);
+            console.error(`error: Failed to add ${filePath}, ${e}`);
             return;
           }
         }
@@ -117,15 +132,26 @@ export async function loadBudget(): Promise<DataPayload> {
         );
         try {
           budget = changedBudgetBuilder.build();
-          statements = buildTransactionStatementTable(budget);
-          summaries = [...buildSummaryStatementTable(statements)];
         } catch (e) {
-          console.error(`Failed to build budget ${e}`);
+          console.error(`error: Failed to build budget ${e}`);
           return;
         }
-        console.log(`Rebuilt budget in ${Date.now() - startTimeMs}ms`);
+        try {
+          statements = buildTransactionStatementTable(budget);
+        } catch (e) {
+          console.error(`error: Failed to build statements table ${e}`);
+          return;
+        }
+        try {
+          summaries = [...buildSummaryStatementTable(statements)];
+        } catch (e) {
+          console.error(`error: Failed to build summary table ${e}`);
+          return;
+        }
+
+        console.log(`info: Rebuilt budget in ${Date.now() - startTimeMs}ms`);
       });
-    console.log(`Watching ${process.env.TALLY_FILES}`);
+    console.log(`info: Watching ${process.env.TALLY_FILES}`);
   }
   budget = budgetBuilder.build();
   statements = buildTransactionStatementTable(budget);
