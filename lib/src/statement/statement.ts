@@ -54,6 +54,16 @@ export abstract class Statement {
     return (100 * change) / startAmount;
   }
 
+  get annualizedPercentChange(): number | undefined {
+    const prctChange = this.percentChange;
+    if (prctChange === undefined) {
+      return undefined;
+    }
+    const result = Math.pow(1 + Math.abs(prctChange) / 100, 12) - 1;
+    // Dont consider 1000% and more as meaningful annualized numbers.
+    return result < 10 ? 100 * Math.sign(prctChange) * result : undefined;
+  }
+
   get unaccounted(): number | undefined {
     const change = this.change;
     return change !== undefined ? change - this.addSub : undefined;

@@ -173,14 +173,20 @@ export class TallyApp extends LitElement {
 
   private popupMonthRangeChange(e: CustomEvent<MonthRangeChange>) {
     console.log('### popup month range change', e.detail.startMonth, '-->', e.detail.endMonth);
-    this.reloadPopupSummaryStatement(e.detail.accountName, 
+    this.reloadPopupSummaryStatement(
+      e.detail.accountName,
       e.detail.startMonth?.toString(),
-      e.detail.endMonth.toString());
+      e.detail.endMonth.toString()
+    );
   }
 
   private onCellClick(e: CustomEvent<CellClickEventData>) {
     if (e.detail.isSummary) {
-      this.reloadPopupSummaryStatement(e.detail.accountName ?? '', e.detail.month ?? '', e.detail.month ?? '');
+      this.reloadPopupSummaryStatement(
+        e.detail.accountName ?? '',
+        e.detail.month ?? '',
+        e.detail.month ?? ''
+      );
       this.popupOffset = {
         top: e.detail.mouseEvent.pageY + 10,
         left: e.detail.mouseEvent.pageX,
@@ -213,25 +219,29 @@ export class TallyApp extends LitElement {
     }
   }
 
-  private reloadPopupSummaryStatement(accountName: string, startMonth: string|undefined, endMonth: string) {
+  private reloadPopupSummaryStatement(
+    accountName: string,
+    startMonth: string | undefined,
+    endMonth: string
+  ) {
     this.backendClient
-    .loadSummaryData(this.currentOwner ?? '', accountName, startMonth, endMonth)
-    .then((result) => {
-      console.log(`PopupData for ${accountName} ${startMonth}-${endMonth}`, result);
-      const summaryStatement = result.data.summary?.total;
-      const statements = result.data.summary?.statements;
-      const popupData: PopupMonthSummaryData = {
-        accountName,
-        month: endMonth,
-        summary: summaryStatement ?? undefined,
-        statements: (statements || []).map((stmt) => ({
-          name: stmt?.name ?? '',
-          stmt: stmt!,
-        })),
-      };
-      this.popupData = popupData;
-      this.requestUpdate();
-    });
+      .loadSummaryData(this.currentOwner ?? '', accountName, startMonth, endMonth)
+      .then((result) => {
+        console.log(`PopupData for ${accountName} ${startMonth}-${endMonth}`, result);
+        const summaryStatement = result.data.summary?.total;
+        const statements = result.data.summary?.statements;
+        const popupData: PopupMonthSummaryData = {
+          accountName,
+          month: endMonth,
+          summary: summaryStatement ?? undefined,
+          statements: (statements || []).map((stmt) => ({
+            name: stmt?.name ?? '',
+            stmt: stmt!,
+          })),
+        };
+        this.popupData = popupData;
+        this.requestUpdate();
+      });
   }
 
   private reloadTable() {

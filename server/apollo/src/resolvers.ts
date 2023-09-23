@@ -54,6 +54,9 @@ function toGqlStatement(statement: TransactionStatement): GqlStatement {
     addSub: statement.addSub,
     percentChange:
       statement.percentChange && Math.round((statement.percentChange + Number.EPSILON) * 100) / 100,
+    annualizedPercentChange:
+      statement.annualizedPercentChange &&
+      Math.round((statement.annualizedPercentChange + Number.EPSILON) * 100) / 100,
     unaccounted: statement.unaccounted,
     startBalance: {
       amount: statement.startBalance?.amount ?? 0,
@@ -99,6 +102,9 @@ function toGqlSummaryStatement(summary: SummaryStatement): GqlSummaryStatement {
     outFlows: summary.outFlows,
     percentChange:
       summary.percentChange && Math.round((summary.percentChange + Number.EPSILON) * 100) / 100,
+    annualizedPercentChange:
+      summary.annualizedPercentChange &&
+      Math.round((summary.annualizedPercentChange + Number.EPSILON) * 100) / 100,
     totalPayments: summary.totalPayments,
     totalTransfers: summary.totalTransfers,
     unaccounted: summary.unaccounted,
@@ -236,6 +242,9 @@ async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTable> {
         isProjected: stmt?.endBalance?.type !== BalanceType.CONFIRMED,
         percentChange:
           stmt?.percentChange && Math.round((stmt.percentChange + Number.EPSILON) * 100) / 100,
+        annualizedPercentChange:
+          stmt?.annualizedPercentChange &&
+          Math.round((stmt.annualizedPercentChange + Number.EPSILON) * 100) / 100,
         unaccounted: stmt?.unaccounted,
         balanced: !stmt?.unaccounted
       });
@@ -261,21 +270,26 @@ async function buildSummaryData(_: any, args: QuerySummaryArgs): Promise<GqlSumm
     args.owner + ' ' + (args.accountType === args.owner ? 'SUMMARY' : args.accountType);
   // Summary list is in reverse chronological order.
   const summaryStatements = payload.summaries.filter(
-      (stmt) => stmt.name === summaryName && stmt.month.isBetween(args.startMonth, args.endMonth)
+    (stmt) => stmt.name === summaryName && stmt.month.isBetween(args.startMonth, args.endMonth)
   );
   if (!summaryStatements.length) {
     throw new Error(
       `Summary ${args.accountType} for ${args.owner} for months [${args.startMonth}, ${args.endMonth}] not found.`
     );
   }
-  const summary = summaryStatements.length === 1 ? summaryStatements[0] : combineSummaryStatements(summaryStatements);
+  const summary =
+    summaryStatements.length === 1
+      ? summaryStatements[0]
+      : combineSummaryStatements(summaryStatements);
   const result = {
     statements: summary.statements
       .sort((a, b) => (a.name < b.name ? -1 : 1))
       .map((stmt) => toGqlStatement(stmt as TransactionStatement)),
     total: toGqlSummaryStatement(summary)
   };
-  console.log(`gql summary data in ${Date.now() - startTimeMs}ms for [${args.startMonth}, ${args.endMonth}]`);
+  console.log(
+    `gql summary data in ${Date.now() - startTimeMs}ms for [${args.startMonth}, ${args.endMonth}]`
+  );
   return result;
 }
 

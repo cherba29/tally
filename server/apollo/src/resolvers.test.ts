@@ -42,7 +42,8 @@ describe('gqlSummary', () => {
   test('load', async () => {
     const data = await resolvers.Query.summary(undefined, {
       owner: 'john',
-      month: 'Feb2015',
+      startMonth: Month.fromString('Feb2015'),
+      endMonth: Month.fromString('Feb2015'),
       accountType: 'BILL'
     });
     expect(data).toMatchSnapshot();

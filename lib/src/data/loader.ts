@@ -98,8 +98,8 @@ export async function loadBudget(): Promise<DataPayload> {
         persistent: true,
         // Multiple change events can be emitted as a larger file is being written.
         awaitWriteFinish: {
-          stabilityThreshold: 300
-        } 
+          stabilityThreshold: 300,
+        },
       })
       .on('all', async (eventType: string, fileStat: fs.Stats | undefined) => {
         if (!fileStat || ['add', 'addDir'].includes(eventType)) {
@@ -111,7 +111,9 @@ export async function loadBudget(): Promise<DataPayload> {
         const relativeFilePath = `${fileStat}`.slice(pathToData.length + 1);
         const accountData = parseYamlContent(content, relativeFilePath);
         if (accountData === undefined) {
-          throw Error(`Failed to parse ${relativeFilePath} content of size ${content.length} fileStat: ${fileStat}`);
+          throw Error(
+            `Failed to parse ${relativeFilePath} content of size ${content.length} fileStat: ${fileStat}`
+          );
         }
         parsedAccountData.set(relativeFilePath, accountData);
 

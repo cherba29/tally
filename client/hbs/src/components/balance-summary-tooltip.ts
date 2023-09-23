@@ -4,7 +4,7 @@ import {StatementEntry} from '../utils';
 import {dateFormat, currency, isProjected} from '../format';
 import {classMap, ClassInfo} from 'lit/directives/class-map.js';
 import {GqlBalance, GqlSummaryStatement} from 'src/gql_types';
-import { Month } from '@tally/lib';
+import {Month} from '@tally/lib';
 
 enum SummaryView {
   MONTH_1 = '1m',
@@ -22,31 +22,46 @@ enum SummaryView {
   YEAR_20 = '20y',
   YEAR_30 = '30y',
   YEAR_MAX = 'Max',
-};
+}
 
-function mapViewToMonths(viewMonthRange: SummaryView, currentMonth: Month): number|undefined {
+function mapViewToMonths(viewMonthRange: SummaryView, currentMonth: Month): number | undefined {
   switch (viewMonthRange) {
-    case SummaryView.MONTH_1: return 1;
-    case SummaryView.MONTH_3: return 3;
-    case SummaryView.MONTH_6: return 6;
-    case SummaryView.MONTH_9: return 9;
-    case SummaryView.YTD: return currentMonth.month + 1;
-    case SummaryView.YEAR_1: return 12;
-    case SummaryView.YEAR_2: return 24;
-    case SummaryView.YEAR_3: return 36;
-    case SummaryView.YEAR_5: return 60;
-    case SummaryView.YEAR_7: return 84;
-    case SummaryView.YEAR_10: return 120;
-    case SummaryView.YEAR_15: return 180;
-    case SummaryView.YEAR_20: return 240;
-    case SummaryView.YEAR_30: return 360;
-    case SummaryView.YEAR_MAX: return undefined;
+    case SummaryView.MONTH_1:
+      return 1;
+    case SummaryView.MONTH_3:
+      return 3;
+    case SummaryView.MONTH_6:
+      return 6;
+    case SummaryView.MONTH_9:
+      return 9;
+    case SummaryView.YTD:
+      return currentMonth.month + 1;
+    case SummaryView.YEAR_1:
+      return 12;
+    case SummaryView.YEAR_2:
+      return 24;
+    case SummaryView.YEAR_3:
+      return 36;
+    case SummaryView.YEAR_5:
+      return 60;
+    case SummaryView.YEAR_7:
+      return 84;
+    case SummaryView.YEAR_10:
+      return 120;
+    case SummaryView.YEAR_15:
+      return 180;
+    case SummaryView.YEAR_20:
+      return 240;
+    case SummaryView.YEAR_30:
+      return 360;
+    case SummaryView.YEAR_MAX:
+      return undefined;
   }
 }
 
 export interface MonthRangeChange {
-  accountName: string,
-  startMonth: Month|undefined;
+  accountName: string;
+  startMonth: Month | undefined;
   endMonth: Month;
 }
 
@@ -92,22 +107,25 @@ export class BalanceSummaryTooltip extends LitElement {
 
   switchView(e: Event) {
     const viewType = (e.target as Element).getAttribute('key') as keyof typeof SummaryView;
-    
+
     const currentMonth = Month.fromString(this.endMonth);
     const numberOfMonths = mapViewToMonths(SummaryView[viewType], currentMonth);
-    const startMonth = (numberOfMonths !== undefined) ? currentMonth.previous(numberOfMonths - 1) : undefined;
+    const startMonth =
+      numberOfMonths !== undefined ? currentMonth.previous(numberOfMonths - 1) : undefined;
     this.startMonth = startMonth ? startMonth.toString() : this.endMonth;
     const period = currentMonth.distance(startMonth ?? currentMonth) + 1;
     const years = Math.floor(period / 12);
     const months = period - 12 * years;
     this.period = (years ? years + 'y' : '') + (months ? months + 'm' : '');
-    this.dispatchEvent(new CustomEvent<MonthRangeChange>('month-range-change', {
-      detail: {
-      accountName: this.accountName,
-      startMonth,
-      endMonth: currentMonth
-      }
-    }));
+    this.dispatchEvent(
+      new CustomEvent<MonthRangeChange>('month-range-change', {
+        detail: {
+          accountName: this.accountName,
+          startMonth,
+          endMonth: currentMonth,
+        },
+      })
+    );
   }
 
   onCloseButton() {
@@ -125,12 +143,15 @@ export class BalanceSummaryTooltip extends LitElement {
 
     return html`
       <span @click="${this.onCloseButton}">XXX</span>
-      ${Object.keys(SummaryView).map(key=>
-        html`<button key="${key}" @click="${this.switchView}">
-          ${SummaryView[key as keyof typeof SummaryView]}
-        </button>`)
-      }
-      <span style="float:right;">${this.accountName} ${this.startMonth} - ${this.endMonth} (${this.period})</span>
+      ${Object.keys(SummaryView).map(
+        (key) =>
+          html`<button key="${key}" @click="${this.switchView}">
+            ${SummaryView[key as keyof typeof SummaryView]}
+          </button>`
+      )}
+      <span style="float:right;"
+        >${this.accountName} ${this.startMonth} - ${this.endMonth} (${this.period})</span
+      >
       <table>
         <thead>
           <th style="min-width:170px">Account</th>
@@ -140,6 +161,7 @@ export class BalanceSummaryTooltip extends LitElement {
           <th style="min-width:50px">End<br />Balance</th>
           <th style="min-width:50px">Change</th>
           <th style="min-width:50px">Prct<br />Change</th>
+          <th style="min-width:50px">An Prct<br />Change</th>
           <th style="min-width:50px">Inflows</th>
           <th style="min-width:50px">OutFlows</th>
           <th style="min-width:50px">AddSub</th>
@@ -163,6 +185,7 @@ export class BalanceSummaryTooltip extends LitElement {
                 </td>
                 <td align="right">${currency(e.stmt.change)}</td>
                 <td align="right">${e.stmt.percentChange}</td>
+                <td align="right">${e.stmt.annualizedPercentChange}</td>
                 <td align="right">${currency(e.stmt.inFlows)}</td>
                 <td align="right">${currency(e.stmt.outFlows)}</td>
                 <td align="right">${currency(e.stmt.addSub)}</td>
@@ -184,6 +207,7 @@ export class BalanceSummaryTooltip extends LitElement {
             </td>
             <td align="right">${currency(this.summary?.change)}</td>
             <td align="right">${this.summary?.percentChange ?? nothing}</td>
+            <td align="right">${this.summary?.annualizedPercentChange ?? nothing}</td>
             <td align="right">${currency(this.summary?.inFlows)}</td>
             <td align="right">${currency(this.summary?.outFlows)}</td>
             <td align="right">${currency(this.summary?.addSub)}</td>

@@ -7,7 +7,12 @@ export default gql`
   type Query {
     files: [String]
     table(owner: String, startMonth: GqlMonth!, endMonth: GqlMonth!): GqlTable
-    summary(owner: String!, accountType: String!, startMonth: GqlMonth, endMonth: GqlMonth!): GqlSummaryData
+    summary(
+      owner: String!
+      accountType: String!
+      startMonth: GqlMonth
+      endMonth: GqlMonth!
+    ): GqlSummaryData
     statement(owner: String!, account: String!, month: GqlMonth!): GqlStatement
   }
 
@@ -98,6 +103,7 @@ export default gql`
     change: Int
     addSub: Int
     percentChange: Float
+    annualizedPercentChange: Float
     unaccounted: Float
     transactions: [GqlTransaction]
   }
@@ -112,6 +118,7 @@ export default gql`
     inFlows: Int
     outFlows: Int
     percentChange: Float
+    annualizedPercentChange: Float
     totalPayments: Int
     totalTransfers: Int
     unaccounted: Int
@@ -135,6 +142,7 @@ export default gql`
     isProjectedCovered: Boolean
     hasProjectedTransfer: Boolean
     percentChange: Float
+    annualizedPercentChange: Float
     unaccounted: Int
     balanced: Boolean
   }

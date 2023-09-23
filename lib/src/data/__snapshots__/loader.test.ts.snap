@@ -86,6 +86,10 @@ exports[`loadBudget just account 1`] = `
       "name": "someone EXTERNAL",
       "outFlows": 0,
       "startBalance": undefined,
+      "startMonth": Month {
+        "month": 2,
+        "year": 2019,
+      },
       "statements": [
         TransactionStatement {
           "account": Account {

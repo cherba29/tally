@@ -65,6 +65,7 @@ export type GqlStatement = {
   name?: Maybe<Scalars['String']>;
   outFlows?: Maybe<Scalars['Int']>;
   percentChange?: Maybe<Scalars['Float']>;
+  annualizedPercentChange?: Maybe<Scalars['Float']>;
   startBalance?: Maybe<GqlBalance>;
   totalPayments?: Maybe<Scalars['Int']>;
   totalTransfers?: Maybe<Scalars['Int']>;
@@ -90,6 +91,7 @@ export type GqlSummaryStatement = {
   name?: Maybe<Scalars['String']>;
   outFlows?: Maybe<Scalars['Int']>;
   percentChange?: Maybe<Scalars['Float']>;
+  annualizedPercentChange?: Maybe<Scalars['Float']>;
   startBalance?: Maybe<GqlBalance>;
   totalPayments?: Maybe<Scalars['Int']>;
   totalTransfers?: Maybe<Scalars['Int']>;
@@ -116,6 +118,7 @@ export type GqlTableCell = {
   isProjectedCovered?: Maybe<Scalars['Boolean']>;
   month?: Maybe<Scalars['GqlMonth']>;
   percentChange?: Maybe<Scalars['Float']>;
+  annualizedPercentChange?: Maybe<Scalars['Float']>;
   unaccounted?: Maybe<Scalars['Int']>;
 };
 

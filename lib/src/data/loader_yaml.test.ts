@@ -178,9 +178,7 @@ describe('loadYaml', () => {
       `;
     const parsedContent = parseYamlContent(content, relativeFilePath);
     expect(parsedContent).toBeDefined();
-    expect(() =>
-      loadYamlFile(budgetBuilder, parsedContent!, relativeFilePath)
-    ).toThrow(
+    expect(() => loadYamlFile(budgetBuilder, parsedContent!, relativeFilePath)).toThrow(
       new Error(
         'Balance entry {"date":"2020-01-01T00:00:00.000Z","camt":0} has no grp setting. while processing path/file.yaml'
       )
@@ -199,9 +197,7 @@ describe('loadYaml', () => {
       `;
     const parsedContent = parseYamlContent(content, relativeFilePath);
     expect(parsedContent).toBeDefined();
-    expect(() =>
-      loadYamlFile(budgetBuilder, parsedContent!, relativeFilePath)
-    ).toThrow(
+    expect(() => loadYamlFile(budgetBuilder, parsedContent!, relativeFilePath)).toThrow(
       new Error(
         'Balance {"grp":"Xxx2020","date":"2020-01-01T00:00:00.000Z","camt":0} has bad grp setting: Cant find month for "Xxx2020" while processing path/file.yaml'
       )
@@ -220,9 +216,7 @@ describe('loadYaml', () => {
       `;
     const parsedContent = parseYamlContent(content, relativeFilePath);
     expect(parsedContent).toBeDefined();
-    expect(() =>
-      loadYamlFile(budgetBuilder, parsedContent!, relativeFilePath)
-    ).toThrow(
+    expect(() => loadYamlFile(budgetBuilder, parsedContent!, relativeFilePath)).toThrow(
       new Error(
         'Balance {"grp":"Jan2020","camt":0} does not have date set. while processing path/file.yaml'
       )
@@ -241,9 +235,7 @@ describe('loadYaml', () => {
       `;
     const parsedContent = parseYamlContent(content, relativeFilePath);
     expect(parsedContent).toBeDefined();
-    expect(() =>
-      loadYamlFile(budgetBuilder, parsedContent!, relativeFilePath)
-    ).toThrow(
+    expect(() => loadYamlFile(budgetBuilder, parsedContent!, relativeFilePath)).toThrow(
       new Error(
         'Balance {"grp":"Jan2020","date":20200101,"camt":0} does not have date set. while processing path/file.yaml'
       )
@@ -262,9 +254,7 @@ describe('loadYaml', () => {
       `;
     const parsedContent = parseYamlContent(content, relativeFilePath);
     expect(parsedContent).toBeDefined();
-    expect(() =>
-      loadYamlFile(budgetBuilder, parsedContent!, relativeFilePath)
-    ).toThrow(
+    expect(() => loadYamlFile(budgetBuilder, parsedContent!, relativeFilePath)).toThrow(
       new Error(
         `Balance {"grp":"Jan2020","date":"2020-01-01T00:00:00.000Z","xamt":0} does not have amount type set, expected camt or pamt entry. while processing path/file.yaml`
       )
@@ -364,9 +354,7 @@ describe('loadYaml', () => {
       `;
     const parsedContent = parseYamlContent(testAccountData, relativeFilePath);
     expect(parsedContent).toBeDefined();
-    expect(() =>
-      loadYamlFile(budgetBuilder, parsedContent!, relativeFilePath)
-    ).toThrow(
+    expect(() => loadYamlFile(budgetBuilder, parsedContent!, relativeFilePath)).toThrow(
       new Error(
         'For account "test-account transfer to external" does not have "grp" field. while processing path/test.yaml'
       )
@@ -386,9 +374,7 @@ describe('loadYaml', () => {
       `;
     const parsedContent = parseYamlContent(testAccountData, relativeFilePath);
     expect(parsedContent).toBeDefined();
-    expect(() =>
-      loadYamlFile(budgetBuilder, parsedContent!, relativeFilePath)
-    ).toThrow(
+    expect(() => loadYamlFile(budgetBuilder, parsedContent!, relativeFilePath)).toThrow(
       new Error(
         'For account "test-account" transfer to "external" does not have a ' +
           'valid "date" field. while processing path/test.yaml'
@@ -409,9 +395,7 @@ describe('loadYaml', () => {
       `;
     const parsedContent = parseYamlContent(testAccountData, relativeFilePath);
     expect(parsedContent).toBeDefined();
-    expect(() =>
-      loadYamlFile(budgetBuilder, parsedContent!, relativeFilePath)
-    ).toThrow(
+    expect(() => loadYamlFile(budgetBuilder, parsedContent!, relativeFilePath)).toThrow(
       new Error(
         'For account "test-account" transfer to "external" for Jan2020 date ' +
           '2020-04-01 (Apr2020) are too far apart. while processing path/test.yaml'
@@ -432,9 +416,7 @@ describe('loadYaml', () => {
       `;
     const parsedContent = parseYamlContent(testAccountData, relativeFilePath);
     expect(parsedContent).toBeDefined();
-    expect(() =>
-      loadYamlFile(budgetBuilder, parsedContent!, relativeFilePath)
-    ).toThrow(
+    expect(() => loadYamlFile(budgetBuilder, parsedContent!, relativeFilePath)).toThrow(
       new Error(
         'For account "test-account" transfer to "external" does not have "pamt" or "camt" field:' +
           ' {"grp":"Jan2020","date":"2020-01-17T00:00:00.000Z"}. while processing path/test.yaml'

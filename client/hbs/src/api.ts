@@ -72,6 +72,7 @@ export class BackendClient {
                 isProjectedCovered
                 hasProjectedTransfer
                 percentChange
+                annualizedPercentChange
                 unaccounted
                 balanced
               }
@@ -94,13 +95,23 @@ export class BackendClient {
   loadSummaryData(
     owner: string,
     accountType: string,
-    startMonth: string|undefined,
-    endMonth: string,
+    startMonth: string | undefined,
+    endMonth: string
   ): Promise<ApolloQueryResult<Query>> {
     return this.gqlClient.query<Query>({
       query: gql`
-        query summary($owner: String!, $accountType: String!, $startMonth: GqlMonth, $endMonth: GqlMonth!) {
-          summary(owner: $owner, accountType: $accountType, startMonth: $startMonth, endMonth: $endMonth) {
+        query summary(
+          $owner: String!
+          $accountType: String!
+          $startMonth: GqlMonth
+          $endMonth: GqlMonth!
+        ) {
+          summary(
+            owner: $owner
+            accountType: $accountType
+            startMonth: $startMonth
+            endMonth: $endMonth
+          ) {
             statements {
               addSub
               change
@@ -119,6 +130,7 @@ export class BackendClient {
               name
               outFlows
               percentChange
+              annualizedPercentChange
               startBalance {
                 amount
                 date
@@ -143,6 +155,7 @@ export class BackendClient {
               name
               outFlows
               percentChange
+              annualizedPercentChange
               startBalance {
                 amount
                 date
@@ -187,6 +200,7 @@ export class BackendClient {
             change
             addSub
             percentChange
+            annualizedPercentChange
             unaccounted
             startBalance {
               amount

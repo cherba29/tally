@@ -7,13 +7,25 @@ export class SummaryStatement extends Statement {
   statements: Statement[] = [];
   startMonth: Month;
 
-  constructor(name: string, month: Month, startMonth: Month|undefined = undefined) {
+  constructor(name: string, month: Month, startMonth: Month | undefined = undefined) {
     super(name, month);
     this.startMonth = startMonth ?? month;
   }
 
   get isClosed(): boolean {
     return this.statements.every((statement) => statement.isClosed);
+  }
+
+  get annualizedPercentChange(): number | undefined {
+    const prctChange = this.percentChange;
+    if (prctChange === undefined) {
+      return undefined;
+    }
+    const numberOfMonths = this.month.distance(this.startMonth) + 1;
+    const annualFrequency = 12.0 / numberOfMonths;
+    const result = Math.pow(1 + Math.abs(prctChange) / 100, annualFrequency) - 1;
+    // Annualized percentage change is not that meaningful if large.
+    return result < 10 ? 100 * Math.sign(prctChange) * result : undefined;
   }
 
   addStatement(statement: Statement): void {
@@ -88,15 +100,13 @@ export function* buildSummaryStatementTable(
   }
 }
 
-
-
 export function combineSummaryStatements(summaryStatements: SummaryStatement[]): SummaryStatement {
   if (!summaryStatements.length) {
     throw new Error(`Cant combine empty list of summary statements`);
   }
-  let stmtName: string|undefined = undefined;
-  let minMonth: Month|undefined = undefined;
-  let maxMonth: Month|undefined = undefined;
+  let stmtName: string | undefined = undefined;
+  let minMonth: Month | undefined = undefined;
+  let maxMonth: Month | undefined = undefined;
   // Map of 'account name' -> month -> 'summary statement'.
   const accountStatements = new Map<string, Map<string, Statement>>();
 
@@ -104,7 +114,9 @@ export function combineSummaryStatements(summaryStatements: SummaryStatement[]):
     if (!stmtName) {
       stmtName = summaryStmt.name;
     } else if (stmtName !== summaryStmt.name) {
-      throw new Error(`Cant combine different summary statements ${stmtName} and ${summaryStmt.name}`);
+      throw new Error(
+        `Cant combine different summary statements ${stmtName} and ${summaryStmt.name}`
+      );
     }
     if (!minMonth || summaryStmt.month.isLess(minMonth)) {
       minMonth = summaryStmt.month;
@@ -146,15 +158,27 @@ export function combineSummaryStatements(summaryStatements: SummaryStatement[]):
 export class CombinedStatement extends Statement {
   startMonth: Month;
 
-  constructor(name: string, month: Month, startMonth: Month|undefined = undefined) {
+  constructor(name: string, month: Month, startMonth: Month | undefined = undefined) {
     super(name, month);
     this.startMonth = startMonth ?? month;
+  }
+
+  get annualizedPercentChange(): number | undefined {
+    const prctChange = this.percentChange;
+    if (prctChange === undefined) {
+      return undefined;
+    }
+    const numberOfMonths = this.month.distance(this.startMonth) + 1;
+    const annualFrequency = 12.0 / numberOfMonths;
+    const result = Math.pow(1 + Math.abs(prctChange) / 100, annualFrequency) - 1;
+    // Annualized percentage change is not that meaningful if large.
+    return result < 10 ? 100 * Math.sign(prctChange) * result : undefined;
   }
 
   get isClosed(): boolean {
     return false;
   }
-};
+}
 
 export class EmptyStatement extends Statement {
   constructor(name: string, month: Month) {
@@ -164,33 +188,58 @@ export class EmptyStatement extends Statement {
   get isClosed(): boolean {
     return false;
   }
-};
+}
 
-function makeProxyStatement(name: string, month: Month, currStmt: Statement|undefined, prevStmt: Statement|undefined, nextStmt: Statement|undefined): Statement {
+function makeProxyStatement(
+  name: string,
+  month: Month,
+  currStmt: Statement | undefined,
+  prevStmt: Statement | undefined,
+  nextStmt: Statement | undefined
+): Statement {
   const stmt = currStmt ?? new EmptyStatement(name, month);
   if (!stmt.startBalance) {
-    stmt.startBalance = prevStmt?.endBalance ?? new Balance(0, new Date(month.year, month.month, 1), BalanceType.PROJECTED);
+    stmt.startBalance =
+      prevStmt?.endBalance ??
+      new Balance(0, new Date(month.year, month.month, 1), BalanceType.PROJECTED);
   }
   if (!stmt.endBalance) {
-    stmt.endBalance = nextStmt?.startBalance ?? new Balance(0, new Date(month.year, month.month + 1, 1), BalanceType.PROJECTED);
+    stmt.endBalance =
+      nextStmt?.startBalance ??
+      new Balance(0, new Date(month.year, month.month + 1, 1), BalanceType.PROJECTED);
   }
   return stmt;
 }
 
-function combineAccountStatements(name: string, startMonth: Month, endMonth: Month, stmts: Map<string,Statement>): Statement {
+function combineAccountStatements(
+  name: string,
+  startMonth: Month,
+  endMonth: Month,
+  stmts: Map<string, Statement>
+): Statement {
   const combined = new CombinedStatement(name, endMonth, startMonth);
-  for (let currentMonth = startMonth; !endMonth.isLess(currentMonth); currentMonth = currentMonth.next()) {
+  for (
+    let currentMonth = startMonth;
+    !endMonth.isLess(currentMonth);
+    currentMonth = currentMonth.next()
+  ) {
     const stmt: Statement = makeProxyStatement(
       name,
-      currentMonth, 
+      currentMonth,
       stmts.get(currentMonth.toString()),
-      stmts.get(currentMonth.previous().toString()), 
+      stmts.get(currentMonth.previous().toString()),
       stmts.get(currentMonth.next().toString())
     );
-    if (!combined.startBalance || stmt.startBalance && combined.startBalance.date.getTime() > stmt.startBalance.date.getTime()) {
+    if (
+      !combined.startBalance ||
+      (stmt.startBalance && combined.startBalance.date.getTime() > stmt.startBalance.date.getTime())
+    ) {
       combined.startBalance = stmt.startBalance;
     }
-    if (!combined.endBalance || stmt.endBalance &&  combined.endBalance.date.getTime() < stmt.endBalance.date.getTime()) {
+    if (
+      !combined.endBalance ||
+      (stmt.endBalance && combined.endBalance.date.getTime() < stmt.endBalance.date.getTime())
+    ) {
       combined.endBalance = stmt.endBalance;
     }
     combined.addInFlow(stmt.inFlows);

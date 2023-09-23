@@ -5,6 +5,7 @@ exports[`gqlSummary load 1`] = `
   "statements": [
     {
       "addSub": 0,
+      "annualizedPercentChange": 60.51,
       "change": -58,
       "endBalance": {
         "amount": -1500,
@@ -40,6 +41,7 @@ exports[`gqlSummary load 1`] = `
       "gas",
     ],
     "addSub": 0,
+    "annualizedPercentChange": 60.51,
     "change": -58,
     "endBalance": {
       "amount": -1500,
@@ -386,6 +388,7 @@ exports[`gqlTable load 1`] = `
       "cells": [
         {
           "addSub": 0,
+          "annualizedPercentChange": undefined,
           "balance": undefined,
           "balanced": true,
           "isClosed": false,
@@ -399,6 +402,7 @@ exports[`gqlTable load 1`] = `
         },
         {
           "addSub": 0,
+          "annualizedPercentChange": 0,
           "balance": -1500,
           "balanced": true,
           "isClosed": false,
@@ -412,6 +416,7 @@ exports[`gqlTable load 1`] = `
         },
         {
           "addSub": 0,
+          "annualizedPercentChange": 60.51,
           "balance": -1500,
           "balanced": false,
           "isClosed": false,
@@ -425,6 +430,7 @@ exports[`gqlTable load 1`] = `
         },
         {
           "addSub": -4912,
+          "annualizedPercentChange": undefined,
           "balance": -1442,
           "balanced": false,
           "isClosed": false,
@@ -438,6 +444,7 @@ exports[`gqlTable load 1`] = `
         },
         {
           "addSub": 0,
+          "annualizedPercentChange": undefined,
           "balance": -376,
           "balanced": true,
           "isClosed": false,

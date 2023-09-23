@@ -52,7 +52,7 @@ export class Month {
     return this.year < other.year;
   }
 
-  isBetween(start: Month|undefined, end: Month|undefined): boolean {
+  isBetween(start: Month | undefined, end: Month | undefined): boolean {
     if (start) {
       if (this.year < start.year) return false;
       if (this.year === start.year && this.month < start.month) return false;
