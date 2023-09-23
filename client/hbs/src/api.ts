@@ -94,12 +94,13 @@ export class BackendClient {
   loadSummaryData(
     owner: string,
     accountType: string,
-    month: string
+    startMonth: string|undefined,
+    endMonth: string,
   ): Promise<ApolloQueryResult<Query>> {
     return this.gqlClient.query<Query>({
       query: gql`
-        query summary($owner: String!, $accountType: String!, $month: GqlMonth!) {
-          summary(owner: $owner, accountType: $accountType, month: $month) {
+        query summary($owner: String!, $accountType: String!, $startMonth: GqlMonth, $endMonth: GqlMonth!) {
+          summary(owner: $owner, accountType: $accountType, startMonth: $startMonth, endMonth: $endMonth) {
             statements {
               addSub
               change
@@ -157,7 +158,8 @@ export class BackendClient {
       variables: {
         owner,
         accountType,
-        month,
+        startMonth,
+        endMonth,
       },
     });
   }

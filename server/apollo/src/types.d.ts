@@ -155,7 +155,8 @@ export type QueryStatementArgs = {
 
 export type QuerySummaryArgs = {
   accountType: Scalars['String'];
-  month: Scalars['GqlMonth'];
+  startMonth: Scalars['GqlMonth'];
+  endMonth: Scalars['GqlMonth'];
   owner: Scalars['String'];
 };
 

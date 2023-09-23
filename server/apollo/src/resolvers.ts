@@ -3,7 +3,7 @@ import {
   TransactionStatement,
   Type as TransactionType
 } from '@tally/lib/statement/transaction';
-import { SummaryStatement } from '@tally/lib/statement/summary';
+import { SummaryStatement, combineSummaryStatements } from '@tally/lib/statement/summary';
 import { Type as BalanceType } from '@tally/lib/core/balance';
 import { Month } from '@tally/lib/core/month';
 import { listFiles, loadBudget } from '@tally/lib/data/loader';
@@ -68,7 +68,7 @@ function toGqlStatement(statement: TransactionStatement): GqlStatement {
     isCovered: statement.isCovered,
     isProjectedCovered: statement.isProjectedCovered,
     hasProjectedTransfer: statement.hasProjectedTransfer,
-    transactions: statement.transactions.map((t: Transaction) => ({
+    transactions: statement.transactions?.map((t: Transaction) => ({
       toAccountName: t.account.name,
       isExpense: t.type == TransactionType.EXPENSE,
       isIncome: t.type == TransactionType.INCOME,
@@ -81,8 +81,8 @@ function toGqlStatement(statement: TransactionStatement): GqlStatement {
       description: t.description
     })),
     isClosed:
-      statement.account.closedOn?.isLess(statement.month) ||
-      (statement.account.openedOn && statement.month.isLess(statement.account.openedOn)) ||
+      statement.account?.closedOn?.isLess(statement.month) ||
+      (statement.account?.openedOn && statement.month.isLess(statement.account.openedOn)) ||
       false
   };
 }
@@ -257,29 +257,25 @@ async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTable> {
 async function buildSummaryData(_: any, args: QuerySummaryArgs): Promise<GqlSummaryData> {
   const startTimeMs: number = Date.now();
   const payload = await loadBudget();
-  const summaryStatementTable = payload.summaries;
   const summaryName =
     args.owner + ' ' + (args.accountType === args.owner ? 'SUMMARY' : args.accountType);
-  let summary = undefined;
-  for (const stmt of summaryStatementTable) {
-    // console.log(`### '${stmt.name}' and '${stmt.month}'`);
-    if (stmt.name === summaryName && stmt.month.toString() === args.month.toString()) {
-      summary = stmt;
-      break;
-    }
-  }
-  if (!summary) {
+  // Summary list is in reverse chronological order.
+  const summaryStatements = payload.summaries.filter(
+      (stmt) => stmt.name === summaryName && stmt.month.isBetween(args.startMonth, args.endMonth)
+  );
+  if (!summaryStatements.length) {
     throw new Error(
-      `Summary ${args.accountType} for ${args.owner} for month ${args.month} not found.`
+      `Summary ${args.accountType} for ${args.owner} for months [${args.startMonth}, ${args.endMonth}] not found.`
     );
   }
+  const summary = summaryStatements.length === 1 ? summaryStatements[0] : combineSummaryStatements(summaryStatements);
   const result = {
     statements: summary.statements
       .sort((a, b) => (a.name < b.name ? -1 : 1))
       .map((stmt) => toGqlStatement(stmt as TransactionStatement)),
     total: toGqlSummaryStatement(summary)
   };
-  console.log(`gql summary data in ${Date.now() - startTimeMs}ms`);
+  console.log(`gql summary data in ${Date.now() - startTimeMs}ms for [${args.startMonth}, ${args.endMonth}]`);
   return result;
 }
 

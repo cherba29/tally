@@ -8,6 +8,7 @@ import './account-tooltip';
 import './balance-tooltip';
 import './balance-summary-tooltip';
 import './summary-table';
+import {MonthRangeChange} from './balance-summary-tooltip';
 import {CellClickEventData} from './summary-table';
 import {Month} from '@tally/lib';
 
@@ -139,10 +140,12 @@ export class TallyApp extends LitElement {
     } else if ('summary' in this.popupData) {
       return html` <balance-summary-tooltip
         .accountName=${this.popupData.accountName}
-        .month=${this.popupData.month}
+        .startMonth=${this.popupData.month}
+        .endMonth=${this.popupData.month}
         .statementEntries=${this.popupData.statements || []}
         .summary=${this.popupData.summary}
         @close=${this.closePopup}
+        @month-range-change=${this.popupMonthRangeChange}
       >
       </balance-summary-tooltip>`;
     } else if ('account' in this.popupData) {
@@ -168,30 +171,20 @@ export class TallyApp extends LitElement {
     this.requestUpdate();
   }
 
+  private popupMonthRangeChange(e: CustomEvent<MonthRangeChange>) {
+    console.log('### popup month range change', e.detail.startMonth, '-->', e.detail.endMonth);
+    this.reloadPopupSummaryStatement(e.detail.accountName, 
+      e.detail.startMonth?.toString(),
+      e.detail.endMonth.toString());
+  }
+
   private onCellClick(e: CustomEvent<CellClickEventData>) {
     if (e.detail.isSummary) {
-      this.backendClient
-        .loadSummaryData(this.currentOwner ?? '', e.detail.accountName ?? '', e.detail.month ?? '')
-        .then((result) => {
-          console.log(`PopupData for ${e.detail}`, result);
-          const summaryStatement = result.data.summary?.total;
-          const statements = result.data.summary?.statements;
-          const popupData: PopupMonthSummaryData = {
-            accountName: e.detail.accountName ?? '',
-            month: e.detail.month ?? '',
-            summary: summaryStatement ?? undefined,
-            statements: (statements || []).map((stmt) => ({
-              name: stmt?.name ?? '',
-              stmt: stmt!,
-            })),
-          };
-          this.popupData = popupData;
-          this.popupOffset = {
-            top: e.detail.mouseEvent.pageY + 10,
-            left: e.detail.mouseEvent.pageX,
-          };
-          this.requestUpdate();
-        });
+      this.reloadPopupSummaryStatement(e.detail.accountName ?? '', e.detail.month ?? '', e.detail.month ?? '');
+      this.popupOffset = {
+        top: e.detail.mouseEvent.pageY + 10,
+        left: e.detail.mouseEvent.pageX,
+      };
     } else if (e.detail.month) {
       this.backendClient
         .loadStatement(this.currentOwner ?? '', e.detail.accountName ?? '', e.detail.month ?? '')
@@ -218,6 +211,27 @@ export class TallyApp extends LitElement {
       this.popupOffset = {top: e.detail.mouseEvent.pageY + 10, left: e.detail.mouseEvent.pageX};
       this.requestUpdate();
     }
+  }
+
+  private reloadPopupSummaryStatement(accountName: string, startMonth: string|undefined, endMonth: string) {
+    this.backendClient
+    .loadSummaryData(this.currentOwner ?? '', accountName, startMonth, endMonth)
+    .then((result) => {
+      console.log(`PopupData for ${accountName} ${startMonth}-${endMonth}`, result);
+      const summaryStatement = result.data.summary?.total;
+      const statements = result.data.summary?.statements;
+      const popupData: PopupMonthSummaryData = {
+        accountName,
+        month: endMonth,
+        summary: summaryStatement ?? undefined,
+        statements: (statements || []).map((stmt) => ({
+          name: stmt?.name ?? '',
+          stmt: stmt!,
+        })),
+      };
+      this.popupData = popupData;
+      this.requestUpdate();
+    });
   }
 
   private reloadTable() {

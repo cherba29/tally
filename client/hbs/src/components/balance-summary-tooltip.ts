@@ -4,6 +4,51 @@ import {StatementEntry} from '../utils';
 import {dateFormat, currency, isProjected} from '../format';
 import {classMap, ClassInfo} from 'lit/directives/class-map.js';
 import {GqlBalance, GqlSummaryStatement} from 'src/gql_types';
+import { Month } from '@tally/lib';
+
+enum SummaryView {
+  MONTH_1 = '1m',
+  MONTH_3 = '3m',
+  MONTH_6 = '6m',
+  MONTH_9 = '9m',
+  YTD = 'ytd',
+  YEAR_1 = '1y',
+  YEAR_2 = '2y',
+  YEAR_3 = '3y',
+  YEAR_5 = '5y',
+  YEAR_7 = '7y',
+  YEAR_10 = '10y',
+  YEAR_15 = '15y',
+  YEAR_20 = '20y',
+  YEAR_30 = '30y',
+  YEAR_MAX = 'Max',
+};
+
+function mapViewToMonths(viewMonthRange: SummaryView, currentMonth: Month): number|undefined {
+  switch (viewMonthRange) {
+    case SummaryView.MONTH_1: return 1;
+    case SummaryView.MONTH_3: return 3;
+    case SummaryView.MONTH_6: return 6;
+    case SummaryView.MONTH_9: return 9;
+    case SummaryView.YTD: return currentMonth.month + 1;
+    case SummaryView.YEAR_1: return 12;
+    case SummaryView.YEAR_2: return 24;
+    case SummaryView.YEAR_3: return 36;
+    case SummaryView.YEAR_5: return 60;
+    case SummaryView.YEAR_7: return 84;
+    case SummaryView.YEAR_10: return 120;
+    case SummaryView.YEAR_15: return 180;
+    case SummaryView.YEAR_20: return 240;
+    case SummaryView.YEAR_30: return 360;
+    case SummaryView.YEAR_MAX: return undefined;
+  }
+}
+
+export interface MonthRangeChange {
+  accountName: string,
+  startMonth: Month|undefined;
+  endMonth: Month;
+}
 
 @customElement('balance-summary-tooltip')
 export class BalanceSummaryTooltip extends LitElement {
@@ -31,13 +76,39 @@ export class BalanceSummaryTooltip extends LitElement {
   accountName: string = '';
 
   @property({attribute: false})
-  month: string = '';
+  startMonth: string = '';
+
+  @property({attribute: false})
+  endMonth: string = '';
+
+  @property({attribute: false})
+  period: string = '';
 
   @property({attribute: false})
   statementEntries: StatementEntry[] = [];
 
   @property({attribute: false})
   summary: GqlSummaryStatement | undefined = undefined;
+
+  switchView(e: Event) {
+    const viewType = (e.target as Element).getAttribute('key') as keyof typeof SummaryView;
+    
+    const currentMonth = Month.fromString(this.endMonth);
+    const numberOfMonths = mapViewToMonths(SummaryView[viewType], currentMonth);
+    const startMonth = (numberOfMonths !== undefined) ? currentMonth.previous(numberOfMonths - 1) : undefined;
+    this.startMonth = startMonth ? startMonth.toString() : this.endMonth;
+    const period = currentMonth.distance(startMonth ?? currentMonth) + 1;
+    const years = Math.floor(period / 12);
+    const months = period - 12 * years;
+    this.period = (years ? years + 'y' : '') + (months ? months + 'm' : '');
+    this.dispatchEvent(new CustomEvent<MonthRangeChange>('month-range-change', {
+      detail: {
+      accountName: this.accountName,
+      startMonth,
+      endMonth: currentMonth
+      }
+    }));
+  }
 
   onCloseButton() {
     this.dispatchEvent(new CustomEvent('close'));
@@ -54,7 +125,12 @@ export class BalanceSummaryTooltip extends LitElement {
 
     return html`
       <span @click="${this.onCloseButton}">XXX</span>
-      <span style="float:right;">${this.accountName} - ${this.month}</span>
+      ${Object.keys(SummaryView).map(key=>
+        html`<button key="${key}" @click="${this.switchView}">
+          ${SummaryView[key as keyof typeof SummaryView]}
+        </button>`)
+      }
+      <span style="float:right;">${this.accountName} ${this.startMonth} - ${this.endMonth} (${this.period})</span>
       <table>
         <thead>
           <th style="min-width:170px">Account</th>
