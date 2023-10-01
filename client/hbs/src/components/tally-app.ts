@@ -33,13 +33,10 @@ export class TallyApp extends LitElement {
 
   // Rendered values.
   private startMonth: Month = Month.fromDate(new Date()).previous(12);
-  private endMonth: Month = Month.fromDate(new Date()).next(3);
+  private endMonth: Month = Month.fromDate(new Date()).next(2);
   private errorMessage: string = '';
-  private minutes: string = '00';
-  private seconds: string = '00';
   private months: string[] = [];
   private rows: Rows = {};
-  private lastReloadTimestamp = new Date();
   private popupData: PopupData | undefined = undefined;
   private popupOffset = {top: 0, left: 0};
   private currentOwner: string | undefined = undefined;
@@ -47,16 +44,8 @@ export class TallyApp extends LitElement {
 
   override connectedCallback() {
     super.connectedCallback();
-    this.timerId = setInterval(() => {
-      const diffTimeSec = Math.round(
-        (new Date().getTime() - this.lastReloadTimestamp.getTime()) / 1000
-      );
-      this.seconds = pad(diffTimeSec % 60);
-      this.minutes = pad(Math.floor(diffTimeSec / 60));
-      this.requestUpdate();
-    }, 1000);
     this.startMonth = Month.fromDate(new Date()).previous(12);
-    this.endMonth = Month.fromDate(new Date()).next(3);
+    this.endMonth = Month.fromDate(new Date()).next(2);
     console.log('###', this.startMonth, this.endMonth);
     this.reloadTable();
   }
@@ -94,7 +83,6 @@ export class TallyApp extends LitElement {
         <button @click="${() => this.updateRange(-1, -1)}">&gt;</button>
         <button @click="${() => this.updateRange(-12, -12)}">&gt;&gt;</button>
         <button @click="${this.reloadTable}">Reload Table</button>
-        <label id="minutes">${this.minutes}</label>:<label id="seconds">${this.seconds}</label>
       </div>
       <div style="padding-top: 20px; color: red; font-size: 16px">
         <pre>${this.errorMessage}</pre>
@@ -245,12 +233,11 @@ export class TallyApp extends LitElement {
   }
 
   private reloadTable() {
-    console.log('tally-app Loading graphql table');
+    console.log(`tally-app Loading graphql table ${this.startMonth} - ${this.endMonth}`);
     this.backendClient
       .loadTable(this.currentOwner ?? '', this.startMonth.toString(), this.endMonth.toString())
       .then((result) => {
-        this.lastReloadTimestamp = new Date();
-        console.log(result);
+        console.log('backend response', result);
         if (result.errors) {
           this.errorMessage = result.errors.map((e) => e.message).join('\n');
         } else {
@@ -273,8 +260,4 @@ export class TallyApp extends LitElement {
         throw error;
       });
   }
-}
-
-function pad(n: number) {
-  return n > 9 ? n.toString() : '0' + n.toString();
 }
