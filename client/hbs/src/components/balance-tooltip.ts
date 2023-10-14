@@ -28,14 +28,31 @@ export class BalanceTooltip extends LitElement {
     }
   `;
 
+  private __month: string = '';
+  private __stmt: GqlStatement | undefined = undefined;
+
   @property({attribute: false})
   accountName: string = '';
 
-  @property({attribute: false})
-  month: string = '';
+  @property()
+  set month(value: string) {
+    const oldValue = this.__month;
+    this.__month = value;
+    this.requestUpdate('month', oldValue);
+  }
+  get month() {
+    return this.__month;
+  }
 
-  @property({attribute: false})
-  stmt: GqlStatement | undefined = undefined;
+  @property()
+  set stmt(value: GqlStatement | undefined) {
+    const oldValue = this.__stmt;
+    this.__stmt = value;
+    this.requestUpdate('stmt', oldValue);
+  }
+  get stmt() {
+    return this.__stmt;
+  }
 
   onCloseButton() {
     this.dispatchEvent(new CustomEvent('close'));
