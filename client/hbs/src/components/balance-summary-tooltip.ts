@@ -87,23 +87,56 @@ export class BalanceSummaryTooltip extends LitElement {
     }
   `;
 
+  private __startMonth: string = '';
+  private __endMonth: string = '';
+  private __statementEntries: StatementEntry[] = [];
+  private __summary: GqlSummaryStatement | undefined = undefined;
+
   @property({attribute: false})
   accountName: string = '';
 
-  @property({attribute: false})
-  startMonth: string = '';
+  @property()
+  set startMonth(value: string) {
+    const oldValue = this.__startMonth;
+    this.__startMonth = value;
+    this.requestUpdate('startMonth', oldValue);
+  }
+  get startMonth() {
+    return this.__startMonth;
+  }
 
-  @property({attribute: false})
-  endMonth: string = '';
+  @property()
+  set endMonth(value: string) {
+    const oldValue = this.__endMonth;
+    this.__endMonth = value;
+    this.requestUpdate('endMonth', oldValue);
+  }
+  get endMonth() {
+    return this.__endMonth;
+  }
 
   @property({attribute: false})
   period: string = '';
 
-  @property({attribute: false})
-  statementEntries: StatementEntry[] = [];
+  @property()
+  set statementEntries(value: StatementEntry[]) {
+    const oldValue = this.__statementEntries;
+    this.__statementEntries = value;
+    this.requestUpdate('statementEntries', oldValue);
+  }
+  get statementEntries() {
+    return this.__statementEntries;
+  }
 
-  @property({attribute: false})
-  summary: GqlSummaryStatement | undefined = undefined;
+  @property()
+  set summary(value: GqlSummaryStatement | undefined) {
+    const oldValue = this.__statementEntries;
+    this.__summary = value;
+    this.requestUpdate('summary', oldValue);
+  }
+  get summary() {
+    return this.__summary;
+  }
 
   switchView(e: Event) {
     const viewType = (e.target as Element).getAttribute('key') as keyof typeof SummaryView;

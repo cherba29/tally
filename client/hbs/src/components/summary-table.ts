@@ -4,7 +4,7 @@ import {customElement, property} from 'lit/decorators.js';
 import {currency} from '../format';
 import {GqlAccount, GqlTableRow, GqlTableCell} from 'src/gql_types';
 import {classMap, ClassInfo} from 'lit/directives/class-map.js';
-import { Month } from '@tally/lib';
+import {Month} from '@tally/lib';
 
 export type CellClickEventData = {
   mouseEvent: MouseEvent;
@@ -83,7 +83,7 @@ export class SummaryTable extends LitElement {
   set months(values: Month[]) {
     const oldMonths = this.__months;
     this.__months = values;
-    this.requestUpdate('months', oldMonths)
+    this.requestUpdate('months', oldMonths);
   }
   get months() {
     return this.__months;
@@ -93,7 +93,7 @@ export class SummaryTable extends LitElement {
   set rows(values: GqlTableRow[]) {
     const oldRows = this.__rows;
     this.__rows = values;
-    this.requestUpdate('rows', oldRows)
+    this.requestUpdate('rows', oldRows);
   }
   get rows(): GqlTableRow[] {
     return this.__rows;

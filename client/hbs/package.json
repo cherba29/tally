@@ -43,7 +43,7 @@
     "test-update-snapshot": "jest --updateSnapshot --config jest_config.json",
     "graphql-codegen": "graphql-codegen --config codegen.yml",
     "coverage": "nyc -r text -e .ts -x \"tests/*.test.ts\" npm run test",
-    "prettier-format": "prettier --config .prettierrc.yaml 'js/**/*.ts' --write",
+    "prettier-format": "prettier --config .prettierrc.yaml '**/*.ts' --write",
     "lint": "eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix"
   }
