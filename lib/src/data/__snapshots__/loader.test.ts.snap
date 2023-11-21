@@ -6,6 +6,8 @@ exports[`loadBudget just account 1`] = `
     "accounts": Map {
       "test-account" => Account {
         "address": undefined,
+        "autoBalance": false,
+        "children": [],
         "closedOn": undefined,
         "description": undefined,
         "name": "test-account",
@@ -17,6 +19,7 @@ exports[`loadBudget just account 1`] = `
         "owners": [
           "someone",
         ],
+        "parents": [],
         "password": undefined,
         "phone": undefined,
         "type": "external",
@@ -37,6 +40,8 @@ exports[`loadBudget just account 1`] = `
     TransactionStatement {
       "account": Account {
         "address": undefined,
+        "autoBalance": false,
+        "children": [],
         "closedOn": undefined,
         "description": undefined,
         "name": "test-account",
@@ -48,6 +53,7 @@ exports[`loadBudget just account 1`] = `
         "owners": [
           "someone",
         ],
+        "parents": [],
         "password": undefined,
         "phone": undefined,
         "type": "external",
@@ -94,6 +100,8 @@ exports[`loadBudget just account 1`] = `
         TransactionStatement {
           "account": Account {
             "address": undefined,
+            "autoBalance": false,
+            "children": [],
             "closedOn": undefined,
             "description": undefined,
             "name": "test-account",
@@ -105,6 +113,7 @@ exports[`loadBudget just account 1`] = `
             "owners": [
               "someone",
             ],
+            "parents": [],
             "password": undefined,
             "phone": undefined,
             "type": "external",

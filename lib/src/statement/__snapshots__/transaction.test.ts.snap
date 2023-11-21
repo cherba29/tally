@@ -5,6 +5,8 @@ exports[`Build two accounts with common owner and transfers 1`] = `
   TransactionStatement {
     "account": Account {
       "address": undefined,
+      "autoBalance": false,
+      "children": [],
       "closedOn": undefined,
       "description": undefined,
       "name": "test-account1",
@@ -13,6 +15,7 @@ exports[`Build two accounts with common owner and transfers 1`] = `
       "owners": [
         "john",
       ],
+      "parents": [],
       "password": undefined,
       "phone": undefined,
       "type": "checking",
@@ -45,6 +48,8 @@ exports[`Build two accounts with common owner and transfers 1`] = `
   TransactionStatement {
     "account": Account {
       "address": undefined,
+      "autoBalance": false,
+      "children": [],
       "closedOn": undefined,
       "description": undefined,
       "name": "test-account1",
@@ -53,6 +58,7 @@ exports[`Build two accounts with common owner and transfers 1`] = `
       "owners": [
         "john",
       ],
+      "parents": [],
       "password": undefined,
       "phone": undefined,
       "type": "checking",
@@ -89,6 +95,8 @@ exports[`Build two accounts with common owner and transfers 1`] = `
   TransactionStatement {
     "account": Account {
       "address": undefined,
+      "autoBalance": false,
+      "children": [],
       "closedOn": undefined,
       "description": undefined,
       "name": "test-account1",
@@ -97,6 +105,7 @@ exports[`Build two accounts with common owner and transfers 1`] = `
       "owners": [
         "john",
       ],
+      "parents": [],
       "password": undefined,
       "phone": undefined,
       "type": "checking",
@@ -132,6 +141,8 @@ exports[`Build two accounts with common owner and transfers 1`] = `
       {
         "account": Account {
           "address": undefined,
+          "autoBalance": false,
+          "children": [],
           "closedOn": undefined,
           "description": undefined,
           "name": "test-account2",
@@ -140,6 +151,7 @@ exports[`Build two accounts with common owner and transfers 1`] = `
           "owners": [
             "john",
           ],
+          "parents": [],
           "password": undefined,
           "phone": undefined,
           "type": "credit",
@@ -158,6 +170,8 @@ exports[`Build two accounts with common owner and transfers 1`] = `
       {
         "account": Account {
           "address": undefined,
+          "autoBalance": false,
+          "children": [],
           "closedOn": undefined,
           "description": undefined,
           "name": "test-account2",
@@ -166,6 +180,7 @@ exports[`Build two accounts with common owner and transfers 1`] = `
           "owners": [
             "john",
           ],
+          "parents": [],
           "password": undefined,
           "phone": undefined,
           "type": "credit",
@@ -186,6 +201,8 @@ exports[`Build two accounts with common owner and transfers 1`] = `
   TransactionStatement {
     "account": Account {
       "address": undefined,
+      "autoBalance": false,
+      "children": [],
       "closedOn": undefined,
       "description": undefined,
       "name": "test-account2",
@@ -194,6 +211,7 @@ exports[`Build two accounts with common owner and transfers 1`] = `
       "owners": [
         "john",
       ],
+      "parents": [],
       "password": undefined,
       "phone": undefined,
       "type": "credit",
@@ -222,6 +240,8 @@ exports[`Build two accounts with common owner and transfers 1`] = `
   TransactionStatement {
     "account": Account {
       "address": undefined,
+      "autoBalance": false,
+      "children": [],
       "closedOn": undefined,
       "description": undefined,
       "name": "test-account2",
@@ -230,6 +250,7 @@ exports[`Build two accounts with common owner and transfers 1`] = `
       "owners": [
         "john",
       ],
+      "parents": [],
       "password": undefined,
       "phone": undefined,
       "type": "credit",
@@ -258,6 +279,8 @@ exports[`Build two accounts with common owner and transfers 1`] = `
   TransactionStatement {
     "account": Account {
       "address": undefined,
+      "autoBalance": false,
+      "children": [],
       "closedOn": undefined,
       "description": undefined,
       "name": "test-account2",
@@ -266,6 +289,7 @@ exports[`Build two accounts with common owner and transfers 1`] = `
       "owners": [
         "john",
       ],
+      "parents": [],
       "password": undefined,
       "phone": undefined,
       "type": "credit",
@@ -293,6 +317,8 @@ exports[`Build two accounts with common owner and transfers 1`] = `
       {
         "account": Account {
           "address": undefined,
+          "autoBalance": false,
+          "children": [],
           "closedOn": undefined,
           "description": undefined,
           "name": "test-account1",
@@ -301,6 +327,7 @@ exports[`Build two accounts with common owner and transfers 1`] = `
           "owners": [
             "john",
           ],
+          "parents": [],
           "password": undefined,
           "phone": undefined,
           "type": "checking",
@@ -318,6 +345,8 @@ exports[`Build two accounts with common owner and transfers 1`] = `
       {
         "account": Account {
           "address": undefined,
+          "autoBalance": false,
+          "children": [],
           "closedOn": undefined,
           "description": undefined,
           "name": "test-account1",
@@ -326,6 +355,7 @@ exports[`Build two accounts with common owner and transfers 1`] = `
           "owners": [
             "john",
           ],
+          "parents": [],
           "password": undefined,
           "phone": undefined,
           "type": "checking",
@@ -350,12 +380,15 @@ exports[`Build two accounts with extenal transfer 1`] = `
   TransactionStatement {
     "account": Account {
       "address": undefined,
+      "autoBalance": false,
+      "children": [],
       "closedOn": undefined,
       "description": undefined,
       "name": "test-account1",
       "number": undefined,
       "openedOn": undefined,
       "owners": [],
+      "parents": [],
       "password": undefined,
       "phone": undefined,
       "type": "external",
@@ -388,12 +421,15 @@ exports[`Build two accounts with extenal transfer 1`] = `
   TransactionStatement {
     "account": Account {
       "address": undefined,
+      "autoBalance": false,
+      "children": [],
       "closedOn": undefined,
       "description": undefined,
       "name": "test-account1",
       "number": undefined,
       "openedOn": undefined,
       "owners": [],
+      "parents": [],
       "password": undefined,
       "phone": undefined,
       "type": "external",
@@ -430,12 +466,15 @@ exports[`Build two accounts with extenal transfer 1`] = `
   TransactionStatement {
     "account": Account {
       "address": undefined,
+      "autoBalance": false,
+      "children": [],
       "closedOn": undefined,
       "description": undefined,
       "name": "test-account1",
       "number": undefined,
       "openedOn": undefined,
       "owners": [],
+      "parents": [],
       "password": undefined,
       "phone": undefined,
       "type": "external",
@@ -471,6 +510,8 @@ exports[`Build two accounts with extenal transfer 1`] = `
       {
         "account": Account {
           "address": undefined,
+          "autoBalance": false,
+          "children": [],
           "closedOn": undefined,
           "description": undefined,
           "name": "test-account2",
@@ -479,6 +520,7 @@ exports[`Build two accounts with extenal transfer 1`] = `
           "owners": [
             "john",
           ],
+          "parents": [],
           "password": undefined,
           "phone": undefined,
           "type": "credit",
@@ -497,6 +539,8 @@ exports[`Build two accounts with extenal transfer 1`] = `
       {
         "account": Account {
           "address": undefined,
+          "autoBalance": false,
+          "children": [],
           "closedOn": undefined,
           "description": undefined,
           "name": "test-account2",
@@ -505,6 +549,7 @@ exports[`Build two accounts with extenal transfer 1`] = `
           "owners": [
             "john",
           ],
+          "parents": [],
           "password": undefined,
           "phone": undefined,
           "type": "credit",
@@ -525,6 +570,8 @@ exports[`Build two accounts with extenal transfer 1`] = `
   TransactionStatement {
     "account": Account {
       "address": undefined,
+      "autoBalance": false,
+      "children": [],
       "closedOn": undefined,
       "description": undefined,
       "name": "test-account2",
@@ -533,6 +580,7 @@ exports[`Build two accounts with extenal transfer 1`] = `
       "owners": [
         "john",
       ],
+      "parents": [],
       "password": undefined,
       "phone": undefined,
       "type": "credit",
@@ -561,6 +609,8 @@ exports[`Build two accounts with extenal transfer 1`] = `
   TransactionStatement {
     "account": Account {
       "address": undefined,
+      "autoBalance": false,
+      "children": [],
       "closedOn": undefined,
       "description": undefined,
       "name": "test-account2",
@@ -569,6 +619,7 @@ exports[`Build two accounts with extenal transfer 1`] = `
       "owners": [
         "john",
       ],
+      "parents": [],
       "password": undefined,
       "phone": undefined,
       "type": "credit",
@@ -597,6 +648,8 @@ exports[`Build two accounts with extenal transfer 1`] = `
   TransactionStatement {
     "account": Account {
       "address": undefined,
+      "autoBalance": false,
+      "children": [],
       "closedOn": undefined,
       "description": undefined,
       "name": "test-account2",
@@ -605,6 +658,7 @@ exports[`Build two accounts with extenal transfer 1`] = `
       "owners": [
         "john",
       ],
+      "parents": [],
       "password": undefined,
       "phone": undefined,
       "type": "credit",
@@ -632,12 +686,15 @@ exports[`Build two accounts with extenal transfer 1`] = `
       {
         "account": Account {
           "address": undefined,
+          "autoBalance": false,
+          "children": [],
           "closedOn": undefined,
           "description": undefined,
           "name": "test-account1",
           "number": undefined,
           "openedOn": undefined,
           "owners": [],
+          "parents": [],
           "password": undefined,
           "phone": undefined,
           "type": "external",
@@ -655,12 +712,15 @@ exports[`Build two accounts with extenal transfer 1`] = `
       {
         "account": Account {
           "address": undefined,
+          "autoBalance": false,
+          "children": [],
           "closedOn": undefined,
           "description": undefined,
           "name": "test-account1",
           "number": undefined,
           "openedOn": undefined,
           "owners": [],
+          "parents": [],
           "password": undefined,
           "phone": undefined,
           "type": "external",

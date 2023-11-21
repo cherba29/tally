@@ -19,27 +19,6 @@ describe('loadYaml', () => {
     expect(budget.accounts.size).toBe(0);
   });
 
-  test('fails when no account type', () => {
-    jest.spyOn(console, 'error').mockImplementation(() => {});
-    jest.spyOn(console, 'log').mockImplementation(() => {});
-
-    const budgetBuilder = new BudgetBuilder();
-    const relativeFilePath = 'path/file.yaml';
-    expect(() =>
-      loadYamlFile(
-        budgetBuilder,
-        parseYamlContent('name: test', relativeFilePath)!,
-        relativeFilePath
-      )
-    ).toThrow(new Error("Type is not set for account 'test' while processing path/file.yaml"));
-    expect(console.error).toHaveBeenCalledTimes(1);
-    expect(console.error).toHaveBeenCalledWith(
-      "Error: Type is not set for account 'test' while processing path/file.yaml"
-    );
-    expect(console.log).toHaveBeenCalledTimes(1);
-    expect(console.log).toHaveBeenCalledWith('Account Data', { name: 'test' });
-  });
-
   test('fails when unknown account type', () => {
     jest.spyOn(console, 'error').mockImplementation(() => {});
     jest.spyOn(console, 'log').mockImplementation(() => {});
@@ -125,6 +104,9 @@ describe('loadYaml', () => {
       description: 'Testing account',
       number: '1223344',
       type: AccountType.EXTERNAL,
+      parents: [],
+      children: [],
+      autoBalance: false,
       url: 'example.com',
       phone: '111-222-3344',
       address: '55 Road',

@@ -24,6 +24,8 @@ export interface YamlData {
   name?: string;
   desc?: string;
   number?: string;
+  parents?: string[];
+  auto_balance?: boolean;
   type?: string;
   opened_on?: string;
   closed_on?: string;
@@ -39,7 +41,7 @@ export interface YamlData {
 
 function lookupAccountType(type: string): AccountType | undefined {
   for (const [key, value] of Object.entries(AccountType)) {
-    if (value == type) {
+    if (value === type) {
       return AccountType[key as keyof typeof AccountType];
     }
   }
@@ -75,12 +77,12 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
     // Ignore data which dont represent account.
     return;
   }
-  if (!data.type) {
-    throw new Error(`Type is not set for account '${data.name}'`);
-  }
-  const accountType = lookupAccountType(data.type);
+  const accountType = data.type === undefined ? AccountType.UNSPECIFIED : lookupAccountType(data.type);
   if (!accountType) {
     throw new Error(`Unknown type '${data.type}' for account '${data.name}'`);
+  }
+  if (data.parents === undefined) {
+    console.warn(`Account '${data.name}' has no parents set`);
   }
   if (!data.owner || data.owner.length === 0) {
     throw new Error(`Account '${data.name}' has no owners`);
@@ -88,6 +90,9 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
   const account = new Account({
     name: data.name,
     description: data.desc,
+    parents: [],
+    children: [],
+    autoBalance: data.auto_balance ?? false,
     type: accountType,
     number: data.number,
     openedOn: data.opened_on ? Month.fromString(data.opened_on) : undefined,
@@ -99,7 +104,7 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
     userName: data.username,
     password: data.pswd,
   });
-  budgetBuilder.setAccount(account);
+  budgetBuilder.setAccount(account, data.parents ?? []);
   if (data.balances) {
     for (const balanceData of data.balances) {
       if (!balanceData.grp) {

@@ -58,12 +58,15 @@ export class BudgetBuilder {
   private maxMonth: Month | undefined = undefined;
   // Account name to account map.
   readonly accounts = new Map<string, Account>();
+  // Account name to parents map.
+  readonly accountToParents = new Map<string, Set<string>>();
   // Account name -> month -> balance map.
   readonly balances = new Map<string, Map<string, Balance>>();
   readonly transfers: TransferData[] = [];
 
-  setAccount(account: Account): void {
+  setAccount(account: Account, parents: string[] = []): void {
     this.accounts.set(account.name, account);
+    this.accountToParents.set(account.name, new Set(parents));
     if (account.openedOn) {
       this.minMonth = this.minMonth ? Month.min(this.minMonth, account.openedOn) : account.openedOn;
       this.maxMonth = this.maxMonth ? Month.max(this.maxMonth, account.openedOn) : account.openedOn;
@@ -107,6 +110,20 @@ export class BudgetBuilder {
   }
 
   build(): Budget {
+    for (const [accountName, parents] of this.accountToParents) {
+      const account = this.accounts.get(accountName);
+      if (!account) {
+        throw new Error(`Unknown account ${accountName}`);
+      }
+      for (const parentName of parents) {
+        const parentAccount = this.accounts.get(parentName);
+        if (!parentAccount) {
+          throw new Error(`Unknown parent account ${parentName} in account ${accountName}`);
+        }
+        account.parents.push(parentAccount);
+        parentAccount.children.push(account);
+      }
+    }
     const transfers = new Map<string, Map<string, Set<Transfer>>>();
     for (const transferData of this.transfers) {
       const toAccount = this.accounts.get(transferData.toAccount);
