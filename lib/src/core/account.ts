@@ -67,7 +67,7 @@ export class Account {
     this.name = data.name;
     this.description = data.description;
     this.parents = data.parents ?? [];
-    this.children = data.parents ?? [];
+    this.children = data.children ?? [];
     this.autoBalance = data.autoBalance ?? false;
     this.type = data.type;
     this.number = data.number;

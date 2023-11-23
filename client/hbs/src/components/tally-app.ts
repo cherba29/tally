@@ -29,7 +29,6 @@ export class TallyApp extends LitElement {
 
   private backendClient = new BackendClient();
   private popupMap = new Map<string, PopupData>();
-  private timerId: NodeJS.Timer | undefined = undefined;
 
   // Rendered values.
   private startMonth: Month = Month.fromDate(new Date()).previous(12);
@@ -48,10 +47,6 @@ export class TallyApp extends LitElement {
     this.endMonth = Month.fromDate(new Date()).next(2);
     console.log('###', this.startMonth, this.endMonth);
     this.reloadTable();
-  }
-  override disconnectedCallback() {
-    super.disconnectedCallback();
-    clearInterval(this.timerId);
   }
 
   override render() {
