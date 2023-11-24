@@ -42,52 +42,113 @@ export function listFiles(): string[] {
 
 let watchedPath: string | undefined = undefined;
 let watcher: chokidar.FSWatcher | undefined = undefined;
-const parsedAccountData = new Map<string, YamlData>();
-let budget: Budget | undefined = undefined;
-let statements: TransactionStatement[] | undefined = undefined;
-let summaries: SummaryStatement[] | undefined = undefined;
+let processedBudget: ProcessedBudget | undefined = undefined;
 
 export function unwatchBudgetFiles() {
   watchedPath = undefined;
   watcher?.close();
   watcher = undefined;
-  parsedAccountData.clear();
-  budget = undefined;
-  statements = undefined;
-  summaries = undefined;
+  processedBudget = undefined;
 }
 
 export interface DataPayload {
   budget: Budget;
-  statements: TransactionStatement[];
-  summaries: SummaryStatement[];
+  statements: Map<string, Map<string, TransactionStatement>>;
+  summaries: Map<string, Map<string, SummaryStatement>>;
+}
+
+class ProcessedBudget {
+  private readonly parsedAccountData = new Map<string, YamlData>();
+  budget?: Budget = undefined;
+  readonly accoutToMonthToTransactionStatement = new Map<string, Map<string, TransactionStatement>>();
+  readonly summaryNameMonthMap = new Map<string, Map<string, SummaryStatement>>();
+
+  reProcess() {
+    const startTimeMs: number = Date.now();
+    const budgetBuilder = new BudgetBuilder();
+    for (const [filePath, accountData] of this.parsedAccountData) {
+      try {
+        loadYamlFile(budgetBuilder, accountData, filePath);
+        if (!budgetBuilder.accounts.has(accountData?.name ?? '')) {
+          console.warn(`warning: ${filePath} is not an account file.`);
+        }
+      } catch (e) {
+        console.error(`error: Failed to add ${filePath}, ${e}`);
+        return;
+      }
+    }
+
+    this.accoutToMonthToTransactionStatement.clear();
+    this.summaryNameMonthMap.clear();
+
+    this.budget = budgetBuilder.build();
+
+    const transactionStatementTable = buildTransactionStatementTable(this.budget);
+    for (const stmt of transactionStatementTable) {
+      let monthToStatement = this.accoutToMonthToTransactionStatement.get(stmt.account.name);
+      if (!monthToStatement) {
+        monthToStatement = new Map<string, TransactionStatement>();
+        this.accoutToMonthToTransactionStatement.set(stmt.account.name, monthToStatement);
+      }
+      monthToStatement.set(stmt.month.toString(), stmt);
+    }
+    const summaryStatementTable = buildSummaryStatementTable(transactionStatementTable);
+    let numSummaryStatements = 0;
+    for (const summary of summaryStatementTable) {
+      let monthToSummary = this.summaryNameMonthMap.get(summary.name);
+      if (!monthToSummary) {
+        monthToSummary = new Map();
+        this.summaryNameMonthMap.set(summary.name, monthToSummary);
+      }
+      monthToSummary.set(summary.month.toString(), summary);
+      numSummaryStatements++;
+    }
+    console.log(`Done reprocessing ${this.parsedAccountData.size} file(s) ` 
+        + `${transactionStatementTable.length} tran statements and ` 
+        + `${numSummaryStatements} summaries in ${Date.now() - startTimeMs}ms`);
+  }
+
+  addFolder(rootPath: string) {
+    const startTimeMs: number = Date.now();
+    for (const filePath of readdirSync(rootPath)) {
+      const relativeFilePath = filePath.slice(rootPath.length + 1);
+      console.log('Loading ' + relativeFilePath);
+      this.addFile(rootPath, relativeFilePath);
+    }
+    console.log(`Done loading ${this.parsedAccountData.size} file(s) in ${Date.now() - startTimeMs}ms`);
+  }
+
+  addFile(rootPath: string, relativeFilePath: string) {
+    const content = fs.readFileSync(`${rootPath}/${relativeFilePath}`, 'utf8');
+    const accountData = parseYamlContent(content, relativeFilePath);
+    if (accountData === undefined) {
+      throw Error(
+        `Failed to parse ${relativeFilePath} content of size ${content.length} fileStat: ${relativeFilePath}`
+      );
+    }
+    this.parsedAccountData.set(relativeFilePath, accountData);
+  }
 }
 
 export async function loadBudget(): Promise<DataPayload> {
-  if (budget !== undefined && statements !== undefined && summaries !== undefined) {
-    return { budget, statements, summaries };
+  if (processedBudget !== undefined) {
+    return { 
+      budget: processedBudget.budget!, 
+      statements: processedBudget.accoutToMonthToTransactionStatement, 
+      summaries:  processedBudget.summaryNameMonthMap,  
+    };
+  
   }
   if (!process.env.TALLY_FILES) {
     throw Error('Process environment variable "TALLY_FILES" has not been specified.');
   }
-  const budgetBuilder = new BudgetBuilder();
-
-  const filePaths: string[] = [];
-  const startTimeMs: number = Date.now();
+  
+  processedBudget = new ProcessedBudget();
+  
   const pathToData = await realPath(process.env.TALLY_FILES);
-  for (const file_path of readdirSync(pathToData)) {
-    const relative_file_path = file_path.slice(pathToData.length + 1);
-    filePaths.push(relative_file_path);
-    console.log('Loading ' + relative_file_path);
-    const content = fs.readFileSync(file_path, 'utf8');
-    const accountData = parseYamlContent(content, relative_file_path);
-    if (accountData === undefined) {
-      throw Error(`Failed to parse ${relative_file_path}`);
-    }
-    parsedAccountData.set(relative_file_path, accountData);
-    loadYamlFile(budgetBuilder, accountData, relative_file_path);
-  }
-  console.log(`Done loading ${filePaths.length} file(s) in ${Date.now() - startTimeMs}ms`);
+  processedBudget.addFolder(pathToData);
+  processedBudget.reProcess();
+
   if (watcher === undefined || watchedPath !== pathToData) {
     if (watcher) {
       unwatchBudgetFiles();
@@ -107,56 +168,20 @@ export async function loadBudget(): Promise<DataPayload> {
         }
         console.log(`${eventType} for ${fileStat}`);
         const startTimeMs: number = Date.now();
-        const content = fs.readFileSync(`${fileStat}`, 'utf8');
         const relativeFilePath = `${fileStat}`.slice(pathToData.length + 1);
-        const accountData = parseYamlContent(content, relativeFilePath);
-        if (accountData === undefined) {
-          throw Error(
-            `Failed to parse ${relativeFilePath} content of size ${content.length} fileStat: ${fileStat}`
-          );
+        if (processedBudget) {
+          processedBudget.addFile(pathToData, relativeFilePath);
+          processedBudget.reProcess();
+        } else {
+          console.error(`Unexpected error: processedBudget is unset`);
         }
-        parsedAccountData.set(relativeFilePath, accountData);
-
-        const changedBudgetBuilder = new BudgetBuilder();
-        for (const [filePath, accountData] of parsedAccountData) {
-          try {
-            loadYamlFile(changedBudgetBuilder, accountData, filePath);
-            if (!changedBudgetBuilder.accounts.has(accountData?.name ?? '')) {
-              console.warn(`warning: ${filePath} is not an account file.`);
-            }
-          } catch (e) {
-            console.error(`error: Failed to add ${filePath}, ${e}`);
-            return;
-          }
-        }
-        console.log(
-          `Reloaded budget ${parsedAccountData.size} file(s) in ${Date.now() - startTimeMs}ms`
-        );
-        try {
-          budget = changedBudgetBuilder.build();
-        } catch (e) {
-          console.error(`error: Failed to build budget ${e}`);
-          return;
-        }
-        try {
-          statements = buildTransactionStatementTable(budget);
-        } catch (e) {
-          console.error(`error: Failed to build statements table ${e}`);
-          return;
-        }
-        try {
-          summaries = [...buildSummaryStatementTable(statements)];
-        } catch (e) {
-          console.error(`error: Failed to build summary table ${e}`);
-          return;
-        }
-
         console.log(`info: Rebuilt budget in ${Date.now() - startTimeMs}ms`);
       });
     console.log(`info: Watching ${process.env.TALLY_FILES}`);
   }
-  budget = budgetBuilder.build();
-  statements = buildTransactionStatementTable(budget);
-  summaries = [...buildSummaryStatementTable(statements)];
-  return { budget, statements, summaries };
+  return { 
+    budget: processedBudget.budget!, 
+    statements: processedBudget.accoutToMonthToTransactionStatement, 
+    summaries:  processedBudget.summaryNameMonthMap,  
+  };
 }

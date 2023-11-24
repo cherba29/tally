@@ -136,31 +136,15 @@ async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTable> {
   const activeAccounts = payload.budget.findActiveAccounts();
   const owners = [...new Set(activeAccounts.map((account) => account.owners).flat())].sort();
   const owner = args.owner || owners[0];
-  const transactionStatementTable: TransactionStatement[] = payload.statements;
-  const accoutToMonthToTransactionStatement = new Map<string, Map<string, TransactionStatement>>();
-  for (const stmt of transactionStatementTable) {
-    let monthToStatement = accoutToMonthToTransactionStatement.get(stmt.account.name);
-    if (!monthToStatement) {
-      monthToStatement = new Map<string, TransactionStatement>();
-      accoutToMonthToTransactionStatement.set(stmt.account.name, monthToStatement);
-    }
-    monthToStatement.set(stmt.month.toString(), stmt);
-  }
-  const summaryStatementTable = payload.summaries;
-  const summaryNameMonthMap = new Map<string, Map<string, SummaryStatement>>();
-  for (const summary of summaryStatementTable) {
-    let monthToSummary = summaryNameMonthMap.get(summary.name);
-    if (!monthToSummary) {
-      monthToSummary = new Map();
-      summaryNameMonthMap.set(summary.name, monthToSummary);
-    }
-    monthToSummary.set(summary.month.toString(), summary);
-  }
+
   const rows: GqlTableRow[] = [];
   // Insert Total summary row
   {
     const cells: GqlTableCell[] = [];
-    const summaryMonthMap = summaryNameMonthMap.get(owner + ' SUMMARY');
+    const summaryMonthMap = payload.summaries.get(owner + ' SUMMARY');
+    if (!summaryMonthMap) {
+      throw new Error(`Not able to find total summary ${owner + ' SUMMARY'}`);
+    }
     for (const month of months) {
       const summary = summaryMonthMap?.get(month.toString());
       if (summary) {
@@ -203,7 +187,7 @@ async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTable> {
       const cells: GqlTableCell[] = [];
       let isClosed = true;
       for (const month of months) {
-        const stmt = accoutToMonthToTransactionStatement.get(account.name)?.get(month.toString());
+        const stmt = payload.statements.get(account.name)?.get(month.toString());
         isClosed = isClosed && (stmt?.isClosed ?? false);
         cells.push({
           month,
@@ -228,7 +212,7 @@ async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTable> {
       }
     }
     // Summary for each account type.
-    const summaryMonthMap = summaryNameMonthMap.get(owner + ' ' + accountType);
+    const summaryMonthMap = payload.summaries.get(owner + ' ' + accountType);
     const cells: GqlTableCell[] = [];
     let isClosed = true;
     for (const month of months) {
@@ -269,7 +253,11 @@ async function buildSummaryData(_: any, args: QuerySummaryArgs): Promise<GqlSumm
   const summaryName =
     args.owner + ' ' + (args.accountType === args.owner ? 'SUMMARY' : args.accountType);
   // Summary list is in reverse chronological order.
-  const summaryStatements = payload.summaries.filter(
+  const monthSummaries = payload.summaries.get(summaryName);
+  if (!monthSummaries) {
+    throw new Error(`Summary ${args.accountType} for ${args.owner}  not found.`);
+  }
+  const summaryStatements = [...monthSummaries.values()].filter(
     (stmt) => stmt.name === summaryName && stmt.month.isBetween(args.startMonth, args.endMonth)
   );
   if (!summaryStatements.length) {
@@ -296,15 +284,13 @@ async function buildSummaryData(_: any, args: QuerySummaryArgs): Promise<GqlSumm
 async function buildStatement(_: any, args: QueryStatementArgs): Promise<GqlStatement> {
   const startTimeMs: number = Date.now();
   const payload = await loadBudget();
-  const statements = payload.statements.filter(
-    (stmt) => stmt.account.name === args.account && stmt.month.toString() === args.month.toString()
-  );
-  if (statements.length !== 1) {
+  const statement = payload.statements.get(args.account)?.get(args.month.toString());
+  if (!statement) {
     throw new Error(
-      `Found ${statements.length} statements for ${args.owner} ${args.account} ${args.month}`
+      `Did not find statement for ${args.owner} ${args.account} ${args.month}`
     );
   }
-  const result = toGqlStatement(statements[0]);
+  const result = toGqlStatement(statement);
   console.log(`gql statement in ${Date.now() - startTimeMs}ms`);
   return result;
 }

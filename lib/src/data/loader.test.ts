@@ -76,7 +76,7 @@ describe('loadBudget', () => {
     const result = await loadBudget();
     expect(result).toMatchSnapshot();
 
-    expect(console.log).toHaveBeenCalledTimes(3);
+    expect(console.log).toHaveBeenCalledTimes(4);
     expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Done loading 1 file(s)'));
   });
 });
