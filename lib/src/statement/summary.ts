@@ -1,3 +1,4 @@
+import { Account, AccountType } from '..';
 import { Balance, Type as BalanceType } from '../core/balance';
 import { Month } from '../core/month';
 import { Statement } from './statement';
@@ -7,8 +8,8 @@ export class SummaryStatement extends Statement {
   statements: Statement[] = [];
   startMonth: Month;
 
-  constructor(name: string, month: Month, startMonth: Month | undefined = undefined) {
-    super(name, month);
+  constructor(account: Account, month: Month, startMonth: Month | undefined = undefined) {
+    super(account, month);
     this.startMonth = startMonth ?? month;
   }
 
@@ -31,7 +32,7 @@ export class SummaryStatement extends Statement {
   addStatement(statement: Statement): void {
     if (statement.month.compareTo(this.month) !== 0) {
       throw new Error(
-        `${statement.name} statement for month ${statement.month} is being added to summary for month ${this.month}`
+        `${statement.account.name} statement for month ${statement.month} is being added to summary for month ${this.month}`
       );
     }
     if (statement.isClosed) {
@@ -57,28 +58,41 @@ export class SummaryStatement extends Statement {
   }
 }
 
-export function* buildSummaryStatementTable(
+export function buildSummaryStatementTable(
   statements: TransactionStatement[],
   selectedOwner?: string
-): Generator<SummaryStatement> {
+): Map<string, Map<string, SummaryStatement>> {
   // Map of 'summary name' -> month -> 'summary statement'.
   const summaryStatements = new Map<string, Map<string, SummaryStatement>>();
 
-  const updateSummaryStatement = (name: string, statement: TransactionStatement) => {
-    let accountSummaryStatements = summaryStatements.get(name);
+  const updateSummaryStatement = (account: Account, statement: TransactionStatement) => {
+    let accountSummaryStatements = summaryStatements.get(account.name);
     if (!accountSummaryStatements) {
       accountSummaryStatements = new Map<string, SummaryStatement>();
-      summaryStatements.set(name, accountSummaryStatements);
+      summaryStatements.set(account.name, accountSummaryStatements);
     }
     let accountMonthSummaryStatement = accountSummaryStatements.get(statement.month.toString());
     if (!accountMonthSummaryStatement) {
-      accountMonthSummaryStatement = new SummaryStatement(name, statement.month);
+      accountMonthSummaryStatement = new SummaryStatement(account, statement.month);
       accountSummaryStatements.set(statement.month.toString(), accountMonthSummaryStatement);
     }
     accountMonthSummaryStatement.addStatement(statement);
   };
 
+  const summaryAccounts = new Map<string, Account>();
+  const getAccount = (name: string, owner: string): Account => {
+    let account = summaryAccounts.get(name);
+    if (!account) {
+      account = new Account({name, type: AccountType.SUMMARY, owners: [owner]});
+      summaryAccounts.set(name, account);
+    }
+    return account
+  };
+
   for (const statement of statements) {
+    if (statement.account.children.length > 0) {
+      continue;
+    }
     for (const owner of statement.account.owners) {
       if (selectedOwner && owner !== selectedOwner) {
         continue;
@@ -87,17 +101,13 @@ export function* buildSummaryStatementTable(
         if (statement.account.isExternal && summaryName.includes('SUMMARY')) {
           continue;
         }
+        const summaryAccount = getAccount(summaryName, owner);
         // Aggregate statements by name and month.
-        updateSummaryStatement(summaryName, statement);
+        updateSummaryStatement(summaryAccount, statement);
       }
     }
   }
-
-  for (const monthStatements of summaryStatements.values()) {
-    for (const statement of monthStatements.values()) {
-      yield statement;
-    }
-  }
+  return summaryStatements;
 }
 
 export function combineSummaryStatements(summaryStatements: SummaryStatement[]): SummaryStatement {
@@ -105,6 +115,7 @@ export function combineSummaryStatements(summaryStatements: SummaryStatement[]):
     throw new Error(`Cant combine empty list of summary statements`);
   }
   let stmtName: string | undefined = undefined;
+  let owners: string[] = [];
   let minMonth: Month | undefined = undefined;
   let maxMonth: Month | undefined = undefined;
   // Map of 'account name' -> month -> 'summary statement'.
@@ -112,10 +123,11 @@ export function combineSummaryStatements(summaryStatements: SummaryStatement[]):
 
   for (const summaryStmt of summaryStatements) {
     if (!stmtName) {
-      stmtName = summaryStmt.name;
-    } else if (stmtName !== summaryStmt.name) {
+      stmtName = summaryStmt.account.name;
+      owners = summaryStmt.account.owners;
+    } else if (stmtName !== summaryStmt.account.name) {
       throw new Error(
-        `Cant combine different summary statements ${stmtName} and ${summaryStmt.name}`
+        `Cant combine different summary statements ${stmtName} and ${summaryStmt.account.name}`
       );
     }
     if (!minMonth || summaryStmt.month.isLess(minMonth)) {
@@ -125,14 +137,14 @@ export function combineSummaryStatements(summaryStatements: SummaryStatement[]):
       maxMonth = summaryStmt.month;
     }
     for (const stmt of summaryStmt.statements) {
-      let accountMontlyStatements = accountStatements.get(stmt.name);
+      let accountMontlyStatements = accountStatements.get(stmt.account.name);
       if (!accountMontlyStatements) {
         accountMontlyStatements = new Map<string, Statement>();
-        accountStatements.set(stmt.name, accountMontlyStatements);
+        accountStatements.set(stmt.account.name, accountMontlyStatements);
       }
       let monthStatement = accountMontlyStatements.get(stmt.month.toString());
       if (monthStatement) {
-        throw new Error(`Duplicate month statement for ${stmt.name} for ${stmt.month}`);
+        throw new Error(`Duplicate month statement for ${stmt.account.name} for ${stmt.month}`);
       }
       accountMontlyStatements.set(stmt.month.toString(), stmt);
     }
@@ -146,10 +158,11 @@ export function combineSummaryStatements(summaryStatements: SummaryStatement[]):
   if (!maxMonth) {
     throw new Error(`Could not determine end month`);
   }
-  const combined = new SummaryStatement(stmtName, maxMonth, minMonth);
+  const summaryAccount = new Account({name: stmtName, type: AccountType.SUMMARY, owners});
+  const combined = new SummaryStatement(summaryAccount, maxMonth, minMonth);
   for (const [acctName, acctStatements] of accountStatements) {
     // Combine all statements for a given account over all months in the range.
-    const stmt = combineAccountStatements(acctName, minMonth, maxMonth, acctStatements);
+    const stmt = combineAccountStatements(new Account({name: acctName, type: AccountType.SUMMARY, owners: []}), minMonth, maxMonth, acctStatements);
     combined.addStatement(stmt);
   }
   return combined;
@@ -158,8 +171,8 @@ export function combineSummaryStatements(summaryStatements: SummaryStatement[]):
 export class CombinedStatement extends Statement {
   startMonth: Month;
 
-  constructor(name: string, month: Month, startMonth: Month | undefined = undefined) {
-    super(name, month);
+  constructor(account: Account, month: Month, startMonth: Month | undefined = undefined) {
+    super(account, month);
     this.startMonth = startMonth ?? month;
   }
 
@@ -181,8 +194,8 @@ export class CombinedStatement extends Statement {
 }
 
 export class EmptyStatement extends Statement {
-  constructor(name: string, month: Month) {
-    super(name, month);
+  constructor(account: Account, month: Month) {
+    super(account, month);
   }
 
   get isClosed(): boolean {
@@ -191,13 +204,13 @@ export class EmptyStatement extends Statement {
 }
 
 function makeProxyStatement(
-  name: string,
+  account: Account,
   month: Month,
   currStmt: Statement | undefined,
   prevStmt: Statement | undefined,
   nextStmt: Statement | undefined
 ): Statement {
-  const stmt = currStmt ?? new EmptyStatement(name, month);
+  const stmt = currStmt ?? new EmptyStatement(account, month);
   if (!stmt.startBalance) {
     stmt.startBalance =
       prevStmt?.endBalance ??
@@ -212,19 +225,19 @@ function makeProxyStatement(
 }
 
 function combineAccountStatements(
-  name: string,
+  account: Account,
   startMonth: Month,
   endMonth: Month,
   stmts: Map<string, Statement>
 ): Statement {
-  const combined = new CombinedStatement(name, endMonth, startMonth);
+  const combined = new CombinedStatement(account, endMonth, startMonth);
   for (
     let currentMonth = startMonth;
     !endMonth.isLess(currentMonth);
     currentMonth = currentMonth.next()
   ) {
     const stmt: Statement = makeProxyStatement(
-      name,
+      account,
       currentMonth,
       stmts.get(currentMonth.toString()),
       stmts.get(currentMonth.previous().toString()),

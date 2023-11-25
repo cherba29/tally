@@ -35,7 +35,6 @@ describe('Build', () => {
         isCovered: true,
         isProjectedCovered: true,
         month: new Month(2019, 11),
-        name: 'test-account',
         outFlows: 0,
         startBalance: undefined,
         totalPayments: 0,

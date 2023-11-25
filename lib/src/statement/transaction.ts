@@ -22,9 +22,6 @@ export interface Transaction {
 
 // Extension of Statement for transactions over an account.
 export class TransactionStatement extends Statement {
-  // Account to which this transaction statements belongs.
-  account: Account;
-
   // List of transcation in this statement.
   transactions: Transaction[] = [];
 
@@ -51,7 +48,7 @@ export class TransactionStatement extends Statement {
   }
 
   constructor(account: Account, month: Month) {
-    super(account.name, month);
+    super(account, month);
     this.account = account;
   }
 }

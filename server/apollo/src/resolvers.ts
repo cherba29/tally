@@ -43,7 +43,7 @@ function toGqlAccount(account: Account): GqlAccount {
 
 function toGqlStatement(statement: TransactionStatement): GqlStatement {
   return {
-    name: statement.name,
+    name: statement.account.name,
     month: statement.month,
     inFlows: statement.inFlows,
     outFlows: statement.outFlows,
@@ -92,9 +92,9 @@ function toGqlStatement(statement: TransactionStatement): GqlStatement {
 
 function toGqlSummaryStatement(summary: SummaryStatement): GqlSummaryStatement {
   return {
-    name: summary.name,
+    name: summary.account.name,
     month: summary.month,
-    accounts: summary.statements.map((statement) => statement.name).sort(),
+    accounts: summary.statements.map((statement) => statement.account.name).sort(),
     addSub: summary.addSub,
     change: summary.change,
     income: summary.income,
@@ -252,13 +252,12 @@ async function buildSummaryData(_: any, args: QuerySummaryArgs): Promise<GqlSumm
   const payload = await loadBudget();
   const summaryName =
     args.owner + ' ' + (args.accountType === args.owner ? 'SUMMARY' : args.accountType);
-  // Summary list is in reverse chronological order.
   const monthSummaries = payload.summaries.get(summaryName);
   if (!monthSummaries) {
     throw new Error(`Summary ${args.accountType} for ${args.owner}  not found.`);
   }
   const summaryStatements = [...monthSummaries.values()].filter(
-    (stmt) => stmt.name === summaryName && stmt.month.isBetween(args.startMonth, args.endMonth)
+    (stmt) => stmt.month.isBetween(args.startMonth, args.endMonth)
   );
   if (!summaryStatements.length) {
     throw new Error(
@@ -271,7 +270,7 @@ async function buildSummaryData(_: any, args: QuerySummaryArgs): Promise<GqlSumm
       : combineSummaryStatements(summaryStatements);
   const result = {
     statements: summary.statements
-      .sort((a, b) => (a.name < b.name ? -1 : 1))
+      .sort((a, b) => (a.account.name < b.account.name ? -1 : 1))
       .map((stmt) => toGqlStatement(stmt as TransactionStatement)),
     total: toGqlSummaryStatement(summary)
   };

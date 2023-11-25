@@ -2,6 +2,7 @@ import { describe, expect, test } from '@jest/globals';
 import { Balance, Type as BalanceType } from '../core/balance';
 import { Month } from '../core/month';
 import { Statement } from './statement';
+import { Account, AccountType } from '..';
 
 class TestStatement extends Statement {
   get isClosed() {
@@ -22,9 +23,12 @@ function stmtToObj(stmt: Statement) {
 
 describe('Creation', () => {
   test('basic', () => {
-    const stmt = new TestStatement('test-statement', Month.fromString('Mar2021'));
+    const stmt = new TestStatement(
+        new Account({name:'test', type: AccountType.BILL, owners:[]}),
+        Month.fromString('Mar2021')
+    );
     expect(stmt).toEqual({
-      name: 'test-statement',
+      account: new Account({name:'test', type: AccountType.BILL, owners:[]}),
       month: new Month(2021, 2),
       inFlows: 0,
       income: 0,
@@ -40,13 +44,16 @@ describe('Creation', () => {
   });
 
   test('with inFlow outFlow no start/end balance', () => {
-    const stmt = new TestStatement('test-statement', Month.fromString('Mar2021'));
+    const stmt = new TestStatement(
+        new Account({name:'test', type: AccountType.BILL, owners:[]}),
+        Month.fromString('Mar2021')
+    );
     stmt.addInFlow(100);
     stmt.addInFlow(-10);
     stmt.addOutFlow(-30);
     stmt.addOutFlow(10);
     expect(stmtToObj(stmt)).toStrictEqual({
-      name: 'test-statement',
+      account: new Account({name:'test', type: AccountType.BILL, owners:[]}),
       month: new Month(2021, 2),
       addSub: 70,
       change: undefined,
@@ -64,7 +71,10 @@ describe('Creation', () => {
   });
 
   test('with inFlow outFlow with start/end balance', () => {
-    const stmt = new TestStatement('test-statement', Month.fromString('Mar2021'));
+    const stmt = new TestStatement(
+        new Account({name:'test', type: AccountType.BILL, owners:[]}),
+        Month.fromString('Mar2021')
+    );
     const startBalance = new Balance(1000, new Date('2020-01-01'), BalanceType.PROJECTED);
     const endBalance = new Balance(2000, new Date('2020-02-01'), BalanceType.PROJECTED);
     stmt.startBalance = startBalance;
@@ -74,7 +84,7 @@ describe('Creation', () => {
     stmt.addOutFlow(-30);
     stmt.addOutFlow(10);
     expect(stmtToObj(stmt)).toStrictEqual({
-      name: 'test-statement',
+      account: new Account({name:'test', type: AccountType.BILL, owners:[]}),
       month: new Month(2021, 2),
       addSub: 70,
       change: 1000,

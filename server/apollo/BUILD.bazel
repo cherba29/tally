@@ -83,6 +83,7 @@ js_binary(
         "//client/hbs:bundle",
     ],
     entry_point = "main_bundle.mjs",
+    fixed_args = ["--prof"],
     env = {
         "TALLY_FILES": "$$BUILD_WORKSPACE_DIRECTORY/data",
         "CLIENT_BUNDLE": "$$BUILD_WORKSPACE_DIRECTORY/$(BINDIR)/client/hbs",

@@ -61,7 +61,7 @@ class ProcessedBudget {
   private readonly parsedAccountData = new Map<string, YamlData>();
   budget?: Budget = undefined;
   readonly accoutToMonthToTransactionStatement = new Map<string, Map<string, TransactionStatement>>();
-  readonly summaryNameMonthMap = new Map<string, Map<string, SummaryStatement>>();
+  summaryNameMonthMap = new Map<string, Map<string, SummaryStatement>>();
 
   reProcess() {
     const startTimeMs: number = Date.now();
@@ -77,12 +77,14 @@ class ProcessedBudget {
         return;
       }
     }
+    this.budget = budgetBuilder.build();
+    console.log(`Done building budget for ${this.budget.accounts.size} accounts ` 
+        + ` in ${Date.now() - startTimeMs}ms`);
 
     this.accoutToMonthToTransactionStatement.clear();
     this.summaryNameMonthMap.clear();
 
-    this.budget = budgetBuilder.build();
-
+    const startBuildTransactionStatementsTimeMs: number = Date.now();
     const transactionStatementTable = buildTransactionStatementTable(this.budget);
     for (const stmt of transactionStatementTable) {
       let monthToStatement = this.accoutToMonthToTransactionStatement.get(stmt.account.name);
@@ -92,17 +94,18 @@ class ProcessedBudget {
       }
       monthToStatement.set(stmt.month.toString(), stmt);
     }
-    const summaryStatementTable = buildSummaryStatementTable(transactionStatementTable);
+    console.log(`Done building ${transactionStatementTable.length} transaction statements ` 
+                + ` in ${Date.now() - startBuildTransactionStatementsTimeMs}ms`);
+
+    const startBuildSummaryStatementsTimeMs: number = Date.now();
+    this.summaryNameMonthMap = buildSummaryStatementTable(transactionStatementTable);
     let numSummaryStatements = 0;
-    for (const summary of summaryStatementTable) {
-      let monthToSummary = this.summaryNameMonthMap.get(summary.name);
-      if (!monthToSummary) {
-        monthToSummary = new Map();
-        this.summaryNameMonthMap.set(summary.name, monthToSummary);
-      }
-      monthToSummary.set(summary.month.toString(), summary);
-      numSummaryStatements++;
+    for (const summary of this.summaryNameMonthMap.values()) {
+      numSummaryStatements += summary.size;
     }
+    console.log(`Done building ${numSummaryStatements} summary statements ` 
+                + ` in ${Date.now() - startBuildSummaryStatementsTimeMs}ms`);
+
     console.log(`Done reprocessing ${this.parsedAccountData.size} file(s) ` 
         + `${transactionStatementTable.length} tran statements and ` 
         + `${numSummaryStatements} summaries in ${Date.now() - startTimeMs}ms`);

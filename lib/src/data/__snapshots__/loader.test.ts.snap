@@ -73,7 +73,6 @@ exports[`loadBudget just account 1`] = `
           "month": 2,
           "year": 2019,
         },
-        "name": "test-account",
         "outFlows": 0,
         "startBalance": undefined,
         "totalPayments": 0,
@@ -85,6 +84,25 @@ exports[`loadBudget just account 1`] = `
   "summaries": Map {
     "someone EXTERNAL" => Map {
       "Mar2019" => SummaryStatement {
+        "account": Account {
+          "address": undefined,
+          "autoBalance": false,
+          "children": [],
+          "closedOn": undefined,
+          "description": undefined,
+          "name": "someone EXTERNAL",
+          "number": undefined,
+          "openedOn": undefined,
+          "owners": [
+            "someone",
+          ],
+          "parents": [],
+          "password": undefined,
+          "phone": undefined,
+          "type": "_summary_",
+          "url": undefined,
+          "userName": undefined,
+        },
         "endBalance": undefined,
         "inFlows": 0,
         "income": 0,
@@ -92,7 +110,6 @@ exports[`loadBudget just account 1`] = `
           "month": 2,
           "year": 2019,
         },
-        "name": "someone EXTERNAL",
         "outFlows": 0,
         "startBalance": undefined,
         "startMonth": Month {
@@ -135,7 +152,6 @@ exports[`loadBudget just account 1`] = `
               "month": 2,
               "year": 2019,
             },
-            "name": "test-account",
             "outFlows": 0,
             "startBalance": undefined,
             "totalPayments": 0,

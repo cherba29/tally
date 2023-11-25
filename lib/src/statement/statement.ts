@@ -1,9 +1,11 @@
+import { Account } from '../core/account';
 import { Balance } from '../core/balance';
 import { Month } from '../core/month';
 
 // Abstraction for a financial statement for a period of time.
 export abstract class Statement {
-  name: string;
+  // Account to which this statements belongs.
+  account: Account;
 
   // Period of time for the statement
   month: Month;
@@ -29,8 +31,8 @@ export abstract class Statement {
   // Amount transfered from external entities.
   income = 0;
 
-  constructor(name: string, month: Month) {
-    this.name = name;
+  constructor(account: Account, month: Month) {
+    this.account = account;
     this.month = month;
   }
 
