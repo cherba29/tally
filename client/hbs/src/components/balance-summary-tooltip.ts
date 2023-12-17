@@ -4,7 +4,7 @@ import {StatementEntry} from '../utils';
 import {dateFormat, currency, isProjected} from '../format';
 import {classMap, ClassInfo} from 'lit/directives/class-map.js';
 import {GqlBalance, GqlSummaryStatement} from 'src/gql_types';
-import {Month} from '@tally/lib';
+import {Month} from '@tally/lib/core/month';
 
 enum SummaryView {
   MONTH_1 = '1m',

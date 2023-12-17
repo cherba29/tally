@@ -2,7 +2,7 @@ import { describe, expect, test } from '@jest/globals';
 import { Balance, Type as BalanceType } from '../core/balance';
 import { Month } from '../core/month';
 import { Statement } from './statement';
-import { Account, AccountType } from '..';
+import { Account, Type as AccountType } from '../core/account';
 
 class TestStatement extends Statement {
   get isClosed() {

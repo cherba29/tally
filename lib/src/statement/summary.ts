@@ -1,4 +1,4 @@
-import { Account, AccountType } from '..';
+import { Account, Type as AccountType } from '../core/account';
 import { Balance, Type as BalanceType } from '../core/balance';
 import { Month } from '../core/month';
 import { Statement } from './statement';

@@ -20,7 +20,7 @@ import {
   QuerySummaryArgs,
   QueryStatementArgs
 } from './types';
-import { Account } from '@tally/lib';
+import { Account } from '@tally/lib/core/account';
 
 function toGqlAccount(account: Account): GqlAccount {
   return {

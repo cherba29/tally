@@ -10,7 +10,7 @@ import './balance-summary-tooltip';
 import './summary-table';
 import {MonthRangeChange} from './balance-summary-tooltip';
 import {CellClickEventData} from './summary-table';
-import {Month} from '@tally/lib';
+import {Month} from '@tally/lib/core/month';
 
 @customElement('tally-app')
 export class TallyApp extends LitElement {
