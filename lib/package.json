@@ -19,8 +19,6 @@
   },
   "scripts": {
     "build": "tsc -p .",
-    "test": "jest --config jest_config.json",
-    "test-update-snapshot": "jest --updateSnapshot"
   },
   "keywords": [],
   "devDependencies": {

@@ -36,7 +36,7 @@ ts_project(
 # See bazel-testlogs/lib/test/test.log
 jest_test(
     name = "test",
-    config = "jest_config.json",
+    config = "jest_config.js",
     data = glob(["src/**/*.ts"]) + LIB_DEPS + [
         ":node_modules/@jest/globals",
         ":node_modules/@types/mock-fs",

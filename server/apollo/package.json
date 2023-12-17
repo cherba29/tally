@@ -24,7 +24,6 @@
     "start": "node dist/server",
     "generate": "graphql-codegen",
     "debug-build": "tsc",
-    "test": "ENV_FILE=./.env.test jest --config jest_config.json",
     "lint": "eslint . --ext .ts",
     "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write"
   },
