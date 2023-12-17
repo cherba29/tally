@@ -15,9 +15,9 @@ http_archive(
 
 http_archive(
     name = "aspect_rules_jest",
-    sha256 = "d3bb833f74b8ad054e6bff5e41606ff10a62880cc99e4d480f4bdfa70add1ba7",
-    strip_prefix = "rules_jest-0.18.4",
-    url = "https://github.com/aspect-build/rules_jest/releases/download/v0.18.4/rules_jest-v0.18.4.tar.gz",
+    sha256 = "cae44cf7862b71f30c2ba6df6473bc8021c7a6c92c7d1771a58ebf5c99eb5776",
+    strip_prefix = "rules_jest-0.19.6",
+    url = "https://github.com/aspect-build/rules_jest/releases/download/v0.19.6/rules_jest-v0.19.6.tar.gz",
 )
 
 http_archive(
