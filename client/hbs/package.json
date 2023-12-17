@@ -3,13 +3,13 @@
   "private": true,
   "version": "0.3.0",
   "devDependencies": {
-    "@graphql-codegen/cli": "^3.3.1",
+    "@graphql-codegen/cli": "^5.0.0",
     "@jest/globals": "^29.7.0",
     "@types/chai": "^4.3.11",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.10.4",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
     "css-loader": "^6.8.1",
     "eslint": "^8.56.0",
     "eslint-config-google": "^0.14.0",
@@ -32,8 +32,8 @@
     "@types/jquery": "^3.5.29",
     "graphql": "^16.8.1",
     "jquery": "^3.7.1",
-    "lit": "^2.8.0",
-    "prettier": "^2.8.8"
+    "lit": "^3.1.0",
+    "prettier": "^3.1.1"
   },
   "scripts": {
     "serve": "TS_NODE_PROJECT=\"tsconfig-for-webpack-config.json\" webpack serve --port 9000",

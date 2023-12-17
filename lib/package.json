@@ -18,7 +18,7 @@
     }
   },
   "scripts": {
-    "build": "tsc -p .",
+    "build": "tsc -p ."
   },
   "keywords": [],
   "devDependencies": {
