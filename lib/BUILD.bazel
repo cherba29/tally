@@ -27,6 +27,7 @@ ts_project(
     composite = True,
     declaration = True,
     declaration_map = True,
+    transpiler = "tsc",
     tsconfig = ":tsconfig.json",
     validate = True,  # Checks that tsconfig matches this target.
     deps = LIB_DEPS,

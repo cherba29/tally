@@ -36,6 +36,7 @@ ts_project(
         exclude = ["src/**/*.test.ts"],
     ),
     composite = True,
+    transpiler = "tsc",
     tsconfig = ":tsconfig.json",
     validate = True,  # Checks that tsconfig matches this target.
     deps = LIB_DEPS,
@@ -47,8 +48,8 @@ jest_test(
     config = "jest_config.json",
     data = glob(["src/**/*.ts"]) + glob(["src/testdata/**/*"]) + LIB_DEPS + [
         ":node_modules/@types/jest",
-        ":node_modules/ts-jest",
         ":node_modules/jest",
+        ":node_modules/ts-jest",
         ":tsconfig.json",
     ],
     node_modules = ":node_modules",
@@ -83,9 +84,9 @@ js_binary(
         "//client/hbs:bundle",
     ],
     entry_point = "main_bundle.mjs",
-    fixed_args = ["--prof"],
     env = {
         "TALLY_FILES": "$$BUILD_WORKSPACE_DIRECTORY/data",
         "CLIENT_BUNDLE": "$$BUILD_WORKSPACE_DIRECTORY/$(BINDIR)/client/hbs",
     },
+    fixed_args = ["--prof"],
 )

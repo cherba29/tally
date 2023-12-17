@@ -11,6 +11,7 @@ ts_project(
     srcs = glob([
         "src/**/*.ts",
     ]),
+    transpiler = "tsc",
     tsconfig = ":tsconfig.json",
     validate = True,  # Checks that tsconfig matches this target.
     deps = [
