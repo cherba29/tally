@@ -1,4 +1,3 @@
-import { Type as BalanceType } from '@tally/lib/core/balance';
 import { Month } from '@tally/lib/core/month';
 import { loadBudget } from '@tally/lib/data/loader';
 import {
@@ -8,7 +7,11 @@ import {
   QueryTableArgs,
 } from './types';
 import { Account } from '@tally/lib/core/account';
-import { toGqlAccount } from './to-gql';
+import { 
+  toGqlAccount,
+  toGqlTableCellFromStatement,
+  toGqlTableCellFromTransactionStatement,
+} from './to-gql';
 
 
 export async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTable> {
@@ -26,29 +29,13 @@ export async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTa
   const rows: GqlTableRow[] = [];
   // Insert Total summary row
   {
-    const cells: GqlTableCell[] = [];
     const summaryMonthMap = payload.summaries.get(owner + ' SUMMARY');
     if (!summaryMonthMap) {
       throw new Error(`Not able to find total summary ${owner + ' SUMMARY'}`);
     }
-    for (const month of months) {
-      const summary = summaryMonthMap?.get(month.toString());
-      if (summary) {
-        cells.push({
-          month,
-          addSub: summary.addSub,
-          balance: summary.endBalance?.amount,
-          percentChange:
-            summary.percentChange &&
-            Math.round((summary.percentChange + Number.EPSILON) * 100) / 100,
-          unaccounted: summary.unaccounted,
-          isProjected: summary.endBalance?.type !== BalanceType.CONFIRMED,
-          balanced: !summary.unaccounted
-        });
-      } else {
-        cells.push({});
-      }
-    }
+    const cells: GqlTableCell[] = months.map(
+      (month) => toGqlTableCellFromStatement(summaryMonthMap?.get(month.toString()))
+    );
     rows.push({ title: owner, isTotal: true, cells });
   }
 
@@ -75,22 +62,7 @@ export async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTa
       for (const month of months) {
         const stmt = payload.statements.get(account.name)?.get(month.toString());
         isClosed = isClosed && (stmt?.isClosed ?? false);
-        cells.push({
-          month,
-          isClosed: stmt?.isClosed,
-          addSub: stmt?.addSub,
-          balance: stmt?.endBalance?.amount,
-          isProjected:
-            (stmt?.endBalance && stmt?.endBalance.type !== BalanceType.CONFIRMED) ||
-            stmt?.hasProjectedTransfer,
-          isCovered: stmt?.isCovered,
-          isProjectedCovered: stmt?.isProjectedCovered,
-          hasProjectedTransfer: stmt?.hasProjectedTransfer,
-          percentChange:
-            stmt?.percentChange && Math.round((stmt.percentChange + Number.EPSILON) * 100) / 100,
-          unaccounted: stmt?.unaccounted,
-          balanced: !stmt?.unaccounted
-        });
+        cells.push(toGqlTableCellFromTransactionStatement(stmt));
       }
       if (!isClosed) {
         // Dont add accounts which are closed over selected timeframe.
@@ -104,20 +76,7 @@ export async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTa
     for (const month of months) {
       const stmt = summaryMonthMap?.get(month.toString());
       isClosed = isClosed && (stmt?.isClosed ?? false);
-      cells.push({
-        month,
-        isClosed: stmt?.isClosed,
-        addSub: stmt?.addSub,
-        balance: stmt?.endBalance?.amount,
-        isProjected: stmt?.endBalance?.type !== BalanceType.CONFIRMED,
-        percentChange:
-          stmt?.percentChange && Math.round((stmt.percentChange + Number.EPSILON) * 100) / 100,
-        annualizedPercentChange:
-          stmt?.annualizedPercentChange &&
-          Math.round((stmt.annualizedPercentChange + Number.EPSILON) * 100) / 100,
-        unaccounted: stmt?.unaccounted,
-        balanced: !stmt?.unaccounted
-      });
+      cells.push(toGqlTableCellFromStatement(stmt));
     }
     if (!isClosed) {
       // Dont add accounts which are closed over selected timeframe.

@@ -103,8 +103,10 @@ exports[`gqlTable load 1`] = `
       "cells": [
         {
           "addSub": 0,
+          "annualizedPercentChange": undefined,
           "balance": undefined,
           "balanced": true,
+          "isClosed": false,
           "isProjected": true,
           "month": Month {
             "month": 3,
@@ -115,8 +117,10 @@ exports[`gqlTable load 1`] = `
         },
         {
           "addSub": 0,
+          "annualizedPercentChange": 0,
           "balance": -1500,
           "balanced": true,
+          "isClosed": false,
           "isProjected": true,
           "month": Month {
             "month": 2,
@@ -127,8 +131,10 @@ exports[`gqlTable load 1`] = `
         },
         {
           "addSub": 0,
+          "annualizedPercentChange": 60.51,
           "balance": -1500,
           "balanced": false,
+          "isClosed": false,
           "isProjected": true,
           "month": Month {
             "month": 1,
@@ -139,8 +145,10 @@ exports[`gqlTable load 1`] = `
         },
         {
           "addSub": -4912,
+          "annualizedPercentChange": undefined,
           "balance": -1442,
           "balanced": false,
+          "isClosed": false,
           "isProjected": false,
           "month": Month {
             "month": 0,
@@ -151,8 +159,10 @@ exports[`gqlTable load 1`] = `
         },
         {
           "addSub": 0,
+          "annualizedPercentChange": undefined,
           "balance": -376,
           "balanced": true,
+          "isClosed": false,
           "isProjected": false,
           "month": Month {
             "month": 11,
@@ -194,6 +204,7 @@ exports[`gqlTable load 1`] = `
       "cells": [
         {
           "addSub": 0,
+          "annualizedPercentChange": undefined,
           "balance": undefined,
           "balanced": true,
           "hasProjectedTransfer": false,
@@ -210,6 +221,7 @@ exports[`gqlTable load 1`] = `
         },
         {
           "addSub": 0,
+          "annualizedPercentChange": 0,
           "balance": -1500,
           "balanced": true,
           "hasProjectedTransfer": false,
@@ -226,6 +238,7 @@ exports[`gqlTable load 1`] = `
         },
         {
           "addSub": 0,
+          "annualizedPercentChange": 60.51,
           "balance": -1500,
           "balanced": false,
           "hasProjectedTransfer": false,
@@ -242,6 +255,7 @@ exports[`gqlTable load 1`] = `
         },
         {
           "addSub": -847,
+          "annualizedPercentChange": -156.13,
           "balance": -1442,
           "balanced": false,
           "hasProjectedTransfer": false,
@@ -258,6 +272,7 @@ exports[`gqlTable load 1`] = `
         },
         {
           "addSub": 0,
+          "annualizedPercentChange": undefined,
           "balance": -1570,
           "balanced": true,
           "hasProjectedTransfer": false,
@@ -304,6 +319,7 @@ exports[`gqlTable load 1`] = `
       "cells": [
         {
           "addSub": 0,
+          "annualizedPercentChange": undefined,
           "balance": undefined,
           "balanced": true,
           "hasProjectedTransfer": false,
@@ -320,6 +336,7 @@ exports[`gqlTable load 1`] = `
         },
         {
           "addSub": 0,
+          "annualizedPercentChange": undefined,
           "balance": undefined,
           "balanced": true,
           "hasProjectedTransfer": false,
@@ -336,6 +353,7 @@ exports[`gqlTable load 1`] = `
         },
         {
           "addSub": 0,
+          "annualizedPercentChange": undefined,
           "balance": undefined,
           "balanced": true,
           "hasProjectedTransfer": false,
@@ -352,6 +370,7 @@ exports[`gqlTable load 1`] = `
         },
         {
           "addSub": -4065,
+          "annualizedPercentChange": undefined,
           "balance": 0,
           "balanced": false,
           "hasProjectedTransfer": false,
@@ -368,6 +387,7 @@ exports[`gqlTable load 1`] = `
         },
         {
           "addSub": 0,
+          "annualizedPercentChange": undefined,
           "balance": 1194,
           "balanced": true,
           "hasProjectedTransfer": false,

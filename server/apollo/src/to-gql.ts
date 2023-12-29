@@ -5,10 +5,13 @@ import {
 } from '@tally/lib/statement/transaction';
 import { SummaryStatement } from '@tally/lib/statement/summary';
 import { Type as BalanceType } from '@tally/lib/core/balance';
+import { Statement } from '@tally/lib/statement/statement';
+
 import {
   GqlAccount,
   GqlStatement,
   GqlSummaryStatement,
+  GqlTableCell,
 } from './types';
 import { Account } from '@tally/lib/core/account';
 
@@ -113,5 +116,34 @@ export function toGqlSummaryStatement(summary: SummaryStatement): GqlSummaryStat
         type: BalanceType[summary.endBalance.type as BalanceType]
       }
     })
+  };
+}
+
+export function toGqlTableCellFromTransactionStatement(stmt?: TransactionStatement): GqlTableCell {
+  return {
+    ...toGqlTableCellFromStatement(stmt),
+    isProjected:
+      (stmt?.endBalance && stmt?.endBalance.type !== BalanceType.CONFIRMED) ||
+      stmt?.hasProjectedTransfer,
+    isCovered: stmt?.isCovered,
+    isProjectedCovered: stmt?.isProjectedCovered,
+    hasProjectedTransfer: stmt?.hasProjectedTransfer,
+  };
+}
+
+export function toGqlTableCellFromStatement(stmt?: Statement): GqlTableCell {
+  return {
+    month: stmt?.month,
+    isClosed: stmt?.isClosed,
+    addSub: stmt?.addSub,
+    balance: stmt?.endBalance?.amount,
+    isProjected: stmt?.endBalance?.type !== BalanceType.CONFIRMED,
+    percentChange:
+      stmt?.percentChange && Math.round((stmt.percentChange + Number.EPSILON) * 100) / 100,
+    annualizedPercentChange:
+      stmt?.annualizedPercentChange &&
+      Math.round((stmt.annualizedPercentChange + Number.EPSILON) * 100) / 100,
+    unaccounted: stmt?.unaccounted,
+    balanced: !stmt?.unaccounted
   };
 }
