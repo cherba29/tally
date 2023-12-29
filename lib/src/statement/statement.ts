@@ -88,4 +88,9 @@ export abstract class Statement {
       this.outFlows += outFlow;
     }
   }
+
+  isEmpty(): boolean {
+    return !(this.startBalance || this.endBalance || this.totalTransfers || 
+            this.income || this.inFlows || this.outFlows || this.totalPayments);
+  }
 }

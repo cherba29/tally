@@ -115,3 +115,12 @@ test('isExternal true when type is DEFFERED_INCOME', () => {
   });
   expect(account.isExternal).toBe(true);
 });
+
+test('toString', () => {
+  const account = new Account({
+    name: 'testAccount',
+    type: Type.TAX,
+    owners: ['bob'],
+  });
+  expect(account.toString()).toBe('Account testAccount tax_');
+});

@@ -46,6 +46,7 @@ export class BackendClient {
               account {
                 name
                 description
+                path
                 type
                 openedOn
                 closedOn

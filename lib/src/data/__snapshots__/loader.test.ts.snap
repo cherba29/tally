@@ -6,8 +6,6 @@ exports[`loadBudget just account 1`] = `
     "accounts": Map {
       "test-account" => Account {
         "address": undefined,
-        "autoBalance": false,
-        "children": [],
         "closedOn": undefined,
         "description": undefined,
         "name": "test-account",
@@ -19,15 +17,23 @@ exports[`loadBudget just account 1`] = `
         "owners": [
           "someone",
         ],
-        "parents": [],
         "password": undefined,
+        "path": [],
         "phone": undefined,
         "type": "external",
         "url": undefined,
         "userName": undefined,
       },
     },
-    "balances": Map {},
+    "balances": Map {
+      "test-account" => Map {
+        "Mar2019" => Balance {
+          "amount": 10000,
+          "date": 2019-03-01T00:00:00.000Z,
+          "type": "CONFIRMED",
+        },
+      },
+    },
     "months": [
       Month {
         "month": 2,
@@ -41,8 +47,6 @@ exports[`loadBudget just account 1`] = `
       "Mar2019" => TransactionStatement {
         "account": Account {
           "address": undefined,
-          "autoBalance": false,
-          "children": [],
           "closedOn": undefined,
           "description": undefined,
           "name": "test-account",
@@ -54,8 +58,8 @@ exports[`loadBudget just account 1`] = `
           "owners": [
             "someone",
           ],
-          "parents": [],
           "password": undefined,
+          "path": [],
           "phone": undefined,
           "type": "external",
           "url": undefined,
@@ -74,7 +78,11 @@ exports[`loadBudget just account 1`] = `
           "year": 2019,
         },
         "outFlows": 0,
-        "startBalance": undefined,
+        "startBalance": Balance {
+          "amount": 10000,
+          "date": 2019-03-01T00:00:00.000Z,
+          "type": "CONFIRMED",
+        },
         "totalPayments": 0,
         "totalTransfers": 0,
         "transactions": [],
@@ -86,8 +94,6 @@ exports[`loadBudget just account 1`] = `
       "Mar2019" => SummaryStatement {
         "account": Account {
           "address": undefined,
-          "autoBalance": false,
-          "children": [],
           "closedOn": undefined,
           "description": undefined,
           "name": "someone EXTERNAL",
@@ -96,8 +102,8 @@ exports[`loadBudget just account 1`] = `
           "owners": [
             "someone",
           ],
-          "parents": [],
           "password": undefined,
+          "path": [],
           "phone": undefined,
           "type": "_summary_",
           "url": undefined,
@@ -111,7 +117,11 @@ exports[`loadBudget just account 1`] = `
           "year": 2019,
         },
         "outFlows": 0,
-        "startBalance": undefined,
+        "startBalance": Balance {
+          "amount": 10000,
+          "date": 2019-03-01T00:00:00.000Z,
+          "type": "CONFIRMED",
+        },
         "startMonth": Month {
           "month": 2,
           "year": 2019,
@@ -120,8 +130,6 @@ exports[`loadBudget just account 1`] = `
           TransactionStatement {
             "account": Account {
               "address": undefined,
-              "autoBalance": false,
-              "children": [],
               "closedOn": undefined,
               "description": undefined,
               "name": "test-account",
@@ -133,8 +141,8 @@ exports[`loadBudget just account 1`] = `
               "owners": [
                 "someone",
               ],
-              "parents": [],
               "password": undefined,
+              "path": [],
               "phone": undefined,
               "type": "external",
               "url": undefined,
@@ -153,7 +161,11 @@ exports[`loadBudget just account 1`] = `
               "year": 2019,
             },
             "outFlows": 0,
-            "startBalance": undefined,
+            "startBalance": Balance {
+              "amount": 10000,
+              "date": 2019-03-01T00:00:00.000Z,
+              "type": "CONFIRMED",
+            },
             "totalPayments": 0,
             "totalTransfers": 0,
             "transactions": [],

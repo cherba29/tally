@@ -33,6 +33,7 @@ export type GqlAccount = {
   password?: Maybe<Scalars['String']>;
   phone?: Maybe<Scalars['String']>;
   summary?: Maybe<Scalars['Boolean']>;
+  path?: Maybe<Array<Maybe<Scalars['String']>>>;
   /**
    * Account type. Determines how account is grouped.
    * TODO: This should change to enum.

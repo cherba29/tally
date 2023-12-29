@@ -28,6 +28,11 @@ export default gql`
     description: String
 
     """
+    Replacement for type, so that accounts are grouped.
+    """
+    path: [String]
+
+    """
     Account type. Determines how account is grouped.
     TODO: This should change to enum.
     """

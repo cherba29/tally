@@ -70,6 +70,8 @@ describe('loadBudget', () => {
           owner: [ someone ]
           type: external
           opened_on: Mar2019
+          balances:
+          - {grp: Mar2019, date: 2019-03-01, camt: 100.00}
         `.replace(/^ +/g, ''),
       },
     });

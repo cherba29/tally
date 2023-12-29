@@ -1,8 +1,8 @@
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
-export type Exact<T extends {[key: string]: unknown}> = {[K in keyof T]: T[K]};
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> & {[SubKey in K]?: Maybe<T[SubKey]>};
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & {[SubKey in K]: Maybe<T[SubKey]>};
+export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
+export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -33,6 +33,7 @@ export type GqlAccount = {
   password?: Maybe<Scalars['String']>;
   phone?: Maybe<Scalars['String']>;
   summary?: Maybe<Scalars['Boolean']>;
+  path?: Maybe<Array<Maybe<Scalars['String']>>>;
   /**
    * Account type. Determines how account is grouped.
    * TODO: This should change to enum.
@@ -158,7 +159,8 @@ export type QueryStatementArgs = {
 
 export type QuerySummaryArgs = {
   accountType: Scalars['String'];
-  month: Scalars['GqlMonth'];
+  startMonth: Scalars['GqlMonth'];
+  endMonth: Scalars['GqlMonth'];
   owner: Scalars['String'];
 };
 

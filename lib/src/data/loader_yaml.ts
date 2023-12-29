@@ -24,8 +24,7 @@ export interface YamlData {
   name?: string;
   desc?: string;
   number?: string;
-  parents?: string[];
-  auto_balance?: boolean;
+  path?: string[];
   type?: string;
   opened_on?: string;
   closed_on?: string;
@@ -81,8 +80,8 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
   if (!accountType) {
     throw new Error(`Unknown type '${data.type}' for account '${data.name}'`);
   }
-  if (data.parents === undefined) {
-    console.warn(`Account '${data.name}' has no parents set`);
+  if (data.path === undefined) {
+    console.warn(`Account '${data.name}' has no path set`);
   }
   if (!data.owner || data.owner.length === 0) {
     throw new Error(`Account '${data.name}' has no owners`);
@@ -90,9 +89,7 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
   const account = new Account({
     name: data.name,
     description: data.desc,
-    parents: [],
-    children: [],
-    autoBalance: data.auto_balance ?? false,
+    path: data.path,
     type: accountType,
     number: data.number,
     openedOn: data.opened_on ? Month.fromString(data.opened_on) : undefined,
@@ -104,7 +101,7 @@ function processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
     userName: data.username,
     password: data.pswd,
   });
-  budgetBuilder.setAccount(account, data.parents ?? []);
+  budgetBuilder.setAccount(account);
   if (data.balances) {
     for (const balanceData of data.balances) {
       if (!balanceData.grp) {

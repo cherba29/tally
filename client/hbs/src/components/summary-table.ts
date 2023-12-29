@@ -206,6 +206,7 @@ export class SummaryTable extends LitElement {
                   id="${account.name}"
                   @click="${(e: MouseEvent) => this.onTitleCellClick(e, r.account)}"
                 >
+                  ${'+'.repeat(account.path?.length ?? 0)}
                   ${account.url
                     ? html`<a href="${account.url}" target="_blank">${account.name}</a>`
                     : account.name}

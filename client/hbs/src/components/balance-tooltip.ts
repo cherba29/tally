@@ -65,7 +65,7 @@ export class BalanceTooltip extends LitElement {
     const transactionCode = (t: GqlTransaction | undefined | null): TemplateResult => {
       if (t?.isExpense) return html`E &#x2192;`;
       if (t?.isIncome) return html`I &#x2190;`;
-      if (t?.balance?.amount ?? 0 > 0) return html`T &#x2190;`;
+      if ((t?.balance?.amount ?? 0) > 0) return html`T &#x2190;`;
       return html`T &#x2192;`;
     };
     const projectedClass = (b: GqlBalance | null | undefined): ClassInfo => {

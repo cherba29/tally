@@ -80,28 +80,30 @@ export function buildSummaryStatementTable(
   };
 
   const summaryAccounts = new Map<string, Account>();
-  const getAccount = (name: string, owner: string): Account => {
+  const getAccount = (name: string, owner: string, path: string[]): Account => {
     let account = summaryAccounts.get(name);
     if (!account) {
-      account = new Account({name, type: AccountType.SUMMARY, owners: [owner]});
+      account = new Account({name, type: AccountType.SUMMARY, owners: [owner], path: path.slice(0, -1)});
       summaryAccounts.set(name, account);
     }
     return account
   };
 
+  const parentSummaries = [];
   for (const statement of statements) {
-    if (statement.account.children.length > 0) {
-      continue;
-    }
     for (const owner of statement.account.owners) {
-      if (selectedOwner && owner !== selectedOwner) {
+      if (selectedOwner && owner !== selectedOwner || statement.isEmpty()) {
         continue;
       }
-      for (const summaryName of [owner + ' ' + statement.account.typeIdName, owner + ' SUMMARY']) {
+      const summariesToAddTo = [owner + ' ' + statement.account.typeIdName, owner + ' SUMMARY'];
+      if (statement.account.path.length) {
+        summariesToAddTo.push(statement.account.path.join('/'));
+      }
+      for (const summaryName of summariesToAddTo) {
         if (statement.account.isExternal && summaryName.includes('SUMMARY')) {
           continue;
         }
-        const summaryAccount = getAccount(summaryName, owner);
+        const summaryAccount = getAccount(summaryName, owner, statement.account.path);
         // Aggregate statements by name and month.
         updateSummaryStatement(summaryAccount, statement);
       }

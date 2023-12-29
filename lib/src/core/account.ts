@@ -22,9 +22,7 @@ const reverseAccountType = new Map<string, string>(Object.entries(Type).map(([k,
 export interface InitData {
   name: string;
   description?: string;
-  parents?: Account[];
-  children?: Account[];
-  autoBalance?: boolean;
+  path?: string[];
   type: Type;
   number?: string;
   openedOn?: Month;
@@ -40,12 +38,9 @@ export interface InitData {
 export class Account {
   readonly name: string;
   readonly description?: string;
-  readonly parents: Account[];
-  readonly children: Account[];
+  readonly path: string[];
   // Account type, for example 'CREDIT_CARD'.
   readonly type: Type;
-  // Account balances are automatically considered to be committed.
-  readonly autoBalance: boolean;
   // Real account number associated with this account.
   readonly number?: string;
   // Month when account was opened and possibly closed.
@@ -66,9 +61,7 @@ export class Account {
   constructor(data: InitData) {
     this.name = data.name;
     this.description = data.description;
-    this.parents = data.parents ?? [];
-    this.children = data.children ?? [];
-    this.autoBalance = data.autoBalance ?? false;
+    this.path = data.path ?? [];
     this.type = data.type;
     this.number = data.number;
     this.openedOn = data.openedOn;

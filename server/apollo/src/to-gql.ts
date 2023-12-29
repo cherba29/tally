@@ -16,6 +16,7 @@ export function toGqlAccount(account: Account): GqlAccount {
   return {
     name: account.name,
     ...(account.description && { description: account.description }),
+    path: account.path,
     type: account.typeIdName,
     number: account.number,
     ...(account.openedOn && { openedOn: account.openedOn }),
