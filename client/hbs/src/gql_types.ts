@@ -127,6 +127,7 @@ export type GqlTableRow = {
   __typename?: 'GqlTableRow';
   account?: Maybe<GqlAccount>;
   cells?: Maybe<Array<Maybe<GqlTableCell>>>;
+  indent?: Maybe<Scalars['Int']>;
   isNormal?: Maybe<Scalars['Boolean']>;
   isSpace?: Maybe<Scalars['Boolean']>;
   isTotal?: Maybe<Scalars['Boolean']>;

@@ -207,7 +207,7 @@ export class BalanceSummaryTooltip extends LitElement {
           ${this.statementEntries.map(
             (e, index) =>
               html`<tr class="highlight">
-                <td>${index + 1} ${e.name}</td>
+                <td>${index + 1} ${e.name.split('/').pop()}</td>
                 <td align="middle">${dateFormat(e.stmt.startBalance?.date)}</td>
                 <td class=${classMap(projectedClass(e.stmt.startBalance))}>
                   ${currency(e.stmt.startBalance?.amount)}

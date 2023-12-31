@@ -3,6 +3,7 @@ import { Balance, Type as BalanceType } from '../core/balance';
 import { Month } from '../core/month';
 import { Statement } from './statement';
 import { TransactionStatement } from './transaction';
+import { Map2, Map3 } from '../utils';
 
 export class SummaryStatement extends Statement {
   statements: Statement[] = [];
@@ -56,40 +57,157 @@ export class SummaryStatement extends Statement {
     this.income += statement.income;
     this.statements.push(statement);
   }
+
+  mergeStatement(statement: SummaryStatement) {
+    if (statement.month.compareTo(this.month) !== 0) {
+      throw new Error(
+        `${statement.account.name} statement for month ${statement.month} is being added to summary for month ${this.month}`
+      );
+    }
+    if (statement.isClosed) {
+      // Does not contribute to the summary.
+      return;
+    }
+    if (!this.startBalance) {
+      this.startBalance = statement.startBalance;
+    } else if (statement.startBalance) {
+      this.startBalance = Balance.add(this.startBalance, statement.startBalance);
+    }
+    if (!this.endBalance) {
+      this.endBalance = statement.endBalance;
+    } else if (statement.endBalance) {
+      this.endBalance = Balance.add(this.endBalance, statement.endBalance);
+    }
+    this.addInFlow(statement.inFlows);
+    this.addOutFlow(statement.outFlows);
+    this.totalTransfers += statement.totalTransfers;
+    this.totalPayments += statement.totalPayments;
+    this.income += statement.income;
+    this.statements = [...this.statements, ...statement.statements];
+  }
+}
+
+class SummaryStatementAggregator {
+  // Map of owner -> 'summary name' -> month -> 'summary statement'.
+  summaryStatements = new Map3<SummaryStatement>();
+  private summaryAccounts = new Map<string, Account>();
+
+  addStatement(summaryName: string, owner: string, statement: Statement) {
+    const summaryAccount = this.getAccount(summaryName, owner, statement.account.path);
+
+    const accountMonthSummaryStatement = this.summaryStatements.getDefault(
+      owner, summaryAccount.name, statement.month.toString(), 
+      () => new SummaryStatement(summaryAccount, statement.month));
+    accountMonthSummaryStatement.addStatement(statement);
+  }
+
+  private getAccount(name: string, owner: string, path: string[]): Account {
+    const key = owner + ' - ' + name;
+    let account = this.summaryAccounts.get(key);
+    if (!account) {
+      account = new Account({name, type: AccountType.SUMMARY, owners: [owner], path: path.slice(0, -1)});
+      this.summaryAccounts.set(key, account);
+    }
+    return account
+  }
+
+  // Make sure totals are computed for parent summary accounts up the path to the root.
+  // propogateUpThePath() {
+  //   let nextLevelSummaries = new SummaryStatementAggregator();
+  //   nextLevelSummaries.summaryAccounts = this.summaryAccounts;
+  //   nextLevelSummaries.summaryStatements = this.summaryStatements;
+  //   while (!nextLevelSummaries.summaryStatements.isEmpty()) {
+  //     console.log('### processing ', nextLevelSummaries.summaryStatements.size, 'summary statements');
+  //     let currentLevelSummaries = nextLevelSummaries.summaryStatements;
+  //     nextLevelSummaries.summaryStatements = new Map3<SummaryStatement>();
+  //     for (const [owner, , , statement] of currentLevelSummaries) {
+  //       // Break recursion stopping at the root, and exclude other legacy accounts in totals.
+  //       if (statement.account.name !== '/' && statement.account.name.startsWith('/')) {
+  //         const summaryName = '/' + statement.account.path.join('/');
+  //         if (summaryName.startsWith('/external') && statement.month.toString() === 'Dec2023') {
+  //           console.log('### adding statement to', summaryName, owner, statement.account.name, statement.endBalance?.amount);
+  //         }
+  //         nextLevelSummaries.addStatement(summaryName, owner, statement);
+  //       }
+  //     }
+  //     this.merge(nextLevelSummaries.summaryStatements);
+  //   }
+  //   console.log('### Final ', this.summaryStatements.size, 'summary statements');
+  // }
+
+  // private merge(summaries: Map3<SummaryStatement>) {
+  //   for (const [owner, summaryName, month, statement] of summaries) {
+  //     const existingStatement = this.summaryStatements.get(owner, summaryName, month);
+  //     if (existingStatement) {
+  //       existingStatement.mergeStatement(statement);
+  //     } else {
+  //       this.summaryStatements.set(owner, summaryName, month, statement);
+  //     }
+  //   }
+  // }
+
+  // Make sure totals are computed for parent summary accounts up the path to the root.
+  propogateUpThePath2() {
+      // Build a multi-root tree based on account paths for each owner.
+    const tree = new Map<string, Set<string>>();  // node -> set of children.
+    const owners = new Set<string>();
+    for (const [, account] of this.summaryAccounts) {
+      for (const owner of account.owners) {
+        owners.add(owner);
+        if (!account.name.startsWith('/')) continue;
+        const path = account.path;
+        let entry = '/' + owner + account.name;
+        for (let sub = path.length; sub >= 0 ; sub--) {
+          const subPath = path.slice(0, sub);
+          const subPathId = '/' + owner + '/' + subPath.join('/');
+          let subTreeEntry = tree.get(subPathId);
+          if (!subTreeEntry) {
+            subTreeEntry = new Set<string>();
+            tree.set(subPathId, subTreeEntry);
+          }
+          if (subPathId !== entry) {  // Make sure root does not reference itself.
+            subTreeEntry.add(entry);
+          }
+          entry = subPathId;
+        }
+      }
+    }
+    // For each owner bottom up build up summaries.
+    for (const owner of owners) {
+      const ownerRoot = '/' + owner + '/';
+      for (const node of traverseBottomUp(ownerRoot, tree)) {
+        const fullPath = node.split('/');
+        const summaryId = '/' + fullPath.slice(2).join('/');
+        // skip this is root node it does not need to be added to anything.
+        if (summaryId === '/') continue;
+        const monthlyStatements = this.summaryStatements.get2(owner, summaryId);
+        if (!monthlyStatements) {  // Should never happen.
+          throw new Error(`${node} has no monthly statements.`);
+        }
+        const parrentSummaryId = '/' + fullPath.slice(2, -1).join('/');
+        for (const [, monthlyStatement] of monthlyStatements) {
+          this.addStatement(parrentSummaryId, owner, monthlyStatement);
+        }
+      }
+    }
+  }
+}
+
+function *traverseBottomUp(root: string, tree: Map<string, Set<string>>): Generator<string> {
+  const children = tree.get(root) ?? new Set<string>();
+  for (const child of children) {
+    for (const node of traverseBottomUp(child, tree)) {
+      yield node;
+    }
+  }
+  yield root;
 }
 
 export function buildSummaryStatementTable(
   statements: TransactionStatement[],
   selectedOwner?: string
-): Map<string, Map<string, SummaryStatement>> {
-  // Map of 'summary name' -> month -> 'summary statement'.
-  const summaryStatements = new Map<string, Map<string, SummaryStatement>>();
-
-  const updateSummaryStatement = (account: Account, statement: TransactionStatement) => {
-    let accountSummaryStatements = summaryStatements.get(account.name);
-    if (!accountSummaryStatements) {
-      accountSummaryStatements = new Map<string, SummaryStatement>();
-      summaryStatements.set(account.name, accountSummaryStatements);
-    }
-    let accountMonthSummaryStatement = accountSummaryStatements.get(statement.month.toString());
-    if (!accountMonthSummaryStatement) {
-      accountMonthSummaryStatement = new SummaryStatement(account, statement.month);
-      accountSummaryStatements.set(statement.month.toString(), accountMonthSummaryStatement);
-    }
-    accountMonthSummaryStatement.addStatement(statement);
-  };
-
-  const summaryAccounts = new Map<string, Account>();
-  const getAccount = (name: string, owner: string, path: string[]): Account => {
-    let account = summaryAccounts.get(name);
-    if (!account) {
-      account = new Account({name, type: AccountType.SUMMARY, owners: [owner], path: path.slice(0, -1)});
-      summaryAccounts.set(name, account);
-    }
-    return account
-  };
-
-  const parentSummaries = [];
+): Map3<SummaryStatement> {
+  const statementsAggregator = new SummaryStatementAggregator();
   for (const statement of statements) {
     for (const owner of statement.account.owners) {
       if (selectedOwner && owner !== selectedOwner || statement.isEmpty()) {
@@ -97,19 +215,19 @@ export function buildSummaryStatementTable(
       }
       const summariesToAddTo = [owner + ' ' + statement.account.typeIdName, owner + ' SUMMARY'];
       if (statement.account.path.length) {
-        summariesToAddTo.push(statement.account.path.join('/'));
+        summariesToAddTo.push('/' + statement.account.path.join('/'));
       }
       for (const summaryName of summariesToAddTo) {
         if (statement.account.isExternal && summaryName.includes('SUMMARY')) {
           continue;
         }
-        const summaryAccount = getAccount(summaryName, owner, statement.account.path);
-        // Aggregate statements by name and month.
-        updateSummaryStatement(summaryAccount, statement);
+        statementsAggregator.addStatement(summaryName, owner, statement);
       }
     }
   }
-  return summaryStatements;
+  // statementsAggregator.propogateUpThePath();
+  statementsAggregator.propogateUpThePath2();
+  return statementsAggregator.summaryStatements;
 }
 
 export function combineSummaryStatements(summaryStatements: SummaryStatement[]): SummaryStatement {
@@ -164,7 +282,11 @@ export function combineSummaryStatements(summaryStatements: SummaryStatement[]):
   const combined = new SummaryStatement(summaryAccount, maxMonth, minMonth);
   for (const [acctName, acctStatements] of accountStatements) {
     // Combine all statements for a given account over all months in the range.
-    const stmt = combineAccountStatements(new Account({name: acctName, type: AccountType.SUMMARY, owners: []}), minMonth, maxMonth, acctStatements);
+    const stmt = combineAccountStatements(
+        new Account({name: acctName, type: AccountType.SUMMARY, owners: []}),
+        minMonth,
+        maxMonth,
+        acctStatements);
     combined.addStatement(stmt);
   }
   return combined;

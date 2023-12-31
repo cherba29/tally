@@ -170,8 +170,8 @@ export class SummaryTable extends LitElement {
                 )}
               </tr>`;
             } else if (r.isTotal) {
-              return html`<tr>
-                <td><b>${r.title}/Total</b></td>
+              return html`<tr bgcolor="#ffd">
+                <td>${'+'.repeat(r.indent ?? 0)}<b>${r.title}/Total</b></td>
                 ${(r.cells ?? []).map((c) => {
                   if (!c || c.isClosed) {
                     return html`<td
@@ -183,7 +183,7 @@ export class SummaryTable extends LitElement {
                   return html`
                     <td class="add_sub">${currency(c.addSub)}</td>
                     <td
-                      @click="${(e: MouseEvent) => this.onCellClick(e, r.title, c.month, true)}"
+                      @click="${(e: MouseEvent) => this.onCellClick(e, r.account?.name ?? r.title, c.month, true)}"
                       style="font-weight:700;font-size:75%;"
                       class="balance ${classMap(projectedClass(c))}"
                     >
@@ -206,7 +206,7 @@ export class SummaryTable extends LitElement {
                   id="${account.name}"
                   @click="${(e: MouseEvent) => this.onTitleCellClick(e, r.account)}"
                 >
-                  ${'+'.repeat(account.path?.length ?? 0)}
+                  ${'+'.repeat(r.indent ?? 0)}
                   ${account.url
                     ? html`<a href="${account.url}" target="_blank">${account.name}</a>`
                     : account.name}

@@ -155,6 +155,7 @@ export default gql`
   type GqlTableRow {
     title: String
     account: GqlAccount
+    indent: Int
     isSpace: Boolean
     isTotal: Boolean
     isNormal: Boolean

@@ -11,11 +11,11 @@ import {
 export async function buildSummaryData(_: any, args: QuerySummaryArgs): Promise<GqlSummaryData> {
   const startTimeMs: number = Date.now();
   const payload = await loadBudget();
-  const summaryName =
-    args.owner + ' ' + (args.accountType === args.owner ? 'SUMMARY' : args.accountType);
-  const monthSummaries = payload.summaries.get(summaryName);
+  const summaryName = args.accountType.startsWith('/') ? args.accountType :
+    (args.owner + ' ' + (args.accountType === args.owner ? 'SUMMARY' : args.accountType));
+  const monthSummaries = payload.summaries.get2(args.owner, summaryName);
   if (!monthSummaries) {
-    throw new Error(`Summary ${args.accountType} for ${args.owner}  not found.`);
+    throw new Error(`Summary ${args.accountType} for ${args.owner} not found.`);
   }
   const summaryStatements = [...monthSummaries.values()].filter(
     (stmt) => stmt.month.isBetween(args.startMonth, args.endMonth)
@@ -36,7 +36,7 @@ export async function buildSummaryData(_: any, args: QuerySummaryArgs): Promise<
     total: toGqlSummaryStatement(summary)
   };
   console.log(
-    `gql summary data in ${Date.now() - startTimeMs}ms for [${args.startMonth}, ${args.endMonth}]`
+    `gql "${summaryName}" summary data in ${Date.now() - startTimeMs}ms for [${args.startMonth}, ${args.endMonth}]`
   );
   return result;
 }

@@ -6,6 +6,7 @@ import { Budget, BudgetBuilder } from '../core/budget';
 import { loadYamlFile, parseYamlContent, YamlData } from './loader_yaml';
 import { TransactionStatement, buildTransactionStatementTable } from '../statement/transaction';
 import { SummaryStatement, buildSummaryStatementTable } from '../statement/summary';
+import { Map3 } from '../utils';
 
 function* readdirSync(file_path: string): Generator<string> {
   if (fs.statSync(file_path).isDirectory()) {
@@ -54,14 +55,15 @@ export function unwatchBudgetFiles() {
 export interface DataPayload {
   budget: Budget;
   statements: Map<string, Map<string, TransactionStatement>>;
-  summaries: Map<string, Map<string, SummaryStatement>>;
+  // owner -> accout name -> month -> summary.
+  summaries: Map3<SummaryStatement>;
 }
 
 class ProcessedBudget {
   private readonly parsedAccountData = new Map<string, YamlData>();
   budget?: Budget = undefined;
   readonly accoutToMonthToTransactionStatement = new Map<string, Map<string, TransactionStatement>>();
-  summaryNameMonthMap = new Map<string, Map<string, SummaryStatement>>();
+  summaryNameMonthMap = new Map3<SummaryStatement>();
 
   reProcess() {
     const startTimeMs: number = Date.now();
@@ -99,10 +101,7 @@ class ProcessedBudget {
 
     const startBuildSummaryStatementsTimeMs: number = Date.now();
     this.summaryNameMonthMap = buildSummaryStatementTable(transactionStatementTable);
-    let numSummaryStatements = 0;
-    for (const summary of this.summaryNameMonthMap.values()) {
-      numSummaryStatements += summary.size;
-    }
+    let numSummaryStatements = this.summaryNameMonthMap.size;
     console.log(`Done building ${numSummaryStatements} summary statements ` 
                 + ` in ${Date.now() - startBuildSummaryStatementsTimeMs}ms`);
 
@@ -138,7 +137,7 @@ export async function loadBudget(): Promise<DataPayload> {
     return { 
       budget: processedBudget.budget!, 
       statements: processedBudget.accoutToMonthToTransactionStatement, 
-      summaries:  processedBudget.summaryNameMonthMap,  
+      summaries: processedBudget.summaryNameMonthMap,  
     };
   
   }

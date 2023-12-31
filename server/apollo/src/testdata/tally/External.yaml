@@ -3,6 +3,7 @@ opened_on: Jan2010
 closed_on: ~
 type: "external"
 owner: [ "xxx" ]
+path: ["external"]
 
 transfers_to:
   phone:

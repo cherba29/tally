@@ -7,6 +7,7 @@ pswd: "password"
 type: "bill"
 url: "http://www.gas.com/"
 username: "john"
+path: ["expense"]
 
 balances:
   - { grp: Apr2015, date: 2015-04-02, pamt:  -15.00 }

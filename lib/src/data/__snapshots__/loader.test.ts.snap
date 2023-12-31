@@ -89,73 +89,31 @@ exports[`loadBudget just account 1`] = `
       },
     },
   },
-  "summaries": Map {
-    "someone EXTERNAL" => Map {
-      "Mar2019" => SummaryStatement {
-        "account": Account {
-          "address": undefined,
-          "closedOn": undefined,
-          "description": undefined,
-          "name": "someone EXTERNAL",
-          "number": undefined,
-          "openedOn": undefined,
-          "owners": [
-            "someone",
-          ],
-          "password": undefined,
-          "path": [],
-          "phone": undefined,
-          "type": "_summary_",
-          "url": undefined,
-          "userName": undefined,
-        },
-        "endBalance": undefined,
-        "inFlows": 0,
-        "income": 0,
-        "month": Month {
-          "month": 2,
-          "year": 2019,
-        },
-        "outFlows": 0,
-        "startBalance": Balance {
-          "amount": 10000,
-          "date": 2019-03-01T00:00:00.000Z,
-          "type": "CONFIRMED",
-        },
-        "startMonth": Month {
-          "month": 2,
-          "year": 2019,
-        },
-        "statements": [
-          TransactionStatement {
+  "summaries": Map3 {
+    "store": Map {
+      "someone" => Map {
+        "someone EXTERNAL" => Map {
+          "Mar2019" => SummaryStatement {
             "account": Account {
               "address": undefined,
               "closedOn": undefined,
               "description": undefined,
-              "name": "test-account",
+              "name": "someone EXTERNAL",
               "number": undefined,
-              "openedOn": Month {
-                "month": 2,
-                "year": 2019,
-              },
+              "openedOn": undefined,
               "owners": [
                 "someone",
               ],
               "password": undefined,
               "path": [],
               "phone": undefined,
-              "type": "external",
+              "type": "_summary_",
               "url": undefined,
               "userName": undefined,
             },
-            "coversPrevious": false,
-            "coversProjectedPrevious": false,
             "endBalance": undefined,
-            "hasProjectedTransfer": false,
             "inFlows": 0,
             "income": 0,
-            "isCovered": true,
-            "isProjectedCovered": true,
             "month": Month {
               "month": 2,
               "year": 2019,
@@ -166,13 +124,59 @@ exports[`loadBudget just account 1`] = `
               "date": 2019-03-01T00:00:00.000Z,
               "type": "CONFIRMED",
             },
+            "startMonth": Month {
+              "month": 2,
+              "year": 2019,
+            },
+            "statements": [
+              TransactionStatement {
+                "account": Account {
+                  "address": undefined,
+                  "closedOn": undefined,
+                  "description": undefined,
+                  "name": "test-account",
+                  "number": undefined,
+                  "openedOn": Month {
+                    "month": 2,
+                    "year": 2019,
+                  },
+                  "owners": [
+                    "someone",
+                  ],
+                  "password": undefined,
+                  "path": [],
+                  "phone": undefined,
+                  "type": "external",
+                  "url": undefined,
+                  "userName": undefined,
+                },
+                "coversPrevious": false,
+                "coversProjectedPrevious": false,
+                "endBalance": undefined,
+                "hasProjectedTransfer": false,
+                "inFlows": 0,
+                "income": 0,
+                "isCovered": true,
+                "isProjectedCovered": true,
+                "month": Month {
+                  "month": 2,
+                  "year": 2019,
+                },
+                "outFlows": 0,
+                "startBalance": Balance {
+                  "amount": 10000,
+                  "date": 2019-03-01T00:00:00.000Z,
+                  "type": "CONFIRMED",
+                },
+                "totalPayments": 0,
+                "totalTransfers": 0,
+                "transactions": [],
+              },
+            ],
             "totalPayments": 0,
             "totalTransfers": 0,
-            "transactions": [],
           },
-        ],
-        "totalPayments": 0,
-        "totalTransfers": 0,
+        },
       },
     },
   },

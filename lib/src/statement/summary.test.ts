@@ -4,6 +4,7 @@ import { Month } from '../core/month';
 import { SummaryStatement, buildSummaryStatementTable } from './summary';
 import { TransactionStatement } from './transaction';
 import { Balance, Type as BalanceType } from '../core/balance';
+import { Map3 } from '../utils';
 
 describe('Build', () => {
   test('empty', () => {
@@ -22,8 +23,8 @@ describe('Build', () => {
 
     const stmt = new TransactionStatement(account1, Month.fromString('Mar2021'));
     stmt.startBalance = new Balance(100, new Date(2023, 11, 2), BalanceType.CONFIRMED);
-    const statements: Map<string, Map<string, SummaryStatement>> = buildSummaryStatementTable([stmt]);
-    expect(statements.get('john CHECKING')?.get('Mar2021')).toEqual(
+    const statements: Map3<SummaryStatement> = buildSummaryStatementTable([stmt]);
+    expect(statements.get('john', 'john CHECKING', 'Mar2021')).toEqual(
       {
         account: new Account({name: 'john CHECKING', type: AccountType.SUMMARY, owners: ['john']}),
         startBalance: undefined,
@@ -38,7 +39,7 @@ describe('Build', () => {
         totalTransfers: 0,
       }
     );
-    expect(statements.get('john SUMMARY')?.get('Mar2021')).toEqual(
+    expect(statements.get('john', 'john SUMMARY', 'Mar2021')).toEqual(
       {
         account: new Account({name: 'john SUMMARY', type: AccountType.SUMMARY, owners: ['john']}),
         startBalance: undefined,
@@ -65,8 +66,8 @@ describe('Build', () => {
 
     const stmt = new TransactionStatement(account1, Month.fromString('Mar2021'));
     stmt.startBalance = new Balance(100, new Date(2023, 11, 2), BalanceType.CONFIRMED);
-    const statements: Map<string, Map<string, SummaryStatement>> = buildSummaryStatementTable([stmt]);
-    expect(statements.get('john EXTERNAL')?.get('Mar2021')).toEqual(
+    const statements: Map3<SummaryStatement> = buildSummaryStatementTable([stmt]);
+    expect(statements.get('john', 'john EXTERNAL', 'Mar2021')).toEqual(
       {
         account: new Account({name: 'john EXTERNAL', type: AccountType.SUMMARY, owners: ['john']}),
         startBalance: new Balance(100, new Date(2023, 11, 2), BalanceType.CONFIRMED),
@@ -93,8 +94,8 @@ describe('Build', () => {
 
     const stmt = new TransactionStatement(account1, Month.fromString('Mar2021'));
     stmt.startBalance = new Balance(100, new Date(2023, 11, 2), BalanceType.CONFIRMED);
-    const statements: Map<string, Map<string, SummaryStatement>> = buildSummaryStatementTable([stmt]);
-    expect(statements.get('john CHECKING')?.get('Mar2021')).toEqual(
+    const statements: Map3<SummaryStatement> = buildSummaryStatementTable([stmt]);
+    expect(statements.get('john', 'john CHECKING', 'Mar2021')).toEqual(
       {
         account: new Account({name: 'john CHECKING', type: AccountType.SUMMARY, owners: ['john']}),
         startBalance: new Balance(100, new Date(2023, 11, 2), BalanceType.CONFIRMED),
@@ -109,7 +110,7 @@ describe('Build', () => {
         totalTransfers: 0,
       },
     );
-    expect(statements.get('john SUMMARY')?.get('Mar2021')).toEqual({
+    expect(statements.get('john', 'john SUMMARY', 'Mar2021')).toEqual({
         account: new Account({name: 'john SUMMARY', type: AccountType.SUMMARY, owners: ['john']}),
         startBalance: new Balance(100, new Date(2023, 11, 2), BalanceType.CONFIRMED),
         endBalance: undefined,

@@ -44,7 +44,7 @@ export const commandModule: CommandModule<unknown, Options> = {
   handler: async ({ owner, account, startMonth, endMonth, limit }): Promise<void> => {
     const budget: Budget = (await loadBudget()).budget;
     const statementTable: TransactionStatement[] = buildTransactionStatementTable(budget);
-    let entries: Transaction[] = [];
+    let entries = new Map<string, Transaction[]>();
     for (const transactionStatement of statementTable) {
       const stmtAccount: Account = transactionStatement.account;
       if (owner && !stmtAccount.owners.includes(owner)) {
@@ -59,21 +59,30 @@ export const commandModule: CommandModule<unknown, Options> = {
       if (endMonth && endMonth.isLess(transactionStatement.month)) {
         continue;
       }
-      entries = entries.concat(transactionStatement.transactions);
-    }
-    entries.sort((a, b) => {
-      const timeDiff = a.balance.date.getTime() - b.balance.date.getTime();
-      if (timeDiff !== 0) {
-        return timeDiff;
+      let accountEntries = entries.get(transactionStatement.account.name);
+      if (!accountEntries) {
+        accountEntries = [];
+        entries.set(transactionStatement.account.name, accountEntries);
       }
-      return Math.abs(a.balance.amount) - Math.abs(b.balance.amount);
-    });
-    for (const t of entries.slice(0, limit)) {
-      process.stdout.write(
-        `${t.balance.date.toISOString().slice(0, 10)} ${(t.balance.amount / 100)
-          .toFixed(2)
-          .padStart(8)}  ${t.account.name.padEnd(20)} ${t.description}\n`
-      );
+      accountEntries.push(...transactionStatement.transactions);
+    }
+    for (const [, accountEntries] of entries) {
+      accountEntries.sort((a, b) => {
+        const timeDiff = a.balance.date.getTime() - b.balance.date.getTime();
+        if (timeDiff !== 0) {
+          return timeDiff;
+        }
+        return Math.abs(a.balance.amount) - Math.abs(b.balance.amount);
+      });
+    }
+    for (const [accountName, accountEntries] of entries) {
+      for (const t of accountEntries.slice(0, limit)) {
+        process.stdout.write(
+          `${t.balance.date.toISOString().slice(0, 10)},${(t.balance.amount / 100)
+            .toFixed(2)
+            .padStart(8)}, ${t.account.name.padEnd(20)},${accountName},${t.description ?? ''}\n`
+        );
+      }
     }
     process.exit(0);
   },

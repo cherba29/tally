@@ -7,6 +7,7 @@ pswd: "password"
 type: "bill"
 url: "http://verizon.com"
 username: "john"
+path: ["expense"]
 
 balances:
   - { grp: Feb2015, date: 2015-02-01, camt:    0.00 }
