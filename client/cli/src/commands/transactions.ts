@@ -75,12 +75,17 @@ export const commandModule: CommandModule<unknown, Options> = {
         return Math.abs(a.balance.amount) - Math.abs(b.balance.amount);
       });
     }
+    process.stdout.write('Date,Amount,From,To,Description\n');
     for (const [accountName, accountEntries] of entries) {
       for (const t of accountEntries.slice(0, limit)) {
+        let amount = t.balance.amount;
+        const fromAccount = (amount < 0) ? t.account.name : accountName;
+        const toAccount = (amount < 0) ? accountName : t.account.name;
+        if (amount < 0) amount = -amount;
         process.stdout.write(
-          `${t.balance.date.toISOString().slice(0, 10)},${(t.balance.amount / 100)
-            .toFixed(2)
-            .padStart(8)}, ${t.account.name.padEnd(20)},${accountName},${t.description ?? ''}\n`
+          `${t.balance.date.toISOString().slice(0, 10)},${
+            (amount / 100).toFixed(2).padStart(8)}, ${
+              fromAccount.padEnd(20)},${toAccount},${t.description ?? ''}\n`
         );
       }
     }
