@@ -117,6 +117,12 @@ export class BudgetBuilder {
       if (!fromAccount) {
         throw new Error(`Unknown account ${transferData.fromAccount}`);
       }
+      
+      if (toAccount.owners.sort().join() != fromAccount.owners.sort().join()) {
+        console.warn(`WARNING: Transaction ${transferData.fromMonth} -> ${transferData.toMonth} `
+          + `has to account ${toAccount.name} from ${fromAccount.name} `
+          + `with different owners ${toAccount.owners.join()} vs ${fromAccount.owners.join()}`);
+      }
       const transfer: Transfer = {
         toAccount,
         fromAccount,
