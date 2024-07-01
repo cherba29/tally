@@ -91,8 +91,10 @@ export async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTa
         const cells: GqlTableCell[] = months.map(
           (month) => toGqlTableCellFromStatement(summaryMonthMap?.get(month.toString()))
         );
-        const account = summaryMonthMap.values().next().value.account; 
-        rows.push({ title: entry.title, indent: entry.depth, account: toGqlAccount(account), isTotal: true, cells });
+        if (cells.some((c)=>!c.isClosed)) {
+          const account = summaryMonthMap.values().next().value.account; 
+          rows.push({ title: entry.title, indent: entry.depth, account: toGqlAccount(account), isTotal: true, cells });
+        }
       } else {
         throw new Error(`Did not find summary statement for ${owner} "${entry.id}"`);
       }

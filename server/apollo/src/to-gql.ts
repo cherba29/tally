@@ -134,7 +134,7 @@ export function toGqlTableCellFromTransactionStatement(stmt?: TransactionStateme
 export function toGqlTableCellFromStatement(stmt?: Statement): GqlTableCell {
   return {
     month: stmt?.month,
-    isClosed: stmt?.isClosed,
+    isClosed: stmt?.isClosed ?? true,
     addSub: stmt?.addSub,
     balance: stmt?.endBalance?.amount,
     isProjected: stmt?.endBalance?.type !== BalanceType.CONFIRMED,
