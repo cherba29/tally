@@ -114,7 +114,7 @@ class ProcessedBudget {
     const startTimeMs: number = Date.now();
     for (const filePath of readdirSync(rootPath)) {
       const relativeFilePath = filePath.slice(rootPath.length + 1);
-      console.log('Loading ' + relativeFilePath);
+      // console.log('Loading ' + relativeFilePath);
       this.addFile(rootPath, relativeFilePath);
     }
     console.log(`Done loading ${this.parsedAccountData.size} file(s) in ${Date.now() - startTimeMs}ms`);

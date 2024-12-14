@@ -63,13 +63,13 @@ export class TallyApp extends LitElement {
       <div style="position: fixed;font-size: 80%;">
         <button @click="${() => this.updateRange(0, 12)}">&lt;&lt;</button>
         <button @click="${() => this.updateRange(0, 1)}">&lt;</button>
-        ${this.endMonth}
+        <span style="font-family: monospace;">${this.endMonth}</span>
         <button @click="${() => this.updateRange(0, -1)}">&gt;</button>
         <button @click="${() => this.updateRange(0, -12)}">&gt;&gt;</button>
         &mdash;
         <button @click="${() => this.updateRange(12, 0)}">&lt;&lt;</button>
         <button @click="${() => this.updateRange(1, 0)}">&lt;</button>
-        ${this.startMonth}
+        <span style="font-family: monospace;">${this.startMonth}</span>
         <button @click="${() => this.updateRange(-1, 0)}">&gt;</button>
         <button @click="${() => this.updateRange(-12, 0)}">&gt;&gt;</button>
 
