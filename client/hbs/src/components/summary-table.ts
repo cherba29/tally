@@ -1,3 +1,5 @@
+import './expand-button';
+
 import {LitElement, css, html, nothing} from 'lit';
 import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
 import {customElement, property} from 'lit/decorators.js';
@@ -12,6 +14,14 @@ export type CellClickEventData = {
   account?: GqlAccount | null;
   month?: string;
   isSummary?: boolean;
+};
+
+// Represents tree structure of table rows.
+type RowInfo = {
+  index: number;
+  indent: number;
+  expanded: boolean;
+  childrenIdxs: Array<number>;
 };
 
 @customElement('summary-table')
@@ -78,6 +88,8 @@ export class SummaryTable extends LitElement {
 
   private __months: Month[] = [];
   private __rows: GqlTableRow[] = [];
+  // All rows rendered in the table.
+  private childTableRows: Array<RowInfo> = [];
 
   @property()
   set months(values: Month[]) {
@@ -130,6 +142,58 @@ export class SummaryTable extends LitElement {
     this.dispatchEvent(new CustomEvent('cellclick', options));
   }
 
+  // Taggle child row visibility
+  private toggleChildRows(rowIdx: number, expanded: boolean) {
+    const rowInfo = this.childTableRows[rowIdx];
+    if (!rowInfo) {
+      throw new Error(`No such row ${rowIdx} have been registered.`);
+    }
+    rowInfo.expanded = expanded;
+    this.setChildrenRowsVisibility(rowInfo, expanded);
+  }
+
+  // Recursively show/hide child table rows.
+  private setChildrenRowsVisibility(rowInfo: RowInfo, visible: boolean) {
+    // Child is visible if its parent is also expanded.
+    const childVisibility = visible && rowInfo.expanded;
+    for (var childIdx of rowInfo.childrenIdxs) {
+      const childRowInfo = this.childTableRows[childIdx];
+      if (childRowInfo) {
+        this.setChildrenRowsVisibility(childRowInfo, childVisibility);
+      }
+      const childElement = this.shadowRoot?.getElementById(`row-${childIdx}`);
+      if (childElement) {
+        childElement.style.display = childVisibility ? 'table-row' : 'none';
+      }
+    }
+  }
+
+  // Register row in the tree by row number and its indent.
+  private addRow(index: number, indent: number) {
+    this.childTableRows[index] = {
+      index,
+      indent,
+      expanded: true,
+      childrenIdxs: []
+    };
+    if (indent <= 0) { return; }
+    // Look for parent based on indent, ie first row with smaller indent.
+    const findParent = (index: number, indent: number): RowInfo | undefined => {
+      for (let i = index - 1; i >= 0; i--) {
+        const rowInfo = this.childTableRows[i];
+        if ((rowInfo?.indent ?? 0) < indent) {
+          return rowInfo;
+        }
+      }
+      return undefined;
+    }
+    const parentInfo = findParent(index, indent);
+    if (!parentInfo) {  // This should never happen.
+      throw new Error(`Failed to find parent for row ${index} with indent ${indent}`);
+    }
+    parentInfo.childrenIdxs.push(index);
+  }
+
   override render() {
     const projectedClass = (c: GqlTableCell): ClassInfo => {
       return {projected: c.isProjected ?? false};
@@ -161,17 +225,20 @@ export class SummaryTable extends LitElement {
           </tr>
         </thead>
         <tbody>
-          ${this.rows.map((r) => {
+          ${this.rows.map((r, rowIdx) => {
+            this.addRow(rowIdx, r.indent ?? 0);
             if (r.isSpace) {
-              return html`<tr>
+              return html`<tr id="row-${rowIdx}">
                 <td class="account_type">${r.title}</td>
                 ${this.months.map(
                   () => html`<td colspan="4" style="border-right:2px double #a00"></td>`
                 )}
               </tr>`;
             } else if (r.isTotal) {
-              return html`<tr bgcolor="#ffd">
-                <td>${Array(r.indent ?? 0).fill(0).map(_=>html`&nbsp;`)}<b>${r.title}</b></td>
+              return html`<tr id="row-${rowIdx}" bgcolor="#ffd">
+                <td>
+                <expand-button @toggle="${(e: CustomEvent)=>this.toggleChildRows(rowIdx, e.detail.expanded)}"></expand-button> 
+                ${Array(r.indent ?? 0).fill(0).map(_=>html`&nbsp;`)}<b>${r.title}</b></td>
                 ${(r.cells ?? []).map((c) => {
                   if (!c || c.isClosed) {
                     return html`<td
@@ -201,7 +268,7 @@ export class SummaryTable extends LitElement {
               </tr>`;
             } else if (r.isNormal) {
               const account = r.account!;
-              return html`<tr>
+              return html`<tr id="row-${rowIdx}">
                 <td
                   id="${account.name}"
                   @click="${(e: MouseEvent) => this.onTitleCellClick(e, r.account)}"

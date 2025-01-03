@@ -4,7 +4,7 @@ load("@aspect_rules_js//npm:defs.bzl", "npm_package")
 load("@aspect_rules_js//js:defs.bzl", "js_library", "js_test")
 load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
 load("@npm//:defs.bzl", "npm_link_all_packages")
-load("@bazel_skylib//rules:write_file.bzl", "write_file")
+# load("@bazel_skylib//rules:write_file.bzl", "write_file")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -42,6 +42,7 @@ esbuild(
             "src/**/*.ts",
             "src/**/*.css",
         ],
+        allow_empty = True,
         exclude = ["src/**/*.test.ts"],
     ) + ["index.html"],
     entry_point = "src/components/tally-app.ts",
@@ -63,10 +64,10 @@ jest_test(
         ":tsconfig.json",
     ],
     node_modules = ":node_modules",
-    snapshots = glob(
-        ["src/**/__snapshots__"],
-        exclude_directories = 0,
-    ),
+    # snapshots = glob(
+    #     ["src/**/__snapshots__"],
+    #     exclude_directories = 0,
+    # ),
 )
 
 js_library(

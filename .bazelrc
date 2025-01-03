@@ -11,6 +11,6 @@ test --test_output=errors
 # query --@aspect_rules_ts//ts:skipLibCheck=always
 # 2. To choose more correct typechecks, put this in /.bazelrc:
 # honor the setting of `skipLibCheck` in the tsconfig.json file
-build --@aspect_rules_ts//ts:skipLibCheck=honor_tsconfig
+build --@aspect_rules_ts//ts:skipLibCheck=honor_tsconfig --noincompatible_disallow_ctx_resolve_tools
 fetch --@aspect_rules_ts//ts:skipLibCheck=honor_tsconfig
 query --@aspect_rules_ts//ts:skipLibCheck=honor_tsconfig
