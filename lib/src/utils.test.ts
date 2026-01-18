@@ -15,7 +15,7 @@ describe('Map2', () => {
     const map = new Map2<number>();
     map.set('key1', 'value1', 1);
     map.set('key2', 'value2', 2);
-    expect(map.getDefault('key1', 'value1', () => 3)).toBe(3);
+    expect(map.getDefault('key1', 'value3', () => 3)).toBe(3);
     expect(map.size).toBe(3);
   });
 
@@ -49,7 +49,7 @@ describe('Map3', () => {
   test('get default', () => {
     const map = new Map3<number>();
     map.set('key1', 'key2', 'key3', 1);
-    expect(map.getDefault('key1', 'key2', 'key3', () => 3)).toBe(3);
+    expect(map.getDefault('key1', 'key2', 'key3', () => 3)).toBe(1);
     expect(map.size).toBe(1);
   });
 
@@ -93,7 +93,7 @@ describe('Map3', () => {
         map2.set('key4', 'key5', 'key6', 2);
         map1.merge(map2);
         expect(map1.size).toBe(2);
-        expect(map2.size).toBe(2);
+        expect(map2.size).toBe(1);
         const result = Array.from(map1);
         expect(result).toEqual([
             ['key1', 'key2', 'key3', 1],

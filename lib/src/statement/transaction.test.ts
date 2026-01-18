@@ -184,12 +184,15 @@ describe('Build', () => {
             toAccount: 'test-account1',
             toMonth: Month.fromString('Dec2019'),
             fromMonth: Month.fromString('Dec2019'),
-            balance: Balance.projected(2000, '2019-12-05'),
+            balance: Balance.projected(2000, '2019-11-25'),
             description: 'First transfer',
         });
 
         expect(() => buildTransactionStatementTable(builder.build())).toThrow(new Error(
-            'Balance Dec2019 Balance { amount: 10, date: 2019-12-01, type: CONFIRMED } for account test-account1 starts after transaction test-account1 --> test-account1/Balance { amount: 2000, date: 2019-12-05, type: PROJECTED } desc "First transfer"'
+            'Balance Dec2019 Balance { amount: 10, date: 2019-12-01, type: CONFIRMED } ' +
+            'for account test-account1 starts after transaction test-account1 --> ' + 
+            'test-account1/Balance { amount: 2000, date: 2019-11-25, type: PROJECTED } ' +
+            'desc "First transfer"'
         ));
     });
 
@@ -199,7 +202,7 @@ describe('Build', () => {
             name: 'test-account1',
             type: AccountType.CHECKING,
             owners: ['john'],
-            closedOn: Month.fromString('Dec2019')
+            closedOn: Month.fromString('Nov2019')  // closed before TranscationStatement month
         });
         builder.setAccount(account1);
         builder.setBalance('test-account1', 'Dec2019', Balance.confirmed(10, '2019-12-01'));
@@ -212,7 +215,11 @@ describe('Build', () => {
             description: 'First transfer',
         });
         const table = buildTransactionStatementTable(builder.build());
-        expect(table[0].isClosed).toBe(true);
+        expect(table).toHaveLength(2);  // Two transaction statements for the account
+        expect(table[0]?.month).toEqual(Month.fromString('Dec2019'));
+        expect(table[0]?.isClosed).toBe(true);
+        expect(table[1]?.month).toEqual(Month.fromString('Nov2019'));
+        expect(table[1]?.isClosed).toBe(false);
     });
 
   test('get transaction type', () => {
@@ -256,8 +263,13 @@ describe('Build', () => {
       description: 'Second transfer',
     });
     const table = buildTransactionStatementTable(builder.build());
-    expect(table[0].transactions[0].type).toBe(TransactionType.TRANSFER);
-    expect(table[0].transactions[1].type).toBe(TransactionType.EXPENSE);
-    expect(table[0].transactions[2].type).toBe(TransactionType.INCOME);
+    expect(table).toHaveLength(3);  // 3 accounts
+    expect(table[0]?.transactions).toHaveLength(2);  // 2 transactions for account1
+    expect(table[0]?.transactions[0]?.type).toBe(TransactionType.TRANSFER);
+    expect(table[0]?.transactions[1]?.type).toBe(TransactionType.EXPENSE);
+    expect(table[1]?.transactions).toHaveLength(1);  // 1 transaction for account2
+    expect(table[1]?.transactions[0]?.type).toBe(TransactionType.TRANSFER);
+    expect(table[2]?.transactions).toHaveLength(1);  // 1 transaction for account3
+    expect(table[2]?.transactions[0]?.type).toBe(TransactionType.INCOME);
   });
 });
