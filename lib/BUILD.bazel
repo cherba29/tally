@@ -41,6 +41,7 @@ jest_test(
         ":node_modules/@jest/globals",
         ":node_modules/@types/mock-fs",
         ":node_modules/jest",
+        ":node_modules/jest-util",
         ":node_modules/mock-fs",
         ":node_modules/ts-jest",
         ":tsconfig.json",
@@ -53,7 +54,7 @@ jest_test(
 )
 
 npm_package(
-    name = "tally_lib",
+    name = "pkg",
     srcs = [
         "package.json",
         ":lib",

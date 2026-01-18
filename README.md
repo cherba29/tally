@@ -66,3 +66,14 @@ pnpm cli exect generate External --start-month Dec2022
 ```
 bazel run @aspect_rules_format//format
 ```
+
+## Update dependencies
+
+List outdate packeges
+```
+pnpm outdated --recursive
+```
+
+```
+pnpm update --latest --recursive
+```

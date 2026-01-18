@@ -2,7 +2,12 @@
 
 To run
 
-Assuming in project directory `tally`, the server can be started as
+Use bazel build by default
+```
+ibazel run //server/apollo:server
+```
+
+For webpack setup, assuming in project directory `tally`, the server can be started as
 
 ```
 cd server/apollo
@@ -33,6 +38,9 @@ npm run start
 ```
 
 By default, it will start server at http://localhost:4000/.
+
+NOTE: Client in index.html references bundle.mjs (as esbuild is used), to use
+above webpack setup, it has to reference public/bundle.js instead.
 
 In the query/mutation window (left pannel), enter a query like
 
