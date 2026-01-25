@@ -32,7 +32,7 @@ importers:
         version: 17.7.2
     devDependencies:
       '@types/node':
-        specifier: ^20.10.4
+        specifier: ^20.19.30
         version: 20.19.30
       '@types/yargs':
         specifier: ^17.0.32
@@ -81,7 +81,7 @@ importers:
         specifier: ^29.5.11
         version: 29.5.11
       '@types/node':
-        specifier: ^20.10.4
+        specifier: ^20.19.30
         version: 20.19.30
       '@typescript-eslint/eslint-plugin':
         specifier: ^6.14.0
@@ -154,7 +154,7 @@ importers:
         specifier: ^4.13.4
         version: 4.13.4
       '@types/node':
-        specifier: ^20.10.4
+        specifier: ^20.19.30
         version: 20.19.30
       jest:
         specifier: ^30.2.0
@@ -239,7 +239,7 @@ importers:
         specifier: ^4.0.9
         version: 4.0.9
       '@types/node':
-        specifier: ^20.10.4
+        specifier: ^20.19.30
         version: 20.19.30
       '@types/webpack-env':
         specifier: ^1.18.4
