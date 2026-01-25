@@ -603,7 +603,7 @@
         "bzlTransitiveDigest": "NW6Wvpiv+ZZccLkd5VeKZuvvdlsN2YOGT8RI9zmKXyQ=",
         "usagesDigest": "ntUB5+n/BVH9bifkuMB569Jxqp2E5h52mQeb9VSQ100=",
         "recordedFileInputs": {
-          "@@//pnpm-lock.yaml": "5f87119af0981b9452e0c2f31296cbc7db65f0b017d71a670efa5c94a40e6db7"
+          "@@//pnpm-lock.yaml": "24db398d0156e094e0893d4863e37666918ae11dbecb01d90cfb9e57ce96d019"
         },
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -13054,11 +13054,11 @@
               ]
             }
           },
-          "npm__at_graphql-codegen_cli__5.0.0__-1081389125": {
+          "npm__at_graphql-codegen_cli__5.0.0__-1081210379": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
             "attributes": {
               "package": "@graphql-codegen/cli",
-              "version": "5.0.0_-1081389125",
+              "version": "5.0.0_-1081210379",
               "root_package": "",
               "link_workspace": "",
               "link_packages": {
@@ -13084,11 +13084,11 @@
               "generate_bzl_library_targets": false
             }
           },
-          "npm__at_graphql-codegen_cli__5.0.0__-1081389125__links": {
+          "npm__at_graphql-codegen_cli__5.0.0__-1081210379__links": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
             "attributes": {
               "package": "@graphql-codegen/cli",
-              "version": "5.0.0_-1081389125",
+              "version": "5.0.0_-1081210379",
               "dev": true,
               "root_package": "",
               "link_packages": {
@@ -13117,11 +13117,11 @@
                 "@graphql-tools/utils": "10.11.0_graphql_16.8.1",
                 "@whatwg-node/fetch": "0.8.8",
                 "chalk": "4.1.2",
-                "cosmiconfig": "8.3.6_typescript_5.3.3",
+                "cosmiconfig": "8.3.6_typescript_5.9.3",
                 "debounce": "1.2.1",
                 "detect-indent": "6.1.0",
                 "graphql": "16.8.1",
-                "graphql-config": "5.1.5_-1081389125",
+                "graphql-config": "5.1.5_-1081210379",
                 "inquirer": "8.2.7_at_types_node_20.19.30",
                 "is-glob": "4.0.3",
                 "jiti": "1.21.7",
@@ -13138,7 +13138,7 @@
               },
               "transitive_closure": {
                 "@graphql-codegen/cli": [
-                  "5.0.0_-1081389125"
+                  "5.0.0_-1081210379"
                 ],
                 "@babel/generator": [
                   "7.28.6"
@@ -13194,7 +13194,7 @@
                   "4.1.2"
                 ],
                 "cosmiconfig": [
-                  "8.3.6_typescript_5.3.3"
+                  "8.3.6_typescript_5.9.3"
                 ],
                 "debounce": [
                   "1.2.1"
@@ -13206,7 +13206,7 @@
                   "16.8.1"
                 ],
                 "graphql-config": [
-                  "5.1.5_-1081389125"
+                  "5.1.5_-1081210379"
                 ],
                 "inquirer": [
                   "8.2.7_at_types_node_20.19.30"
@@ -13495,7 +13495,7 @@
                   "4.0.0"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "@babel/code-frame": [
                   "7.28.6"
@@ -20286,7 +20286,7 @@
                   "3.1.1"
                 ],
                 "ts-node": [
-                  "10.9.2_648966787"
+                  "10.9.2_649145533"
                 ],
                 "@cspotcode/source-map-support": [
                   "0.8.1"
@@ -20322,7 +20322,7 @@
                   "1.3.6"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "v8-compile-cache-lib": [
                   "3.0.1"
@@ -21260,7 +21260,7 @@
                   "3.1.1"
                 ],
                 "ts-node": [
-                  "10.9.2_648966787"
+                  "10.9.2_649145533"
                 ],
                 "@cspotcode/source-map-support": [
                   "0.8.1"
@@ -21296,7 +21296,7 @@
                   "1.3.6"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "v8-compile-cache-lib": [
                   "3.0.1"
@@ -33262,11 +33262,11 @@
               ]
             }
           },
-          "npm__at_typescript-eslint_eslint-plugin__6.14.0__-2089188115": {
+          "npm__at_typescript-eslint_eslint-plugin__6.14.0__-2089009369": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
             "attributes": {
               "package": "@typescript-eslint/eslint-plugin",
-              "version": "6.14.0_-2089188115",
+              "version": "6.14.0_-2089009369",
               "root_package": "",
               "link_workspace": "",
               "link_packages": {
@@ -33292,11 +33292,11 @@
               "generate_bzl_library_targets": false
             }
           },
-          "npm__at_typescript-eslint_eslint-plugin__6.14.0__-2089188115__links": {
+          "npm__at_typescript-eslint_eslint-plugin__6.14.0__-2089009369__links": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
             "attributes": {
               "package": "@typescript-eslint/eslint-plugin",
-              "version": "6.14.0_-2089188115",
+              "version": "6.14.0_-2089009369",
               "dev": true,
               "root_package": "",
               "link_packages": {
@@ -33309,10 +33309,10 @@
               },
               "deps": {
                 "@eslint-community/regexpp": "4.12.2",
-                "@typescript-eslint/parser": "6.14.0_-242015610",
+                "@typescript-eslint/parser": "6.14.0_-241836864",
                 "@typescript-eslint/scope-manager": "6.14.0",
-                "@typescript-eslint/type-utils": "6.14.0_-242015610",
-                "@typescript-eslint/utils": "6.14.0_-242015610",
+                "@typescript-eslint/type-utils": "6.14.0_-241836864",
+                "@typescript-eslint/utils": "6.14.0_-241836864",
                 "@typescript-eslint/visitor-keys": "6.14.0",
                 "debug": "4.4.3",
                 "eslint": "8.56.0",
@@ -33320,27 +33320,27 @@
                 "ignore": "5.3.2",
                 "natural-compare": "1.4.0",
                 "semver": "7.7.3",
-                "ts-api-utils": "1.4.3_typescript_5.3.3",
-                "typescript": "5.3.3"
+                "ts-api-utils": "1.4.3_typescript_5.9.3",
+                "typescript": "5.9.3"
               },
               "transitive_closure": {
                 "@typescript-eslint/eslint-plugin": [
-                  "6.14.0_-2089188115"
+                  "6.14.0_-2089009369"
                 ],
                 "@eslint-community/regexpp": [
                   "4.12.2"
                 ],
                 "@typescript-eslint/parser": [
-                  "6.14.0_-242015610"
+                  "6.14.0_-241836864"
                 ],
                 "@typescript-eslint/scope-manager": [
                   "6.14.0"
                 ],
                 "@typescript-eslint/type-utils": [
-                  "6.14.0_-242015610"
+                  "6.14.0_-241836864"
                 ],
                 "@typescript-eslint/utils": [
-                  "6.14.0_-242015610"
+                  "6.14.0_-241836864"
                 ],
                 "@typescript-eslint/visitor-keys": [
                   "6.14.0"
@@ -33364,10 +33364,10 @@
                   "7.7.3"
                 ],
                 "ts-api-utils": [
-                  "1.4.3_typescript_5.3.3"
+                  "1.4.3_typescript_5.9.3"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "@eslint-community/eslint-utils": [
                   "4.9.1_eslint_8.56.0"
@@ -33659,7 +33659,7 @@
                   "7.7.1"
                 ],
                 "@typescript-eslint/typescript-estree": [
-                  "6.14.0_typescript_5.3.3"
+                  "6.14.0_typescript_5.9.3"
                 ],
                 "globby": [
                   "11.1.0"
@@ -33711,11 +33711,11 @@
               ]
             }
           },
-          "npm__at_typescript-eslint_parser__6.14.0__-242015610": {
+          "npm__at_typescript-eslint_parser__6.14.0__-241836864": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
             "attributes": {
               "package": "@typescript-eslint/parser",
-              "version": "6.14.0_-242015610",
+              "version": "6.14.0_-241836864",
               "root_package": "",
               "link_workspace": "",
               "link_packages": {
@@ -33741,11 +33741,11 @@
               "generate_bzl_library_targets": false
             }
           },
-          "npm__at_typescript-eslint_parser__6.14.0__-242015610__links": {
+          "npm__at_typescript-eslint_parser__6.14.0__-241836864__links": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
             "attributes": {
               "package": "@typescript-eslint/parser",
-              "version": "6.14.0_-242015610",
+              "version": "6.14.0_-241836864",
               "dev": true,
               "root_package": "",
               "link_packages": {
@@ -33759,15 +33759,15 @@
               "deps": {
                 "@typescript-eslint/scope-manager": "6.14.0",
                 "@typescript-eslint/types": "6.14.0",
-                "@typescript-eslint/typescript-estree": "6.14.0_typescript_5.3.3",
+                "@typescript-eslint/typescript-estree": "6.14.0_typescript_5.9.3",
                 "@typescript-eslint/visitor-keys": "6.14.0",
                 "debug": "4.4.3",
                 "eslint": "8.56.0",
-                "typescript": "5.3.3"
+                "typescript": "5.9.3"
               },
               "transitive_closure": {
                 "@typescript-eslint/parser": [
-                  "6.14.0_-242015610"
+                  "6.14.0_-241836864"
                 ],
                 "@typescript-eslint/scope-manager": [
                   "6.14.0"
@@ -33776,7 +33776,7 @@
                   "6.14.0"
                 ],
                 "@typescript-eslint/typescript-estree": [
-                  "6.14.0_typescript_5.3.3"
+                  "6.14.0_typescript_5.9.3"
                 ],
                 "@typescript-eslint/visitor-keys": [
                   "6.14.0"
@@ -33788,7 +33788,7 @@
                   "8.56.0"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "@eslint-community/eslint-utils": [
                   "4.9.1_eslint_8.56.0"
@@ -34089,7 +34089,7 @@
                   "7.7.3"
                 ],
                 "ts-api-utils": [
-                  "1.4.3_typescript_5.3.3"
+                  "1.4.3_typescript_5.9.3"
                 ],
                 "array-union": [
                   "2.1.0"
@@ -34197,11 +34197,11 @@
               ]
             }
           },
-          "npm__at_typescript-eslint_type-utils__6.14.0__-242015610": {
+          "npm__at_typescript-eslint_type-utils__6.14.0__-241836864": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
             "attributes": {
               "package": "@typescript-eslint/type-utils",
-              "version": "6.14.0_-242015610",
+              "version": "6.14.0_-241836864",
               "root_package": "",
               "link_workspace": "",
               "link_packages": {},
@@ -34220,31 +34220,31 @@
               "generate_bzl_library_targets": false
             }
           },
-          "npm__at_typescript-eslint_type-utils__6.14.0__-242015610__links": {
+          "npm__at_typescript-eslint_type-utils__6.14.0__-241836864__links": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
             "attributes": {
               "package": "@typescript-eslint/type-utils",
-              "version": "6.14.0_-242015610",
+              "version": "6.14.0_-241836864",
               "dev": true,
               "root_package": "",
               "link_packages": {},
               "deps": {
-                "@typescript-eslint/typescript-estree": "6.14.0_typescript_5.3.3",
-                "@typescript-eslint/utils": "6.14.0_-242015610",
+                "@typescript-eslint/typescript-estree": "6.14.0_typescript_5.9.3",
+                "@typescript-eslint/utils": "6.14.0_-241836864",
                 "debug": "4.4.3",
                 "eslint": "8.56.0",
-                "ts-api-utils": "1.4.3_typescript_5.3.3",
-                "typescript": "5.3.3"
+                "ts-api-utils": "1.4.3_typescript_5.9.3",
+                "typescript": "5.9.3"
               },
               "transitive_closure": {
                 "@typescript-eslint/type-utils": [
-                  "6.14.0_-242015610"
+                  "6.14.0_-241836864"
                 ],
                 "@typescript-eslint/typescript-estree": [
-                  "6.14.0_typescript_5.3.3"
+                  "6.14.0_typescript_5.9.3"
                 ],
                 "@typescript-eslint/utils": [
-                  "6.14.0_-242015610"
+                  "6.14.0_-241836864"
                 ],
                 "debug": [
                   "4.4.3"
@@ -34253,10 +34253,10 @@
                   "8.56.0"
                 ],
                 "ts-api-utils": [
-                  "1.4.3_typescript_5.3.3"
+                  "1.4.3_typescript_5.9.3"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "@eslint-community/eslint-utils": [
                   "4.9.1_eslint_8.56.0"
@@ -34665,11 +34665,11 @@
               ]
             }
           },
-          "npm__at_typescript-eslint_typescript-estree__6.14.0__typescript_5.3.3": {
+          "npm__at_typescript-eslint_typescript-estree__6.14.0__typescript_5.9.3": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
             "attributes": {
               "package": "@typescript-eslint/typescript-estree",
-              "version": "6.14.0_typescript_5.3.3",
+              "version": "6.14.0_typescript_5.9.3",
               "root_package": "",
               "link_workspace": "",
               "link_packages": {},
@@ -34688,11 +34688,11 @@
               "generate_bzl_library_targets": false
             }
           },
-          "npm__at_typescript-eslint_typescript-estree__6.14.0__typescript_5.3.3__links": {
+          "npm__at_typescript-eslint_typescript-estree__6.14.0__typescript_5.9.3__links": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
             "attributes": {
               "package": "@typescript-eslint/typescript-estree",
-              "version": "6.14.0_typescript_5.3.3",
+              "version": "6.14.0_typescript_5.9.3",
               "dev": true,
               "root_package": "",
               "link_packages": {},
@@ -34703,12 +34703,12 @@
                 "globby": "11.1.0",
                 "is-glob": "4.0.3",
                 "semver": "7.7.3",
-                "ts-api-utils": "1.4.3_typescript_5.3.3",
-                "typescript": "5.3.3"
+                "ts-api-utils": "1.4.3_typescript_5.9.3",
+                "typescript": "5.9.3"
               },
               "transitive_closure": {
                 "@typescript-eslint/typescript-estree": [
-                  "6.14.0_typescript_5.3.3"
+                  "6.14.0_typescript_5.9.3"
                 ],
                 "@typescript-eslint/types": [
                   "6.14.0"
@@ -34729,10 +34729,10 @@
                   "7.7.3"
                 ],
                 "ts-api-utils": [
-                  "1.4.3_typescript_5.3.3"
+                  "1.4.3_typescript_5.9.3"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "is-extglob": [
                   "2.1.1"
@@ -34817,11 +34817,11 @@
               ]
             }
           },
-          "npm__at_typescript-eslint_utils__6.14.0__-242015610": {
+          "npm__at_typescript-eslint_utils__6.14.0__-241836864": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
             "attributes": {
               "package": "@typescript-eslint/utils",
-              "version": "6.14.0_-242015610",
+              "version": "6.14.0_-241836864",
               "root_package": "",
               "link_workspace": "",
               "link_packages": {},
@@ -34840,11 +34840,11 @@
               "generate_bzl_library_targets": false
             }
           },
-          "npm__at_typescript-eslint_utils__6.14.0__-242015610__links": {
+          "npm__at_typescript-eslint_utils__6.14.0__-241836864__links": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
             "attributes": {
               "package": "@typescript-eslint/utils",
-              "version": "6.14.0_-242015610",
+              "version": "6.14.0_-241836864",
               "dev": true,
               "root_package": "",
               "link_packages": {},
@@ -34854,13 +34854,13 @@
                 "@types/semver": "7.7.1",
                 "@typescript-eslint/scope-manager": "6.14.0",
                 "@typescript-eslint/types": "6.14.0",
-                "@typescript-eslint/typescript-estree": "6.14.0_typescript_5.3.3",
+                "@typescript-eslint/typescript-estree": "6.14.0_typescript_5.9.3",
                 "eslint": "8.56.0",
                 "semver": "7.7.3"
               },
               "transitive_closure": {
                 "@typescript-eslint/utils": [
-                  "6.14.0_-242015610"
+                  "6.14.0_-241836864"
                 ],
                 "@eslint-community/eslint-utils": [
                   "4.9.1_eslint_8.56.0"
@@ -34878,7 +34878,7 @@
                   "6.14.0"
                 ],
                 "@typescript-eslint/typescript-estree": [
-                  "6.14.0_typescript_5.3.3"
+                  "6.14.0_typescript_5.9.3"
                 ],
                 "eslint": [
                   "8.56.0"
@@ -35185,10 +35185,10 @@
                   "11.1.0"
                 ],
                 "ts-api-utils": [
-                  "1.4.3_typescript_5.3.3"
+                  "1.4.3_typescript_5.9.3"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "array-union": [
                   "2.1.0"
@@ -50349,11 +50349,11 @@
               ]
             }
           },
-          "npm__cosmiconfig__8.3.6__typescript_5.3.3": {
+          "npm__cosmiconfig__8.3.6__typescript_5.9.3": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
             "attributes": {
               "package": "cosmiconfig",
-              "version": "8.3.6_typescript_5.3.3",
+              "version": "8.3.6_typescript_5.9.3",
               "root_package": "",
               "link_workspace": "",
               "link_packages": {},
@@ -50372,11 +50372,11 @@
               "generate_bzl_library_targets": false
             }
           },
-          "npm__cosmiconfig__8.3.6__typescript_5.3.3__links": {
+          "npm__cosmiconfig__8.3.6__typescript_5.9.3__links": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
             "attributes": {
               "package": "cosmiconfig",
-              "version": "8.3.6_typescript_5.3.3",
+              "version": "8.3.6_typescript_5.9.3",
               "dev": true,
               "root_package": "",
               "link_packages": {},
@@ -50385,11 +50385,11 @@
                 "js-yaml": "4.1.0",
                 "parse-json": "5.2.0",
                 "path-type": "4.0.0",
-                "typescript": "5.3.3"
+                "typescript": "5.9.3"
               },
               "transitive_closure": {
                 "cosmiconfig": [
-                  "8.3.6_typescript_5.3.3"
+                  "8.3.6_typescript_5.9.3"
                 ],
                 "import-fresh": [
                   "3.3.1"
@@ -50404,7 +50404,7 @@
                   "4.0.0"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "@babel/code-frame": [
                   "7.28.6"
@@ -50588,7 +50588,7 @@
                   "3.1.1"
                 ],
                 "ts-node": [
-                  "10.9.2_648966787"
+                  "10.9.2_649145533"
                 ],
                 "@cspotcode/source-map-support": [
                   "0.8.1"
@@ -50624,7 +50624,7 @@
                   "1.3.6"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "v8-compile-cache-lib": [
                   "3.0.1"
@@ -62479,11 +62479,11 @@
               ]
             }
           },
-          "npm__graphql-config__5.1.5__-1081389125": {
+          "npm__graphql-config__5.1.5__-1081210379": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
             "attributes": {
               "package": "graphql-config",
-              "version": "5.1.5_-1081389125",
+              "version": "5.1.5_-1081210379",
               "root_package": "",
               "link_workspace": "",
               "link_packages": {},
@@ -62502,11 +62502,11 @@
               "generate_bzl_library_targets": false
             }
           },
-          "npm__graphql-config__5.1.5__-1081389125__links": {
+          "npm__graphql-config__5.1.5__-1081210379__links": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
             "attributes": {
               "package": "graphql-config",
-              "version": "5.1.5_-1081389125",
+              "version": "5.1.5_-1081210379",
               "dev": true,
               "root_package": "",
               "link_packages": {},
@@ -62517,7 +62517,7 @@
                 "@graphql-tools/merge": "9.1.7_graphql_16.8.1",
                 "@graphql-tools/url-loader": "8.0.33_-1986410946",
                 "@graphql-tools/utils": "10.11.0_graphql_16.8.1",
-                "cosmiconfig": "8.3.6_typescript_5.3.3",
+                "cosmiconfig": "8.3.6_typescript_5.9.3",
                 "graphql": "16.8.1",
                 "jiti": "2.6.1",
                 "minimatch": "9.0.5",
@@ -62526,7 +62526,7 @@
               },
               "transitive_closure": {
                 "graphql-config": [
-                  "5.1.5_-1081389125"
+                  "5.1.5_-1081210379"
                 ],
                 "@graphql-tools/graphql-file-loader": [
                   "8.1.9_graphql_16.8.1"
@@ -62548,7 +62548,7 @@
                   "10.11.0_graphql_16.8.1"
                 ],
                 "cosmiconfig": [
-                  "8.3.6_typescript_5.3.3"
+                  "8.3.6_typescript_5.9.3"
                 ],
                 "graphql": [
                   "16.8.1"
@@ -62584,7 +62584,7 @@
                   "4.0.0"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "@babel/code-frame": [
                   "7.28.6"
@@ -70611,7 +70611,7 @@
                   "3.1.1"
                 ],
                 "ts-node": [
-                  "10.9.2_648966787"
+                  "10.9.2_649145533"
                 ],
                 "@cspotcode/source-map-support": [
                   "0.8.1"
@@ -70647,7 +70647,7 @@
                   "1.3.6"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "v8-compile-cache-lib": [
                   "3.0.1"
@@ -71515,7 +71515,7 @@
                   "3.1.1"
                 ],
                 "ts-node": [
-                  "10.9.2_648966787"
+                  "10.9.2_649145533"
                 ],
                 "@cspotcode/source-map-support": [
                   "0.8.1"
@@ -71551,7 +71551,7 @@
                   "1.3.6"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "v8-compile-cache-lib": [
                   "3.0.1"
@@ -72329,7 +72329,7 @@
                 "pretty-format": "29.7.0",
                 "slash": "3.0.0",
                 "strip-json-comments": "3.1.1",
-                "ts-node": "10.9.2_648966787"
+                "ts-node": "10.9.2_649145533"
               },
               "transitive_closure": {
                 "jest-config": [
@@ -72405,7 +72405,7 @@
                   "3.1.1"
                 ],
                 "ts-node": [
-                  "10.9.2_648966787"
+                  "10.9.2_649145533"
                 ],
                 "@cspotcode/source-map-support": [
                   "0.8.1"
@@ -72441,7 +72441,7 @@
                   "1.3.6"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "v8-compile-cache-lib": [
                   "3.0.1"
@@ -73093,7 +73093,7 @@
                 "pretty-format": "30.2.0",
                 "slash": "3.0.0",
                 "strip-json-comments": "3.1.1",
-                "ts-node": "10.9.2_648966787"
+                "ts-node": "10.9.2_649145533"
               },
               "transitive_closure": {
                 "jest-config": [
@@ -73176,7 +73176,7 @@
                   "3.1.1"
                 ],
                 "ts-node": [
-                  "10.9.2_648966787"
+                  "10.9.2_649145533"
                 ],
                 "@cspotcode/source-map-support": [
                   "0.8.1"
@@ -73212,7 +73212,7 @@
                   "1.3.6"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "v8-compile-cache-lib": [
                   "3.0.1"
@@ -83522,7 +83522,7 @@
                   "3.1.1"
                 ],
                 "ts-node": [
-                  "10.9.2_648966787"
+                  "10.9.2_649145533"
                 ],
                 "@cspotcode/source-map-support": [
                   "0.8.1"
@@ -83558,7 +83558,7 @@
                   "1.3.6"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "v8-compile-cache-lib": [
                   "3.0.1"
@@ -84423,7 +84423,7 @@
                   "3.1.1"
                 ],
                 "ts-node": [
-                  "10.9.2_648966787"
+                  "10.9.2_649145533"
                 ],
                 "@cspotcode/source-map-support": [
                   "0.8.1"
@@ -84459,7 +84459,7 @@
                   "1.3.6"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "v8-compile-cache-lib": [
                   "3.0.1"
@@ -106439,11 +106439,11 @@
               ]
             }
           },
-          "npm__ts-api-utils__1.4.3__typescript_5.3.3": {
+          "npm__ts-api-utils__1.4.3__typescript_5.9.3": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
             "attributes": {
               "package": "ts-api-utils",
-              "version": "1.4.3_typescript_5.3.3",
+              "version": "1.4.3_typescript_5.9.3",
               "root_package": "",
               "link_workspace": "",
               "link_packages": {},
@@ -106462,23 +106462,23 @@
               "generate_bzl_library_targets": false
             }
           },
-          "npm__ts-api-utils__1.4.3__typescript_5.3.3__links": {
+          "npm__ts-api-utils__1.4.3__typescript_5.9.3__links": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
             "attributes": {
               "package": "ts-api-utils",
-              "version": "1.4.3_typescript_5.3.3",
+              "version": "1.4.3_typescript_5.9.3",
               "dev": true,
               "root_package": "",
               "link_packages": {},
               "deps": {
-                "typescript": "5.3.3"
+                "typescript": "5.9.3"
               },
               "transitive_closure": {
                 "ts-api-utils": [
-                  "1.4.3_typescript_5.3.3"
+                  "1.4.3_typescript_5.9.3"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ]
               },
               "lifecycle_build_target": false,
@@ -106543,11 +106543,11 @@
               ]
             }
           },
-          "npm__ts-jest__29.1.1__-867570023": {
+          "npm__ts-jest__29.1.1__-867391277": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
             "attributes": {
               "package": "ts-jest",
-              "version": "29.1.1_-867570023",
+              "version": "29.1.1_-867391277",
               "root_package": "",
               "link_workspace": "",
               "link_packages": {
@@ -106570,11 +106570,11 @@
               "generate_bzl_library_targets": false
             }
           },
-          "npm__ts-jest__29.1.1__-867570023__links": {
+          "npm__ts-jest__29.1.1__-867391277__links": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
             "attributes": {
               "package": "ts-jest",
-              "version": "29.1.1_-867570023",
+              "version": "29.1.1_-867391277",
               "dev": true,
               "root_package": "",
               "link_packages": {
@@ -106593,12 +106593,12 @@
                 "lodash.memoize": "4.1.2",
                 "make-error": "1.3.6",
                 "semver": "7.7.3",
-                "typescript": "5.3.3",
+                "typescript": "5.9.3",
                 "yargs-parser": "21.1.1"
               },
               "transitive_closure": {
                 "ts-jest": [
-                  "29.1.1_-867570023"
+                  "29.1.1_-867391277"
                 ],
                 "@babel/core": [
                   "7.28.6",
@@ -106633,7 +106633,7 @@
                   "7.7.3"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "yargs-parser": [
                   "21.1.1"
@@ -106813,7 +106813,7 @@
                   "3.1.1"
                 ],
                 "ts-node": [
-                  "10.9.2_648966787"
+                  "10.9.2_649145533"
                 ],
                 "@cspotcode/source-map-support": [
                   "0.8.1"
@@ -107532,11 +107532,11 @@
               ]
             }
           },
-          "npm__ts-jest__29.1.1__-1507460360": {
+          "npm__ts-jest__29.1.1__-1507281614": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
             "attributes": {
               "package": "ts-jest",
-              "version": "29.1.1_-1507460360",
+              "version": "29.1.1_-1507281614",
               "root_package": "",
               "link_workspace": "",
               "link_packages": {
@@ -107559,11 +107559,11 @@
               "generate_bzl_library_targets": false
             }
           },
-          "npm__ts-jest__29.1.1__-1507460360__links": {
+          "npm__ts-jest__29.1.1__-1507281614__links": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
             "attributes": {
               "package": "ts-jest",
-              "version": "29.1.1_-1507460360",
+              "version": "29.1.1_-1507281614",
               "dev": true,
               "root_package": "",
               "link_packages": {
@@ -107581,12 +107581,12 @@
                 "lodash.memoize": "4.1.2",
                 "make-error": "1.3.6",
                 "semver": "7.7.3",
-                "typescript": "5.3.3",
+                "typescript": "5.9.3",
                 "yargs-parser": "21.1.1"
               },
               "transitive_closure": {
                 "ts-jest": [
-                  "29.1.1_-1507460360"
+                  "29.1.1_-1507281614"
                 ],
                 "@babel/core": [
                   "7.23.6",
@@ -107618,7 +107618,7 @@
                   "7.7.3"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "yargs-parser": [
                   "21.1.1"
@@ -107798,7 +107798,7 @@
                   "3.1.1"
                 ],
                 "ts-node": [
-                  "10.9.2_648966787"
+                  "10.9.2_649145533"
                 ],
                 "@cspotcode/source-map-support": [
                   "0.8.1"
@@ -108439,11 +108439,11 @@
               ]
             }
           },
-          "npm__ts-jest__29.4.6__-1639361322": {
+          "npm__ts-jest__29.4.6__-1639182576": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
             "attributes": {
               "package": "ts-jest",
-              "version": "29.4.6_-1639361322",
+              "version": "29.4.6_-1639182576",
               "root_package": "",
               "link_workspace": "",
               "link_packages": {
@@ -108466,11 +108466,11 @@
               "generate_bzl_library_targets": false
             }
           },
-          "npm__ts-jest__29.4.6__-1639361322__links": {
+          "npm__ts-jest__29.4.6__-1639182576__links": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
             "attributes": {
               "package": "ts-jest",
-              "version": "29.4.6_-1639361322",
+              "version": "29.4.6_-1639182576",
               "dev": true,
               "root_package": "",
               "link_packages": {
@@ -108490,12 +108490,12 @@
                 "make-error": "1.3.6",
                 "semver": "7.7.3",
                 "type-fest": "4.41.0",
-                "typescript": "5.3.3",
+                "typescript": "5.9.3",
                 "yargs-parser": "21.1.1"
               },
               "transitive_closure": {
                 "ts-jest": [
-                  "29.4.6_-1639361322"
+                  "29.4.6_-1639182576"
                 ],
                 "@babel/core": [
                   "7.28.6"
@@ -108533,7 +108533,7 @@
                   "4.41.0"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "yargs-parser": [
                   "21.1.1"
@@ -108724,7 +108724,7 @@
                   "3.1.1"
                 ],
                 "ts-node": [
-                  "10.9.2_648966787"
+                  "10.9.2_649145533"
                 ],
                 "@cspotcode/source-map-support": [
                   "0.8.1"
@@ -109454,11 +109454,11 @@
               ]
             }
           },
-          "npm__ts-loader__9.5.1__376651023": {
+          "npm__ts-loader__9.5.1__-2076294327": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
             "attributes": {
               "package": "ts-loader",
-              "version": "9.5.1_376651023",
+              "version": "9.5.1_-2076294327",
               "root_package": "",
               "link_workspace": "",
               "link_packages": {
@@ -109484,11 +109484,11 @@
               "generate_bzl_library_targets": false
             }
           },
-          "npm__ts-loader__9.5.1__376651023__links": {
+          "npm__ts-loader__9.5.1__-2076294327__links": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
             "attributes": {
               "package": "ts-loader",
-              "version": "9.5.1_376651023",
+              "version": "9.5.1_-2076294327",
               "dev": true,
               "root_package": "",
               "link_packages": {
@@ -109505,12 +109505,12 @@
                 "micromatch": "4.0.8",
                 "semver": "7.7.3",
                 "source-map": "0.7.6",
-                "typescript": "5.3.3",
+                "typescript": "5.9.3",
                 "webpack": "5.89.0_-343580551"
               },
               "transitive_closure": {
                 "ts-loader": [
-                  "9.5.1_376651023"
+                  "9.5.1_-2076294327"
                 ],
                 "chalk": [
                   "4.1.2"
@@ -109529,7 +109529,7 @@
                   "0.7.6"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "webpack": [
                   "5.89.0_-343580551"
@@ -110055,11 +110055,11 @@
               ]
             }
           },
-          "npm__ts-node__10.9.2__648966787": {
+          "npm__ts-node__10.9.2__649145533": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
             "attributes": {
               "package": "ts-node",
-              "version": "10.9.2_648966787",
+              "version": "10.9.2_649145533",
               "root_package": "",
               "link_workspace": "",
               "link_packages": {
@@ -110088,11 +110088,11 @@
               "generate_bzl_library_targets": false
             }
           },
-          "npm__ts-node__10.9.2__648966787__links": {
+          "npm__ts-node__10.9.2__649145533__links": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
             "attributes": {
               "package": "ts-node",
-              "version": "10.9.2_648966787",
+              "version": "10.9.2_649145533",
               "dev": true,
               "root_package": "",
               "link_packages": {
@@ -110119,13 +110119,13 @@
                 "create-require": "1.1.1",
                 "diff": "4.0.2",
                 "make-error": "1.3.6",
-                "typescript": "5.3.3",
+                "typescript": "5.9.3",
                 "v8-compile-cache-lib": "3.0.1",
                 "yn": "3.1.1"
               },
               "transitive_closure": {
                 "ts-node": [
-                  "10.9.2_648966787"
+                  "10.9.2_649145533"
                 ],
                 "@cspotcode/source-map-support": [
                   "0.8.1"
@@ -110164,7 +110164,7 @@
                   "1.3.6"
                 ],
                 "typescript": [
-                  "5.3.3"
+                  "5.9.3"
                 ],
                 "v8-compile-cache-lib": [
                   "3.0.1"
@@ -111067,79 +111067,6 @@
               ]
             }
           },
-          "npm__typescript__5.3.3": {
-            "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
-            "attributes": {
-              "package": "typescript",
-              "version": "5.3.3",
-              "root_package": "",
-              "link_workspace": "",
-              "link_packages": {
-                "client/cli": [
-                  "typescript"
-                ],
-                "client/hbs": [
-                  "typescript"
-                ],
-                "lib": [
-                  "typescript"
-                ],
-                "server/apollo": [
-                  "typescript"
-                ]
-              },
-              "integrity": "sha512-pXWcraxM0uxAS+tN0AG/BF2TyqmHO014Z070UsJ+pFvYuRSq8KH8DmWpnbXe0pEPDHXZV3FcAbJkijJ5oNEnWw==",
-              "url": "https://registry.npmjs.org/typescript/-/typescript-5.3.3.tgz",
-              "commit": "",
-              "patch_args": [],
-              "patches": [],
-              "custom_postinstall": "",
-              "npm_auth": "",
-              "npm_auth_basic": "",
-              "npm_auth_username": "",
-              "npm_auth_password": "",
-              "lifecycle_hooks": [],
-              "extra_build_content": "",
-              "generate_bzl_library_targets": false
-            }
-          },
-          "npm__typescript__5.3.3__links": {
-            "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
-            "attributes": {
-              "package": "typescript",
-              "version": "5.3.3",
-              "dev": true,
-              "root_package": "",
-              "link_packages": {
-                "client/cli": [
-                  "typescript"
-                ],
-                "client/hbs": [
-                  "typescript"
-                ],
-                "lib": [
-                  "typescript"
-                ],
-                "server/apollo": [
-                  "typescript"
-                ]
-              },
-              "deps": {},
-              "transitive_closure": {
-                "typescript": [
-                  "5.3.3"
-                ]
-              },
-              "lifecycle_build_target": false,
-              "lifecycle_hooks_env": [],
-              "lifecycle_hooks_execution_requirements": [],
-              "bins": {},
-              "npm_translate_lock_repo": "npm",
-              "package_visibility": [
-                "//visibility:public"
-              ]
-            }
-          },
           "npm__typescript__5.9.3": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
             "attributes": {
@@ -111149,6 +111076,18 @@
               "link_workspace": "",
               "link_packages": {
                 "": [
+                  "typescript"
+                ],
+                "client/cli": [
+                  "typescript"
+                ],
+                "client/hbs": [
+                  "typescript"
+                ],
+                "lib": [
+                  "typescript"
+                ],
+                "server/apollo": [
                   "typescript"
                 ]
               },
@@ -111176,6 +111115,18 @@
               "root_package": "",
               "link_packages": {
                 "": [
+                  "typescript"
+                ],
+                "client/cli": [
+                  "typescript"
+                ],
+                "client/hbs": [
+                  "typescript"
+                ],
+                "lib": [
+                  "typescript"
+                ],
+                "server/apollo": [
                   "typescript"
                 ]
               },

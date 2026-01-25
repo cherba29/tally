@@ -92,7 +92,7 @@ export async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTa
           (month) => toGqlTableCellFromStatement(summaryMonthMap?.get(month.toString()))
         );
         if (cells.some((c)=>!c.isClosed)) {
-          const account = summaryMonthMap.values().next().value.account; 
+          const account = summaryMonthMap.values().next().value!.account; 
           rows.push({ title: entry.title, indent: entry.depth, account: toGqlAccount(account), isTotal: true, cells });
         }
       } else {
