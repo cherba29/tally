@@ -603,7 +603,7 @@
         "bzlTransitiveDigest": "NW6Wvpiv+ZZccLkd5VeKZuvvdlsN2YOGT8RI9zmKXyQ=",
         "usagesDigest": "ntUB5+n/BVH9bifkuMB569Jxqp2E5h52mQeb9VSQ100=",
         "recordedFileInputs": {
-          "@@//pnpm-lock.yaml": "8e1a81f0585ea572c7f8b54457398fe88d60300a7a9e70c2bfa47b5089ebba15"
+          "@@//pnpm-lock.yaml": "0e817a740a70fb3e7a41533f7aa64103ffcc79b4111ef8972952d1f0fab94076"
         },
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -12561,7 +12561,7 @@
                   "3.0.3"
                 ],
                 "js-yaml": [
-                  "4.1.0"
+                  "4.1.1"
                 ],
                 "json-stable-stringify-without-jsonify": [
                   "1.0.1"
@@ -12863,7 +12863,7 @@
                 "globals": "13.24.0",
                 "ignore": "5.3.2",
                 "import-fresh": "3.3.1",
-                "js-yaml": "4.1.0",
+                "js-yaml": "4.1.1",
                 "minimatch": "3.1.2",
                 "strip-json-comments": "3.1.1"
               },
@@ -12890,7 +12890,7 @@
                   "3.3.1"
                 ],
                 "js-yaml": [
-                  "4.1.0"
+                  "4.1.1"
                 ],
                 "minimatch": [
                   "3.1.2"
@@ -13486,7 +13486,7 @@
                   "3.3.1"
                 ],
                 "js-yaml": [
-                  "4.1.0"
+                  "4.1.1"
                 ],
                 "parse-json": [
                   "5.2.0"
@@ -17694,7 +17694,7 @@
                 "http-proxy-agent": "7.0.2",
                 "https-proxy-agent": "7.0.6",
                 "jose": "5.10.0",
-                "js-yaml": "4.1.0",
+                "js-yaml": "4.1.1",
                 "lodash": "4.17.21",
                 "scuid": "1.1.0",
                 "tslib": "2.8.1",
@@ -17742,7 +17742,7 @@
                   "5.10.0"
                 ],
                 "js-yaml": [
-                  "4.1.0"
+                  "4.1.1"
                 ],
                 "lodash": [
                   "4.17.21"
@@ -33394,7 +33394,7 @@
                   "3.0.3"
                 ],
                 "js-yaml": [
-                  "4.1.0"
+                  "4.1.1"
                 ],
                 "json-stable-stringify-without-jsonify": [
                   "1.0.1"
@@ -33824,7 +33824,7 @@
                   "3.0.3"
                 ],
                 "js-yaml": [
-                  "4.1.0"
+                  "4.1.1"
                 ],
                 "json-stable-stringify-without-jsonify": [
                   "1.0.1"
@@ -34292,7 +34292,7 @@
                   "3.0.3"
                 ],
                 "js-yaml": [
-                  "4.1.0"
+                  "4.1.1"
                 ],
                 "json-stable-stringify-without-jsonify": [
                   "1.0.1"
@@ -34920,7 +34920,7 @@
                   "3.0.3"
                 ],
                 "js-yaml": [
-                  "4.1.0"
+                  "4.1.1"
                 ],
                 "json-stable-stringify-without-jsonify": [
                   "1.0.1"
@@ -52196,7 +52196,7 @@
               "link_packages": {},
               "deps": {
                 "import-fresh": "3.3.1",
-                "js-yaml": "4.1.0",
+                "js-yaml": "4.1.1",
                 "parse-json": "5.2.0",
                 "path-type": "4.0.0",
                 "typescript": "5.9.3"
@@ -52209,7 +52209,7 @@
                   "3.3.1"
                 ],
                 "js-yaml": [
-                  "4.1.0"
+                  "4.1.1"
                 ],
                 "parse-json": [
                   "5.2.0"
@@ -57647,7 +57647,7 @@
                   "3.0.3"
                 ],
                 "js-yaml": [
-                  "4.1.0"
+                  "4.1.1"
                 ],
                 "json-stable-stringify-without-jsonify": [
                   "1.0.1"
@@ -58001,7 +58001,7 @@
                   "3.0.3"
                 ],
                 "js-yaml": [
-                  "4.1.0"
+                  "4.1.1"
                 ],
                 "json-stable-stringify-without-jsonify": [
                   "1.0.1"
@@ -58380,7 +58380,7 @@
                   "3.0.3"
                 ],
                 "js-yaml": [
-                  "4.1.0"
+                  "4.1.1"
                 ],
                 "json-stable-stringify-without-jsonify": [
                   "1.0.1"
@@ -58832,7 +58832,7 @@
                 "imurmurhash": "0.1.4",
                 "is-glob": "4.0.3",
                 "is-path-inside": "3.0.3",
-                "js-yaml": "4.1.0",
+                "js-yaml": "4.1.1",
                 "json-stable-stringify-without-jsonify": "1.0.1",
                 "levn": "0.4.1",
                 "lodash.merge": "4.6.2",
@@ -58934,7 +58934,7 @@
                   "3.0.3"
                 ],
                 "js-yaml": [
-                  "4.1.0"
+                  "4.1.1"
                 ],
                 "json-stable-stringify-without-jsonify": [
                   "1.0.1"
@@ -64351,7 +64351,7 @@
                   "3.3.1"
                 ],
                 "js-yaml": [
-                  "4.1.0"
+                  "4.1.1"
                 ],
                 "parse-json": [
                   "5.2.0"
@@ -87268,9 +87268,6 @@
               "root_package": "",
               "link_workspace": "",
               "link_packages": {
-                "lib": [
-                  "js-yaml"
-                ],
                 "server/apollo": [
                   "js-yaml"
                 ]
@@ -87298,9 +87295,6 @@
               "dev": false,
               "root_package": "",
               "link_packages": {
-                "lib": [
-                  "js-yaml"
-                ],
                 "server/apollo": [
                   "js-yaml"
                 ]
@@ -87311,6 +87305,66 @@
               "transitive_closure": {
                 "js-yaml": [
                   "4.1.0"
+                ],
+                "argparse": [
+                  "2.0.1"
+                ]
+              },
+              "lifecycle_build_target": false,
+              "lifecycle_hooks_env": [],
+              "lifecycle_hooks_execution_requirements": [],
+              "bins": {},
+              "npm_translate_lock_repo": "npm",
+              "package_visibility": [
+                "//visibility:public"
+              ]
+            }
+          },
+          "npm__js-yaml__4.1.1": {
+            "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
+            "attributes": {
+              "package": "js-yaml",
+              "version": "4.1.1",
+              "root_package": "",
+              "link_workspace": "",
+              "link_packages": {
+                "lib": [
+                  "js-yaml"
+                ]
+              },
+              "integrity": "sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==",
+              "url": "https://registry.npmjs.org/js-yaml/-/js-yaml-4.1.1.tgz",
+              "commit": "",
+              "patch_args": [],
+              "patches": [],
+              "custom_postinstall": "",
+              "npm_auth": "",
+              "npm_auth_basic": "",
+              "npm_auth_username": "",
+              "npm_auth_password": "",
+              "lifecycle_hooks": [],
+              "extra_build_content": "",
+              "generate_bzl_library_targets": false
+            }
+          },
+          "npm__js-yaml__4.1.1__links": {
+            "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
+            "attributes": {
+              "package": "js-yaml",
+              "version": "4.1.1",
+              "dev": false,
+              "root_package": "",
+              "link_packages": {
+                "lib": [
+                  "js-yaml"
+                ]
+              },
+              "deps": {
+                "argparse": "2.0.1"
+              },
+              "transitive_closure": {
+                "js-yaml": [
+                  "4.1.1"
                 ],
                 "argparse": [
                   "2.0.1"
