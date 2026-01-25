@@ -21,7 +21,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^20.19.30",
-    "@types/yargs": "^17.0.32",
+    "@types/yargs": "^17.0.35",
     "pkg": "^5.8.1",
     "typescript": "^5.9.3"
   },
