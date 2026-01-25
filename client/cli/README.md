@@ -6,6 +6,10 @@ npm i yargs
 npm i @types/yargs -D # for TypeScript
 ```
 
+## Running script
+
+For example to run generate command to produce monthly balances based on transactions:
+
 ### Via typescript
 
 ```
@@ -24,6 +28,7 @@ npm run package
 ### Via pnpm
 
 ```
+pnpm cli build
 pnpm cli run exec generate External --start-month Dec2022
 ```
 
