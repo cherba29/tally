@@ -26,14 +26,29 @@ ts_project(
 js_binary(
     name = "tally_cli",
     # Run from package directory so to pick up .env file.
-    chdir = package_name(),
+    chdir = package_name(),  # in this case it will be "client/cli".
     data = [
         ".env",
         ":cli_project",
     ],
     entry_point = "src/cli.js",
     env = {
+        # BUILD_WORKSPACE_DIRECTORY is set by Bazel to the root of the workspace,
+        # but only for build and run actions. We need to set it manually for tests.
         "TALLY_FILES": "$$BUILD_WORKSPACE_DIRECTORY/data",
         "NODE_OPTIONS": "--es-module-specifier-resolution=node",
     },
 )
+
+filegroup(
+    name = "data",
+    srcs = glob(["data/**/*"]),
+)
+
+sh_test(
+    name = "generate_test",
+    size = "small",
+    srcs = ["generate_test.sh"],
+    data = [":tally_cli", ":data"],
+)
+

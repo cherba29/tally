@@ -1,0 +1,9 @@
+name: External
+description: "Misc other external accounts."
+opened_on: Jan2026
+closed_on: ~
+type: "external"
+path: ["external", "expense"]
+owner: [ john ]
+balances:
+  - { grp: Jan2026, date: 2026-01-01, pamt:  1000.00 }

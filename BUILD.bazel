@@ -12,4 +12,5 @@ npm_link_package(
 filegroup(
     name = "data",
     srcs = glob(["data/**/*"]),
+    visibility = ["//visibility:public"],
 )
