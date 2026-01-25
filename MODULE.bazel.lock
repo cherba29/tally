@@ -603,7 +603,7 @@
         "bzlTransitiveDigest": "NW6Wvpiv+ZZccLkd5VeKZuvvdlsN2YOGT8RI9zmKXyQ=",
         "usagesDigest": "ntUB5+n/BVH9bifkuMB569Jxqp2E5h52mQeb9VSQ100=",
         "recordedFileInputs": {
-          "@@//pnpm-lock.yaml": "24db398d0156e094e0893d4863e37666918ae11dbecb01d90cfb9e57ce96d019"
+          "@@//pnpm-lock.yaml": "febbbf60cb89a7e1e79c8302baed642110c982129aeea628ac5c414140c85b7d"
         },
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -13696,7 +13696,7 @@
                   "4.4.3"
                 ],
                 "dotenv": [
-                  "16.3.1"
+                  "16.6.1"
                 ],
                 "graphql-request": [
                   "6.1.0_graphql_16.8.1"
@@ -17688,7 +17688,7 @@
                 "@whatwg-node/fetch": "0.10.13",
                 "chalk": "4.1.2",
                 "debug": "4.4.3",
-                "dotenv": "16.3.1",
+                "dotenv": "16.6.1",
                 "graphql": "16.8.1",
                 "graphql-request": "6.1.0_graphql_16.8.1",
                 "http-proxy-agent": "7.0.2",
@@ -17724,7 +17724,7 @@
                   "4.4.3"
                 ],
                 "dotenv": [
-                  "16.3.1"
+                  "16.6.1"
                 ],
                 "graphql": [
                   "16.8.1"
@@ -54292,23 +54292,16 @@
               ]
             }
           },
-          "npm__dotenv__16.3.1": {
+          "npm__dotenv__16.6.1": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
             "attributes": {
               "package": "dotenv",
-              "version": "16.3.1",
+              "version": "16.6.1",
               "root_package": "",
               "link_workspace": "",
-              "link_packages": {
-                "client/cli": [
-                  "dotenv"
-                ],
-                "server/apollo": [
-                  "dotenv"
-                ]
-              },
-              "integrity": "sha512-IPzF4w4/Rd94bA9imS68tZBaYyBWSCE47V1RGuMrB94iyTOIEwRmVL2x/4An+6mETpLrKJ5hQkB8W4kFAadeIQ==",
-              "url": "https://registry.npmjs.org/dotenv/-/dotenv-16.3.1.tgz",
+              "link_packages": {},
+              "integrity": "sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==",
+              "url": "https://registry.npmjs.org/dotenv/-/dotenv-16.6.1.tgz",
               "commit": "",
               "patch_args": [],
               "patches": [],
@@ -54322,11 +54315,65 @@
               "generate_bzl_library_targets": false
             }
           },
-          "npm__dotenv__16.3.1__links": {
+          "npm__dotenv__16.6.1__links": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
             "attributes": {
               "package": "dotenv",
-              "version": "16.3.1",
+              "version": "16.6.1",
+              "dev": true,
+              "root_package": "",
+              "link_packages": {},
+              "deps": {},
+              "transitive_closure": {
+                "dotenv": [
+                  "16.6.1"
+                ]
+              },
+              "lifecycle_build_target": false,
+              "lifecycle_hooks_env": [],
+              "lifecycle_hooks_execution_requirements": [],
+              "bins": {},
+              "npm_translate_lock_repo": "npm",
+              "package_visibility": [
+                "//visibility:public"
+              ]
+            }
+          },
+          "npm__dotenv__17.2.3": {
+            "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
+            "attributes": {
+              "package": "dotenv",
+              "version": "17.2.3",
+              "root_package": "",
+              "link_workspace": "",
+              "link_packages": {
+                "client/cli": [
+                  "dotenv"
+                ],
+                "server/apollo": [
+                  "dotenv"
+                ]
+              },
+              "integrity": "sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w==",
+              "url": "https://registry.npmjs.org/dotenv/-/dotenv-17.2.3.tgz",
+              "commit": "",
+              "patch_args": [],
+              "patches": [],
+              "custom_postinstall": "",
+              "npm_auth": "",
+              "npm_auth_basic": "",
+              "npm_auth_username": "",
+              "npm_auth_password": "",
+              "lifecycle_hooks": [],
+              "extra_build_content": "",
+              "generate_bzl_library_targets": false
+            }
+          },
+          "npm__dotenv__17.2.3__links": {
+            "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
+            "attributes": {
+              "package": "dotenv",
+              "version": "17.2.3",
               "dev": false,
               "root_package": "",
               "link_packages": {
@@ -54340,7 +54387,7 @@
               "deps": {},
               "transitive_closure": {
                 "dotenv": [
-                  "16.3.1"
+                  "17.2.3"
                 ]
               },
               "lifecycle_build_target": false,
