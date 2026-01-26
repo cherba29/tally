@@ -603,7 +603,7 @@
         "bzlTransitiveDigest": "NW6Wvpiv+ZZccLkd5VeKZuvvdlsN2YOGT8RI9zmKXyQ=",
         "usagesDigest": "ntUB5+n/BVH9bifkuMB569Jxqp2E5h52mQeb9VSQ100=",
         "recordedFileInputs": {
-          "@@//pnpm-lock.yaml": "0e817a740a70fb3e7a41533f7aa64103ffcc79b4111ef8972952d1f0fab94076"
+          "@@//pnpm-lock.yaml": "bf3a861f7d5c6d7210a692d7512f5fefbe057f87e6a99d8875423b8bedfb358f"
         },
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -90966,11 +90966,11 @@
               ]
             }
           },
-          "npm__mock-fs__5.2.0": {
+          "npm__mock-fs__5.5.0": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
             "attributes": {
               "package": "mock-fs",
-              "version": "5.2.0",
+              "version": "5.5.0",
               "root_package": "",
               "link_workspace": "",
               "link_packages": {
@@ -90978,8 +90978,8 @@
                   "mock-fs"
                 ]
               },
-              "integrity": "sha512-2dF2R6YMSZbpip1V1WHKGLNjr/k48uQClqMVb5H3MOvwc9qhYis3/IWbj02qIg/Y8MDXKFF4c5v0rxx2o6xTZw==",
-              "url": "https://registry.npmjs.org/mock-fs/-/mock-fs-5.2.0.tgz",
+              "integrity": "sha512-d/P1M/RacgM3dB0sJ8rjeRNXxtapkPCUnMGmIN0ixJ16F/E4GUZCvWcSGfWGz8eaXYvn1s9baUwNjI4LOPEjiA==",
+              "url": "https://registry.npmjs.org/mock-fs/-/mock-fs-5.5.0.tgz",
               "commit": "",
               "patch_args": [],
               "patches": [],
@@ -90993,11 +90993,11 @@
               "generate_bzl_library_targets": false
             }
           },
-          "npm__mock-fs__5.2.0__links": {
+          "npm__mock-fs__5.5.0__links": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
             "attributes": {
               "package": "mock-fs",
-              "version": "5.2.0",
+              "version": "5.5.0",
               "dev": true,
               "root_package": "",
               "link_packages": {
@@ -91008,7 +91008,7 @@
               "deps": {},
               "transitive_closure": {
                 "mock-fs": [
-                  "5.2.0"
+                  "5.5.0"
                 ]
               },
               "lifecycle_build_target": false,

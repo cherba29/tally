@@ -169,8 +169,8 @@ importers:
         specifier: ^30.2.0
         version: 30.2.0
       mock-fs:
-        specifier: ^5.2.0
-        version: 5.2.0
+        specifier: ^5.5.0
+        version: 5.5.0
       ts-jest:
         specifier: ^29.4.6
         version: 29.4.6(@babel/core@7.28.6)(jest-util@30.2.0)(jest@30.2.0)(typescript@5.9.3)
@@ -7627,8 +7627,8 @@ packages:
     hasBin: true
     dev: true
 
-  /mock-fs@5.2.0:
-    resolution: {integrity: sha512-2dF2R6YMSZbpip1V1WHKGLNjr/k48uQClqMVb5H3MOvwc9qhYis3/IWbj02qIg/Y8MDXKFF4c5v0rxx2o6xTZw==}
+  /mock-fs@5.5.0:
+    resolution: {integrity: sha512-d/P1M/RacgM3dB0sJ8rjeRNXxtapkPCUnMGmIN0ixJ16F/E4GUZCvWcSGfWGz8eaXYvn1s9baUwNjI4LOPEjiA==}
     engines: {node: '>=12.0.0'}
     dev: true
 
