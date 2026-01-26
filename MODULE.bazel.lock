@@ -603,7 +603,7 @@
         "bzlTransitiveDigest": "NW6Wvpiv+ZZccLkd5VeKZuvvdlsN2YOGT8RI9zmKXyQ=",
         "usagesDigest": "ntUB5+n/BVH9bifkuMB569Jxqp2E5h52mQeb9VSQ100=",
         "recordedFileInputs": {
-          "@@//pnpm-lock.yaml": "bf3a861f7d5c6d7210a692d7512f5fefbe057f87e6a99d8875423b8bedfb358f"
+          "@@//pnpm-lock.yaml": "6d682e03b4d87fd4cb58d9c574c6ecc80893321bcd5ca8e1383ed0bcd89f0ada"
         },
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -37432,7 +37432,7 @@
                   "1.3.0"
                 ],
                 "chokidar": [
-                  "3.5.3"
+                  "3.6.0"
                 ],
                 "compression": [
                   "1.8.1"
@@ -38380,7 +38380,7 @@
                   "1.3.0"
                 ],
                 "chokidar": [
-                  "3.5.3"
+                  "3.6.0"
                 ],
                 "compression": [
                   "1.8.1"
@@ -39271,7 +39271,7 @@
                   "1.3.0"
                 ],
                 "chokidar": [
-                  "3.5.3"
+                  "3.6.0"
                 ],
                 "colorette": [
                   "2.0.20"
@@ -40340,7 +40340,7 @@
                   "1.3.0"
                 ],
                 "chokidar": [
-                  "3.5.3"
+                  "3.6.0"
                 ],
                 "compression": [
                   "1.8.1"
@@ -48814,11 +48814,11 @@
               ]
             }
           },
-          "npm__chokidar__3.5.3": {
+          "npm__chokidar__3.6.0": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_rule",
             "attributes": {
               "package": "chokidar",
-              "version": "3.5.3",
+              "version": "3.6.0",
               "root_package": "",
               "link_workspace": "",
               "link_packages": {
@@ -48826,8 +48826,8 @@
                   "chokidar"
                 ]
               },
-              "integrity": "sha512-Dr3sfKRP6oTcjf2JmUmFJfeVMvXBdegxB0iVQ5eb2V10uFJUCAS8OByZdVAyVb8xXNz3GjjTgj9kLWsZTqE6kw==",
-              "url": "https://registry.npmjs.org/chokidar/-/chokidar-3.5.3.tgz",
+              "integrity": "sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==",
+              "url": "https://registry.npmjs.org/chokidar/-/chokidar-3.6.0.tgz",
               "commit": "",
               "patch_args": [],
               "patches": [],
@@ -48841,11 +48841,11 @@
               "generate_bzl_library_targets": false
             }
           },
-          "npm__chokidar__3.5.3__links": {
+          "npm__chokidar__3.6.0__links": {
             "repoRuleId": "@@aspect_rules_js+//npm/private:npm_import.bzl%npm_import_links",
             "attributes": {
               "package": "chokidar",
-              "version": "3.5.3",
+              "version": "3.6.0",
               "dev": false,
               "root_package": "",
               "link_packages": {
@@ -48865,7 +48865,7 @@
               },
               "transitive_closure": {
                 "chokidar": [
-                  "3.5.3"
+                  "3.6.0"
                 ],
                 "anymatch": [
                   "3.1.3"
@@ -49603,7 +49603,7 @@
                   "1.3.0"
                 ],
                 "chokidar": [
-                  "3.5.3"
+                  "3.6.0"
                 ],
                 "compression": [
                   "1.8.1"
@@ -53503,7 +53503,7 @@
                   "1.3.0"
                 ],
                 "chokidar": [
-                  "3.5.3"
+                  "3.6.0"
                 ],
                 "compression": [
                   "1.8.1"
@@ -104377,7 +104377,7 @@
                   "1.3.0"
                 ],
                 "chokidar": [
-                  "3.5.3"
+                  "3.6.0"
                 ],
                 "compression": [
                   "1.8.1"
@@ -106159,7 +106159,7 @@
                   "1.3.0"
                 ],
                 "chokidar": [
-                  "3.5.3"
+                  "3.6.0"
                 ],
                 "compression": [
                   "1.8.1"
@@ -107129,7 +107129,7 @@
                   "1.3.0"
                 ],
                 "chokidar": [
-                  "3.5.3"
+                  "3.6.0"
                 ],
                 "compression": [
                   "1.8.1"
@@ -111899,7 +111899,7 @@
                   "1.3.0"
                 ],
                 "chokidar": [
-                  "3.5.3"
+                  "3.6.0"
                 ],
                 "compression": [
                   "1.8.1"
@@ -115579,7 +115579,7 @@
                   "1.3.0"
                 ],
                 "chokidar": [
-                  "3.5.3"
+                  "3.6.0"
                 ],
                 "compression": [
                   "1.8.1"
@@ -116933,7 +116933,7 @@
                   "1.3.0"
                 ],
                 "chokidar": [
-                  "3.5.3"
+                  "3.6.0"
                 ],
                 "compression": [
                   "1.8.1"
@@ -117666,7 +117666,7 @@
                   "1.3.0"
                 ],
                 "chokidar": [
-                  "3.5.3"
+                  "3.6.0"
                 ],
                 "compression": [
                   "1.8.1"
@@ -118446,7 +118446,7 @@
                 "@types/ws": "8.18.1",
                 "ansi-html-community": "0.0.8",
                 "bonjour-service": "1.3.0",
-                "chokidar": "3.5.3",
+                "chokidar": "3.6.0",
                 "colorette": "2.0.20",
                 "compression": "1.8.1",
                 "connect-history-api-fallback": "2.0.0",
@@ -118503,7 +118503,7 @@
                   "1.3.0"
                 ],
                 "chokidar": [
-                  "3.5.3"
+                  "3.6.0"
                 ],
                 "colorette": [
                   "2.0.20"
@@ -119868,7 +119868,7 @@
                   "1.3.0"
                 ],
                 "chokidar": [
-                  "3.5.3"
+                  "3.6.0"
                 ],
                 "compression": [
                   "1.8.1"
@@ -120868,7 +120868,7 @@
                   "1.3.0"
                 ],
                 "chokidar": [
-                  "3.5.3"
+                  "3.6.0"
                 ],
                 "compression": [
                   "1.8.1"
