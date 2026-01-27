@@ -156,7 +156,7 @@ export class SummaryTable extends LitElement {
   private setChildrenRowsVisibility(rowInfo: RowInfo, visible: boolean) {
     // Child is visible if its parent is also expanded.
     const childVisibility = visible && rowInfo.expanded;
-    for (var childIdx of rowInfo.childrenIdxs) {
+    for (const childIdx of rowInfo.childrenIdxs) {
       const childRowInfo = this.childTableRows[childIdx];
       if (childRowInfo) {
         this.setChildrenRowsVisibility(childRowInfo, childVisibility);

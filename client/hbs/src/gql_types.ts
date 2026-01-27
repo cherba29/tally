@@ -10,7 +10,9 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   Date: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   GqlMonth: any;
 };
 
