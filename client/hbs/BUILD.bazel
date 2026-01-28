@@ -13,7 +13,6 @@ npm_link_all_packages(name = "node_modules")
 LIB_DEPS = [
     ":node_modules/@apollo/client",
     ":node_modules/@types/node",
-    ":node_modules/jquery",
     ":node_modules/lit",
     "//:tally_lib",
 ]

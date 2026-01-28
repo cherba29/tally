@@ -31,7 +31,6 @@
     "@tally/lib": "workspace:*",
     "@types/jquery": "^3.5.29",
     "graphql": "^16.8.1",
-    "jquery": "^3.7.1",
     "lit": "^3.1.0",
     "prettier": "^3.1.1"
   },
