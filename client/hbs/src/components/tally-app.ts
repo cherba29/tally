@@ -20,7 +20,10 @@ export class TallyApp extends LitElement {
       padding: 5px;
       border: 1px solid #000;
       background-color: #ffff80;
-      font: 10px/12px Arial, Helvetica, sans-serif;
+      font:
+        10px/12px Arial,
+        Helvetica,
+        sans-serif;
     }
     .tabcontent {
       border-top: none;

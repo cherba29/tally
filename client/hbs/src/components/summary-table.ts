@@ -174,9 +174,11 @@ export class SummaryTable extends LitElement {
       index,
       indent,
       expanded: true,
-      childrenIdxs: []
+      childrenIdxs: [],
     };
-    if (indent <= 0) { return; }
+    if (indent <= 0) {
+      return;
+    }
     // Look for parent based on indent, ie first row with smaller indent.
     const findParent = (index: number, indent: number): RowInfo | undefined => {
       for (let i = index - 1; i >= 0; i--) {
@@ -186,9 +188,10 @@ export class SummaryTable extends LitElement {
         }
       }
       return undefined;
-    }
+    };
     const parentInfo = findParent(index, indent);
-    if (!parentInfo) {  // This should never happen.
+    if (!parentInfo) {
+      // This should never happen.
       throw new Error(`Failed to find parent for row ${index} with indent ${indent}`);
     }
     parentInfo.childrenIdxs.push(index);
@@ -237,8 +240,13 @@ export class SummaryTable extends LitElement {
             } else if (r.isTotal) {
               return html`<tr id="row-${rowIdx}" bgcolor="#ffd">
                 <td>
-                <expand-button @toggle="${(e: CustomEvent)=>this.toggleChildRows(rowIdx, e.detail.expanded)}"></expand-button> 
-                ${Array(r.indent ?? 0).fill(0).map(_=>html`&nbsp;`)}<b>${r.title}</b></td>
+                  <expand-button
+                    @toggle="${(e: CustomEvent) => this.toggleChildRows(rowIdx, e.detail.expanded)}"
+                  ></expand-button>
+                  ${Array(r.indent ?? 0)
+                    .fill(0)
+                    .map((_) => html`&nbsp;`)}<b>${r.title}</b>
+                </td>
                 ${(r.cells ?? []).map((c) => {
                   if (!c || c.isClosed) {
                     return html`<td
@@ -250,7 +258,8 @@ export class SummaryTable extends LitElement {
                   return html`
                     <td class="add_sub">${currency(c.addSub)}</td>
                     <td
-                      @click="${(e: MouseEvent) => this.onCellClick(e, r.account?.name ?? r.title, c.month, true)}"
+                      @click="${(e: MouseEvent) =>
+                        this.onCellClick(e, r.account?.name ?? r.title, c.month, true)}"
                       style="font-weight:700;font-size:75%;"
                       class="balance ${classMap(projectedClass(c))}"
                     >
@@ -273,7 +282,9 @@ export class SummaryTable extends LitElement {
                   id="${account.name}"
                   @click="${(e: MouseEvent) => this.onTitleCellClick(e, r.account)}"
                 >
-                  ${Array(r.indent ?? 0).fill(0).map(_=>html`&nbsp;`)}
+                  ${Array(r.indent ?? 0)
+                    .fill(0)
+                    .map((_) => html`&nbsp;`)}
                   ${account.url
                     ? html`<a href="${account.url}" target="_blank">${account.name}</a>`
                     : account.name}
