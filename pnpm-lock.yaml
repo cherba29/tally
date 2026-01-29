@@ -105,8 +105,8 @@ importers:
         specifier: ^15.1.0
         version: 15.1.0
       style-loader:
-        specifier: ^3.3.3
-        version: 3.3.3(webpack@5.104.1)
+        specifier: ^4.0.0
+        version: 4.0.0(webpack@5.104.1)
       ts-jest:
         specifier: ^29.1.1
         version: 29.1.1(@babel/core@7.28.6)(jest@29.7.0)(typescript@5.9.3)
@@ -10017,11 +10017,11 @@ packages:
     engines: {node: '>=8'}
     dev: true
 
-  /style-loader@3.3.3(webpack@5.104.1):
-    resolution: {integrity: sha512-53BiGLXAcll9maCYtZi2RCQZKa8NQQai5C4horqKyRmHj9H7QmcUyucrH+4KW/gBQbXM2AsB0axoEcFZPlfPcw==}
-    engines: {node: '>= 12.13.0'}
+  /style-loader@4.0.0(webpack@5.104.1):
+    resolution: {integrity: sha512-1V4WqhhZZgjVAVJyt7TdDPZoPBPNHbekX4fWnCJL1yQukhCeZhJySUL+gL9y6sNdN95uEOS83Y55SqHcP7MzLA==}
+    engines: {node: '>= 18.12.0'}
     peerDependencies:
-      webpack: ^5.0.0
+      webpack: ^5.27.0
     dependencies:
       webpack: 5.104.1(webpack-cli@6.0.1)
     dev: true
