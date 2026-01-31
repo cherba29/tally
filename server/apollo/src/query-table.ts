@@ -1,16 +1,11 @@
 import { Month } from '@tally/lib/core/month';
 import { loadBudget } from '@tally/lib/data/loader';
-import {
-  GqlTable,
-  GqlTableCell,
-  GqlTableRow,
-  QueryTableArgs,
-} from './types';
+import { GqlTable, GqlTableCell, GqlTableRow, QueryTableArgs } from './types';
 import { Account } from '@tally/lib/core/account';
-import { 
+import {
   toGqlAccount,
   toGqlTableCellFromStatement,
-  toGqlTableCellFromTransactionStatement,
+  toGqlTableCellFromTransactionStatement
 } from './to-gql';
 
 interface RowEntry {
@@ -28,8 +23,8 @@ function sequenceStatements(owner: string, accounts: Account[]): RowEntry[] {
   for (const account of accounts) {
     if (!account.path.length) continue;
     const path = account.path;
-    let entry = '/' + [...path,  account.name].join('/');
-    for (let sub = path.length; sub >= 0 ; sub--) {
+    let entry = '/' + [...path, account.name].join('/');
+    for (let sub = path.length; sub >= 0; sub--) {
       const subPath = path.slice(0, sub);
       const subPathId = '/' + subPath.join('/');
       let subTreeEntry = tree.get(subPathId);
@@ -51,23 +46,24 @@ function sequenceStatements(owner: string, accounts: Account[]): RowEntry[] {
   while (nodesToProcess.length) {
     const subTreeId = nodesToProcess.shift()!;
     const children = tree.get(subTreeId);
-    const subPath = subTreeId.split('/').filter(v=>!!v);
+    const subPath = subTreeId.split('/').filter((v) => !!v);
     entries.push({
-      title: subPath.length ? subPath[subPath.length-1] : owner,
+      title: subPath.length ? subPath[subPath.length - 1] : owner,
       id: subTreeId,
-      account: children ? undefined : nameToAccount.get(subPath[subPath.length-1]),
+      account: children ? undefined : nameToAccount.get(subPath[subPath.length - 1]),
       isTotal: !!children,
-      depth: subPath.length,
+      depth: subPath.length
     });
-    if (children) { 
+    if (children) {
       // console.log('### adding', children);
       // Add in front as we want to process children next, in dept-first fashion.
-      nodesToProcess.unshift(...children); 
+      nodesToProcess.unshift(...children);
     }
   }
   return entries;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTable> {
   const startTimeMs: number = Date.now();
   const startMonth = args.startMonth.previous();
@@ -82,18 +78,24 @@ export async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTa
   const accounts = activeAccounts.filter((a) => a.owners.includes(owner));
 
   const rows: GqlTableRow[] = [];
-  
+
   const ordering = sequenceStatements(owner, accounts);
   for (const entry of ordering) {
     if (entry.isTotal) {
       const summaryMonthMap = payload.summaries.get2(owner, entry.id);
       if (summaryMonthMap) {
-        const cells: GqlTableCell[] = months.map(
-          (month) => toGqlTableCellFromStatement(summaryMonthMap?.get(month.toString()))
+        const cells: GqlTableCell[] = months.map((month) =>
+          toGqlTableCellFromStatement(summaryMonthMap?.get(month.toString()))
         );
-        if (cells.some((c)=>!c.isClosed)) {
-          const account = summaryMonthMap.values().next().value!.account; 
-          rows.push({ title: entry.title, indent: entry.depth, account: toGqlAccount(account), isTotal: true, cells });
+        if (cells.some((c) => !c.isClosed)) {
+          const account = summaryMonthMap.values().next().value!.account;
+          rows.push({
+            title: entry.title,
+            indent: entry.depth,
+            account: toGqlAccount(account),
+            isTotal: true,
+            cells
+          });
         }
       } else {
         throw new Error(`Did not find summary statement for ${owner} "${entry.id}"`);
@@ -109,7 +111,13 @@ export async function buildGqlTable(_: any, args: QueryTableArgs): Promise<GqlTa
       }
       if (!isClosed) {
         // Dont add accounts which are closed over selected timeframe.
-        rows.push({ title: entry.title, indent: entry.depth, account: toGqlAccount(account), isNormal: true, cells });
+        rows.push({
+          title: entry.title,
+          indent: entry.depth,
+          account: toGqlAccount(account),
+          isNormal: true,
+          cells
+        });
       }
     }
   }

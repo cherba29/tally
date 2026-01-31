@@ -6,13 +6,7 @@ import {
 import { SummaryStatement } from '@tally/lib/statement/summary';
 import { Type as BalanceType } from '@tally/lib/core/balance';
 import { Statement } from '@tally/lib/statement/statement';
-
-import {
-  GqlAccount,
-  GqlStatement,
-  GqlSummaryStatement,
-  GqlTableCell,
-} from './types';
+import { GqlAccount, GqlStatement, GqlSummaryStatement, GqlTableCell } from './types';
 import { Account } from '@tally/lib/core/account';
 
 export function toGqlAccount(account: Account): GqlAccount {
@@ -127,7 +121,7 @@ export function toGqlTableCellFromTransactionStatement(stmt?: TransactionStateme
       stmt?.hasProjectedTransfer,
     isCovered: stmt?.isCovered,
     isProjectedCovered: stmt?.isProjectedCovered,
-    hasProjectedTransfer: stmt?.hasProjectedTransfer,
+    hasProjectedTransfer: stmt?.hasProjectedTransfer
   };
 }
 

@@ -12,7 +12,7 @@ import resolvers from './resolvers';
 import typeDefs from './type-defs';
 
 interface MyContext {
-  token?: String;
+  token?: string;
 }
 
 // Load settings from .env into process.env

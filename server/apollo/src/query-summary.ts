@@ -2,23 +2,21 @@ import { TransactionStatement } from '@tally/lib/statement/transaction';
 import { combineSummaryStatements } from '@tally/lib/statement/summary';
 import { toGqlStatement, toGqlSummaryStatement } from './to-gql';
 import { loadBudget } from '@tally/lib/data/loader';
-import {
-  GqlSummaryData,
-  QuerySummaryArgs,
-} from './types';
+import { GqlSummaryData, QuerySummaryArgs } from './types';
 
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function buildSummaryData(_: any, args: QuerySummaryArgs): Promise<GqlSummaryData> {
   const startTimeMs: number = Date.now();
   const payload = await loadBudget();
-  const summaryName = args.accountType.startsWith('/') ? args.accountType :
-    (args.owner + ' ' + (args.accountType === args.owner ? 'SUMMARY' : args.accountType));
+  const summaryName = args.accountType.startsWith('/')
+    ? args.accountType
+    : args.owner + ' ' + (args.accountType === args.owner ? 'SUMMARY' : args.accountType);
   const monthSummaries = payload.summaries.get2(args.owner, summaryName);
   if (!monthSummaries) {
     throw new Error(`Summary ${args.accountType} for ${args.owner} not found.`);
   }
-  const summaryStatements = [...monthSummaries.values()].filter(
-    (stmt) => stmt.month.isBetween(args.startMonth, args.endMonth)
+  const summaryStatements = [...monthSummaries.values()].filter((stmt) =>
+    stmt.month.isBetween(args.startMonth, args.endMonth)
   );
   if (!summaryStatements.length) {
     throw new Error(
@@ -36,7 +34,8 @@ export async function buildSummaryData(_: any, args: QuerySummaryArgs): Promise<
     total: toGqlSummaryStatement(summary)
   };
   console.log(
-    `gql "${summaryName}" summary data in ${Date.now() - startTimeMs}ms for [${args.startMonth}, ${args.endMonth}]`
+    `gql "${summaryName}" summary data in ${Date.now() - startTimeMs}ms for ` +
+      `[${args.startMonth}, ${args.endMonth}]`
   );
   return result;
 }
