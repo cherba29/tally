@@ -182,7 +182,7 @@ export class TallyApp extends LitElement {
         .loadStatement(this.currentOwner ?? '', e.detail.accountName ?? '', e.detail.month ?? '')
         .then((result) => {
           console.log(`PopupData for ${e.detail}`, result);
-          const statement = result.data.statement;
+          const statement = result.data!.statement;
           const popupData: PopupMonthData = {
             accountName: e.detail.accountName ?? '',
             month: e.detail.month ?? '',
@@ -214,8 +214,8 @@ export class TallyApp extends LitElement {
       .loadSummaryData(this.currentOwner ?? '', accountName, startMonth, endMonth)
       .then((result) => {
         console.log(`PopupData for ${accountName} ${startMonth}-${endMonth}`, result);
-        const summaryStatement = result.data.summary?.total;
-        const statements = result.data.summary?.statements;
+        const summaryStatement = result.data!.summary?.total;
+        const statements = result.data!.summary?.statements;
         const popupData: PopupMonthSummaryData = {
           accountName,
           month: endMonth,
@@ -236,12 +236,12 @@ export class TallyApp extends LitElement {
       .loadTable(this.currentOwner ?? '', this.startMonth.toString(), this.endMonth.toString())
       .then((result) => {
         console.log('backend response', result);
-        if (result.errors) {
-          this.errorMessage = result.errors.map((e) => e.message).join('\n');
+        if (result.error) {
+          this.errorMessage = result.error.message;
         } else {
           this.popupData = undefined; // Closes any open popups.
           this.errorMessage = '';
-          const table = result.data.table;
+          const table = result.data!.table;
           this.currentOwner = table?.currentOwner ?? undefined;
           this.owners = table?.owners?.filter((owner) => !!owner).map((owner) => owner!) ?? [];
           this.months = table?.months?.map((value) => value.toString()) || [];

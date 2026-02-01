@@ -11,6 +11,7 @@ export default defineConfig([
       "**/node_modules/**",
       "**/public/**",
       "**/*.js",
+      "src/gql_types.ts",
     ],
   },
   {

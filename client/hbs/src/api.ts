@@ -1,5 +1,5 @@
-import {ApolloClient, gql, DefaultOptions, ApolloQueryResult} from '@apollo/client/core';
-import {InMemoryCache, NormalizedCacheObject} from '@apollo/client/cache';
+import {ApolloClient, gql, DefaultOptions, HttpLink, ApolloLink} from '@apollo/client/core';
+import {InMemoryCache} from '@apollo/client/cache';
 import {Query} from './gql_types';
 
 const defaultOptions: DefaultOptions = {
@@ -13,14 +13,18 @@ const defaultOptions: DefaultOptions = {
   },
 };
 
+const link = ApolloLink.from([
+  new HttpLink({ uri: "http://localhost:4000/graphql" }),
+]);
+
 /**
  * Gql Backend Client.
  */
 export class BackendClient {
   private readonly gqlCache: InMemoryCache = new InMemoryCache({});
-  private readonly gqlClient: ApolloClient<NormalizedCacheObject> = new ApolloClient({
+  private readonly gqlClient = new ApolloClient({
     cache: this.gqlCache,
-    uri: 'http://localhost:4000/graphql',
+    link,
     defaultOptions,
   });
 
@@ -32,7 +36,7 @@ export class BackendClient {
     owner: string,
     startMonth: string,
     endMonth: string
-  ): Promise<ApolloQueryResult<Query>> {
+  ): Promise<ApolloClient.QueryResult<Query>> {
     console.log('### ', owner, startMonth, endMonth);
     return this.gqlClient.query<Query>({
       query: gql`
@@ -99,7 +103,7 @@ export class BackendClient {
     accountType: string,
     startMonth: string | undefined,
     endMonth: string
-  ): Promise<ApolloQueryResult<Query>> {
+  ): Promise<ApolloClient.QueryResult<Query>> {
     return this.gqlClient.query<Query>({
       query: gql`
         query summary(
@@ -183,7 +187,7 @@ export class BackendClient {
    * Load data via gql client.
    * @return promise of query result.
    */
-  loadStatement(owner: string, account: string, month: string): Promise<ApolloQueryResult<Query>> {
+  loadStatement(owner: string, account: string, month: string): Promise<ApolloClient.QueryResult<Query>> {
     return this.gqlClient.query<Query>({
       query: gql`
         query statement($owner: String!, $account: String!, $month: GqlMonth!) {
