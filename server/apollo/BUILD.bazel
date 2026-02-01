@@ -50,6 +50,7 @@ jest_test(
     data = glob(["src/**/*.ts"]) + glob(["src/testdata/**/*"]) + LIB_DEPS + [
         ":node_modules/@types/jest",
         ":node_modules/jest",
+        ":node_modules/jest-util",
         ":node_modules/ts-jest",
         ":tsconfig.json",
     ],
