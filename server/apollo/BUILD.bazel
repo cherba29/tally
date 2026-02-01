@@ -12,6 +12,7 @@ npm_link_all_packages(name = "node_modules")
 
 LIB_DEPS = [
     ":node_modules/@apollo/server",
+    ":node_modules/@as-integrations/express5",
     ":node_modules/@types/body-parser",
     ":node_modules/@types/cors",
     ":node_modules/@types/express",

@@ -1,11 +1,10 @@
 import dotenv from 'dotenv';
 import { ApolloServer } from '@apollo/server';
 import { ApolloServerPluginCacheControl } from '@apollo/server/plugin/cacheControl';
-import { expressMiddleware } from '@apollo/server/express4';
-import express from 'express';
+import { expressMiddleware } from '@as-integrations/express5';
+import express, { Request } from 'express';
 import http from 'http';
 import cors from 'cors';
-import { json } from 'body-parser';
 import { loadBudget } from '@tally/lib/data/loader';
 
 import resolvers from './resolvers';
@@ -56,9 +55,13 @@ httpServer.headersTimeout = 60 * 1000 + 2000;
 app.use(
   '/graphql',
   cors<cors.CorsRequest>(),
-  json(),
+  express.json(),
   expressMiddleware(server, {
-    context: async ({ req }) => ({ token: req.headers.token })
+    context: async ({ req }: { req: Request }) => {
+      const tokenHeader = req.headers.token;
+      const token = Array.isArray(tokenHeader) ? tokenHeader[0] : tokenHeader;
+      return { token };
+    }
   })
 );
 console.log('Serving web UI from: ', process.env.CLIENT_BUNDLE);
