@@ -4,7 +4,7 @@ const nodeExternals = require('webpack-node-externals');
 const path = require('path');
 const webpack = require('webpack');
 
-const common = require('./webpack.common.js');
+const common = require('./webpack.common.cjs');
 
 module.exports = merge.merge(common, {
   devtool: 'inline-source-map',

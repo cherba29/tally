@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.2.0",
   "description": "",
+  "type": "module",
   "main": "index.js",
   "exports": {
     "./*": {
@@ -19,13 +20,13 @@
     }
   },
   "scripts": {
-    "build": "webpack --config webpack.development.js",
+    "build": "webpack --config webpack.development.cjs",
     "esbuild": "node esbuild.mjs",
     "start": "node dist/server",
     "generate": "graphql-codegen",
     "debug-build": "tsc",
     "lint": "eslint . --ext .ts",
-    "test": "jest --config ./jest_config.js --coverage",
+    "test": "jest --config ./jest_config.cjs --coverage",
     "prettier-format": "prettier --config .prettierrc 'src/**/*.ts' --write"
   },
   "keywords": [],

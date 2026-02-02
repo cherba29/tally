@@ -3,7 +3,7 @@ const merge = require('webpack-merge');
 const nodeExternals = require('webpack-node-externals');
 const path = require('path');
 
-const common = require('./webpack.common.js');
+const common = require('./webpack.common.cjs');
 
 module.exports = merge(common, {
   devtool: 'source-map',
