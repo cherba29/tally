@@ -16,7 +16,8 @@ describe('GqlMonth', () => {
 
 describe('gqlTable', () => {
   beforeEach(() => {
-    process.env.TALLY_FILES = 'server/apollo/src/testdata/tally';
+    // TODO: use import.meta.dirname when switching to ES modules.
+    process.env.TALLY_FILES = __dirname + '/testdata/tally';
   });
 
   test('load', async () => {
@@ -36,7 +37,8 @@ describe('gqlTable', () => {
 
 describe('gqlSummary', () => {
   beforeEach(() => {
-    process.env.TALLY_FILES = 'server/apollo/src/testdata/tally';
+    // TODO: use import.meta.dirname when switching to ES modules.
+    process.env.TALLY_FILES = __dirname + '/testdata/tally';
   });
 
   test('load', async () => {

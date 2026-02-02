@@ -6,6 +6,6 @@ module.exports = {
   "coverageProvider": "v8",
   "testRegex": [".*\\.test.ts$"],
   "transform": {
-    "^.+\\.(ts|tsx)$": "ts-jest"
+    "^.+\\.(ts|tsx)$": "jest-esbuild"
   }
 }
