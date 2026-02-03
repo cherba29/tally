@@ -46,7 +46,7 @@ export default {
   platform: 'node',
   banner: {
     // See discussion in https://github.com/evanw/esbuild/pull/2067.
-    js: "import { createRequire } from 'module'; const require = createRequire(import.meta.url);"
+    js: "const require = createRequire(import.meta.url);"
   },
   plugins: [nativeNodeModulesPlugin],
   bundle: true
