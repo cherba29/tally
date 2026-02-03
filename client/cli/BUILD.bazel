@@ -1,3 +1,4 @@
+load("@aspect_rules_esbuild//esbuild:defs.bzl", "esbuild")
 load("@aspect_rules_js//js:defs.bzl", "js_binary", "js_library", "js_test")
 load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
 load("@npm//:defs.bzl", "npm_link_all_packages")
@@ -23,20 +24,27 @@ ts_project(
     ],
 )
 
+esbuild(
+    name = "cli_bundle",
+    config = "esbuild.config.mjs",
+    entry_point = "src/cli.ts",
+    format = "esm",
+    output = "cli_bundle.mjs",
+    platform = "node",
+    sourcemap = "external",  # to easily diff against other files
+    target = "esnext",
+    deps = [":cli_project"],
+)
+
 js_binary(
     name = "tally_cli",
-    # Run from package directory so to pick up .env file.
-    chdir = package_name(),  # in this case it will be "client/cli".
     data = [
-        ".env",
-        ":cli_project",
+        ":cli_bundle",
+        "//client/hbs:bundle",
     ],
-    entry_point = "src/cli.js",
+    entry_point = "cli_bundle.mjs",
     env = {
-        # BUILD_WORKSPACE_DIRECTORY is set by Bazel to the root of the workspace,
-        # but only for build and run actions. We need to set it manually for tests.
         "TALLY_FILES": "$$BUILD_WORKSPACE_DIRECTORY/data",
-        "NODE_OPTIONS": "--es-module-specifier-resolution=node",
     },
 )
 
