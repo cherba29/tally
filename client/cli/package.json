@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@tally/lib": "workspace:*",
-    "dotenv": "^17.2.3",
+    "dotenv": "^17.2.4",
     "yargs": "^18.0.0"
   }
 }
