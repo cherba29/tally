@@ -3,13 +3,14 @@
   "version": "0.2.0",
   "private": true,
   "description": "",
-  "main": "index.js",
+  "type": "module",
+  "main": "build/cli.js",
   "bin": {
     "hello": "./build/cli.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc -p .",
+    "build": "tsc --noEmit; esbuild --bundle src/cli.ts --platform=node --format=esm --target=esnext --banner:js='const require = createRequire(import.meta.url);' --outfile=build/cli.js",
     "exec": "node ./build/cli.js",
     "package": "pkg . --targets node14-linux-x64 --output tally"
   },
@@ -22,6 +23,7 @@
   "devDependencies": {
     "@types/node": "^20.19.30",
     "@types/yargs": "^17.0.35",
+    "esbuild": "^0.27.3",
     "pkg": "^5.8.1",
     "typescript": "^5.9.3"
   },
