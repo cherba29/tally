@@ -42,7 +42,6 @@ jest_test(
         ":node_modules/@types/jest",
         ":node_modules/@types/mock-fs",
         ":node_modules/jest",
-        ":node_modules/jest-esbuild",
         ":node_modules/jest-util",
         ":node_modules/mock-fs",
         ":node_modules/ts-jest",
