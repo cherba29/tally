@@ -25,7 +25,7 @@ LIB_DEPS = [
     ":node_modules/graphql",
     ":node_modules/graphql-tag",
     ":node_modules/js-yaml",
-    "//:tally_lib",
+    "//:node_modules/@tally/lib",
 ]
 
 ts_project(

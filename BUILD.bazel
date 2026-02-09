@@ -5,8 +5,9 @@ load("@aspect_rules_js//npm:defs.bzl", "npm_link_package")
 npm_link_all_packages(name = "node_modules")
 
 npm_link_package(
-    name = "tally_lib",
+    name = "node_modules/@tally/lib",
     src = "//lib:pkg",
+    visibility = ["//:__subpackages__"],
 )
 
 filegroup(

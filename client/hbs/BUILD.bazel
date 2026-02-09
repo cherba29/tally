@@ -12,9 +12,9 @@ npm_link_all_packages(name = "node_modules")
 
 LIB_DEPS = [
     ":node_modules/@apollo/client",
+    "//:node_modules/@tally/lib",
     ":node_modules/@types/node",
     ":node_modules/lit",
-    "//:tally_lib",
 ]
 
 ts_project(
