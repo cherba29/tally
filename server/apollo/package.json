@@ -63,7 +63,7 @@
     "webpack-node-externals": "^3.0.0"
   },
   "dependencies": {
-    "@apollo/server": "^4.9.5",
+    "@apollo/server": "^5.4.0",
     "@tally/lib": "workspace:*",
     "body-parser": "^2.2.1",
     "class-validator": "^0.14.0",
