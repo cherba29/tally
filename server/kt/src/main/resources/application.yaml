@@ -1,6 +1,6 @@
 ktor:
     application:
         modules:
-            - com.cherba29.tally.ApplicationKt.module
+            - com.cherba29.tally.ApplicationKt.graphQLModule
     deployment:
         port: 8080

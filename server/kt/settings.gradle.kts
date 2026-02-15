@@ -1,4 +1,4 @@
-rootProject.name = "server"
+rootProject.name = "tally-server"
 
 dependencyResolutionManagement {
     repositories {
