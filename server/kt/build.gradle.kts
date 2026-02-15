@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+
 plugins {
     alias(libs.plugins.expediagroup.graphql)
     alias(libs.plugins.kotlin.jvm)
@@ -18,6 +20,7 @@ kotlin {
 
 dependencies {
     implementation(libs.kotlin.logging)
+    implementation(libs.ktor.client.content)
     implementation(libs.ktor.server.cio)
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.cors)
@@ -32,6 +35,16 @@ dependencies {
     implementation(libs.graphql.kotlin.ktor.server)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
+}
+
+tasks {
+    test {
+        testLogging {
+            events("passed", "skipped", "failed")
+            showStackTraces = true
+            exceptionFormat = TestExceptionFormat.FULL
+        }
+    }
 }
 
 graphql {

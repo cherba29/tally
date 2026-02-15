@@ -1,6 +1,9 @@
 package com.cherba29.tally
 
+import com.expediagroup.graphql.generator.annotations.GraphQLDescription
+import com.expediagroup.graphql.generator.federation.directives.ContactDirective
 import com.expediagroup.graphql.server.ktor.GraphQL
+import com.expediagroup.graphql.server.Schema
 import com.expediagroup.graphql.server.ktor.defaultGraphQLStatusPages
 import com.expediagroup.graphql.server.ktor.graphQLGetRoute
 import com.expediagroup.graphql.server.ktor.graphQLPostRoute
@@ -13,8 +16,10 @@ import io.ktor.server.application.install
 import io.ktor.server.plugins.cors.routing.CORS
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.serialization.jackson.JacksonWebsocketContentConverter
+import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.call
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.origin
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respondText
@@ -28,13 +33,14 @@ fun main(args: Array<String>) {
   io.ktor.server.netty.EngineMain.main(args)
 }
 
-fun Application.module() {
-  routing {
-    get("/") {
-      call.respondText("Hello World!")
-    }
-  }
-}
+
+@ContactDirective(
+  name = "Tally",
+  url = "https://github.com/cherba29/tally",
+  description = "Report issues on github."
+)
+@GraphQLDescription("Schema for Tally data")
+class TallySchema : Schema
 
 class HelloWorldQuery : Query {
   fun hello(): String = "Hello GraphQL!"
@@ -58,6 +64,7 @@ fun Application.graphQLModule() {
       queries = listOf(
         HelloWorldQuery()
       )
+      schemaObject = TallySchema()
     }
   }
   routing {
