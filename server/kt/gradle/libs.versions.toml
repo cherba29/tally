@@ -6,6 +6,7 @@ logback = "1.4.14"
 
 [libraries]
 graphql-kotlin-ktor-server  = { module = "com.expediagroup:graphql-kotlin-ktor-server", version.ref = "graphql-ktor" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime-jvm", version = "0.7.1" }
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version = "7.0.13" }
 ktor-client-content = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-server-cio = { group = "io.ktor", name = "ktor-server-cio", version.ref = "ktor" }

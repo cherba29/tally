@@ -1,5 +1,6 @@
 package com.cherba29.tally
 
+import com.cherba29.tally.schema.CustomSchemaGeneratorHooks
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.generator.federation.directives.ContactDirective
 import com.expediagroup.graphql.server.ktor.GraphQL
@@ -16,10 +17,8 @@ import io.ktor.server.application.install
 import io.ktor.server.plugins.cors.routing.CORS
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.serialization.jackson.JacksonWebsocketContentConverter
-import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.call
-import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.origin
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respondText
@@ -60,10 +59,14 @@ fun Application.graphQLModule() {
 
   install(GraphQL) {
     schema {
-      packages = listOf("com.cherba29.tally")
+      packages = listOf("com.cherba29.tally", "kotlinx.datetime")
       queries = listOf(
-        HelloWorldQuery()
+        HelloWorldQuery(),
+        TableService(),
+        SummaryService(),
+        StatementService(),
       )
+      hooks = CustomSchemaGeneratorHooks()
       schemaObject = TallySchema()
     }
   }

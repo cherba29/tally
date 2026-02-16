@@ -20,6 +20,7 @@ kotlin {
 
 dependencies {
     implementation(libs.kotlin.logging)
+    implementation(libs.kotlinx.datetime)
     implementation(libs.ktor.client.content)
     implementation(libs.ktor.server.cio)
     implementation(libs.ktor.server.core)

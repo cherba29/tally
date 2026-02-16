@@ -109,9 +109,139 @@ class ApplicationTest {
           url: String!
         ) on SCALAR
   
+      type GqlAccount {
+        address: String!
+        "Month when account was closed. If not set means account is still open."
+        closedOn: GqlMonth
+        "Long description for the account."
+        description: String!
+        external: Boolean!
+        "Account id/name."
+        name: String!
+        "Account number. Can be null or unknown for external or proxy accounts."
+        number: String
+        "Month when account was open. Can be unknown."
+        openedOn: GqlMonth
+        "List of owner ids for this account."
+        owners: [String!]!
+        password: String!
+        "Replacement for type, so that accounts are grouped."
+        path: [String!]!
+        phone: String!
+        summary: Boolean!
+        "Account type. Determines how account is grouped."
+        type: String!
+        url: String!
+        userName: String!
+      }
+      
+      type GqlBalance {
+        amount: Int!
+        date: Date!
+        type: String!
+      }
+    
+      type GqlStatement {
+        addSub: Int!
+        annualizedPercentChange: Float!
+        change: Int!
+        endBalance: GqlBalance!
+        hasProjectedTransfer: Boolean!
+        inFlows: Int!
+        income: Int!
+        isClosed: Boolean!
+        isCovered: Boolean!
+        isProjectedCovered: Boolean!
+        month: GqlMonth!
+        name: String!
+        outFlows: Int!
+        percentChange: Float!
+        startBalance: GqlBalance!
+        totalPayments: Int!
+        totalTransfers: Int!
+        transactions: [GqlTransaction!]!
+        unaccounted: Float!
+      }
+  
+      type GqlSummaryData {
+        statements: [GqlStatement!]!
+        total: GqlSummaryStatement!
+      }
+
+      type GqlSummaryStatement {
+        accounts: [String!]!
+        addSub: Int!
+        annualizedPercentChange: Float!
+        change: Int!
+        endBalance: GqlBalance!
+        inFlows: Int!
+        income: Int!
+        month: GqlMonth!
+        name: String!
+        outFlows: Int!
+        percentChange: Float!
+        startBalance: GqlBalance!
+        totalPayments: Int!
+        totalTransfers: Int!
+        unaccounted: Int!
+      }
+
+      type GqlTable {
+        currentOwner: String!
+        months: [GqlMonth!]!
+        owners: [String!]!
+        rows: [GqlTableRow!]!
+      }
+
+      type GqlTableCell {
+        addSub: Int!
+        annualizedPercentChange: Float!
+        balance: Int!
+        balanced: Boolean!
+        hasProjectedTransfer: Boolean!
+        isClosed: Boolean!
+        isCovered: Boolean!
+        isProjected: Boolean!
+        isProjectedCovered: Boolean!
+        month: GqlMonth!
+        percentChange: Float!
+        unaccounted: Int!
+      }
+    
+      type GqlTableRow {
+        account: GqlAccount!
+        cells: [GqlTableCell!]!
+        indent: Int!
+        isNormal: Boolean!
+        isSpace: Boolean!
+        isTotal: Boolean!
+        title: String!
+      }
+      
+      type GqlTransaction {
+        balance: GqlBalance!
+        balanceFromStart: Int!
+        description: String!
+        isExpense: Boolean!
+        isIncome: Boolean!
+        toAccountName: String!
+      }
+
       type Query {
         hello: String!
+        "Returns a monthly statement for given account."
+        statement(account: String!, month: String!, owner: String!): GqlStatement!
+        "Generates delta summary table between two months."
+        summary(endMonth: GqlMonth!, owner: String!, startMonth: GqlMonth!): GqlSummaryData!
+        "Generates full tally table in given month range."
+        table(endMonth: GqlMonth!, owner: String!, startMonth: GqlMonth!): GqlTable!
       }
+      
+      "Date representation in YYYY-MM-DD format."
+      scalar Date
+    
+      "Month representation in XxxYYYY format."
+      scalar GqlMonth
       """.trimIndent()
     testApplication {
       application {
