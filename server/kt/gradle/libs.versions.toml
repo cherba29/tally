@@ -1,11 +1,19 @@
 [versions]
 graphql-ktor = "8.3.0"
+kotest = "6.0.7"
 kotlin = "2.3.0"
 ktor = "3.0.3"
 logback = "1.4.14"
 
 [libraries]
 graphql-kotlin-ktor-server  = { module = "com.expediagroup:graphql-kotlin-ktor-server", version.ref = "graphql-ktor" }
+kotest = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest"}
+kotest-jvm = { module = "io.kotest:kotest-framework-engine-jvm", version.ref = "kotest"}
+kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest"}
+kotest-assertions-jvm = { module = "io.kotest:kotest-assertions-core-jvm", version.ref = "kotest"}
+kotest-junit5 = { module = "io.kotest:kotest-runner-junit5", version.ref = "kotest"}
+kotest-junit5-jvm = { module = "io.kotest:kotest-runner-junit5-jvm", version.ref = "kotest"}
+kotest-property = { module = "io.kotest:kotest-property", version.ref = "kotest"}
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime-jvm", version = "0.7.1" }
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version = "7.0.13" }
 ktor-client-content = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
@@ -26,3 +34,4 @@ kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version
 expediagroup-graphql = { id = "com.expediagroup.graphql", version.ref = "graphql-ktor" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
+kotest = { id = "io.kotest", version.ref = "kotest" }

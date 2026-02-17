@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.expediagroup.graphql)
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ktor)
+    alias(libs.plugins.kotest)
     application
 }
 
@@ -35,6 +36,13 @@ dependencies {
     implementation(libs.ktor.server.websockets)
     implementation(libs.graphql.kotlin.ktor.server)
     testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.kotest)
+    testImplementation(libs.kotest.jvm)
+    testImplementation(libs.kotest.assertions)
+    testImplementation(libs.kotest.assertions.jvm)
+    testImplementation(libs.kotest.junit5)
+    testImplementation(libs.kotest.junit5.jvm)
+    testImplementation(libs.kotest.property)
     testImplementation(libs.kotlin.test.junit)
 }
 
@@ -46,6 +54,10 @@ tasks {
             exceptionFormat = TestExceptionFormat.FULL
         }
     }
+}
+
+tasks.withType<Test>().configureEach {
+    useJUnitPlatform()
 }
 
 graphql {
