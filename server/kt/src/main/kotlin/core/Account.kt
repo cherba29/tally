@@ -1,6 +1,6 @@
 package com.cherba29.tally.core
 
-enum class Type(val id: String) {
+enum class AccountType(val id: String) {
   UNSPECIFIED("_unspecified_"),
   BILL("bill"),
   CHECKING("checking"),
@@ -20,7 +20,7 @@ data class Account(
   val description: String? = null,
   val path: List<String> = listOf(),
   // Account type, for example 'CREDIT_CARD'.
-  val type: Type,
+  val type: AccountType,
   // Real account number associated with this account.
   val number: String? = null,
   // Month when account was opened and possibly closed.
@@ -45,9 +45,10 @@ data class Account(
            (openedOn != null) && (month < openedOn) // Before or on open.
   }
 
-  val isExternal: Boolean = type === Type.EXTERNAL || type === Type.TAX || type === Type.DEFERRED_INCOME
+  val isExternal: Boolean = type === AccountType.EXTERNAL ||
+      type === AccountType.TAX || type === AccountType.DEFERRED_INCOME
 
-  val isSummary: Boolean = type == Type.SUMMARY
+  val isSummary: Boolean = type == AccountType.SUMMARY
 
   fun hasCommonOwner(other: Account): Boolean = owners.intersect(other.owners).isNotEmpty()
 

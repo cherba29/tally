@@ -8,7 +8,7 @@ class AccountTest : DescribeSpec({
     it("isClosed - false by default") {
       val account = Account(
         name = "testAccount",
-        type = Type.CHECKING,
+        type = AccountType.CHECKING,
         owners = listOf("bob"),
       )
       account.isClosed(Month(2021, 2)) shouldBe false
@@ -17,7 +17,7 @@ class AccountTest : DescribeSpec({
     it("isClosed false if closedOn not set") {
       val account = Account(
         name = "testAccount",
-        type = Type.CHECKING,
+        type = AccountType.CHECKING,
         owners = listOf("bob"),
         openedOn = Month(2021, 1),
       )
@@ -27,7 +27,7 @@ class AccountTest : DescribeSpec({
     it("isClosed true if closedOn is set") {
       val account = Account(
         name = "testAccount",
-        type = Type.CHECKING,
+        type = AccountType.CHECKING,
         owners = listOf("bob"),
         openedOn = Month(2021, 1),
         closedOn = Month(2021, 3),
@@ -39,7 +39,7 @@ class AccountTest : DescribeSpec({
     it("isSummary false if type is not summary") {
       val account = Account(
         name = "testAccount",
-        type = Type.CHECKING,
+        type = AccountType.CHECKING,
         owners = listOf("bob"),
       )
       account.isSummary shouldBe false
@@ -48,7 +48,7 @@ class AccountTest : DescribeSpec({
     it("isSummary when type is summary") {
       val account = Account(
         name = "testAccount",
-        type = Type.SUMMARY,
+        type = AccountType.SUMMARY,
         owners = listOf("bob"),
       )
       account.isSummary shouldBe true
@@ -57,7 +57,7 @@ class AccountTest : DescribeSpec({
     it("isExternal false by default") {
       val account = Account(
         name = "testAccount",
-        type = Type.CHECKING,
+        type = AccountType.CHECKING,
         owners = listOf("bob"),
       )
       account.isExternal shouldBe false
@@ -66,7 +66,7 @@ class AccountTest : DescribeSpec({
     it("isExternal true when type is EXTERNAL") {
       val account = Account(
         name = "testAccount",
-        type = Type.EXTERNAL,
+        type = AccountType.EXTERNAL,
         owners = listOf("bob"),
       )
       account.isExternal shouldBe true
@@ -75,7 +75,7 @@ class AccountTest : DescribeSpec({
     it("isExternal true when type is TAX") {
       val account = Account(
         name = "testAccount",
-        type = Type.TAX,
+        type = AccountType.TAX,
         owners = listOf("bob"),
       )
       account.isExternal shouldBe true
@@ -84,7 +84,7 @@ class AccountTest : DescribeSpec({
     it("isExternal true when type is DEFERRED_INCOME") {
       val account = Account(
         name = "testAccount",
-        type = Type.DEFERRED_INCOME,
+        type = AccountType.DEFERRED_INCOME,
         owners = listOf("bob"),
       )
       account.isExternal shouldBe true
@@ -94,12 +94,12 @@ class AccountTest : DescribeSpec({
     it("has common owner is false if no common owners") {
       val account1 = Account(
         name = "testAccount",
-        type = Type.CHECKING,
+        type = AccountType.CHECKING,
         owners = listOf("bob"),
       )
       val account2 = Account(
         name = "testAccount",
-        type = Type.CHECKING,
+        type = AccountType.CHECKING,
         owners = listOf("john'"),
       )
 
@@ -109,12 +109,12 @@ class AccountTest : DescribeSpec({
     it("has common owner is true if common owners") {
       val account1 = Account(
         name = "testAccount",
-        type = Type.CHECKING,
+        type = AccountType.CHECKING,
         owners = listOf("bob"),
       )
       val account2 = Account(
         name = "testAccount",
-        type = Type.CHECKING,
+        type = AccountType.CHECKING,
         owners = listOf("john", "bob"),
       )
 
@@ -126,7 +126,7 @@ class AccountTest : DescribeSpec({
     it("toString") {
       val account = Account(
         name = "testAccount",
-        type = Type.TAX,
+        type = AccountType.TAX,
         owners = listOf("bob"),
       )
       account.toString() shouldBe "Account testAccount tax_"
