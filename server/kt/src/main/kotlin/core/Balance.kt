@@ -13,7 +13,7 @@ enum class BalanceType(val id: String) {
   }
 }
 
-class Balance(val amount: Double, val date: LocalDate, val type: BalanceType) : Comparable<Balance> {
+data class Balance(val amount: Double, val date: LocalDate, val type: BalanceType) : Comparable<Balance> {
   override fun compareTo(other: Balance): Int {
     val dateDiff = date.compareTo(other.date)
     if (dateDiff != 0) {

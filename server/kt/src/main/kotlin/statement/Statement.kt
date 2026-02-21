@@ -15,7 +15,7 @@ abstract class Statement(
   val month: Month,
 
   // Recorded start balance for the statement.
-  val startBalance: Balance? = null,
+  var startBalance: Balance? = null,
 
   // Recorded end balance for the statement.
   var endBalance: Balance? = null,
@@ -48,7 +48,7 @@ abstract class Statement(
       else -> (100.0 * change) / it.amount
     }
   }
-  val annualizedPercentChange: Double? = percentChange?.let {
+  open val annualizedPercentChange: Double? = percentChange?.let {
     val result = (1 + (it.absoluteValue) / 100).pow(12) - 1
     // Don't consider 1000% and more as meaningful annualized numbers.
     if (result < 10) 100 * it.sign * result else null

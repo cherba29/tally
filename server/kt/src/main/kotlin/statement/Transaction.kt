@@ -182,7 +182,7 @@ fun buildTransactionStatementTable(budget: Budget, owner: String?): List<Transac
       statement.isProjectedCovered = statement.isCovered || nextMonthStatement.coversProjectedPrevious
       nextMonthStatement = statement
       if (statement.startBalance != null) {
-        var prevBalance = statement.startBalance.amount
+        var prevBalance = statement.startBalance!!.amount
         for (t in statement.transactions.asReversed()) {
           t.balanceFromStart = prevBalance + t.balance.amount
           prevBalance = t.balanceFromStart!!
