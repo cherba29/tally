@@ -18,7 +18,7 @@ abstract class Statement(
   val startBalance: Balance? = null,
 
   // Recorded end balance for the statement.
-  val endBalance: Balance? = null,
+  var endBalance: Balance? = null,
 
   // TODO: change all these types from Double to Int.
   // Total transaction inflows.
@@ -28,13 +28,13 @@ abstract class Statement(
   var outFlows: Double = 0.0,
 
   // Amount transferred to other accounts by same owner.
-  val totalTransfers: Double = 0.0,
+  var totalTransfers: Double = 0.0,
 
   // Amount transferred to external entities.
-  val totalPayments: Double = 0.0,
+  var totalPayments: Double = 0.0,
 
   // Amount transferred from external entities.
-  val income: Double = 0.0,
+  var income: Double = 0.0,
 ) {
   val addSub: Double
     get() = inFlows + outFlows
