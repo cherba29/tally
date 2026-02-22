@@ -20,6 +20,9 @@ kotlin {
 }
 
 dependencies {
+    implementation(libs.jackson.dataformat.yaml)
+    implementation(libs.jackson.module.kotlin)
+    implementation(libs.jackson.databind)
     implementation(libs.kotlin.logging)
     implementation(libs.kotlinx.datetime)
     implementation(libs.ktor.client.content)

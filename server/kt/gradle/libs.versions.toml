@@ -1,5 +1,6 @@
 [versions]
 graphql-ktor = "8.3.0"
+jackson-yaml = "2.21.0"
 kotest = "6.0.7"
 kotlin = "2.3.0"
 ktor = "3.0.3"
@@ -7,6 +8,9 @@ logback = "1.4.14"
 
 [libraries]
 graphql-kotlin-ktor-server  = { module = "com.expediagroup:graphql-kotlin-ktor-server", version.ref = "graphql-ktor" }
+jackson-dataformat-yaml = { group = "com.fasterxml.jackson.dataformat", name="jackson-dataformat-yaml", version.ref = "jackson-yaml" }
+jackson-module-kotlin = { group = "com.fasterxml.jackson.module", name="jackson-module-kotlin", version.ref = "jackson-yaml" }
+jackson-databind = { group = "com.fasterxml.jackson.core", name="jackson-databind", version.ref = "jackson-yaml" }
 kotest = { module = "io.kotest:kotest-framework-engine", version.ref = "kotest"}
 kotest-jvm = { module = "io.kotest:kotest-framework-engine-jvm", version.ref = "kotest"}
 kotest-assertions = { module = "io.kotest:kotest-assertions-core", version.ref = "kotest"}
