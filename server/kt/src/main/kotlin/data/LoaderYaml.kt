@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.nio.file.Path
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlinx.datetime.LocalDate
@@ -220,7 +221,7 @@ class CustomProblemHandler : DeserializationProblemHandler() {
 }
 
 // TODO: make it a class so mapper does not have to be instantiated every time.
-fun parseYamlContent(content: String, relativeFilePath: String): YamlData? {
+fun parseYamlContent(content: String, relativeFilePath: Path): YamlData? {
   val mapper = ObjectMapper(YAMLFactory()).registerKotlinModule()
   val module = SimpleModule()
   module.addDeserializer(LocalDate::class.java, LocalDateDeserializer())
@@ -238,7 +239,7 @@ fun parseYamlContent(content: String, relativeFilePath: String): YamlData? {
   return result
 }
 
-fun loadYamlFile(budgetBuilder: BudgetBuilder, accountData: YamlData, relativeFilePath: String) {
+fun loadYamlFile(budgetBuilder: BudgetBuilder, accountData: YamlData, relativeFilePath: Path) {
   try {
     processYamlData(budgetBuilder, accountData)
   } catch (e: IllegalArgumentException) {

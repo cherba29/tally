@@ -11,13 +11,14 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
+import java.nio.file.Paths
 import kotlinx.datetime.LocalDate
 
 class LoadYamlTest : DescribeSpec({
   describe("loadYaml") {
     it("empty") {
       val budgetBuilder = BudgetBuilder()
-      val relativeFilePath = "path/file.yaml"
+      val relativeFilePath = Paths.get("path/file.yaml")
       loadYamlFile(budgetBuilder, parseYamlContent("number: 123", relativeFilePath)!!, relativeFilePath)
       val budget = budgetBuilder.build()
       budget.accounts.size shouldBe 0
@@ -25,7 +26,7 @@ class LoadYamlTest : DescribeSpec({
 
     it("fails when unknown account type") {
       val budgetBuilder = BudgetBuilder()
-      val relativeFilePath = "path/file.yaml"
+      val relativeFilePath = Paths.get("path/file.yaml")
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(
           budgetBuilder,
@@ -38,7 +39,7 @@ class LoadYamlTest : DescribeSpec({
 
     it("fails when account has no owners") {
       val budgetBuilder = BudgetBuilder()
-      val relativeFilePath = "path/file.yaml"
+      val relativeFilePath = Paths.get("path/file.yaml")
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(
           budgetBuilder,
@@ -51,7 +52,7 @@ class LoadYamlTest : DescribeSpec({
 
     it("empty account") {
       val budgetBuilder = BudgetBuilder()
-      val relativeFilePath = "path/file.yaml"
+      val relativeFilePath = Paths.get("path/file.yaml")
       val content = """
       name: test-account
       desc: "Testing account"
@@ -97,7 +98,7 @@ class LoadYamlTest : DescribeSpec({
 
     it("account with balances") {
       val budgetBuilder = BudgetBuilder()
-      val relativeFilePath = "path/test.yaml"
+      val relativeFilePath = Paths.get("path/test.yaml")
       val content = """
       name: test-account
       owner: [ someone ]
@@ -117,13 +118,13 @@ class LoadYamlTest : DescribeSpec({
 
       val balances = budget.balances["test-account"]!!
       balances.size shouldBe 2
-      balances.get("Jan2020") shouldBe Balance(0.0, LocalDate.parse("2020-01-01"), BalanceType.CONFIRMED)
-      balances.get("Feb2020") shouldBe Balance(1000.0, LocalDate.parse("2020-02-01"), BalanceType.PROJECTED)
+      balances["Jan2020"] shouldBe Balance(0.0, LocalDate.parse("2020-01-01"), BalanceType.CONFIRMED)
+      balances["Feb2020"] shouldBe Balance(1000.0, LocalDate.parse("2020-02-01"), BalanceType.PROJECTED)
     }
 
     it("fails without balance month") {
       val budgetBuilder = BudgetBuilder()
-      val relativeFilePath = "path/file.yaml"
+      val relativeFilePath = Paths.get("path/file.yaml")
       val content = """
       name: test-account
       owner: [ someone ]
@@ -141,7 +142,7 @@ class LoadYamlTest : DescribeSpec({
 
     it("fails with bad balance month") {
       val budgetBuilder = BudgetBuilder()
-      val relativeFilePath = "path/file.yaml"
+      val relativeFilePath = Paths.get("path/file.yaml")
       val content = """
       name: test-account
       owner: [ someone ]
@@ -161,7 +162,7 @@ class LoadYamlTest : DescribeSpec({
 
     it("fails without balance date") {
       val budgetBuilder = BudgetBuilder()
-      val relativeFilePath = "path/file.yaml"
+      val relativeFilePath = Paths.get("path/file.yaml")
       val content = """
       name: test-account
       owner: [ someone ]
@@ -179,8 +180,7 @@ class LoadYamlTest : DescribeSpec({
     }
 
     it("fails with bad balance date") {
-      val budgetBuilder = BudgetBuilder()
-      val relativeFilePath = "path/file.yaml"
+      val relativeFilePath = Paths.get("path/file.yaml")
       val content = """
       name: test-account
       owner: [ someone ]
@@ -197,7 +197,7 @@ class LoadYamlTest : DescribeSpec({
 
     it("fails without balance type") {
       val budgetBuilder = BudgetBuilder()
-      val relativeFilePath = "path/file.yaml"
+      val relativeFilePath = Paths.get("path/file.yaml")
       val content = """
       name: test-account
       owner: [ someone ]
@@ -216,7 +216,7 @@ class LoadYamlTest : DescribeSpec({
 
     it("with projected and confirmed transfers") {
       val budgetBuilder = BudgetBuilder()
-      val relativeFilePath = "path/file.yaml"
+      val relativeFilePath = Paths.get("path/file.yaml")
       val testAccountData = """
       name: test-account
       owner: [ someone ]
@@ -272,7 +272,7 @@ class LoadYamlTest : DescribeSpec({
       )
       val externalAccountTransfers = budget.transfers["external"]!!
       externalAccountTransfers.size shouldBe 1
-      val externalAccountMonthTransfers = externalAccountTransfers.get("Jan2020")
+      val externalAccountMonthTransfers = externalAccountTransfers["Jan2020"]
       externalAccountMonthTransfers shouldBe setOf(
         Transfer(
           fromAccount = testAccount,
@@ -295,7 +295,7 @@ class LoadYamlTest : DescribeSpec({
 
     it("fails with transfer and no grp") {
       val budgetBuilder = BudgetBuilder()
-      val relativeFilePath = "path/test.yaml"
+      val relativeFilePath = Paths.get("path/test.yaml")
       val testAccountData = """
       name: test-account
       owner: [ someone ]
@@ -314,7 +314,7 @@ class LoadYamlTest : DescribeSpec({
 
     it("fails with transfer and no date") {
       val budgetBuilder = BudgetBuilder()
-      val relativeFilePath = "path/test.yaml"
+      val relativeFilePath = Paths.get("path/test.yaml")
       val testAccountData = """
       name: test-account
       owner: [ someone ]
@@ -334,7 +334,7 @@ class LoadYamlTest : DescribeSpec({
 
     it("fails with transfer and too far apart dates") {
       val budgetBuilder = BudgetBuilder()
-      val relativeFilePath = "path/test.yaml"
+      val relativeFilePath = Paths.get("path/test.yaml")
       val testAccountData = """
       name: test-account
       owner: [ someone ]
@@ -354,7 +354,7 @@ class LoadYamlTest : DescribeSpec({
 
     it("fails with transfer and no balance") {
       val budgetBuilder = BudgetBuilder()
-      val relativeFilePath = "path/test.yaml"
+      val relativeFilePath = Paths.get("path/test.yaml")
       val testAccountData = """
       name: test-account
       owner: [ someone ]
