@@ -1,42 +1,12 @@
 package com.cherba29.tally
 
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.schema.GqlBalance
+import com.cherba29.tally.schema.GqlStatement
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query
 import graphql.schema.DataFetchingEnvironment
 import kotlinx.datetime.LocalDate
-
-data class GqlTransaction(
-  val toAccountName: String,
-  val isIncome: Boolean,
-  val isExpense: Boolean,
-  val balance: GqlBalance,
-  val balanceFromStart: Int,
-  val description: String,
-)
-
-data class GqlStatement(
-  val name: String,
-  val month: Month,
-  val isClosed: Boolean,
-  val isCovered: Boolean,
-  val isProjectedCovered: Boolean,
-  val hasProjectedTransfer: Boolean,
-  val startBalance: GqlBalance,
-  val endBalance: GqlBalance,
-  val inFlows: Int,
-  val outFlows: Int,
-  val income: Int,
-  val totalPayments: Int,
-  val totalTransfers: Int,
-  val change: Int,
-  val addSub: Int,
-  val percentChange: Float,
-  val annualizedPercentChange: Float,
-  // TODO: this should be Int.
-  val unaccounted: Float,
-  val transactions: List<GqlTransaction>,
-)
 
 class StatementService : Query {
   @GraphQLDescription("Returns a monthly statement for given account.")
