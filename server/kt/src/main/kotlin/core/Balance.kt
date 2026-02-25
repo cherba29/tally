@@ -13,7 +13,7 @@ enum class BalanceType(val id: String) {
   }
 }
 
-data class Balance(val amount: Double, val date: LocalDate, val type: BalanceType) : Comparable<Balance> {
+data class Balance(val amount: Int, val date: LocalDate, val type: BalanceType) : Comparable<Balance> {
   override fun compareTo(other: Balance): Int {
     val dateDiff = date.compareTo(other.date)
     if (dateDiff != 0) {
@@ -27,16 +27,16 @@ data class Balance(val amount: Double, val date: LocalDate, val type: BalanceTyp
   }
 
   override fun toString(): String {
-    return "Balance { amount: ${String.format("%.2f", amount)}, date: $date, type: ${type.id} }"
+    return "Balance { amount: ${String.format("%.2f", amount / 100.0)}, date: $date, type: ${type.id} }"
   }
 
   companion object {
     // Helper contructor.
-    fun confirmed(amount: Double, date: String): Balance {
+    fun confirmed(amount: Int, date: String): Balance {
       return Balance(amount, LocalDate.parse(date), BalanceType.CONFIRMED)
     }
 
-    fun projected(amount: Double, date: String): Balance {
+    fun projected(amount: Int, date: String): Balance {
       return Balance(amount, LocalDate.parse(date), BalanceType.PROJECTED)
     }
 

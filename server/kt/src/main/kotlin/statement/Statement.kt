@@ -20,31 +20,30 @@ abstract class Statement(
   // Recorded end balance for the statement.
   var endBalance: Balance? = null,
 
-  // TODO: change all these types from Double to Int.
   // Total transaction inflows.
-  var inFlows: Double = 0.0,
+  var inFlows: Int = 0,
 
   // Total transaction outflows.
-  var outFlows: Double = 0.0,
+  var outFlows: Int = 0,
 
   // Amount transferred to other accounts by same owner.
-  var totalTransfers: Double = 0.0,
+  var totalTransfers: Int = 0,
 
   // Amount transferred to external entities.
-  var totalPayments: Double = 0.0,
+  var totalPayments: Int = 0,
 
   // Amount transferred from external entities.
-  var income: Double = 0.0,
+  var income: Int = 0,
 ) {
-  val addSub: Double
+  val addSub: Int
     get() = inFlows + outFlows
-  val change: Double? = startBalance?.let { s ->
+  val change: Int? = startBalance?.let { s ->
     endBalance?.let { e -> e.amount - s.amount }
   }
   val percentChange: Double? = startBalance?.let {
     when (change) {
       null -> null
-      0.0 -> 0.0
+      0 -> 0.0
       else -> (100.0 * change) / it.amount
     }
   }
@@ -53,13 +52,13 @@ abstract class Statement(
     // Don't consider 1000% and more as meaningful annualized numbers.
     if (result < 10) 100 * it.sign * result else null
   }
-  val unaccounted: Double?
+  val unaccounted: Int?
     get() = change?.let { it - addSub }
 
   abstract val isClosed: Boolean
 
   // TODO: make inFlows/outFlows immutable.
-  fun addInFlow(inFlowAmount: Double) {
+  fun addInFlow(inFlowAmount: Int) {
     if (inFlowAmount > 0) {
       inFlows += inFlowAmount
     } else {
@@ -67,7 +66,7 @@ abstract class Statement(
     }
   }
 
-  fun addOutFlow(outFlowAmount: Double) {
+  fun addOutFlow(outFlowAmount: Int) {
     if (outFlowAmount > 0) {
       inFlows += outFlowAmount
     } else {
@@ -76,6 +75,6 @@ abstract class Statement(
   }
 
   fun isEmpty(): Boolean =
-    startBalance == null && endBalance == null && totalTransfers == 0.0 && income == 0.0 &&
-        inFlows == 0.0 && outFlows == 0.0 && totalPayments == 0.0
+    startBalance == null && endBalance == null && totalTransfers == 0 && income == 0 &&
+        inFlows == 0 && outFlows == 0 && totalPayments == 0
 }

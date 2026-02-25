@@ -27,7 +27,7 @@ class SummaryTest : DescribeSpec({
       )
 
       val tranStmt = TransactionStatement(account1, Month.fromString("Mar2021"), startBalance = null)
-      tranStmt.startBalance = Balance(100.0, LocalDate(2023, 12, 2), BalanceType.CONFIRMED)
+      tranStmt.startBalance = Balance(100, LocalDate(2023, 12, 2), BalanceType.CONFIRMED)
       val statements: Map3<SummaryStatement> = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
       val stmt1 = statements["john", "john CHECKING", "Mar2021"]
       stmt1?.account shouldBe Account(name = "john CHECKING", type = AccountType.SUMMARY, owners = listOf("john"))
@@ -65,11 +65,11 @@ class SummaryTest : DescribeSpec({
       )
 
       val tranStmt = TransactionStatement(account1, Month.fromString("Mar2021"), startBalance = null)
-      tranStmt.startBalance = Balance(100.0, LocalDate(2023, 12, 2), BalanceType.CONFIRMED)
+      tranStmt.startBalance = Balance(100, LocalDate(2023, 12, 2), BalanceType.CONFIRMED)
       val statements: Map3<SummaryStatement> = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
       val stmt = statements["john", "john EXTERNAL", "Mar2021"]!!
       stmt.account shouldBe Account(name = "john EXTERNAL", type = AccountType.SUMMARY, owners = listOf("john"))
-      stmt.startBalance shouldBe Balance(100.0, LocalDate(2023, 12, 2), BalanceType.CONFIRMED)
+      stmt.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), BalanceType.CONFIRMED)
       stmt.endBalance shouldBe null
       stmt.inFlows shouldBe 0
       stmt.income shouldBe 0
@@ -90,11 +90,11 @@ class SummaryTest : DescribeSpec({
       )
 
       val tranStmt = TransactionStatement(account1, Month.fromString("Mar2021"), startBalance = null)
-      tranStmt.startBalance = Balance(100.0, LocalDate(2023, 12, 2), BalanceType.CONFIRMED)
+      tranStmt.startBalance = Balance(100, LocalDate(2023, 12, 2), BalanceType.CONFIRMED)
       val statements: Map3<SummaryStatement> = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
       val stmt1 = statements["john", "john CHECKING", "Mar2021"]!!
       stmt1.account shouldBe Account(name = "john CHECKING", type = AccountType.SUMMARY, owners = listOf("john"))
-      stmt1.startBalance shouldBe Balance(100.0, LocalDate(2023, 12, 2), BalanceType.CONFIRMED)
+      stmt1.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), BalanceType.CONFIRMED)
       stmt1.endBalance shouldBe null
       stmt1.inFlows shouldBe 0
       stmt1.income shouldBe 0
@@ -107,7 +107,7 @@ class SummaryTest : DescribeSpec({
 
       val stmt2 = statements["john", "john SUMMARY", "Mar2021"]!!
       stmt2.account shouldBe Account(name = "john SUMMARY", type = AccountType.SUMMARY, owners = listOf("john"))
-      stmt2.startBalance shouldBe Balance(100.0, LocalDate(2023, 12, 2), BalanceType.CONFIRMED)
+      stmt2.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), BalanceType.CONFIRMED)
       stmt2.endBalance shouldBe null
       stmt2.inFlows shouldBe 0
       stmt2.income shouldBe 0

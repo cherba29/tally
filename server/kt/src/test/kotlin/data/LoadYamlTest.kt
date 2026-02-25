@@ -118,8 +118,8 @@ class LoadYamlTest : DescribeSpec({
 
       val balances = budget.balances["test-account"]!!
       balances.size shouldBe 2
-      balances["Jan2020"] shouldBe Balance(0.0, LocalDate.parse("2020-01-01"), BalanceType.CONFIRMED)
-      balances["Feb2020"] shouldBe Balance(1000.0, LocalDate.parse("2020-02-01"), BalanceType.PROJECTED)
+      balances["Jan2020"] shouldBe Balance(0, LocalDate.parse("2020-01-01"), BalanceType.CONFIRMED)
+      balances["Feb2020"] shouldBe Balance(1000, LocalDate.parse("2020-02-01"), BalanceType.PROJECTED)
     }
 
     it("fails without balance month") {
@@ -258,7 +258,7 @@ class LoadYamlTest : DescribeSpec({
           toAccount = externalAccount,
           fromMonth = Month.fromString("Jan2020"),
           toMonth = Month.fromString("Jan2020"),
-          balance = Balance(3750.0, LocalDate.parse("2020-01-17"), BalanceType.PROJECTED),
+          balance = Balance(3750, LocalDate.parse("2020-01-17"), BalanceType.PROJECTED),
           description = null,
         ),
         Transfer(
@@ -266,7 +266,7 @@ class LoadYamlTest : DescribeSpec({
           toAccount = externalAccount,
           fromMonth = Month.fromString("Jan2020"),
           toMonth = Month.fromString("Jan2020"),
-          balance = Balance(-2248.0, LocalDate.parse("2020-01-15"), BalanceType.CONFIRMED),
+          balance = Balance(-2248, LocalDate.parse("2020-01-15"), BalanceType.CONFIRMED),
           description = null,
         ),
       )
@@ -279,7 +279,7 @@ class LoadYamlTest : DescribeSpec({
           toAccount = externalAccount,
           fromMonth = Month.fromString("Jan2020"),
           toMonth = Month.fromString("Jan2020"),
-          balance = Balance(3750.0, LocalDate.parse("2020-01-17"), BalanceType.PROJECTED),
+          balance = Balance(3750, LocalDate.parse("2020-01-17"), BalanceType.PROJECTED),
           description = null,
         ),
         Transfer(
@@ -287,7 +287,7 @@ class LoadYamlTest : DescribeSpec({
           toAccount = externalAccount,
           fromMonth = Month.fromString("Jan2020"),
           toMonth = Month.fromString("Jan2020"),
-          balance = Balance(-2248.0, LocalDate.parse("2020-01-15"), BalanceType.CONFIRMED),
+          balance = Balance(-2248, LocalDate.parse("2020-01-15"), BalanceType.CONFIRMED),
           description = null,
         ),
       )

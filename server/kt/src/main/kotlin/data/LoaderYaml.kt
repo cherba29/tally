@@ -66,13 +66,13 @@ data class YamlData(
 fun lookupAccountType(type: String): AccountType? = AccountType.entries.find { it.id == type }
 
 fun makeBalance(data: BalanceData): Balance {
-  var amount: Double
+  var amount: Int
   var balanceType: BalanceType
   if (data.camt != null) {
-    amount = (100.0 * data.camt).roundToInt().toDouble()
+    amount = (100.0 * data.camt).roundToInt()
     balanceType = BalanceType.CONFIRMED
   } else if (data.pamt != null) {
-    amount = (100.0 * data.pamt).roundToInt().toDouble()
+    amount = (100.0 * data.pamt).roundToInt()
     balanceType = BalanceType.PROJECTED
   } else {
     throw IllegalArgumentException("Balance $data does not have amount type set, expected camt or pamt entry.")
@@ -152,13 +152,13 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
         var balance: Balance? = null
         if (transferData.pamt != null) {
           balance = Balance(
-            (100 * transferData.pamt).roundToInt().toDouble(),
+            (100 * transferData.pamt).roundToInt(),
             transferData.date,
             BalanceType.PROJECTED
           )
         } else if (transferData.camt != null) {
           balance = Balance(
-            (100 * transferData.camt).roundToInt().toDouble(),
+            (100 * transferData.camt).roundToInt(),
             transferData.date,
             BalanceType.CONFIRMED
           )

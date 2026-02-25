@@ -14,7 +14,7 @@ data class Transaction(
   val description: String?,
   val type: Type,
   // TODO: make immutable.
-  var balanceFromStart: Double?
+  var balanceFromStart: Int?
 ) {
   enum class Type {
     UNKNOWN,
@@ -49,7 +49,7 @@ class TransactionStatement(account: Account, month: Month, startBalance: Balance
   override val isClosed: Boolean = account.isClosed(this.month)
 }
 
-fun getTransactionType(fromAccount: Account, toAccount: Account, amount: Double): Transaction.Type {
+fun getTransactionType(fromAccount: Account, toAccount: Account, amount: Int): Transaction.Type {
   return if (toAccount.hasCommonOwner(fromAccount) && !toAccount.isExternal && !fromAccount.isExternal) {
     Transaction.Type.TRANSFER
   } else {
@@ -64,7 +64,7 @@ fun makeTransactionStatement(
   startBalance: Balance?
 ): TransactionStatement {
   val statement = TransactionStatement(account, month, startBalance)
-  val attributeTransfer: (Account, Account, Double) -> Transaction.Type = { fromAccount, toAccount, amount ->
+  val attributeTransfer: (Account, Account, Int) -> Transaction.Type = { fromAccount, toAccount, amount ->
     if (amount > 0) {
       statement.inFlows += amount
     } else {

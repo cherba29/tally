@@ -57,7 +57,7 @@ class LoaderTest : DescribeSpec({
         tranStatement.account.name shouldBe "test-account"
 
         result.budget.balances["test-account"]?.get("Mar2019") shouldBe Balance(
-          10000.0, LocalDate(2019, 3, 1),
+          10000, LocalDate(2019, 3, 1),
           BalanceType.CONFIRMED
         )
       }
@@ -79,7 +79,7 @@ class LoaderTest : DescribeSpec({
       Loader(tallyPath).use { loader ->
         val result1 = loader.loadBudget()
         result1.budget.balances["test-account"]?.get("Mar2019") shouldBe Balance(
-          10000.0, LocalDate(2019, 3, 1),
+          10000, LocalDate(2019, 3, 1),
           BalanceType.CONFIRMED
         )
         val loadedOn = loader.loadedOn
@@ -102,7 +102,7 @@ class LoaderTest : DescribeSpec({
 
         val result2 = loader.loadBudget()
         result2.budget.balances["test-account"]?.get("Mar2019") shouldBe Balance(
-          20000.0, LocalDate(2019, 3, 1),
+          20000, LocalDate(2019, 3, 1),
           BalanceType.CONFIRMED
         )
       }

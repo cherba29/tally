@@ -67,7 +67,7 @@ class TransactionTest : DescribeSpec({
           toAccount = "test-account2",
           toMonth = Month.fromString("Dec2019"),
           fromMonth = Month.fromString("Dec2019"),
-          balance = Balance.projected(2000.0, "2019-12-05"),
+          balance = Balance.projected(2000, "2019-12-05"),
           description = "First transfer",
         )
       )
@@ -90,9 +90,9 @@ class TransactionTest : DescribeSpec({
       )
 
       builder.setAccount(account1)
-      builder.setBalance("test-account1", "Dec2019", Balance.confirmed(10.0, "2019-12-01"))
-      builder.setBalance("test-account1", "Jan2020", Balance.confirmed(20.0, "2020-01-01"))
-      builder.setBalance("test-account1", "Feb2020", Balance.projected(30.0, "2020-02-01"))
+      builder.setBalance("test-account1", "Dec2019", Balance.confirmed(10, "2019-12-01"))
+      builder.setBalance("test-account1", "Jan2020", Balance.confirmed(20, "2020-01-01"))
+      builder.setBalance("test-account1", "Feb2020", Balance.projected(30, "2020-02-01"))
       builder.setAccount(account2)
       builder.addTransfer(
         TransferData(
@@ -100,7 +100,7 @@ class TransactionTest : DescribeSpec({
           toAccount = "test-account2",
           toMonth = Month.fromString("Dec2019"),
           fromMonth = Month.fromString("Dec2019"),
-          balance = Balance.projected(2000.0, "2019-12-05"),
+          balance = Balance.projected(2000, "2019-12-05"),
           description = "First transfer",
         )
       )
@@ -111,7 +111,7 @@ class TransactionTest : DescribeSpec({
           toAccount = "test-account2",
           toMonth = Month.fromString("Dec2019"),
           fromMonth = Month.fromString("Dec2019"),
-          balance = Balance.projected(1000.0, "2019-12-05"),
+          balance = Balance.projected(1000, "2019-12-05"),
           description = "Second transfer",
         )
       )
@@ -136,9 +136,9 @@ class TransactionTest : DescribeSpec({
       )
 
       builder.setAccount(account1)
-      builder.setBalance("test-account1", "Dec2019", Balance.confirmed(10.0, "2019-12-01"))
-      builder.setBalance("test-account1", "Jan2020", Balance.confirmed(20.0, "2020-01-01"))
-      builder.setBalance("test-account1", "Feb2020", Balance.projected(30.0, "2020-02-01"))
+      builder.setBalance("test-account1", "Dec2019", Balance.confirmed(10, "2019-12-01"))
+      builder.setBalance("test-account1", "Jan2020", Balance.confirmed(20, "2020-01-01"))
+      builder.setBalance("test-account1", "Feb2020", Balance.projected(30, "2020-02-01"))
       builder.setAccount(account2)
       builder.addTransfer(
         TransferData(
@@ -146,7 +146,7 @@ class TransactionTest : DescribeSpec({
           toAccount = "test-account2",
           toMonth = Month.fromString("Dec2019"),
           fromMonth = Month.fromString("Dec2019"),
-          balance = Balance.projected(2000.0, "2019-12-05"),
+          balance = Balance.projected(2000, "2019-12-05"),
           description = "First transfer",
         )
       )
@@ -157,7 +157,7 @@ class TransactionTest : DescribeSpec({
           toAccount = "test-account2",
           toMonth = Month.fromString("Dec2019"),
           fromMonth = Month.fromString("Dec2019"),
-          balance = Balance.projected(1000.0, "2019-12-05"),
+          balance = Balance.projected(1000, "2019-12-05"),
           description = "Second transfer",
         )
       )
@@ -176,16 +176,16 @@ class TransactionTest : DescribeSpec({
         owners = listOf("john"),
       )
       builder.setAccount(account1)
-      builder.setBalance("test-account1", "Dec2019", Balance.confirmed(10.0, "2019-12-01"))
-      builder.setBalance("test-account1", "Jan2020", Balance.confirmed(20.0, "2020-01-01"))
-      builder.setBalance("test-account1", "Feb2020", Balance.projected(30.0, "2020-02-01"))
+      builder.setBalance("test-account1", "Dec2019", Balance.confirmed(10, "2019-12-01"))
+      builder.setBalance("test-account1", "Jan2020", Balance.confirmed(20, "2020-01-01"))
+      builder.setBalance("test-account1", "Feb2020", Balance.projected(30, "2020-02-01"))
       builder.addTransfer(
         TransferData(
           fromAccount = "test-account1",
           toAccount = "test-account1",
           toMonth = Month.fromString("Dec2019"),
           fromMonth = Month.fromString("Dec2019"),
-          balance = Balance.projected(2000.0, "2019-12-05"),
+          balance = Balance.projected(2000, "2019-12-05"),
           description = "First transfer",
         )
       )
@@ -204,14 +204,14 @@ class TransactionTest : DescribeSpec({
         owners = listOf("john"),
       )
       builder.setAccount(account1)
-      builder.setBalance("test-account1", "Dec2019", Balance.confirmed(10.0, "2019-12-01"))
+      builder.setBalance("test-account1", "Dec2019", Balance.confirmed(1000, "2019-12-01"))
       builder.addTransfer(
         TransferData(
           fromAccount = "test-account1",
           toAccount = "test-account1",
           toMonth = Month.fromString("Dec2019"),
           fromMonth = Month.fromString("Dec2019"),
-          balance = Balance.projected(2000.0, "2019-11-25"),
+          balance = Balance.projected(2000, "2019-11-25"),
           description = "First transfer",
         )
       )
@@ -220,7 +220,7 @@ class TransactionTest : DescribeSpec({
         shouldThrow<java.lang.IllegalStateException> { buildTransactionStatementTable(builder.build(), owner = null) }
       exception.message shouldBe "Balance Dec2019 Balance { amount: 10.00, date: 2019-12-01, type: CONFIRMED } " +
           "for account test-account1 starts after transaction test-account1 --> " +
-          "test-account1/Balance { amount: 2000.00, date: 2019-11-25, type: PROJECTED } " +
+          "test-account1/Balance { amount: 20.00, date: 2019-11-25, type: PROJECTED } " +
           "desc 'First transfer'"
     }
 
@@ -233,14 +233,14 @@ class TransactionTest : DescribeSpec({
         closedOn = Month.fromString("Nov2019")  // closed before TransactionStatement month
       )
       builder.setAccount(account1)
-      builder.setBalance("test-account1", "Dec2019", Balance.confirmed(10.0, "2019-12-01"))
+      builder.setBalance("test-account1", "Dec2019", Balance.confirmed(10, "2019-12-01"))
       builder.addTransfer(
         TransferData(
           fromAccount = "test-account1",
           toAccount = "test-account1",
           toMonth = Month.fromString("Dec2019"),
           fromMonth = Month.fromString("Dec2019"),
-          balance = Balance.projected(2000.0, "2019-12-05"),
+          balance = Balance.projected(2000, "2019-12-05"),
           description = "First transfer",
         )
       )
@@ -272,16 +272,16 @@ class TransactionTest : DescribeSpec({
       builder.setAccount(account1)
       builder.setAccount(account2)
       builder.setAccount(account3)
-      builder.setBalance("test-account1", "Dec2019", Balance.confirmed(10.0, "2019-12-01"))
-      builder.setBalance("test-account2", "Dec2019", Balance.confirmed(10.0, "2019-12-01"))
-      builder.setBalance("test-account3", "Dec2019", Balance.confirmed(10.0, "2019-12-01"))
+      builder.setBalance("test-account1", "Dec2019", Balance.confirmed(10, "2019-12-01"))
+      builder.setBalance("test-account2", "Dec2019", Balance.confirmed(10, "2019-12-01"))
+      builder.setBalance("test-account3", "Dec2019", Balance.confirmed(10, "2019-12-01"))
       builder.addTransfer(
         TransferData(
           fromAccount = "test-account1",
           toAccount = "test-account2",
           toMonth = Month.fromString("Dec2019"),
           fromMonth = Month.fromString("Dec2019"),
-          balance = Balance.projected(2000.0, "2019-12-05"),
+          balance = Balance.projected(2000, "2019-12-05"),
           description = "First transfer",
         )
       )
@@ -292,7 +292,7 @@ class TransactionTest : DescribeSpec({
           toAccount = "test-account3",
           toMonth = Month.fromString("Dec2019"),
           fromMonth = Month.fromString("Dec2019"),
-          balance = Balance.projected(1000.0, "2019-12-05"),
+          balance = Balance.projected(1000, "2019-12-05"),
           description = "Second transfer",
         )
       )
