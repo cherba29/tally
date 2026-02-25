@@ -45,8 +45,8 @@ data class GqlStatement(
   val isCovered: Boolean,
   val isProjectedCovered: Boolean,
   val hasProjectedTransfer: Boolean,
-  val startBalance: GqlBalance,
-  val endBalance: GqlBalance,
+  val startBalance: GqlBalance?,
+  val endBalance: GqlBalance?,
   val inFlows: Int,
   val outFlows: Int,
   val income: Int,
@@ -75,8 +75,8 @@ data class GqlSummaryStatement(
   val totalPayments: Int,
   val totalTransfers: Int,
   val unaccounted: Int,
-  val endBalance: GqlBalance,
-  val startBalance: GqlBalance,
+  val endBalance: GqlBalance?,
+  val startBalance: GqlBalance?,
 )
 
 data class GqlSummaryData(val statements: List<GqlStatement>, val total: GqlSummaryStatement)
@@ -85,14 +85,14 @@ data class GqlTableCell(
   val month: Month,
   val isClosed: Boolean,
   val addSub: Int,
-  val balance: Int,
+  val balance: Int?,
   val isProjected: Boolean,
   val isCovered: Boolean,
   val isProjectedCovered: Boolean,
   val hasProjectedTransfer: Boolean,
   val percentChange: Float,
   val annualizedPercentChange: Float,
-  val unaccounted: Int,
+  val unaccounted: Int?,
   val balanced: Boolean,
 )
 

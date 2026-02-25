@@ -143,7 +143,7 @@ class ApplicationTest : DescribeSpec({
           addSub: Int!
           annualizedPercentChange: Float!
           change: Int!
-          endBalance: GqlBalance!
+          endBalance: GqlBalance
           hasProjectedTransfer: Boolean!
           inFlows: Int!
           income: Int!
@@ -154,7 +154,7 @@ class ApplicationTest : DescribeSpec({
           name: String!
           outFlows: Int!
           percentChange: Float!
-          startBalance: GqlBalance!
+          startBalance: GqlBalance
           totalPayments: Int!
           totalTransfers: Int!
           transactions: [GqlTransaction!]!
@@ -171,14 +171,14 @@ class ApplicationTest : DescribeSpec({
           addSub: Int!
           annualizedPercentChange: Float!
           change: Int!
-          endBalance: GqlBalance!
+          endBalance: GqlBalance
           inFlows: Int!
           income: Int!
           month: GqlMonth!
           name: String!
           outFlows: Int!
           percentChange: Float!
-          startBalance: GqlBalance!
+          startBalance: GqlBalance
           totalPayments: Int!
           totalTransfers: Int!
           unaccounted: Int!
@@ -194,7 +194,7 @@ class ApplicationTest : DescribeSpec({
         type GqlTableCell {
           addSub: Int!
           annualizedPercentChange: Float!
-          balance: Int!
+          balance: Int
           balanced: Boolean!
           hasProjectedTransfer: Boolean!
           isClosed: Boolean!
@@ -203,7 +203,7 @@ class ApplicationTest : DescribeSpec({
           isProjectedCovered: Boolean!
           month: GqlMonth!
           percentChange: Float!
-          unaccounted: Int!
+          unaccounted: Int
         }
       
         type GqlTableRow {

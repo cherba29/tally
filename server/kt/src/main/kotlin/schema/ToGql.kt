@@ -1,0 +1,98 @@
+package com.cherba29.tally.schema
+
+import com.cherba29.tally.core.Account
+import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.BalanceType
+import com.cherba29.tally.statement.SummaryStatement
+import com.cherba29.tally.statement.Transaction
+import com.cherba29.tally.statement.TransactionStatement
+
+fun Account.toGql(): GqlAccount = GqlAccount(
+  name = name,
+  description = description ?: "",
+  path = path,
+  type = typeIdName,
+  external = isExternal,
+  summary = isSummary,
+  number = number,
+  openedOn = openedOn,
+  closedOn = closedOn,
+  owners = owners,
+  url = url ?: "",
+  address = address ?: "",
+  userName = userName ?: "",
+  password = password ?: "",
+  phone = phone ?: "",
+)
+
+fun BalanceType.toGql() = id
+
+fun Balance.toGql(): GqlBalance = GqlBalance(
+  amount = amount,
+  date = date,
+  type = type.toGql()
+)
+
+fun Transaction.toGql(): GqlTransaction = GqlTransaction(
+  toAccountName = account.name,
+  isIncome = type == Transaction.Type.INCOME,
+  isExpense = type == Transaction.Type.EXPENSE,
+  balance = balance.toGql(),
+  balanceFromStart = balanceFromStart ?: 0,
+  description = description ?: ""
+)
+
+fun TransactionStatement.toGql(): GqlStatement = GqlStatement(
+  name = account.name,
+  month = month,
+  isClosed = account.isClosed(month),
+  isCovered = isCovered,
+  isProjectedCovered = isProjectedCovered,
+  hasProjectedTransfer = hasProjectedTransfer,
+  startBalance = startBalance?.toGql(),
+  endBalance = endBalance?.toGql(),
+  inFlows = inFlows,
+  outFlows = outFlows,
+  income = income,
+  totalPayments = totalPayments,
+  totalTransfers = totalTransfers,
+  change = change ?: 0,
+  addSub = addSub,
+  percentChange = percentChange?.toFloat() ?: 0.0f,
+  annualizedPercentChange = annualizedPercentChange?.toFloat() ?: 0.0f,
+  unaccounted = unaccounted?.toFloat() ?: 0.0f,
+  transactions = transactions.map { it.toGql() }
+)
+
+fun TransactionStatement.toGqlTableCell(): GqlTableCell = GqlTableCell(
+  month = month,
+  isClosed = isClosed,
+  addSub = addSub,
+  balance = endBalance?.amount,
+  isProjected = endBalance?.type != BalanceType.CONFIRMED || hasProjectedTransfer,
+  isCovered = isCovered,
+  isProjectedCovered = isProjectedCovered,
+  hasProjectedTransfer = hasProjectedTransfer,
+  percentChange = percentChange?.toFloat() ?: 0.0f,
+  annualizedPercentChange = annualizedPercentChange?.toFloat() ?: 0.0f,
+  unaccounted = unaccounted,
+  balanced = unaccounted == null || unaccounted == 0
+)
+
+fun SummaryStatement.toGql(): GqlSummaryStatement = GqlSummaryStatement(
+  name = account.name,
+  month = month,
+  accounts = statements.map { it.account.name }.sorted(),
+  addSub = addSub,
+  income = income,
+  change = change ?: 0,
+  inFlows = inFlows,
+  outFlows = outFlows,
+  percentChange = percentChange?.toFloat() ?: 0.0f,
+  annualizedPercentChange = annualizedPercentChange?.toFloat() ?: 0.0f,
+  totalPayments = totalPayments,
+  totalTransfers = totalTransfers,
+  unaccounted = unaccounted ?: 0,
+  endBalance = endBalance?.toGql(),
+  startBalance = startBalance?.toGql()
+)
