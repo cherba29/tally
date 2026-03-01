@@ -3,6 +3,7 @@ package com.cherba29.tally.schema
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.BalanceType
+import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.statement.TransactionStatement
@@ -73,6 +74,21 @@ fun TransactionStatement.toGqlTableCell(): GqlTableCell = GqlTableCell(
   isCovered = isCovered,
   isProjectedCovered = isProjectedCovered,
   hasProjectedTransfer = hasProjectedTransfer,
+  percentChange = percentChange?.toFloat() ?: 0.0f,
+  annualizedPercentChange = annualizedPercentChange?.toFloat() ?: 0.0f,
+  unaccounted = unaccounted,
+  balanced = unaccounted == null || unaccounted == 0
+)
+
+fun Statement.toGqlTableCell(): GqlTableCell = GqlTableCell(
+  month = month,
+  isClosed = isClosed,
+  addSub = addSub,
+  balance = endBalance?.amount,
+  isProjected = endBalance?.type != BalanceType.CONFIRMED,
+  isCovered = false,
+  isProjectedCovered = false,
+  hasProjectedTransfer = false,
   percentChange = percentChange?.toFloat() ?: 0.0f,
   annualizedPercentChange = annualizedPercentChange?.toFloat() ?: 0.0f,
   unaccounted = unaccounted,

@@ -1,6 +1,21 @@
 ktor:
-    application:
-        modules:
-            - com.cherba29.tally.ApplicationKt.graphQLModule
-    deployment:
-        port: 8080
+  application:
+    modules:
+      - com.cherba29.tally.ApplicationKt.graphQLModule
+  deployment:
+    port: 8080
+    # TODO: configure these EngineMain settings.
+    # See https://ktor.io/docs/server-configuration-file.html#predefined-properties
+    # connectionGroupSize: 2
+    # workerGroupSize: 5
+    # callGroupSize: 10
+    # shutdownGracePeriod: 2000
+    # shutdownTimeout: 3000
+    # TODO: configure these Netty settings.
+    # maxInitialLineLength: 2048
+    # maxHeaderSize: 1024
+    # maxChunkSize: 42
+
+tally:
+  # https://ktor.io/docs/server-configuration-file.html#environment-variables
+  path: '$TALLY_FILES:123'

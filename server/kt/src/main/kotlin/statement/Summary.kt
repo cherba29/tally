@@ -4,16 +4,19 @@ import com.cherba29.tally.Map3
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.AccountType
 import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.Month
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sign
+import kotlinx.datetime.LocalDate
 
 class SummaryStatement(account: Account, month: Month, val startMonth: Month) : Statement(account, month) {
   val statements: MutableList<Statement> = mutableListOf()
 
   override val isClosed: Boolean
-    get () = statements.any { statement -> statement.isClosed }
+    get() = statements.any { statement -> statement.isClosed }
 
   override val annualizedPercentChange: Double?
     get() {
@@ -31,7 +34,8 @@ class SummaryStatement(account: Account, month: Month, val startMonth: Month) : 
   fun addStatement(statement: Statement) {
     if (statement.month.compareTo(month) != 0) {
       throw IllegalArgumentException(
-          "${statement.account.name} statement for month ${statement.month} is being added to summary for month $month")
+        "${statement.account.name} statement for month ${statement.month} is being added to summary for month $month"
+      )
     }
     if (statement.isClosed) {
       // Does not contribute to the summary.
@@ -58,8 +62,8 @@ class SummaryStatement(account: Account, month: Month, val startMonth: Month) : 
   fun mergeStatement(statement: SummaryStatement) {
     if (statement.month.compareTo(month) != 0) {
       throw IllegalArgumentException(
-          "${statement.account.name} statement for month ${statement.month} is being added to summary for month $month"
-          )
+        "${statement.account.name} statement for month ${statement.month} is being added to summary for month $month"
+      )
     }
     if (statement.isClosed) {
       // Does not contribute to the summary.
@@ -93,7 +97,8 @@ class SummaryStatementAggregator {
     val summaryAccount = getAccount(summaryName, owner, statement.account.path)
 
     val accountMonthSummaryStatement = summaryStatements.getDefault(
-      owner, summaryAccount.name, statement.month.toString()) {
+      owner, summaryAccount.name, statement.month.toString()
+    ) {
       SummaryStatement(summaryAccount, statement.month, startMonth = statement.month)
     }
     accountMonthSummaryStatement.addStatement(statement)
@@ -103,7 +108,7 @@ class SummaryStatementAggregator {
     val key = "$owner - $name"
     var account = summaryAccounts[key]
     if (account == null) {
-      account = Account(name, type = AccountType.SUMMARY, owners = listOf(owner), path = path.slice(0.. path.size-2))
+      account = Account(name, type = AccountType.SUMMARY, owners = listOf(owner), path = path.slice(0..path.size - 2))
       summaryAccounts[key] = account
     }
     return account
@@ -156,7 +161,7 @@ class SummaryStatementAggregator {
         val path = account.path
         var entry = "/" + owner + account.name
         for (sub in path.size downTo 0) {
-          val subPath = path.slice(0.. sub)
+          val subPath = path.slice(0..sub)
           val subPathId = '/' + owner + '/' + subPath.joinToString("/")
           var subTreeEntry = tree[subPathId]
           if (subTreeEntry == null) {
@@ -205,22 +210,165 @@ fun buildSummaryStatementTable(
   val statementsAggregator = SummaryStatementAggregator()
   for (statement in statements) {
     for (owner in statement.account.owners) {
-    if (selectedOwner != null && owner != selectedOwner || statement.isEmpty()) {
-      continue
+      if (selectedOwner != null && owner != selectedOwner || statement.isEmpty()) {
+        continue
+      }
+      val summariesToAddTo = mutableListOf(owner + ' ' + statement.account.typeIdName, "$owner SUMMARY")
+      if (statement.account.path.isNotEmpty()) {
+        summariesToAddTo.add('/' + statement.account.path.joinToString("/"))
+      }
+      for (summaryName in summariesToAddTo) {
+        if (statement.account.isExternal && summaryName.contains("SUMMARY")) {
+          continue
+        }
+        statementsAggregator.addStatement(summaryName, owner, statement)
+      }
     }
-    val summariesToAddTo = mutableListOf(owner + ' ' + statement.account.typeIdName, "$owner SUMMARY")
-    if (statement.account.path.isNotEmpty()) {
-      summariesToAddTo.add('/' + statement.account.path.joinToString("/"))
-    }
-    for (summaryName in summariesToAddTo) {
-    if (statement.account.isExternal && summaryName.contains("SUMMARY")) {
-      continue
-    }
-    statementsAggregator.addStatement(summaryName, owner, statement)
-  }
-  }
   }
   // statementsAggregator.propagateUpThePath()
   statementsAggregator.propagateUpThePath2()
   return statementsAggregator.summaryStatements
+}
+
+fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): SummaryStatement {
+  if (summaryStatements.isEmpty()) {
+    throw IllegalArgumentException("Cant combine empty list of summary statements")
+  }
+  var stmtName: String? = null
+  var owners: List<String> = listOf()
+  var minMonth: Month? = null
+  var maxMonth: Month? = null
+  // Map of 'account name' -> month -> 'summary statement'.
+  val accountStatements = mutableMapOf<String, MutableMap<String, Statement>>()
+
+  for (summaryStmt in summaryStatements) {
+    if (stmtName == null) {
+      stmtName = summaryStmt.account.name
+      owners = summaryStmt.account.owners
+    } else if (stmtName !== summaryStmt.account.name) {
+      throw IllegalArgumentException(
+        "Cant combine different summary statements $stmtName and ${summaryStmt.account.name}"
+      )
+    }
+    if (minMonth == null || summaryStmt.month < minMonth) {
+      minMonth = summaryStmt.month
+    }
+    if (maxMonth == null || maxMonth < summaryStmt.month) {
+      maxMonth = summaryStmt.month
+    }
+    for (stmt in summaryStmt.statements) {
+      var accountMontlyStatements = accountStatements[stmt.account.name]
+      if (accountMontlyStatements == null) {
+        accountMontlyStatements = mutableMapOf()
+        accountStatements[stmt.account.name] = accountMontlyStatements
+      }
+      val monthStatement = accountMontlyStatements[stmt.month.toString()]
+      if (monthStatement == null) {
+        throw IllegalArgumentException("Duplicate month statement for ${stmt.account.name} for ${stmt.month}")
+      }
+      accountMontlyStatements[stmt.month.toString()] = stmt
+    }
+  }
+  if (stmtName == null) {
+    throw IllegalArgumentException("Statements do not have name set.")
+  }
+  if (minMonth == null) {
+    throw IllegalArgumentException("Could not determine start month")
+  }
+  if (maxMonth == null) {
+    throw IllegalArgumentException("Could not determine end month")
+  }
+  val summaryAccount = Account(name = stmtName, type = AccountType.SUMMARY, owners = owners)
+  val combined = SummaryStatement(summaryAccount, maxMonth, minMonth)
+  for ((acctName, acctStatements) in accountStatements) {
+    // Combine all statements for a given account over all months in the range.
+    val stmt = combineAccountStatements(
+      Account(name = acctName, type = AccountType.SUMMARY, owners = listOf()),
+      minMonth,
+      maxMonth,
+      acctStatements
+    )
+    combined.addStatement(stmt)
+  }
+  return combined
+}
+
+class CombinedStatement(account: Account, month: Month, val startMonth: Month) : Statement(account, month) {
+  override val annualizedPercentChange: Double?
+    get() {
+      val prctChange = percentChange
+      if (prctChange == null) {
+        return null
+      }
+      val numberOfMonths = month - startMonth + 1
+      val annualFrequency = 12.0 / numberOfMonths
+      val result = (1 + abs(prctChange) / 100).pow(annualFrequency) - 1
+      // Annualized percentage change is not that meaningful if large.
+      return if (result < 10) 100 * prctChange.sign * result else null
+    }
+
+  override val isClosed: Boolean get() = false
+}
+
+class EmptyStatement(account: Account, month: Month) : Statement(account, month) {
+  override val isClosed: Boolean get() = false
+}
+
+fun makeProxyStatement(
+  account: Account,
+  month: Month,
+  currStmt: Statement?,
+  prevStmt: Statement?,
+  nextStmt: Statement?
+): Statement {
+  val stmt = currStmt ?: EmptyStatement(account, month)
+  if (stmt.startBalance == null) {
+    // TODO: define Month.toDate() extension function.
+    stmt.startBalance =
+      prevStmt?.endBalance ?: Balance(0, LocalDate(month.year, month.month + 1, 1), BalanceType.PROJECTED)
+  }
+  if (stmt.endBalance == null) {
+    stmt.endBalance =
+      nextStmt?.startBalance ?: Balance(0, LocalDate(month.year, month.month + 1, 1), BalanceType.PROJECTED)
+  }
+  return stmt
+}
+
+fun combineAccountStatements(
+  account: Account,
+  startMonth: Month,
+  endMonth: Month,
+  stmts: Map<String, Statement>
+): Statement {
+  val combined = CombinedStatement(account, endMonth, startMonth)
+  // TODO: define rangeTo operator for month to iterate in the loop.
+  var currentMonth = startMonth
+  while (startMonth < endMonth) {
+    val stmt: Statement = makeProxyStatement(
+      account,
+      currentMonth,
+      stmts[currentMonth.toString()],
+      stmts[currentMonth.previous().toString()],
+      stmts[currentMonth.next().toString()]
+    )
+    if (
+      combined.startBalance == null ||
+      (stmt.startBalance != null && combined.startBalance!!.date > stmt.startBalance!!.date)
+    ) {
+      combined.startBalance = stmt.startBalance
+    }
+    if (
+      combined.endBalance == null ||
+      (stmt.endBalance != null && combined.endBalance!!.date < stmt.endBalance!!.date)
+    ) {
+      combined.endBalance = stmt.endBalance
+    }
+    combined.addInFlow(stmt.inFlows)
+    combined.addOutFlow(stmt.outFlows)
+    combined.totalTransfers += stmt.totalTransfers
+    combined.totalPayments += stmt.totalPayments
+    combined.income += stmt.income
+    currentMonth = currentMonth.next()
+  }
+  return combined
 }

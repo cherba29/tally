@@ -1,6 +1,12 @@
 package com.cherba29.tally
 
 import com.expediagroup.graphql.server.types.GraphQLRequest
+import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.core.test.TestScope
+import io.kotest.engine.spec.tempdir
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
@@ -10,19 +16,28 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.jackson.jackson
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.config.MapApplicationConfig
+import io.ktor.server.config.mergeWith
+import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
-import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldContain
+
+fun ApplicationTestBuilder.configureTestClient(tallyPath: String?) {
+  application {
+    graphQLModule()
+  }
+  environment {
+    if (tallyPath != null) {
+      config = config.mergeWith(MapApplicationConfig("tally.path" to tallyPath))
+    }
+  }
+}
 
 class ApplicationTest : DescribeSpec({
+  val tallyPath = tempdir("tally-", keepOnFailure = false).path
   describe("routing") {
     it("root") {
       testApplication {
-        application {
-          graphQLModule()
-        }
+        configureTestClient(tallyPath)
         val response = client.get("/")
         response.status shouldBe HttpStatusCode.OK
         response.bodyAsText() shouldBe "Hello gql World!"
@@ -30,9 +45,7 @@ class ApplicationTest : DescribeSpec({
     }
     it("server should return Bad Request for invalid GET requests") {
       testApplication {
-        application {
-          graphQLModule()
-        }
+        configureTestClient(tallyPath)
         val response = client.get("/graphql")
         response.status shouldBe HttpStatusCode.BadRequest
       }
@@ -40,9 +53,7 @@ class ApplicationTest : DescribeSpec({
 
     it("server should return Method Not Allowed for Mutation GET requests") {
       testApplication {
-        application {
-          graphQLModule()
-        }
+        configureTestClient(tallyPath)
         val response = client.get("/graphql") {
           parameter("query", "mutation { foo }")
         }
@@ -52,10 +63,7 @@ class ApplicationTest : DescribeSpec({
 
     it("server should handle valid POST requests") {
       testApplication {
-        application {
-          graphQLModule()
-
-        }
+        configureTestClient(tallyPath)
         val client = createClient {
           install(ContentNegotiation) {
             jackson()
@@ -230,9 +238,9 @@ class ApplicationTest : DescribeSpec({
           "Returns a monthly statement for given account."
           statement(account: String!, month: String!, owner: String!): GqlStatement!
           "Generates delta summary table between two months."
-          summary(endMonth: GqlMonth!, owner: String!, startMonth: GqlMonth!): GqlSummaryData!
+          summary(accountType: String!, endMonth: GqlMonth!, owner: String!, startMonth: GqlMonth!): GqlSummaryData!
           "Generates full tally table in given month range."
-          table(endMonth: GqlMonth!, owner: String!, startMonth: GqlMonth!): GqlTable!
+          table(endMonth: GqlMonth!, owner: String, startMonth: GqlMonth!): GqlTable!
         }
         
         "Date representation in YYYY-MM-DD format."
@@ -242,9 +250,7 @@ class ApplicationTest : DescribeSpec({
         scalar GqlMonth
         """.trimIndent()
       testApplication {
-        application {
-          graphQLModule()
-        }
+        configureTestClient(tallyPath)
 
         val response = client.get("/sdl")
         response.status shouldBe HttpStatusCode.OK
@@ -254,9 +260,7 @@ class ApplicationTest : DescribeSpec({
 
     it("server should provide GraphiQL endpoint") {
       testApplication {
-        application {
-          graphQLModule()
-        }
+        configureTestClient(tallyPath)
 
         val response = client.get("/graphiql")
 
