@@ -160,7 +160,7 @@ class SummaryStatementAggregator {
         if (!account.name.startsWith('/')) continue
         val path = account.path
         var entry = "/" + owner + account.name
-        for (sub in path.size downTo 0) {
+        for (sub in path.lastIndex downTo 0) {
           val subPath = path.slice(0..sub)
           val subPathId = '/' + owner + '/' + subPath.joinToString("/")
           var subTreeEntry = tree[subPathId]

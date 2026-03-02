@@ -213,10 +213,10 @@ class CustomProblemHandler : DeserializationProblemHandler() {
     propertyName: String?
   ): Boolean {
     if (propertyName != null) {
-      yamlIgnoredFields.add(propertyName)
+      yamlIgnoredFields.add(p.parsingContext.pathAsPointer(false).toString())
     }
-    // Return true to tell Jackson to ignore the field and continue deserialization
-    return true
+    p.skipChildren()  // Skip the unknown property's value
+    return true  // Mark as handled
   }
 }
 
@@ -231,10 +231,11 @@ fun parseYamlContent(content: String, relativeFilePath: Path): YamlData? {
   val result = try {
     mapper.readValue(content, YamlData::class.java)
   } catch (e: JsonMappingException) {
+    logger.error { "Failed to parse $relativeFilePath: ${e.message}" }
     throw IllegalArgumentException(e.message + " while processing $relativeFilePath", e)
   }
   if (problemHandler.ignoredFields.isNotEmpty()) {
-    logger.warn { "Unknown ignored fields: ${problemHandler.ignoredFields}" }
+    logger.warn { "Unknown ignored fields: ${problemHandler.ignoredFields} in $relativeFilePath" }
   }
   return result
 }
@@ -243,6 +244,7 @@ fun loadYamlFile(budgetBuilder: BudgetBuilder, accountData: YamlData, relativeFi
   try {
     processYamlData(budgetBuilder, accountData)
   } catch (e: IllegalArgumentException) {
+    logger.error { e.javaClass.simpleName + ": " + e.message }
     throw IllegalArgumentException(e.message + " while processing $relativeFilePath", e)
   } catch (e: Exception) {
     val message = " while processing $relativeFilePath"

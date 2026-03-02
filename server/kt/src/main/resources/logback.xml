@@ -1,12 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration>
+
 <configuration>
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-        </encoder>
-    </appender>
-    <root level="INFO">
-        <appender-ref ref="STDOUT"/>
-    </root>
-    <logger name="org.eclipse.jetty" level="INFO"/>
-    <logger name="io.netty" level="INFO"/>
+<import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
+<import class="ch.qos.logback.core.ConsoleAppender"/>
+
+<appender name="STDOUT" class="ConsoleAppender">
+    <encoder class="PatternLayoutEncoder">
+        <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %.-1level %logger{36}:%L -%kvp- %msg%n</pattern>
+    </encoder>
+</appender>
+
+<appender name="ASYNC_STDOUT" class="ch.qos.logback.classic.AsyncAppender">
+    <appender-ref ref="STDOUT"/>
+    <!-- https://logback.qos.ch/manual/appenders.html#asyncIncludeCallerData -->
+    <includeCallerData>true</includeCallerData>
+    <queueSize>512</queueSize>
+    <discardingThreshold>0</discardingThreshold>
+</appender>
+
+<timestamp key="currentDateTime" datePattern="yyyyMMdd'-'HHmmss"/>
+
+<appender name="FILE" class="ch.qos.logback.core.FileAppender">
+    <file>${user.home}/calcetin-${currentDateTime}.log</file>
+    <append>false</append>
+    <encoder>
+        <pattern>%6relative [%thread] %.-1level %logger{36}:%L -%kvp- %msg%n</pattern>
+    </encoder>
+</appender>
+
+<!-- Stop output INFO at start -->
+<statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+<logger name="custom-logger" level="TRACE" additivity="false">
+    <appender-ref ref="FILE" />
+</logger>
+<logger name="org.eclipse.jetty" level="INFO"/>
+<logger name="io.netty" level="INFO"/>
+
+<root level="DEBUG">
+    <appender-ref ref="ASYNC_STDOUT"/>
+    <appender-ref ref="FILE" />
+</root>
 </configuration>

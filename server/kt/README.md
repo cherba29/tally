@@ -44,3 +44,58 @@ query {
   hello
 }
 ```
+
+or more complex
+
+```
+query {
+  statement (
+    account: "Chase_1774"
+    month: "Feb2026"
+    owner: "arthur"
+  ) {
+    name
+    month
+    outFlows
+    income
+    totalPayments
+    totalTransfers
+    isClosed
+    isCovered
+    isProjectedCovered
+    hasProjectedTransfer
+    change
+    addSub
+    percentChange
+    annualizedPercentChange
+    unaccounted
+    startBalance {
+      amount
+      date
+      type
+      __typename
+    }
+    endBalance {
+      amount
+      date
+      type
+      __typename
+    }
+    transactions {
+      toAccountName
+      isIncome
+      isExpense
+      balance {
+        amount
+        date
+        type
+        __typename
+      }
+      balanceFromStart
+      description
+      __typename
+    }
+    __typename
+  }
+}
+```
