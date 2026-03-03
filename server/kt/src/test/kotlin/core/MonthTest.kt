@@ -166,6 +166,20 @@ class MonthTest : DescribeSpec({
     }
   }
 
+  describe("toDate") {
+    it("first month") {
+      val date = LocalDate(2020, 1, 1)
+      val month = Month.fromDate(date)
+      month.toDate() shouldBe date
+    }
+
+    it("last month") {
+      val date = LocalDate(2020, 12, 31)
+      val month = Month.fromDate(date)
+      month.toDate() shouldBe LocalDate(date.year, date.month, 1)
+    }
+  }
+
   describe("fromDate") {
     it("first month") {
       val month = Month.fromDate(LocalDate(2020, 1, 1))
@@ -192,6 +206,69 @@ class MonthTest : DescribeSpec({
       val jan = dec.next()
       val end = Month(2020, 1)
       Month.generate(start, end).toList() shouldBe listOf(start, dec, jan)
+    }
+  }
+
+  describe("rangeTo") {
+    it("empty") {
+      val start = Month(2019, 10)
+      (start..start.previous()).toList() shouldBe listOf()
+    }
+
+    it("is inclusive") {
+      val start = Month(2019, 10)
+      (start..start.previous()).toList() shouldBe listOf()
+    }
+
+    it("contains") {
+      val start = Month(2019, 10)
+      val dec = start.next()
+      val jan = dec.next()
+      val end = Month(2020, 1)
+      (start in start..end) shouldBe true
+      (dec in start..end) shouldBe true
+      (jan in start..end) shouldBe true
+      (end in start..end) shouldBe true
+    }
+
+    it("produces a list") {
+      val start = Month(2019, 10)
+      val dec = start.next()
+      val jan = dec.next()
+      val end = Month(2020, 1)
+      (start..end).toList() shouldBe listOf(start, dec, jan, end)
+    }
+
+    it("produces a list with step 2") {
+      val start = Month(2019, 10)
+      val dec = start.next()
+      val jan = dec.next()
+      val end = Month(2020, 1)
+      (start..end step 2).toList() shouldBe listOf(start, jan)
+    }
+
+    it("downTo") {
+      val start = Month(2019, 10)
+      val dec = start.next()
+      val jan = dec.next()
+      val end = Month(2020, 1)
+      val months = mutableListOf<Month>()
+      for (m in end downTo start) {
+        months.add(m)
+      }
+      months shouldBe listOf(end, jan, dec, start)
+    }
+
+    it("downTo with step 2") {
+      val start = Month(2019, 10)
+      val dec = start.next()
+      val jan = dec.next()
+      val end = Month(2020, 1)
+      val months = mutableListOf<Month>()
+      for (m in end downTo start step 2) {
+        months.add(m)
+      }
+      months shouldBe listOf(end, dec)
     }
   }
 })
