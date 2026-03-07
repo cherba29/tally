@@ -33,6 +33,7 @@ data class BalanceData(
   val pamt: Double?,
 )
 
+// TODO: add checks for duplicate keys, eg: two desc fields are provided.
 data class TransferYamlData(
   val grp: String?,
   val date: LocalDate?,

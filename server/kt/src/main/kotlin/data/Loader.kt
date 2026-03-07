@@ -180,6 +180,7 @@ class Loader(tallyFilesPath: Path): AutoCloseable {
   private var watcherJob: Job? = null
 
   init {
+    // TODO: make this recursive eg: https://dev.java/learn/java-io/file-system/watching-dir-changes/.
     watchedPath.register(
       watcher,
       StandardWatchEventKinds.ENTRY_CREATE,

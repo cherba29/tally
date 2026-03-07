@@ -10,7 +10,7 @@ data class Budget(
   // Account name -> month -> balance map.
   val balances: Map<String, Map<String, Balance>>,
   // Account name -> month -> transfers map.
-  val transfers: Map<String, Map<String, Set<Transfer>>>
+  val transfers: Map<String, Map<String, List<Transfer>>>
 ) {
   fun findActiveAccounts(): List<Account> {
     val activeAccounts = mutableListOf<Account>()
@@ -33,10 +33,10 @@ data class TransferData(
 )
 
 private fun <T> getMonthTransfers(
-  transfers: MutableMap<String, MutableMap<String, MutableSet<T>>>,
+  transfers: MutableMap<String, MutableMap<String, MutableList<T>>>,
   accountName: String,
   month: String
-): MutableSet<T> {
+): MutableList<T> {
   var accountTransfers = transfers[accountName]
   if (accountTransfers == null) {
     accountTransfers = mutableMapOf()
@@ -44,7 +44,7 @@ private fun <T> getMonthTransfers(
   }
   var monthTransfers = accountTransfers[month]
   if (monthTransfers == null) {
-    monthTransfers = mutableSetOf()
+    monthTransfers = mutableListOf()
     accountTransfers[month] = monthTransfers
   }
   return monthTransfers
@@ -102,7 +102,7 @@ class BudgetBuilder(
   }
 
   fun build(): Budget {
-    val budgetTransfers: MutableMap<String, MutableMap<String, MutableSet<Transfer>>> = mutableMapOf()
+    val budgetTransfers: MutableMap<String, MutableMap<String, MutableList<Transfer>>> = mutableMapOf()
     for (transferData in transfers) {
       val toAccount = accounts[transferData.toAccount] ?: throw IllegalArgumentException(
         "Unknown account ${transferData.toAccount}"

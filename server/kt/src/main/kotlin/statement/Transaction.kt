@@ -60,7 +60,7 @@ fun getTransactionType(fromAccount: Account, toAccount: Account, amount: Int): T
 fun makeTransactionStatement(
   account: Account,
   month: Month,
-  transfers: Set<Transfer>?,
+  transfers: List<Transfer>?,
   startBalance: Balance?
 ): TransactionStatement {
   val statement = TransactionStatement(account, month, startBalance)

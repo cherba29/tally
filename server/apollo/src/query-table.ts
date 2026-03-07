@@ -57,7 +57,7 @@ function sequenceStatements(owner: string, accounts: Account[]): RowEntry[] {
     if (children) {
       // console.log('### adding', children);
       // Add in front as we want to process children next, in dept-first fashion.
-      nodesToProcess.unshift(...children);
+      nodesToProcess.unshift(...Array.from(children).sort());
     }
   }
   return entries;

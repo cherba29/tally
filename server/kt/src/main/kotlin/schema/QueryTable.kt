@@ -64,7 +64,7 @@ private fun sequenceStatements(owner: String, accounts: List<Account>): List<Row
     )
     if (children != null) {
       // Add in front as we want to process children next, in dept-first fashion.
-      val childrenList = children.toMutableList()
+      val childrenList = children.sorted().toMutableList()
       childrenList.addAll(nodesToProcess)
       nodesToProcess = childrenList
     }
@@ -83,7 +83,7 @@ fun buildGqlTable(payload: DataPayload, owner: String?, startMonth: Month, endMo
   val rows = mutableListOf<GqlTableRow>()
 
   val ordering = sequenceStatements(forOwner, accounts)
-  //logger.info { "Statement ordering is $ordering" }
+  // logger.info { "Statement ordering is $ordering" }
 
   for (entry in ordering) {
     if (entry.isTotal) {
