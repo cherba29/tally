@@ -99,3 +99,70 @@ query {
   }
 }
 ```
+
+```
+query table(
+  $owner: String!, 
+  $startMonth: GqlMonth!, 
+  $endMonth: GqlMonth!
+) {
+  table(
+    owner: $owner, 
+    startMonth: $startMonth, 
+    endMonth: $endMonth
+  ) {
+    currentOwner
+    owners
+    months
+    rows {
+      title
+      account {
+        name
+        description
+        path
+        type
+        openedOn
+        closedOn
+        number
+        owners
+        address
+        external
+        summary
+        userName
+        password
+        phone
+        url
+        __typename
+      }
+      indent
+      isSpace
+      isTotal
+      isNormal
+      cells {
+        month
+        isClosed
+        addSub
+        balance
+        isProjected
+        isCovered
+        isProjectedCovered
+        hasProjectedTransfer
+        percentChange
+        annualizedPercentChange
+        unaccounted
+        balanced
+        __typename
+      }
+      __typename
+    }
+    __typename
+  }
+}
+
+// Variables
+{
+  "endMonth": "May2026",
+  "owner": "",
+  "startMonth": "Mar2025"
+}
+```

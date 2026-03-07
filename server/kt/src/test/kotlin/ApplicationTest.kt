@@ -166,7 +166,7 @@ class ApplicationTest : DescribeSpec({
           totalPayments: Int!
           totalTransfers: Int!
           transactions: [GqlTransaction!]!
-          unaccounted: Float!
+          unaccounted: Int!
         }
     
         type GqlSummaryData {
@@ -236,7 +236,7 @@ class ApplicationTest : DescribeSpec({
         type Query {
           hello: String!
           "Returns a monthly statement for given account."
-          statement(account: String!, month: String!, owner: String!): GqlStatement!
+          statement(account: String!, month: GqlMonth!, owner: String!): GqlStatement!
           "Generates delta summary table between two months."
           summary(accountType: String!, endMonth: GqlMonth!, owner: String!, startMonth: GqlMonth!): GqlSummaryData!
           "Generates full tally table in given month range."

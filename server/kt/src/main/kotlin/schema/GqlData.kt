@@ -33,7 +33,6 @@ data class GqlAccount(
 
 data class GqlBalance(
   val amount: Int,
-  // TODO: make LocalDate work.
   val date: LocalDate,
   val type: String
 )
@@ -56,8 +55,7 @@ data class GqlStatement(
   val addSub: Int,
   val percentChange: Float,
   val annualizedPercentChange: Float,
-  // TODO: this should be Int.
-  val unaccounted: Float,
+  val unaccounted: Int,
   val transactions: List<GqlTransaction>,
 )
 

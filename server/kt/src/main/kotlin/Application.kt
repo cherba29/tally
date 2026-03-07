@@ -17,6 +17,8 @@ import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.plugins.cors.routing.CORS
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.serialization.jackson.JacksonWebsocketContentConverter
 import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.call
@@ -70,9 +72,18 @@ fun Application.graphQLModule() {
   install(StatusPages) {
     defaultGraphQLStatusPages()
   }
-  install(CORS) {
-    anyHost()
-  }
+  // TODO: re-enable after testing is done.
+    install(CORS) {
+      anyHost()
+
+      allowMethod(HttpMethod.Options)
+      allowMethod(HttpMethod.Put)
+      allowMethod(HttpMethod.Delete)
+      allowMethod(HttpMethod.Get)
+
+      allowHeader(HttpHeaders.Authorization)
+      allowHeader(HttpHeaders.ContentType)
+    }
 
   install(GraphQL) {
     schema {

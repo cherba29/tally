@@ -6,6 +6,7 @@ import com.cherba29.tally.core.AccountType
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.Month
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.pow
@@ -20,10 +21,7 @@ class SummaryStatement(account: Account, month: Month, val startMonth: Month) : 
 
   override val annualizedPercentChange: Double?
     get() {
-      val prctChange = percentChange
-      if (prctChange == null) {
-        return null
-      }
+      val prctChange = percentChange ?: return null
       val numberOfMonths = month - startMonth + 1
       val annualFrequency = 12.0 / numberOfMonths
       val result = (1 + prctChange.absoluteValue / 100).pow(annualFrequency) - 1
@@ -88,6 +86,7 @@ class SummaryStatement(account: Account, month: Month, val startMonth: Month) : 
   }
 }
 
+// TODO: add tests for this class.
 class SummaryStatementAggregator {
   // Map of owner -> 'summary name' -> month -> 'summary statement'.
   val summaryStatements = Map3<SummaryStatement>()
@@ -115,41 +114,6 @@ class SummaryStatementAggregator {
   }
 
   // Make sure totals are computed for parent summary accounts up the path to the root.
-  // propagateUpThePath() {
-  //   let nextLevelSummaries = new SummaryStatementAggregator();
-  //   nextLevelSummaries.summaryAccounts = this.summaryAccounts;
-  //   nextLevelSummaries.summaryStatements = this.summaryStatements;
-  //   while (!nextLevelSummaries.summaryStatements.isEmpty()) {
-  //     console.log('### processing ', nextLevelSummaries.summaryStatements.size, 'summary statements');
-  //     let currentLevelSummaries = nextLevelSummaries.summaryStatements;
-  //     nextLevelSummaries.summaryStatements = new Map3<SummaryStatement>();
-  //     for (const [owner, , , statement] of currentLevelSummaries) {
-  //       // Break recursion stopping at the root, and exclude other legacy accounts in totals.
-  //       if (statement.account.name !== '/' && statement.account.name.startsWith('/')) {
-  //         const summaryName = '/' + statement.account.path.join('/');
-  //         if (summaryName.startsWith('/external') && statement.month.toString() === 'Dec2023') {
-  //           console.log('### adding statement to', summaryName, owner, statement.account.name, statement.endBalance?.amount);
-  //         }
-  //         nextLevelSummaries.addStatement(summaryName, owner, statement);
-  //       }
-  //     }
-  //     this.merge(nextLevelSummaries.summaryStatements);
-  //   }
-  //   console.log('### Final ', this.summaryStatements.size, 'summary statements');
-  // }
-
-  // private merge(summaries: Map3<SummaryStatement>) {
-  //   for (const [owner, summaryName, month, statement] of summaries) {
-  //     const existingStatement = this.summaryStatements.get(owner, summaryName, month);
-  //     if (existingStatement) {
-  //       existingStatement.mergeStatement(statement);
-  //     } else {
-  //       this.summaryStatements.set(owner, summaryName, month, statement);
-  //     }
-  //   }
-  // }
-
-  // Make sure totals are computed for parent summary accounts up the path to the root.
   fun propagateUpThePath2() {
     // Build a multi-root tree based on account paths for each owner.
     val tree: MutableMap<String, MutableSet<String>> = mutableMapOf()  // node -> set of children.
@@ -160,9 +124,9 @@ class SummaryStatementAggregator {
         if (!account.name.startsWith('/')) continue
         val path = account.path
         var entry = "/" + owner + account.name
-        for (sub in path.lastIndex downTo 0) {
-          val subPath = path.slice(0..sub)
-          val subPathId = '/' + owner + '/' + subPath.joinToString("/")
+        for (sub in path.size downTo 0) {
+          val subPath = path.slice(0..sub - 1)
+          val subPathId = "/" + owner + "/" + subPath.joinToString("/")
           var subTreeEntry = tree[subPathId]
           if (subTreeEntry == null) {
             subTreeEntry = mutableSetOf()
@@ -180,13 +144,14 @@ class SummaryStatementAggregator {
       val ownerRoot = "/$owner/"
       for (node in traverseBottomUp(ownerRoot, tree)) {
         val fullPath = node.split('/')
-        val summaryId = "/" + fullPath.subList(2, fullPath.lastIndex).joinToString("/")
+        val summaryId = "/" + fullPath.subList(2, fullPath.size).joinToString("/")
         // skip this is root node it does not need to be added to anything.
         if (summaryId == "/") continue
         val monthlyStatements = summaryStatements.get2(owner, summaryId)
-        if (monthlyStatements == null) {  // Should never happen.
-          throw IllegalStateException("$node has no monthly statements.")
-        }
+          ?: throw IllegalStateException(
+            "$node has no monthly statements, [$owner, $summaryId] key not found."
+          )  // Should never happen.
+
         val parentSummaryId = '/' + fullPath.subList(2, fullPath.lastIndex).joinToString("/")
         for (monthlyStatement in monthlyStatements.values) {
           addStatement(parentSummaryId, owner, monthlyStatement)
@@ -203,6 +168,7 @@ fun traverseBottomUp(root: String, tree: Map<String, Set<String>>): Sequence<Str
   yield(root)
 }
 
+// TODO: add tests.
 fun buildSummaryStatementTable(
   statements: List<TransactionStatement>,
   selectedOwner: String?
@@ -213,9 +179,9 @@ fun buildSummaryStatementTable(
       if (selectedOwner != null && owner != selectedOwner || statement.isEmpty()) {
         continue
       }
-      val summariesToAddTo = mutableListOf(owner + ' ' + statement.account.typeIdName, "$owner SUMMARY")
+      val summariesToAddTo = mutableListOf("$owner ${statement.account.typeIdName}", "$owner SUMMARY")
       if (statement.account.path.isNotEmpty()) {
-        summariesToAddTo.add('/' + statement.account.path.joinToString("/"))
+        summariesToAddTo.add("/" + statement.account.path.joinToString("/"))
       }
       for (summaryName in summariesToAddTo) {
         if (statement.account.isExternal && summaryName.contains("SUMMARY")) {
@@ -225,11 +191,11 @@ fun buildSummaryStatementTable(
       }
     }
   }
-  // statementsAggregator.propagateUpThePath()
   statementsAggregator.propagateUpThePath2()
   return statementsAggregator.summaryStatements
 }
 
+// TODO: add tests.
 fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): SummaryStatement {
   if (summaryStatements.isEmpty()) {
     throw IllegalArgumentException("Cant combine empty list of summary statements")
@@ -323,13 +289,10 @@ fun makeProxyStatement(
 ): Statement {
   val stmt = currStmt ?: EmptyStatement(account, month)
   if (stmt.startBalance == null) {
-    // TODO: define Month.toDate() extension function.
-    stmt.startBalance =
-      prevStmt?.endBalance ?: Balance(0, LocalDate(month.year, month.month + 1, 1), BalanceType.PROJECTED)
+    stmt.startBalance = prevStmt?.endBalance ?: Balance(0, month.toDate(), BalanceType.PROJECTED)
   }
   if (stmt.endBalance == null) {
-    stmt.endBalance =
-      nextStmt?.startBalance ?: Balance(0, LocalDate(month.year, month.month + 1, 1), BalanceType.PROJECTED)
+    stmt.endBalance = nextStmt?.startBalance ?: Balance(0, month.toDate(), BalanceType.PROJECTED)
   }
   return stmt
 }
@@ -341,9 +304,7 @@ fun combineAccountStatements(
   stmts: Map<String, Statement>
 ): Statement {
   val combined = CombinedStatement(account, endMonth, startMonth)
-  // TODO: define rangeTo operator for month to iterate in the loop.
-  var currentMonth = startMonth
-  while (startMonth < endMonth) {
+  for (currentMonth in startMonth..endMonth.previous()) {
     val stmt: Statement = makeProxyStatement(
       account,
       currentMonth,
@@ -368,7 +329,8 @@ fun combineAccountStatements(
     combined.totalTransfers += stmt.totalTransfers
     combined.totalPayments += stmt.totalPayments
     combined.income += stmt.income
-    currentMonth = currentMonth.next()
   }
   return combined
 }
+
+// private val logger = KotlinLogging.logger {}

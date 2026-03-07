@@ -12,6 +12,7 @@ class TableService(val loader: Loader) : Query {
   @GraphQLDescription("Generates full tally table in given month range.")
   @Suppress("unused")
   fun table(owner: String?, startMonth: Month, endMonth: Month): GqlTable {
+    logger.info { "table owner=$owner startMonth=$startMonth endMonth=$endMonth" }
     return try {
       buildGqlTable(loader.loadBudget(), owner, startMonth, endMonth)
     } catch (e: Exception) {

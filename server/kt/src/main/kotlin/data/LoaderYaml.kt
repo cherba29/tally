@@ -98,6 +98,13 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
   if (data.owner == null || data.owner.isEmpty()) {
     throw IllegalArgumentException("Account '${data.name}' has no owners")
   }
+  if (data.desc == null) {
+    logger.warn { "${data.name} is missing description field." }
+  }
+  if (data.path == null || data.path.isEmpty()) {
+    logger.warn { "${data.name} is missing path field." }
+  }
+
   val account = Account(
     name = data.name,
     description = data.desc,

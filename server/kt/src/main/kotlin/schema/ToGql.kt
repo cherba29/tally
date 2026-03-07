@@ -7,6 +7,7 @@ import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.statement.TransactionStatement
+import kotlin.math.roundToInt
 
 fun Account.toGql(): GqlAccount = GqlAccount(
   name = name,
@@ -43,6 +44,11 @@ fun Transaction.toGql(): GqlTransaction = GqlTransaction(
   description = description ?: ""
 )
 
+private fun Double?.round2Float(): Float {
+  if (this == null) return 0.0f
+  return ((this * 100.0).roundToInt() / 100.0).toFloat()
+}
+
 fun TransactionStatement.toGql(): GqlStatement = GqlStatement(
   name = account.name,
   month = month,
@@ -59,9 +65,9 @@ fun TransactionStatement.toGql(): GqlStatement = GqlStatement(
   totalTransfers = totalTransfers,
   change = change ?: 0,
   addSub = addSub,
-  percentChange = percentChange?.toFloat() ?: 0.0f,
-  annualizedPercentChange = annualizedPercentChange?.toFloat() ?: 0.0f,
-  unaccounted = unaccounted?.toFloat() ?: 0.0f,
+  percentChange = percentChange.round2Float(),
+  annualizedPercentChange = annualizedPercentChange.round2Float(),
+  unaccounted = unaccounted ?: 0,
   transactions = transactions.map { it.toGql() }
 )
 
@@ -74,8 +80,8 @@ fun TransactionStatement.toGqlTableCell(): GqlTableCell = GqlTableCell(
   isCovered = isCovered,
   isProjectedCovered = isProjectedCovered,
   hasProjectedTransfer = hasProjectedTransfer,
-  percentChange = percentChange?.toFloat() ?: 0.0f,
-  annualizedPercentChange = annualizedPercentChange?.toFloat() ?: 0.0f,
+  percentChange = percentChange.round2Float(),
+  annualizedPercentChange = annualizedPercentChange.round2Float(),
   unaccounted = unaccounted,
   balanced = unaccounted == null || unaccounted == 0
 )
@@ -89,8 +95,8 @@ fun Statement.toGqlTableCell(): GqlTableCell = GqlTableCell(
   isCovered = false,
   isProjectedCovered = false,
   hasProjectedTransfer = false,
-  percentChange = percentChange?.toFloat() ?: 0.0f,
-  annualizedPercentChange = annualizedPercentChange?.toFloat() ?: 0.0f,
+  percentChange = percentChange.round2Float(),
+  annualizedPercentChange = annualizedPercentChange.round2Float(),
   unaccounted = unaccounted,
   balanced = unaccounted == null || unaccounted == 0
 )
@@ -104,8 +110,8 @@ fun SummaryStatement.toGql(): GqlSummaryStatement = GqlSummaryStatement(
   change = change ?: 0,
   inFlows = inFlows,
   outFlows = outFlows,
-  percentChange = percentChange?.toFloat() ?: 0.0f,
-  annualizedPercentChange = annualizedPercentChange?.toFloat() ?: 0.0f,
+  percentChange = percentChange.round2Float(),
+  annualizedPercentChange = annualizedPercentChange.round2Float(),
   totalPayments = totalPayments,
   totalTransfers = totalTransfers,
   unaccounted = unaccounted ?: 0,

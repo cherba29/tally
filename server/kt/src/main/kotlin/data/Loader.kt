@@ -78,6 +78,7 @@ class ProcessedBudget {
     accountToMonthToTransactionStatement.clear()
     summaryNameMonthMap.clear()
 
+    // TODO: use measureTime.
     val startBuildTransactionStatementsTimeMs: Long = Clock.System.now().toEpochMilliseconds()
     val transactionStatementTable = buildTransactionStatementTable(budget!!, owner = null)
     for (stmt in transactionStatementTable) {

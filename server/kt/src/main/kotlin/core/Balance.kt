@@ -2,6 +2,7 @@ package com.cherba29.tally.core
 
 import kotlinx.datetime.LocalDate
 
+// TODO: fold it into Balance class.
 enum class BalanceType(val id: String) {
   UNKNOWN("UNKNOWN"),
   CONFIRMED("CONFIRMED"),
@@ -13,6 +14,7 @@ enum class BalanceType(val id: String) {
   }
 }
 
+// TODO: add desc field.
 data class Balance(val amount: Int, val date: LocalDate, val type: BalanceType) : Comparable<Balance> {
   override fun compareTo(other: Balance): Int {
     val dateDiff = date.compareTo(other.date)

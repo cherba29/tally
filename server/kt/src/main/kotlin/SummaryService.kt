@@ -12,6 +12,7 @@ class SummaryService(val loader: Loader) : Query {
   @GraphQLDescription("Generates delta summary table between two months.")
   @Suppress("unused")
   fun summary(owner: String, accountType: String, startMonth: Month, endMonth: Month): GqlSummaryData {
+    logger.info { "summary owner=$owner, accountType=$accountType, startMonth=$startMonth, endMonth=$endMonth" }
     return buildSummaryData(loader.loadBudget(), owner, accountType, startMonth, endMonth)
   }
 

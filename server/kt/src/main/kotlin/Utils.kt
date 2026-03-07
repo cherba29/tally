@@ -77,6 +77,7 @@ class Map3<ValueType> : Iterable<Entry3<ValueType>> {
   val size: Int get() = store.values.sumOf { subStore -> subStore.values.sumOf { it.size } }
 
   val isEmpty: Boolean get() = size == 0
+  val keys: Map<String, Set<String>> get() = store.entries.associate { (a: String, b: Map<String, MutableMap<String, ValueType>>) -> a to b.keys }
 
   fun clear() = store.clear()
 

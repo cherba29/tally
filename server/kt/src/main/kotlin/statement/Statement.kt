@@ -37,17 +37,18 @@ abstract class Statement(
 ) {
   val addSub: Int
     get() = inFlows + outFlows
-  val change: Int? = startBalance?.let { s ->
+  val change: Int? get() = startBalance?.let { s ->
     endBalance?.let { e -> e.amount - s.amount }
   }
-  val percentChange: Double? = startBalance?.let {
+  // TODO: add tests.
+  val percentChange: Double? get() = startBalance?.let {
     when (change) {
       null -> null
       0 -> 0.0
-      else -> (100.0 * change) / it.amount
+      else -> if (it.amount != 0) (100.0 * change!!) / it.amount else null
     }
   }
-  open val annualizedPercentChange: Double? = percentChange?.let {
+  open val annualizedPercentChange: Double? get() = percentChange?.let {
     val result = (1 + (it.absoluteValue) / 100).pow(12) - 1
     // Don't consider 1000% and more as meaningful annualized numbers.
     if (result < 10) 100 * it.sign * result else null
