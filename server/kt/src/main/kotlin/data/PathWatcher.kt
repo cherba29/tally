@@ -1,0 +1,88 @@
+package com.cherba29.tally.data
+
+import io.github.oshai.kotlinlogging.KotlinLogging
+import java.nio.file.FileSystems
+import java.nio.file.Path
+import java.nio.file.StandardWatchEventKinds
+import java.nio.file.WatchKey
+import java.nio.file.WatchService
+import kotlin.io.path.PathWalkOption
+import kotlin.io.path.isDirectory
+import kotlin.io.path.walk
+import kotlin.io.path.name
+import kotlin.io.path.relativeTo
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runInterruptible
+
+data class WatchResult(val relativePath: Path?, val reprocess: Boolean)
+
+fun Path.watchedEventFlow(predicate: (Path)->Boolean): Flow<WatchResult> {
+  val watcher: WatchService = FileSystems.getDefault().newWatchService()
+  val watchKeys = mutableMapOf<WatchKey, Path>()
+    logger.info { "Registering all paths under $this" }
+    this.walk(PathWalkOption.INCLUDE_DIRECTORIES).filter {
+      // TODO: reconcile with predicate.
+      it.isDirectory() && !it.name.startsWith("_")
+    }.associateTo(watchKeys) {
+      logger.info { "Registering $it" }
+      it.register(watcher,
+        StandardWatchEventKinds.ENTRY_CREATE,
+        StandardWatchEventKinds.ENTRY_DELETE,
+        StandardWatchEventKinds.ENTRY_MODIFY) to this.relativize(it)
+    }
+
+  val watchedPath = this
+  return flow {
+    // Emit existing files.
+    for (filePath in watchedPath.walk()) {
+      val relativeFilePath = filePath.relativeTo(watchedPath)
+      if (predicate(relativeFilePath)) {
+        emit(WatchResult(relativeFilePath, false))
+      }
+    }
+    emit(WatchResult(null, true))
+
+    while (currentCoroutineContext().isActive) {
+      coroutineScope {
+        var key: WatchKey? = null
+        launch {
+          runInterruptible(Dispatchers.IO) {
+            logger.info { "Waiting for changes to $watchedPath" }
+            key = watcher.take()
+          }
+        }.join()
+
+        val currentKey = key
+        if (currentKey != null) {
+          // TODO: detect creation of new directories.
+          for (event in currentKey.pollEvents()) {
+            val context = event.context() as Path // Relative path to the file/directory changed
+
+            val updatedPath = watchKeys[key]
+            if (updatedPath != null) {
+              val filePath = updatedPath.resolve(context)
+              if (predicate(filePath)) {
+                logger.info { "Emitting $filePath" }
+                emit(WatchResult(filePath, true))
+              }
+            } else {
+              logger.warn { "Could not find registered key for $key" }
+            }
+          }
+          currentKey.reset()
+        }
+      }
+    }
+  }.onCompletion {
+    watcher.close()
+  }
+}
+
+private val logger = KotlinLogging.logger {}
