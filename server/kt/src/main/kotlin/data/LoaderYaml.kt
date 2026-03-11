@@ -31,6 +31,8 @@ data class BalanceData(
   val date: LocalDate?,
   val camt: Double?,
   val pamt: Double?,
+  // TODO: wire it in.
+  val desc: String?,
 )
 
 // TODO: add checks for duplicate keys, eg: two desc fields are provided.
@@ -40,6 +42,9 @@ data class TransferYamlData(
   val camt: Double?,
   val pamt: Double?,
   val desc: String?,
+  // TODO: choose cat or tags and wire it in.
+  val cat: String?,
+  val tags: List<String>?,
 )
 
 @JsonIgnoreProperties(value = [])
@@ -84,6 +89,7 @@ fun makeBalance(data: BalanceData): Balance {
   return Balance(amount, data.date, balanceType)
 }
 
+// TODO: Preprocess but do not put it into budget builder yet, so warnings are only produced files that change.
 fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
   if (data.name == null) {
     // Ignore data which dont represent account.

@@ -49,7 +49,7 @@ class LoaderTest : DescribeSpec({
       )
 
       Loader(tallyPath).use { loader ->
-        val result = loader.loadBudget()
+        val result = loader.budget
 
         result.statements.size shouldBe 1
         val tranStatement = result.statements["test-account"]?.get("Mar2019")!!
@@ -77,7 +77,7 @@ class LoaderTest : DescribeSpec({
       )
 
       Loader(tallyPath).use { loader ->
-        val result1 = loader.loadBudget()
+        val result1 = loader.budget
         result1.budget.balances["test-account"]?.get("Mar2019") shouldBe Balance(
           10000, LocalDate(2019, 3, 1),
           BalanceType.CONFIRMED
@@ -100,7 +100,7 @@ class LoaderTest : DescribeSpec({
         }
         loadedOn shouldBeLessThan loader.loadedOn
 
-        val result2 = loader.loadBudget()
+        val result2 = loader.budget
         result2.budget.balances["test-account"]?.get("Mar2019") shouldBe Balance(
           20000, LocalDate(2019, 3, 1),
           BalanceType.CONFIRMED

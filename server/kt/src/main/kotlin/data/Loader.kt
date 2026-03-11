@@ -8,14 +8,14 @@ import com.cherba29.tally.statement.TransactionStatement
 import com.cherba29.tally.statement.buildSummaryStatementTable
 import com.cherba29.tally.statement.buildTransactionStatementTable
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.nio.file.FileSystems
+import java.lang.AutoCloseable
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.nio.file.StandardWatchEventKinds
-import java.nio.file.WatchEvent
-import java.nio.file.WatchKey
-import java.nio.file.WatchService
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 import kotlin.io.path.extension
+import kotlin.io.path.name
+import kotlin.io.path.pathString
 import kotlin.io.path.readText
 import kotlin.io.path.relativeTo
 import kotlin.io.path.walk
@@ -24,17 +24,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runInterruptible
 
+// TODO: probably this is not needed, remove?
 fun listFiles(tallyPath: Path): List<String> {
   val filePaths: MutableList<String> = mutableListOf()
   for (filePath in tallyPath.walk()) {
@@ -46,6 +39,7 @@ fun listFiles(tallyPath: Path): List<String> {
   return filePaths.sorted()
 }
 
+// TODO: separate this logic into separate module.
 class ProcessedBudget {
   private val parsedAccountData = mutableMapOf<String, YamlData>()
   var budget: Budget? = null
@@ -57,16 +51,22 @@ class ProcessedBudget {
     // TODO: use measure time.
     val startTimeMs: Long = Clock.System.now().toEpochMilliseconds()
     val budgetBuilder = BudgetBuilder()
+    val unwantedFiles = mutableListOf<String>()
     for ((filePath, accountData) in parsedAccountData) {
       try {
         loadYamlFile(budgetBuilder, accountData, Paths.get(filePath))
         if (!budgetBuilder.accounts.contains(accountData.name ?: "")) {
           logger.warn { "warning: $filePath is not an account file." }
+          unwantedFiles.add(filePath)
         }
       } catch (e: Exception) {
         logger.error { "error: Failed to add $filePath, $e" }
         return
       }
+    }
+    // Since reprocess is called multiple times, no need reprocess them.
+    for (filePath in unwantedFiles) {
+      parsedAccountData.remove(filePath)
     }
     budget = budgetBuilder.build()
     logger.info {
@@ -111,21 +111,6 @@ class ProcessedBudget {
     }
   }
 
-  fun addFolder(rootPath: Path) {
-    val startTimeMs: Long = Clock.System.now().toEpochMilliseconds()
-    for (filePath in rootPath.walk()) {
-      val relativeFilePath = filePath.relativeTo(rootPath)
-      if (relativeFilePath.extension == "yaml") {
-        addFile(rootPath, relativeFilePath)
-      }
-    }
-    logger.info {
-      "Done loading ${parsedAccountData.size} file(s) in ${
-        Clock.System.now().toEpochMilliseconds() - startTimeMs
-      }ms"
-    }
-  }
-
   fun addFile(rootPath: Path, relativeFilePath: Path) {
     val content = rootPath.resolve(relativeFilePath).readText(Charsets.UTF_8)
     val accountData = parseYamlContent(content, relativeFilePath)
@@ -149,97 +134,68 @@ data class DataPayload(
   val summaries: Map3<SummaryStatement>,
 )
 
-fun WatchService.eventFlow(): Flow<List<WatchEvent<out Any>>> = flow {
-  while (currentCoroutineContext().isActive) {
-    coroutineScope {
-      var key: WatchKey? = null
-      val job = launch {
-        runInterruptible(Dispatchers.IO) {
-          key = take()
-        }
-      }
-      job.join()
-      val currentKey = key
-      if (currentKey != null) {
-        emit(currentKey.pollEvents())
-        currentKey.reset()
-      }
-    }
-  }
-}
-
 class Loader(tallyFilesPath: Path): AutoCloseable {
   private val watchedPath: Path = tallyFilesPath.toRealPath()
 
-  private var watcher: WatchService = FileSystems.getDefault().newWatchService()
-  private var processedBudget: ProcessedBudget? = null
+  private val processedBudget = ProcessedBudget()
+
+  private val dataLock = ReentrantLock()
+  private val signalLock = ReentrantLock()
+  private val condition = signalLock.newCondition()
   private var processedOn: Long = 0
   val loadedOn: Long get() = processedOn
 
-  private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-  private var watcherJob: Job? = null
+
+  private val watcherJob: Job = watchedPath.watchedEventFlow {
+    it.extension == "yaml" && !ignorePathRegex.containsMatchIn(it.pathString)
+  }.onEach { (relativePath: Path?, reprocess: Boolean) ->
+    val startTimeMs: Long = Clock.System.now().toEpochMilliseconds()
+    if (relativePath != null) {
+      processedBudget.addFile(watchedPath, relativePath)
+    }
+    if (reprocess) {
+      dataLock.withLock {
+        processedBudget.reProcess()
+        if (processedOn == 0L) {
+          signalLock.withLock {
+            condition.signalAll()
+          }
+        }
+        // TODO: use provided clock instead.
+        processedOn = Clock.System.now().toEpochMilliseconds()
+      }
+      logger.info { "info: Rebuilt budget in ${processedOn - startTimeMs}ms" }
+    }
+  }.launchIn(CoroutineScope(Dispatchers.IO + SupervisorJob()))
 
   init {
-    // TODO: make this recursive eg: https://dev.java/learn/java-io/file-system/watching-dir-changes/.
-    watchedPath.register(
-      watcher,
-      StandardWatchEventKinds.ENTRY_CREATE,
-      StandardWatchEventKinds.ENTRY_DELETE,
-      StandardWatchEventKinds.ENTRY_MODIFY
-    )
+    logger.info { "Watching $watchedPath" }
   }
 
-  fun loadBudget(): DataPayload {
-    if (processedBudget != null) {
+  val budget: DataPayload get() {
+    if (processedOn == 0L) {
+      // If first time, make sure the data has been loaded before proceeding.
+      signalLock.withLock {
+        while (processedOn == 0L) {
+          condition.await()
+        }
+      }
+    }
+    dataLock.withLock {
       return DataPayload(
-        budget = processedBudget?.budget!!,
-        statements = processedBudget?.accountToMonthToTransactionStatement!!,
-        summaries = processedBudget?.summaryNameMonthMap!!,
+        budget = processedBudget.budget!!,
+        statements = processedBudget.accountToMonthToTransactionStatement,
+        summaries = processedBudget.summaryNameMonthMap,
       )
     }
-
-    processedBudget = ProcessedBudget()
-
-    processedBudget!!.addFolder(watchedPath)
-    processedBudget!!.reProcess()
-    processedOn = Clock.System.now().toEpochMilliseconds()
-
-    watcherJob = watcher.eventFlow()
-      .onCompletion { watcher.close() }
-      .onEach { events: List<WatchEvent<out Any>> ->
-        for (event in events) {
-          // TODO: skip uninteresting events.
-          val kind = event.kind()
-          val context = event.context() as Path // Relative path to the file/directory changed
-          // Handle the event
-          logger.info { "Event type: $kind. File affected: $context" }
-          val startTimeMs: Long = Clock.System.now().toEpochMilliseconds()
-          if (processedBudget != null) {
-            processedBudget!!.addFile(watchedPath, context)
-            processedBudget!!.reProcess()
-          } else {
-            logger.error { "Unexpected error: processedBudget is unset" }
-          }
-          processedOn = Clock.System.now().toEpochMilliseconds()
-          logger.info { "info: Rebuilt budget in ${processedOn - startTimeMs}ms" }
-        }
-      }.launchIn(ioScope)
-
-    logger.info { "info: Watching $watchedPath" }
-
-    return DataPayload(
-      budget = processedBudget?.budget!!,
-      statements = processedBudget?.accountToMonthToTransactionStatement!!,
-      summaries = processedBudget?.summaryNameMonthMap!!,
-    )
   }
 
   override fun close() {
-    watcher.close()
-    processedBudget = null
+    watcherJob.cancel()
   }
 
   companion object {
+    val ignorePathRegex = Regex("(^_)|(/_)")
     private val logger = KotlinLogging.logger {}
   }
 }

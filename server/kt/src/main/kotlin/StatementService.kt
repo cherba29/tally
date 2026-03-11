@@ -15,7 +15,7 @@ class StatementService(val loader: Loader) : Query {
   fun statement(owner:String, account: String, month: Month, dfe: DataFetchingEnvironment): GqlStatement {
     logger.info { "statement owner=$owner, account=$account, month=$month" }
     return try {
-      buildStatement(loader.loadBudget(), owner,account, month)
+      buildStatement(loader.budget, owner,account, month)
     } catch (e: Exception) {
       logger.error(e) { "Error while processing table query owner=$owner, account=$account month=$month" }
       throw e

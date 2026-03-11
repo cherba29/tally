@@ -14,7 +14,7 @@ class TableService(val loader: Loader) : Query {
   fun table(owner: String?, startMonth: Month, endMonth: Month): GqlTable {
     logger.info { "table owner=$owner startMonth=$startMonth endMonth=$endMonth" }
     return try {
-      buildGqlTable(loader.loadBudget(), owner, startMonth, endMonth)
+      buildGqlTable(loader.budget, owner, startMonth, endMonth)
     } catch (e: Exception) {
       logger.error(e) { "Error while processing table query owner=$owner, startMont=$startMonth, endMonth=$endMonth" }
       throw e

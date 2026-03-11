@@ -38,15 +38,22 @@ dependencies {
     implementation(libs.ktor.server.statuspages)
     implementation(libs.ktor.server.websockets)
     implementation(libs.graphql.kotlin.ktor.server)
+
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotest)
     testImplementation(libs.kotest.jvm)
     testImplementation(libs.kotest.assertions)
     testImplementation(libs.kotest.assertions.jvm)
+    testImplementation(libs.kotest.assertions.ktor)
     testImplementation(libs.kotest.junit5)
     testImplementation(libs.kotest.junit5.jvm)
     testImplementation(libs.kotest.property)
     testImplementation(libs.kotlin.test.junit)
+    testImplementation(libs.kotlinx.coroutines.core)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.kotlinx.coroutines.test.jvm)
+
+    testRuntimeOnly(libs.logback.classic)
 }
 
 tasks {

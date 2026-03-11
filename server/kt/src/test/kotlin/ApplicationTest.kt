@@ -5,6 +5,7 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.core.test.TestScope
 import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.shouldBe
+import io.kotest.assertions.ktor.client.shouldHaveStatus
 import io.kotest.matchers.string.shouldContain
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
@@ -20,26 +21,43 @@ import io.ktor.server.config.MapApplicationConfig
 import io.ktor.server.config.mergeWith
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
+import java.nio.file.Path
+import kotlin.io.path.createFile
+import kotlin.io.path.div
+import kotlin.io.path.pathString
+import kotlin.io.path.writeText
 
-fun ApplicationTestBuilder.configureTestClient(tallyPath: String?) {
+fun ApplicationTestBuilder.configureTestClient(tallyPath: Path?) {
   application {
     graphQLModule()
   }
   environment {
     if (tallyPath != null) {
-      config = config.mergeWith(MapApplicationConfig("tally.path" to tallyPath))
+      config = config.mergeWith(MapApplicationConfig("tally.path" to tallyPath.pathString))
     }
   }
 }
 
 class ApplicationTest : DescribeSpec({
-  val tallyPath = tempdir("tally-", keepOnFailure = false).path
+  coroutineTestScope = true
+  val tallyPath = tempdir("tally-", keepOnFailure = false).toPath()
+  (tallyPath / "file2.yaml").createFile().writeText(
+    """
+        name: test-account
+        owner: [someone]
+        type: external
+        opened_on: Mar2019
+        balances:
+          - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
+        """.trimIndent()
+  )
+
   describe("routing") {
     it("root") {
       testApplication {
         configureTestClient(tallyPath)
         val response = client.get("/")
-        response.status shouldBe HttpStatusCode.OK
+        response shouldHaveStatus HttpStatusCode.OK
         response.bodyAsText() shouldBe "Hello gql World!"
       }
     }
@@ -84,37 +102,37 @@ class ApplicationTest : DescribeSpec({
         schema @contact(description : "Report issues on github.", name : "Tally", url : "https://github.com/cherba29/tally"){
           query: Query
         }
-    
+
         "Provides contact information of the owner responsible for this subgraph schema."
         directive @contact(description: String!, name: String!, url: String!) on SCHEMA
-    
+
         "Marks the field, argument, input field or enum value as deprecated"
         directive @deprecated(
             "The reason for the deprecation"
             reason: String = "No longer supported"
           ) on FIELD_DEFINITION | ARGUMENT_DEFINITION | ENUM_VALUE | INPUT_FIELD_DEFINITION
-    
+
         "Directs the executor to include this field or fragment only when the `if` argument is true"
         directive @include(
             "Included when true."
             if: Boolean!
           ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
-    
+
         "Indicates an Input Object is a OneOf Input Object."
         directive @oneOf on INPUT_OBJECT
-    
+
         "Directs the executor to skip this field or fragment when the `if` argument is true."
         directive @skip(
             "Skipped when true."
             if: Boolean!
           ) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
-    
+
         "Exposes a URL that specifies the behaviour of this scalar."
         directive @specifiedBy(
             "The URL that specifies the behaviour of this scalar."
             url: String!
           ) on SCALAR
-    
+
         type GqlAccount {
           address: String!
           "Month when account was closed. If not set means account is still open."
@@ -140,13 +158,13 @@ class ApplicationTest : DescribeSpec({
           url: String!
           userName: String!
         }
-        
+
         type GqlBalance {
           amount: Int!
           date: Date!
           type: String!
         }
-      
+
         type GqlStatement {
           addSub: Int!
           annualizedPercentChange: Float!
@@ -168,12 +186,12 @@ class ApplicationTest : DescribeSpec({
           transactions: [GqlTransaction!]!
           unaccounted: Int!
         }
-    
+
         type GqlSummaryData {
           statements: [GqlStatement!]!
           total: GqlSummaryStatement!
         }
-  
+
         type GqlSummaryStatement {
           accounts: [String!]!
           addSub: Int!
@@ -191,14 +209,14 @@ class ApplicationTest : DescribeSpec({
           totalTransfers: Int!
           unaccounted: Int!
         }
-  
+
         type GqlTable {
           currentOwner: String!
           months: [GqlMonth!]!
           owners: [String!]!
           rows: [GqlTableRow!]!
         }
-  
+
         type GqlTableCell {
           addSub: Int!
           annualizedPercentChange: Float!
@@ -213,7 +231,7 @@ class ApplicationTest : DescribeSpec({
           percentChange: Float!
           unaccounted: Int
         }
-      
+
         type GqlTableRow {
           account: GqlAccount!
           cells: [GqlTableCell!]!
@@ -223,7 +241,7 @@ class ApplicationTest : DescribeSpec({
           isTotal: Boolean!
           title: String!
         }
-        
+
         type GqlTransaction {
           balance: GqlBalance!
           balanceFromStart: Int!
@@ -232,7 +250,7 @@ class ApplicationTest : DescribeSpec({
           isIncome: Boolean!
           toAccountName: String!
         }
-  
+
         type Query {
           hello: String!
           "Returns a monthly statement for given account."
@@ -242,10 +260,10 @@ class ApplicationTest : DescribeSpec({
           "Generates full tally table in given month range."
           table(endMonth: GqlMonth!, owner: String, startMonth: GqlMonth!): GqlTable!
         }
-        
+
         "Date representation in YYYY-MM-DD format."
         scalar Date
-      
+
         "Month representation in XxxYYYY format."
         scalar GqlMonth
         """.trimIndent()

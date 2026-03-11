@@ -21,6 +21,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.serialization.jackson.JacksonWebsocketContentConverter
 import io.ktor.server.application.ApplicationCallPipeline
+import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.application.call
 import io.ktor.server.plugins.origin
 import io.ktor.server.plugins.statuspages.StatusPages
@@ -63,6 +64,7 @@ fun Application.graphQLModule() {
     "'$tallyFiles' path does not exist as set in application config '$TALLY_PATH_ENV_SETTING'."
   }
 
+  // TODO: Maybe use resource lifecycle https://ktor.io/docs/server-di-resource-lifecycle-management.html
   val loader = Loader(tallyFiles)
 
   install(WebSockets) {
@@ -113,6 +115,11 @@ fun Application.graphQLModule() {
     call.request.origin.apply {
       logger.info { "Request URL: $scheme://$localHost:$localPort$uri" }
     }
+  }
+
+  monitor.subscribe(ApplicationStopped) {
+    logger.info { "Closing loader..." }
+    loader.close()
   }
 }
 
