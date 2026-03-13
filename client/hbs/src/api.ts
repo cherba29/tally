@@ -109,7 +109,7 @@ export class BackendClient {
         query summary(
           $owner: String!
           $accountType: String!
-          $startMonth: GqlMonth
+          $startMonth: GqlMonth = null
           $endMonth: GqlMonth!
         ) {
           summary(
