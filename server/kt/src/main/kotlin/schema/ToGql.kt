@@ -3,6 +3,7 @@ package com.cherba29.tally.schema
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.BalanceType
+import com.cherba29.tally.statement.CombinedStatement
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.Transaction
@@ -86,6 +87,28 @@ fun TransactionStatement.toGqlTableCell(): GqlTableCell = GqlTableCell(
   balanced = unaccounted == null || unaccounted == 0
 )
 
+fun CombinedStatement.toGqlStatement(): GqlStatement = GqlStatement(
+  name = account.name,
+  month = month,
+  isClosed = account.isClosed(month),
+  isCovered = true,
+  isProjectedCovered = false,
+  hasProjectedTransfer = false,
+  startBalance = startBalance?.toGql(),
+  endBalance = endBalance?.toGql(),
+  inFlows = inFlows,
+  outFlows = outFlows,
+  income = income,
+  totalPayments = totalPayments,
+  totalTransfers = totalTransfers,
+  change = change ?: 0,
+  addSub = addSub,
+  percentChange = percentChange.round2Float(),
+  annualizedPercentChange = annualizedPercentChange.round2Float(),
+  unaccounted = unaccounted ?: 0,
+  transactions = listOf()
+)
+
 fun Statement.toGqlTableCell(): GqlTableCell = GqlTableCell(
   month = month,
   isClosed = isClosed,
@@ -118,3 +141,26 @@ fun SummaryStatement.toGql(): GqlSummaryStatement = GqlSummaryStatement(
   endBalance = endBalance?.toGql(),
   startBalance = startBalance?.toGql()
 )
+
+fun SummaryStatement.toGqlStatement(): GqlStatement = GqlStatement(
+  name = account.name,
+  month = month,
+  isClosed = account.isClosed(month),
+  isCovered = true,
+  isProjectedCovered = true,
+  hasProjectedTransfer = false,
+  startBalance = startBalance?.toGql(),
+  endBalance = endBalance?.toGql(),
+  inFlows = inFlows,
+  outFlows = outFlows,
+  income = income,
+  totalPayments = totalPayments,
+  totalTransfers = totalTransfers,
+  change = change ?: 0,
+  addSub = addSub,
+  percentChange = percentChange.round2Float(),
+  annualizedPercentChange = annualizedPercentChange.round2Float(),
+  unaccounted = unaccounted ?: 0,
+  transactions = listOf()
+)
+

@@ -229,7 +229,7 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
         accountStatements[stmt.account.name] = accountMontlyStatements
       }
       val monthStatement = accountMontlyStatements[stmt.month.toString()]
-      if (monthStatement == null) {
+      if (monthStatement != null) {
         throw IllegalArgumentException("Duplicate month statement for ${stmt.account.name} for ${stmt.month}")
       }
       accountMontlyStatements[stmt.month.toString()] = stmt

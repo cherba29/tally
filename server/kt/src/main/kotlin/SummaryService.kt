@@ -11,9 +11,17 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 class SummaryService(val loader: Loader) : Query {
   @GraphQLDescription("Generates delta summary table between two months.")
   @Suppress("unused")
-  fun summary(owner: String, accountType: String, startMonth: Month, endMonth: Month): GqlSummaryData {
+  fun summary(owner: String, accountType: String, startMonth: Month? = null, endMonth: Month): GqlSummaryData {
     logger.info { "summary owner=$owner, accountType=$accountType, startMonth=$startMonth, endMonth=$endMonth" }
-    return buildSummaryData(loader.budget, owner, accountType, startMonth, endMonth)
+    return try {
+      buildSummaryData(loader.budget, owner, accountType, startMonth, endMonth)
+    } catch (e: Exception) {
+      logger.error(e) {
+        "Error while processing summary query owner=$owner, accountType=$accountType " +
+            "startMont=$startMonth, endMonth=$endMonth"
+      }
+      throw e
+    }
   }
 
   companion object {

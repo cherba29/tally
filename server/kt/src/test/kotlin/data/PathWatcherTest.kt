@@ -9,8 +9,10 @@ import kotlin.io.path.createDirectory
 import kotlin.io.path.createFile
 import kotlin.io.path.div
 import kotlin.io.path.writeText
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.toList
@@ -67,19 +69,23 @@ class PathWatcherTest : DescribeSpec({
 
     describe("emits modified") {
 
-
       it("returns single file in root") {
         val folder = tempdir("tally-", keepOnFailure = false).toPath()
         val targetFile = (folder / "file2.yaml").createFile()
 
+        val deferredResult = CompletableDeferred<String>()
         val result = mutableListOf<WatchResult>()
-        val job = folder.watchedEventFlow { true }.onEach { result.add(it) }.launchIn(this)
+        val job = folder.watchedEventFlow { true }.onEach {
+          result.add(it)
+        }.onCompletion {
+          deferredResult.complete("done")
+        }.launchIn(this)
 
         testCoroutineScheduler.runCurrent()
         targetFile.writeText("hello")
         testCoroutineScheduler.advanceUntilIdle()
         job.cancelAndJoin()
-        testCoroutineScheduler.runCurrent()
+        deferredResult.await()
 
         result shouldBe listOf(
           WatchResult(relativePath=Paths.get("file2.yaml"), reprocess=false),
