@@ -7,7 +7,7 @@
 
 <appender name="STDOUT" class="ConsoleAppender">
     <encoder class="PatternLayoutEncoder">
-        <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %.-1level %logger{36}:%L -%kvp- %msg%n</pattern>
+        <pattern>%d{YYYY-MM-dd HH:mm:ss.SSS} [%thread] %highlight(%-5level) %logger{36}:%L -%kvp- %msg%n</pattern>
     </encoder>
 </appender>
 
@@ -22,7 +22,7 @@
 <timestamp key="currentDateTime" datePattern="yyyyMMdd'-'HHmmss"/>
 
 <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-    <file>${user.home}/calcetin-${currentDateTime}.log</file>
+    <file>${user.home}/tally-${currentDateTime}.log</file>
     <append>false</append>
     <encoder>
         <pattern>%6relative [%thread] %.-1level %logger{36}:%L -%kvp- %msg%n</pattern>

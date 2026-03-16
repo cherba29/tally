@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.toList
 
 class PathWatcherTest : DescribeSpec({
   coroutineTestScope = true
-  coroutineDebugProbes = true
 
   describe("empty directory") {
     it("returns empty on non-existent directory") {
@@ -85,7 +84,8 @@ class PathWatcherTest : DescribeSpec({
         targetFile.writeText("hello")
         testCoroutineScheduler.advanceUntilIdle()
         job.cancelAndJoin()
-        deferredResult.await()
+        testCoroutineScheduler.advanceUntilIdle()
+        deferredResult.await() shouldBe "done"
 
         result shouldBe listOf(
           WatchResult(relativePath=Paths.get("file2.yaml"), reprocess=false),

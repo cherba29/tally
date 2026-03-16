@@ -6,12 +6,10 @@ import com.cherba29.tally.core.AccountType
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.Month
-import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sign
-import kotlinx.datetime.LocalDate
 
 class SummaryStatement(account: Account, month: Month, val startMonth: Month) : Statement(account, month) {
   val statements: MutableList<Statement> = mutableListOf()
@@ -55,34 +53,6 @@ class SummaryStatement(account: Account, month: Month, val startMonth: Month) : 
     totalPayments += statement.totalPayments
     income += statement.income
     statements.add(statement)
-  }
-
-  fun mergeStatement(statement: SummaryStatement) {
-    if (statement.month.compareTo(month) != 0) {
-      throw IllegalArgumentException(
-        "${statement.account.name} statement for month ${statement.month} is being added to summary for month $month"
-      )
-    }
-    if (statement.isClosed) {
-      // Does not contribute to the summary.
-      return
-    }
-    if (startBalance == null) {
-      startBalance = statement.startBalance
-    } else if (statement.startBalance != null) {
-      this.startBalance = Balance.add(startBalance!!, statement.startBalance!!)
-    }
-    if (endBalance == null) {
-      endBalance = statement.endBalance
-    } else if (statement.endBalance != null) {
-      endBalance = Balance.add(endBalance!!, statement.endBalance!!)
-    }
-    this.addInFlow(statement.inFlows)
-    this.addOutFlow(statement.outFlows)
-    this.totalTransfers += statement.totalTransfers
-    this.totalPayments += statement.totalPayments
-    this.income += statement.income
-    this.statements.addAll(statement.statements)
   }
 }
 
@@ -223,16 +193,16 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
       maxMonth = summaryStmt.month
     }
     for (stmt in summaryStmt.statements) {
-      var accountMontlyStatements = accountStatements[stmt.account.name]
-      if (accountMontlyStatements == null) {
-        accountMontlyStatements = mutableMapOf()
-        accountStatements[stmt.account.name] = accountMontlyStatements
+      var accountMonthlyStatements = accountStatements[stmt.account.name]
+      if (accountMonthlyStatements == null) {
+        accountMonthlyStatements = mutableMapOf()
+        accountStatements[stmt.account.name] = accountMonthlyStatements
       }
-      val monthStatement = accountMontlyStatements[stmt.month.toString()]
+      val monthStatement = accountMonthlyStatements[stmt.month.toString()]
       if (monthStatement != null) {
         throw IllegalArgumentException("Duplicate month statement for ${stmt.account.name} for ${stmt.month}")
       }
-      accountMontlyStatements[stmt.month.toString()] = stmt
+      accountMonthlyStatements[stmt.month.toString()] = stmt
     }
   }
   if (stmtName == null) {
@@ -262,10 +232,7 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
 class CombinedStatement(account: Account, month: Month, val startMonth: Month) : Statement(account, month) {
   override val annualizedPercentChange: Double?
     get() {
-      val prctChange = percentChange
-      if (prctChange == null) {
-        return null
-      }
+      val prctChange = percentChange ?: return null
       val numberOfMonths = month - startMonth + 1
       val annualFrequency = 12.0 / numberOfMonths
       val result = (1 + abs(prctChange) / 100).pow(annualFrequency) - 1
@@ -301,16 +268,16 @@ fun combineAccountStatements(
   account: Account,
   startMonth: Month,
   endMonth: Month,
-  stmts: Map<String, Statement>
+  statements: Map<String, Statement>
 ): Statement {
   val combined = CombinedStatement(account, endMonth, startMonth)
-  for (currentMonth in startMonth..endMonth.previous()) {
+  for (currentMonth in startMonth..endMonth) {
     val stmt: Statement = makeProxyStatement(
       account,
       currentMonth,
-      stmts[currentMonth.toString()],
-      stmts[currentMonth.previous().toString()],
-      stmts[currentMonth.next().toString()]
+      statements[currentMonth.toString()],
+      statements[currentMonth.previous().toString()],
+      statements[currentMonth.next().toString()]
     )
     if (
       combined.startBalance == null ||

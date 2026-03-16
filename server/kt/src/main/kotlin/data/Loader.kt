@@ -151,7 +151,12 @@ class Loader(tallyFilesPath: Path): AutoCloseable {
   }.onEach { (relativePath: Path?, reprocess: Boolean) ->
     val startTimeMs: Long = Clock.System.now().toEpochMilliseconds()
     if (relativePath != null) {
-      processedBudget.addFile(watchedPath, relativePath)
+      try {
+        processedBudget.addFile(watchedPath, relativePath)
+      } catch (e: Exception) {
+        logger.error { "Failed to reload $relativePath. $e" }
+      }
+
     }
     if (reprocess) {
       dataLock.withLock {

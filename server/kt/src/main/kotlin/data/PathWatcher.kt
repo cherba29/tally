@@ -14,6 +14,7 @@ import kotlin.io.path.relativeTo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onCompletion
@@ -57,24 +58,28 @@ fun Path.watchedEventFlow(predicate: (Path)->Boolean): Flow<WatchResult> {
             logger.info { "Waiting for changes to $watchedPath" }
             key = watcher.take()
           }
+          // TODO: remove this delay. Without it same modify is triggered multiple times.
+          delay(500)
         }.join()
 
         val currentKey = key
         if (currentKey != null) {
+          val updatedPath = watchKeys[currentKey]
           // TODO: detect creation of new directories.
+          var eventIndex = 0
           for (event in currentKey.pollEvents()) {
             val context = event.context() as Path // Relative path to the file/directory changed
 
-            val updatedPath = watchKeys[key]
             if (updatedPath != null) {
               val filePath = updatedPath.resolve(context)
               if (predicate(filePath)) {
-                logger.info { "Emitting $filePath" }
+                logger.info { "Emitting $eventIndex $ANSI_YELLOW$filePath$ANSI_RESET for event ${event.kind()}" }
                 emit(WatchResult(filePath, true))
               }
             } else {
               logger.warn { "Could not find registered key for $key" }
             }
+            eventIndex++
           }
           currentKey.reset()
         }
@@ -85,4 +90,9 @@ fun Path.watchedEventFlow(predicate: (Path)->Boolean): Flow<WatchResult> {
   }
 }
 
+private val ANSI_RESET = "\u001B[0m"
+private val ANSI_RED = "\u001B[31m"
+private val ANSI_GREEN = "\u001B[32m"
+private val ANSI_YELLOW = "\u001B[33m"
+private val ANSI_BLUE = "\u001B[34m"
 private val logger = KotlinLogging.logger {}
