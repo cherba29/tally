@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.ktor)
     alias(libs.plugins.kotest)
     application
+    jacoco
 }
 
 group = "com.cherba29.tally"
@@ -56,12 +57,24 @@ dependencies {
     testRuntimeOnly(libs.logback.classic)
 }
 
+jacoco {
+    toolVersion = "0.8.12"
+}
+
 tasks {
     test {
         testLogging {
             events("passed", "skipped", "failed")
             showStackTraces = true
             exceptionFormat = TestExceptionFormat.FULL
+        }
+        finalizedBy(jacocoTestReport)
+    }
+    jacocoTestReport {
+        dependsOn(test)
+        reports {
+            xml.required.set(true)
+            html.required.set(true)
         }
     }
 }
