@@ -98,12 +98,5 @@ data class Month(val year: Int, val month: Int) : Comparable<Month> {
     fun fromDate(date: LocalDate): Month = Month(date.year, date.month.number - 1)
     fun min(vararg args: Month): Month = args.min()
     fun max(vararg args: Month): Month = args.max()
-
-    /** Creates generator spanning start and end (but not including) months. */
-    fun generate(start: Month, end: Month): Sequence<Month> = sequence {
-      for (current in start..end.previous()) {
-        yield(current)
-      }
-    }
   }
 }

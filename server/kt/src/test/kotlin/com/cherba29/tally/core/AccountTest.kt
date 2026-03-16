@@ -34,7 +34,19 @@ class AccountTest : DescribeSpec({
       )
       account.isClosed(Month(2021, 4)) shouldBe true
     }
+
+    it("isClosed true if not opened yet") {
+      val account = Account(
+        name = "testAccount",
+        type = AccountType.CHECKING,
+        owners = listOf("bob"),
+        openedOn = Month(2021, 1),
+        closedOn = Month(2021, 3),
+      )
+      account.isClosed(Month(2020, 1)) shouldBe true
+    }
   }
+
   describe("type") {
     it("isSummary false if type is not summary") {
       val account = Account(
@@ -131,5 +143,16 @@ class AccountTest : DescribeSpec({
       )
       account.toString() shouldBe "Account testAccount tax_"
     }
+
+    it("toString closed") {
+      val account = Account(
+        name = "testAccount",
+        type = AccountType.TAX,
+        owners = listOf("bob"),
+        closedOn = Month(2026, 2)
+      )
+      account.toString() shouldBe "Account testAccount tax_ Closed Mar2026"
+    }
+
   }
 })

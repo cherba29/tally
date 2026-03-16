@@ -136,6 +136,15 @@ class MonthTest : DescribeSpec({
       (monthB - monthA) shouldBe 12
       (monthA - monthB) shouldBe -12
     }
+
+    it("increment") {
+      var monthA = Month(2019, 11)
+      val monthB = monthA
+      monthA++
+      (monthB - monthA) shouldBe -1
+      monthA shouldBe Month(2020, 0)
+    }
+
   }
 
   describe("Naming") {
@@ -194,21 +203,6 @@ class MonthTest : DescribeSpec({
     }
   }
 
-  describe("generate") {
-    it("empty") {
-      val start = Month(2019, 10)
-      Month.generate(start, start).toList() shouldBe listOf()
-    }
-
-    it("a range") {
-      val start = Month(2019, 10)
-      val dec = start.next()
-      val jan = dec.next()
-      val end = Month(2020, 1)
-      Month.generate(start, end).toList() shouldBe listOf(start, dec, jan)
-    }
-  }
-
   describe("rangeTo") {
     it("empty") {
       val start = Month(2019, 10)
@@ -262,13 +256,28 @@ class MonthTest : DescribeSpec({
     it("downTo with step 2") {
       val start = Month(2019, 10)
       val dec = start.next()
-      val jan = dec.next()
       val end = Month(2020, 1)
       val months = mutableListOf<Month>()
       for (m in end downTo start step 2) {
         months.add(m)
       }
       months shouldBe listOf(end, dec)
+    }
+
+    it("fails with negative  step") {
+      val start = Month(2019, 10)
+      val end = Month(2020, 1)
+
+      val exception = shouldThrow<IllegalArgumentException> { start..end step -1  }
+      exception.message shouldBe "Month step should be positive, but got '-1'"
+    }
+
+    it("fails with negative reverse step") {
+      val start = Month(2019, 10)
+      val end = Month(2020, 1)
+
+      val exception = shouldThrow<IllegalArgumentException> { end downTo start step -1  }
+      exception.message shouldBe "Month step should be positive, but got '-1'"
     }
   }
 })
