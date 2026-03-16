@@ -6,6 +6,7 @@ import com.cherba29.tally.core.AccountType
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.Month
+import kotlin.collections.iterator
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.pow

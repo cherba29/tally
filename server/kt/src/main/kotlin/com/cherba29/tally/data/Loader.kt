@@ -12,9 +12,9 @@ import java.lang.AutoCloseable
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.locks.ReentrantLock
+import kotlin.collections.iterator
 import kotlin.concurrent.withLock
 import kotlin.io.path.extension
-import kotlin.io.path.name
 import kotlin.io.path.pathString
 import kotlin.io.path.readText
 import kotlin.io.path.relativeTo

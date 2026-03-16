@@ -1,5 +1,7 @@
 package com.cherba29.tally
 
+import kotlin.collections.iterator
+
 // TODO: use more kotlin idiomatic constructs.
 
 data class Entry2<ValueType>(val key1: String, val key2: String, val value: ValueType)

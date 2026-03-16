@@ -28,4 +28,3 @@ class SummaryService(val loader: Loader) : Query {
     private val logger = KotlinLogging.logger {}
   }
 }
-

@@ -2,7 +2,6 @@ package com.cherba29.tally
 
 import com.expediagroup.graphql.server.types.GraphQLRequest
 import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.core.test.TestScope
 import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.shouldBe
 import io.kotest.assertions.ktor.client.shouldHaveStatus

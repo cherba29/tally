@@ -10,6 +10,7 @@ import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import java.lang.IllegalStateException
 
 class TransactionTest : DescribeSpec({
   describe("Build") {
@@ -217,7 +218,7 @@ class TransactionTest : DescribeSpec({
       )
 
       val exception =
-        shouldThrow<java.lang.IllegalStateException> { buildTransactionStatementTable(builder.build(), owner = null) }
+        shouldThrow<IllegalStateException> { buildTransactionStatementTable(builder.build(), owner = null) }
       exception.message shouldBe "Balance Dec2019 Balance { amount: 10.00, date: 2019-12-01, type: CONFIRMED } " +
           "for account test-account1 starts after transaction test-account1 --> " +
           "test-account1/Balance { amount: 20.00, date: 2019-11-25, type: PROJECTED } " +

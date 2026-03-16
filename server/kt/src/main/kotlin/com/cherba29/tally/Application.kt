@@ -1,5 +1,8 @@
 package com.cherba29.tally
 
+import com.cherba29.tally.StatementService
+import com.cherba29.tally.SummaryService
+import com.cherba29.tally.TableService
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.schema.CustomSchemaGeneratorHooks
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
@@ -23,6 +26,7 @@ import io.ktor.serialization.jackson.JacksonWebsocketContentConverter
 import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.application.call
+import io.ktor.server.netty.EngineMain
 import io.ktor.server.plugins.origin
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respondText
@@ -35,7 +39,7 @@ import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.seconds
 
 fun main(args: Array<String>) {
-  io.ktor.server.netty.EngineMain.main(args)
+  EngineMain.main(args)
 }
 
 
