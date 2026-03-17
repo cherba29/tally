@@ -53,6 +53,7 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.core)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.kotlinx.coroutines.test.jvm)
+    testImplementation(libs.turbine)
 
     testRuntimeOnly(libs.logback.classic)
 }

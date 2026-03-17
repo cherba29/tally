@@ -39,6 +39,7 @@ ktor-server-websockets = { group = "io.ktor", name = "ktor-server-websockets", v
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logback-core = { module = "ch.qos.logback:logback-core", version.ref = "logback" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+turbine = { group = "app.cash.turbine", name = "turbine", version = "1.2.1" }
 
 [plugins]
 expediagroup-graphql = { id = "com.expediagroup.graphql", version.ref = "graphql-ktor" }

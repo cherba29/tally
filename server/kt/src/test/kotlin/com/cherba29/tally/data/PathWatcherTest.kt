@@ -1,7 +1,9 @@
 package com.cherba29.tally.data
 
+import app.cash.turbine.test
+import app.cash.turbine.turbineScope
 import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.core.test.testCoroutineScheduler
+import io.kotest.engine.coroutines.backgroundScope
 import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.shouldBe
 import java.nio.file.Paths
@@ -9,15 +11,6 @@ import kotlin.io.path.createDirectory
 import kotlin.io.path.createFile
 import kotlin.io.path.div
 import kotlin.io.path.writeText
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancelAndJoin
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.toList
 
@@ -54,9 +47,10 @@ class PathWatcherTest : DescribeSpec({
       val folder = tempdir("tally-", keepOnFailure = false).toPath()
       (folder / "file2.yaml").createFile()
 
-      val result = mutableListOf<WatchResult>()
-      folder.watchedEventFlow { true }.takeWhile { !it.reprocess }.toList(result)
-      result shouldBe listOf(WatchResult(Paths.get("file2.yaml"), reprocess=false))
+      folder.watchedEventFlow { true }.takeWhile { !it.reprocess }.test {
+        awaitItem() shouldBe WatchResult(Paths.get("file2.yaml"), reprocess=false)
+        awaitComplete()
+      }
     }
 
     it("returns single file in subdirectory") {
@@ -64,38 +58,28 @@ class PathWatcherTest : DescribeSpec({
       (folder / "subfolder").createDirectory()
       (folder / "subfolder" / "file2.yaml").createFile()
 
-      val result = mutableListOf<WatchResult>()
-      folder.watchedEventFlow { true }.takeWhile { !it.reprocess }.toList(result)
-      result shouldBe listOf(WatchResult(Paths.get("subfolder/file2.yaml"), reprocess=false))
+      folder.watchedEventFlow { true }.takeWhile { !it.reprocess }.test {
+        awaitItem() shouldBe WatchResult(Paths.get("subfolder/file2.yaml"), reprocess=false)
+        awaitComplete()
+      }
     }
   }
 
-// TODO: fix this flow test.
-//  describe("emits modified") {
-//    it("returns single file in root") {
-//      val folder = tempdir("tally-", keepOnFailure = false).toPath()
-//      val targetFile = (folder / "file2.yaml").createFile()
-//
-//      val deferredResult = CompletableDeferred<String>()
-//      val result = mutableListOf<WatchResult>()
-//      val job = folder.watchedEventFlow { true }.onEach {
-//        result.add(it)
-//      }.onCompletion {
-//        deferredResult.complete("done")
-//      }.launchIn(this)
-//
-//      testCoroutineScheduler.runCurrent()
-//      targetFile.writeText("hello")
-//      testCoroutineScheduler.advanceUntilIdle()
-//      job.cancelAndJoin()
-//      testCoroutineScheduler.advanceUntilIdle()
-//      deferredResult.await() shouldBe "done"
-//
-//      result shouldBe listOf(
-//        WatchResult(relativePath=Paths.get("file2.yaml"), reprocess=false),
-//        WatchResult(relativePath=null, reprocess=true),
-//        WatchResult(relativePath=Paths.get("file2.yaml"), reprocess=true)
-//      )
-//    }
-//  }
+  describe("emits modified") {
+    coroutineTestScope = true
+
+    it("returns single file in root") {
+      val folder = tempdir("tally-", keepOnFailure = false).toPath()
+      val targetFile = (folder / "file2.yaml").createFile()
+
+      turbineScope {
+        val flow = folder.watchedEventFlow { true }.testIn(backgroundScope)
+        flow.awaitItem() shouldBe WatchResult(relativePath = Paths.get("file2.yaml"), reprocess = false)
+        flow.awaitItem() shouldBe WatchResult(relativePath = null, reprocess = true)
+        targetFile.writeText("hello")
+        flow.awaitItem() shouldBe WatchResult(relativePath = Paths.get("file2.yaml"), reprocess = true)
+        flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
+      }
+    }
+  }
 })
