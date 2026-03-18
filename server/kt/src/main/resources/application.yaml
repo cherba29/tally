@@ -1,7 +1,7 @@
 ktor:
   application:
     modules:
-      - com.cherba29.tally.com.cherba29.tally.ApplicationKt.graphQLModule
+      - com.cherba29.tally.ApplicationKt.graphQLModule
   deployment:
     port: 8080
     # TODO: configure these EngineMain settings.

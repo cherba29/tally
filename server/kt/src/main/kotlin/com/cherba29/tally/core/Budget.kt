@@ -12,14 +12,9 @@ data class Budget(
   // Account name -> month -> transfers map.
   val transfers: Map<String, Map<String, List<Transfer>>>
 ) {
-  fun findActiveAccounts(): List<Account> {
-    val activeAccounts = mutableListOf<Account>()
-    for (account in accounts.values) {
-      if (months.find { m -> !account.isClosed(m) } != null) {
-        activeAccounts.add(account)
-      }
-    }
-    return activeAccounts
+  // TODO: is this needed, since this will always return all accounts.
+  fun findActiveAccounts(): List<Account> = accounts.values.filter {
+    account -> months.any { !account.isClosed(it) }
   }
 }
 
@@ -94,7 +89,7 @@ class BudgetBuilder(
       transferData.toMonth,
       transferData.fromMonth
     )
-    this.maxMonth = Month.max(
+    maxMonth = Month.max(
       maxMonth ?: transferData.toMonth,
       transferData.toMonth,
       transferData.fromMonth
@@ -142,7 +137,7 @@ class BudgetBuilder(
     }
     val months =
       if (minMonth != null && maxMonth != null) (minMonth!!..maxMonth!!).toList() else listOf()
-    return Budget(months, this.accounts, this.balances, budgetTransfers)
+    return Budget(months, accounts, balances, budgetTransfers)
   }
 
   companion object {

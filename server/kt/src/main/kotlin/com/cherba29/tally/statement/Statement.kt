@@ -40,19 +40,22 @@ abstract class Statement(
   val change: Int? get() = startBalance?.let { s ->
     endBalance?.let { e -> e.amount - s.amount }
   }
-  // TODO: add tests.
+
   val percentChange: Double? get() = startBalance?.let {
-    when (change) {
+    val changeAmount = change
+    when (changeAmount) {
       null -> null
       0 -> 0.0
-      else -> if (it.amount != 0) (100.0 * change!!) / it.amount else null
+      else -> if (it.amount != 0) (100.0 * changeAmount) / it.amount else null
     }
   }
+
   open val annualizedPercentChange: Double? get() = percentChange?.let {
     val result = (1 + (it.absoluteValue) / 100).pow(12) - 1
     // Don't consider 1000% and more as meaningful annualized numbers.
     if (result < 10) 100 * it.sign * result else null
   }
+
   val unaccounted: Int?
     get() = change?.let { it - addSub }
 

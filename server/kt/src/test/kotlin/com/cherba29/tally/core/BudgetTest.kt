@@ -141,4 +141,78 @@ class BudgetTest : DescribeSpec({
     val exception = shouldThrow<IllegalArgumentException> { builder.build() }
     exception.message shouldBe "Unknown account test-account2"
   }
+
+  describe("findActive accounts") {
+    it("no accounts") {
+      val builder = BudgetBuilder();
+      val budget = builder.build()
+
+      budget.accounts.size shouldBe 0
+      budget.findActiveAccounts() shouldBe listOf()
+    }
+
+    it("no months") {
+      val builder = BudgetBuilder();
+      val account1 = Account(
+        name = "test-account1",
+        type = AccountType.EXTERNAL,
+        owners = listOf(),
+      )
+      builder.setAccount(account1);
+      val budget = builder.build()
+
+      budget.accounts.size shouldBe 1
+      budget.findActiveAccounts() shouldBe listOf()
+    }
+
+    it("open account") {
+      val builder = BudgetBuilder();
+
+      val account1 = Account(
+        name = "test-account1",
+        type = AccountType.EXTERNAL,
+        owners = listOf(),
+        openedOn = Month(2026, 3)
+      )
+      builder.setAccount(account1);
+      val budget = builder.build()
+
+      budget.accounts.size shouldBe 1
+      budget.findActiveAccounts() shouldBe listOf(account1)
+    }
+
+    it("multiple accounts") {
+      val builder = BudgetBuilder();
+
+      val account1 = Account(
+        name = "test-account1",
+        type = AccountType.EXTERNAL,
+        owners = listOf(),
+        openedOn = Month(2026, 3)
+      )
+
+      val account2 = Account(
+        name = "test-account2",
+        type = AccountType.EXTERNAL,
+        owners = listOf(),
+      )
+
+      val account3 = Account(
+        name = "test-account3",
+        type = AccountType.EXTERNAL,
+        owners = listOf(),
+        openedOn = Month(2020, 0),
+        closedOn = Month(2020, 1),
+      )
+
+      builder.setAccount(account1);
+      builder.setAccount(account2);
+      builder.setAccount(account3);
+      val budget = builder.build()
+
+      budget.accounts.size shouldBe 3
+      budget.findActiveAccounts() shouldBe listOf(account1, account2, account3)
+    }
+  }
+
 })

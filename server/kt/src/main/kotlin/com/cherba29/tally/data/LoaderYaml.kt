@@ -235,7 +235,7 @@ class CustomProblemHandler : DeserializationProblemHandler() {
 }
 
 // TODO: make it a class so mapper does not have to be instantiated every time.
-fun parseYamlContent(content: String, relativeFilePath: Path): YamlData? {
+fun parseYamlContent(content: String, relativeFilePath: Path): YamlData {
   val mapper = ObjectMapper(YAMLFactory()).registerKotlinModule()
   val module = SimpleModule()
   module.addDeserializer(LocalDate::class.java, LocalDateDeserializer())

@@ -107,5 +107,52 @@ class LoaderTest : DescribeSpec({
         )
       }
     }
+
+    it("reloads when changed ignoring error") {
+      val tallyPath = tempdir("tally-", keepOnFailure = false).toPath()
+      (tallyPath / "file2.yaml").createFile().writeText(
+        """
+          name: test-account
+          owner: [someone]
+          type: external
+          opened_on: Mar2019
+          balances:
+            - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
+          """.trimIndent()
+      )
+
+      Loader(tallyPath).use { loader ->
+        val result1 = loader.budget
+        result1.budget.balances["test-account"]?.get("Mar2019") shouldBe Balance(
+          10000, LocalDate(2019, 3, 1),
+          BalanceType.CONFIRMED
+        )
+        val loadedOn = loader.loadedOn
+
+        (tallyPath / "file2.yaml").writeText(
+          """
+          name: test-account
+          owner: [someone]
+          type: external
+          opened_on: Mar2019
+          balances:
+            - { grp: Mar2019, date: 2019-0301, camt: 200.00 }
+          """.trimIndent()
+        )
+        // TODO: inject change flow into loader for better testing.
+        repeat(10) {
+          if (loadedOn < loader.loadedOn) return@repeat
+          delay(200)
+        }
+        loader.loadedOn shouldBe loadedOn
+
+        val result2 = loader.budget
+        result2.budget.balances["test-account"]?.get("Mar2019") shouldBe Balance(
+          10000, LocalDate(2019, 3, 1),
+          BalanceType.CONFIRMED
+        )
+      }
+    }
+
   }
 })

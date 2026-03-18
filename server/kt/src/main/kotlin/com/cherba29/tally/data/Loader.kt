@@ -1,12 +1,12 @@
 package com.cherba29.tally.data
 
-import com.cherba29.tally.Map3
 import com.cherba29.tally.core.Budget
 import com.cherba29.tally.core.BudgetBuilder
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import com.cherba29.tally.statement.buildSummaryStatementTable
 import com.cherba29.tally.statement.buildTransactionStatementTable
+import com.cherba29.tally.utils.Map3
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.lang.AutoCloseable
 import java.nio.file.Path
@@ -114,11 +114,6 @@ class ProcessedBudget {
   fun addFile(rootPath: Path, relativeFilePath: Path) {
     val content = rootPath.resolve(relativeFilePath).readText(Charsets.UTF_8)
     val accountData = parseYamlContent(content, relativeFilePath)
-    if (accountData == null) {
-      throw IllegalStateException(
-        "Failed to parse $relativeFilePath content of size ${content.length} fileStat: $relativeFilePath"
-      )
-    }
     parsedAccountData[relativeFilePath.toString()] = accountData
   }
 
@@ -155,8 +150,8 @@ class Loader(tallyFilesPath: Path): AutoCloseable {
         processedBudget.addFile(watchedPath, relativePath)
       } catch (e: Exception) {
         logger.error { "Failed to reload $relativePath. $e" }
+        return@onEach
       }
-
     }
     if (reprocess) {
       dataLock.withLock {

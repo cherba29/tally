@@ -1,11 +1,11 @@
 package com.cherba29.tally.statement
 
-import com.cherba29.tally.Map3
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.AccountType
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.utils.Map3
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate

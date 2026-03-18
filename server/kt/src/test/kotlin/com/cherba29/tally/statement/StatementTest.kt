@@ -6,6 +6,7 @@ import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.Month
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate
 
@@ -178,11 +179,12 @@ class StatementTest : DescribeSpec({
     stmt.addOutFlow(-30)
     stmt.addOutFlow(10)
     stmt.percentChange shouldBe 100.0
+    stmt.annualizedPercentChange shouldBe null  // since more than 1000%
   }
 
   it("change") {
     val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), BalanceType.PROJECTED)
-    val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), BalanceType.PROJECTED)
+    val endBalance = Balance(1020, LocalDate.parse("2020-02-01"), BalanceType.PROJECTED)
     val stmt = TestStatement(
       Account(name = "test", type = AccountType.BILL, owners = listOf()),
       Month.fromString("Mar2021"),
@@ -193,6 +195,8 @@ class StatementTest : DescribeSpec({
     stmt.addInFlow(-10)
     stmt.addOutFlow(-30)
     stmt.addOutFlow(10)
-    stmt.change shouldBe 1000.0
+    stmt.change shouldBe 20
+    stmt.percentChange shouldBe 2.0
+    stmt.annualizedPercentChange shouldBe (26.8242 plusOrMinus 0.0001)
   }
 })
