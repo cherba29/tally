@@ -5,6 +5,10 @@ import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.BudgetBuilder
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.MonthName.FEB
+import com.cherba29.tally.core.MonthName.JAN
+import com.cherba29.tally.core.MonthName.MAR
+import com.cherba29.tally.core.MonthName.NOV
 import com.cherba29.tally.core.Transfer
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
@@ -88,8 +92,8 @@ class LoadYamlTest : DescribeSpec({
       account.userName shouldBe "john"
       account.password shouldBe "xxxyyy"
       account.owners shouldBe listOf("arthur")
-      account.openedOn shouldBe Month(2019, 10)
-      account.closedOn shouldBe Month(2020, 2)
+      account.openedOn shouldBe NOV / 2019
+      account.closedOn shouldBe MAR / 2020
 
       budget.balances.size shouldBe 0
       budget.months.size shouldBe 5
@@ -118,8 +122,8 @@ class LoadYamlTest : DescribeSpec({
 
       val balances = budget.balances["test-account"]!!
       balances.size shouldBe 2
-      balances[Month(2020, Month.JAN)] shouldBe Balance(0, LocalDate.parse("2020-01-01"), BalanceType.CONFIRMED)
-      balances[Month(2020, Month.FEB)] shouldBe Balance(1000, LocalDate.parse("2020-02-01"), BalanceType.PROJECTED)
+      balances[JAN / 2020] shouldBe Balance(0, LocalDate.parse("2020-01-01"), BalanceType.CONFIRMED)
+      balances[FEB / 2020] shouldBe Balance(1000, LocalDate.parse("2020-02-01"), BalanceType.PROJECTED)
     }
 
     it("fails without balance month") {
@@ -257,7 +261,7 @@ class LoadYamlTest : DescribeSpec({
 
       val testAccountTransfers = budget.transfers["test-account"]!!
       testAccountTransfers.size shouldBe 1
-      val testAccountMonthTransfers = testAccountTransfers[Month(2020, Month.JAN)]
+      val testAccountMonthTransfers = testAccountTransfers[JAN / 2020]
       testAccountMonthTransfers shouldBe setOf(
         Transfer(
           fromAccount = testAccount,
@@ -278,7 +282,7 @@ class LoadYamlTest : DescribeSpec({
       )
       val externalAccountTransfers = budget.transfers["external"]!!
       externalAccountTransfers.size shouldBe 1
-      val externalAccountMonthTransfers = externalAccountTransfers[Month(2020, Month.JAN)]
+      val externalAccountMonthTransfers = externalAccountTransfers[JAN / 2020]
       externalAccountMonthTransfers shouldBe setOf(
         Transfer(
           fromAccount = testAccount,

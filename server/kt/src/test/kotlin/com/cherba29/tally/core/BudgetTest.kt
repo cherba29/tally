@@ -1,5 +1,10 @@
 package com.cherba29.tally.core
 
+import com.cherba29.tally.core.MonthName.APR
+import com.cherba29.tally.core.MonthName.DEC
+import com.cherba29.tally.core.MonthName.FEB
+import com.cherba29.tally.core.MonthName.JAN
+import com.cherba29.tally.core.MonthName.NOV
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -38,25 +43,25 @@ class BudgetTest : DescribeSpec({
     builder.setAccount(account3)
     builder.setBalance(
       "test-account1",
-      Month(2019, Month.NOV),
+      NOV / 2019,
       Balance(100, LocalDate(2019, 11, 1), BalanceType.PROJECTED)
     )
     builder.setBalance(
       "test-account1",
-      Month(2019, Month.DEC),
+      DEC / 2019,
       Balance(200, LocalDate(2019, 12, 1), BalanceType.PROJECTED)
     )
     builder.setBalance(
       "test-account2",
-      Month(2019, Month.NOV),
+      NOV / 2019,
       Balance(200, LocalDate(2019, 11, 3), BalanceType.CONFIRMED)
     )
     builder.addTransfer(
       TransferData(
         toAccount = "test-account1",
-        toMonth = Month(2019, 10),
+        toMonth = NOV / 2019,
         fromAccount = "test-account2",
-        fromMonth = Month(2019, 10),
+        fromMonth = NOV / 2019,
         balance = Balance(50, LocalDate(2019, 11, 2), BalanceType.CONFIRMED),
         description = null
       )
@@ -64,9 +69,9 @@ class BudgetTest : DescribeSpec({
     builder.addTransfer(
       TransferData(
         toAccount = "test-account3",
-        toMonth = Month(2019, 10),
+        toMonth = NOV / 2019 ,
         fromAccount = "test-account2",
-        fromMonth = Month(2019, 10),
+        fromMonth = NOV / 2019,
         balance = Balance(70, LocalDate(2019, 11, 2), BalanceType.CONFIRMED),
         description = null
       )
@@ -91,13 +96,13 @@ class BudgetTest : DescribeSpec({
     builder.setAccount(account1)
     builder.setBalance(
       "test-account1",
-      Month(2019, Month.NOV),
+      NOV / 2019,
       Balance(10000, LocalDate(2019, 11, 1), BalanceType.PROJECTED)
     )
     val exception = shouldThrow<IllegalArgumentException> {
       builder.setBalance(
         "test-account1",
-        Month(2019, Month.NOV),
+        NOV / 2019,
         Balance(20000, LocalDate(2020, 3, 1), BalanceType.PROJECTED)
       )
     }
@@ -109,9 +114,9 @@ class BudgetTest : DescribeSpec({
     builder.addTransfer(
       TransferData(
         toAccount = "test-account1",
-        toMonth = Month(2019, 10),
+        toMonth = NOV / 2019,
         fromAccount = "test-account2",
-        fromMonth = Month(2019, 10),
+        fromMonth = NOV / 2019,
         balance = Balance(50, LocalDate(2019, 12, 2), BalanceType.CONFIRMED),
         description = null,
       )
@@ -131,9 +136,9 @@ class BudgetTest : DescribeSpec({
     builder.addTransfer(
       TransferData(
         toAccount = "test-account1",
-        toMonth = Month(2019, 10),
+        toMonth = NOV / 2019,
         fromAccount = "test-account2",
-        fromMonth = Month(2019, 10),
+        fromMonth = NOV / 2019,
         balance = Balance(50, LocalDate(2019, 11, 2), BalanceType.CONFIRMED),
         description = null,
       )
@@ -172,7 +177,7 @@ class BudgetTest : DescribeSpec({
         name = "test-account1",
         type = AccountType.EXTERNAL,
         owners = listOf(),
-        openedOn = Month(2026, 3)
+        openedOn = APR / 2026
       )
       builder.setAccount(account1)
       val budget = builder.build()
@@ -188,7 +193,7 @@ class BudgetTest : DescribeSpec({
         name = "test-account1",
         type = AccountType.EXTERNAL,
         owners = listOf(),
-        openedOn = Month(2026, 3)
+        openedOn = APR / 2026
       )
 
       val account2 = Account(
@@ -201,8 +206,8 @@ class BudgetTest : DescribeSpec({
         name = "test-account3",
         type = AccountType.EXTERNAL,
         owners = listOf(),
-        openedOn = Month(2020, 0),
-        closedOn = Month(2020, 1),
+        openedOn = JAN / 2020,
+        closedOn = FEB / 2020,
       )
 
       builder.setAccount(account1)

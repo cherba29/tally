@@ -3,6 +3,7 @@ package com.cherba29.tally.data
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.MonthName.MAR
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.longs.shouldBeLessThan
@@ -56,7 +57,7 @@ class LoaderTest : DescribeSpec({
         tranStatement.month shouldBe Month(2019, 2)
         tranStatement.account.name shouldBe "test-account"
 
-        result.budget.balances["test-account"]?.get(Month(2019, Month.MAR)) shouldBe Balance(
+        result.budget.balances["test-account"]?.get(MAR / 2019) shouldBe Balance(
           10000, LocalDate(2019, 3, 1),
           BalanceType.CONFIRMED
         )
@@ -78,7 +79,7 @@ class LoaderTest : DescribeSpec({
 
       Loader(tallyPath).use { loader ->
         val result1 = loader.budget
-        result1.budget.balances["test-account"]?.get(Month(2019, Month.MAR)) shouldBe Balance(
+        result1.budget.balances["test-account"]?.get(MAR / 2019) shouldBe Balance(
           10000, LocalDate(2019, 3, 1),
           BalanceType.CONFIRMED
         )
@@ -101,7 +102,7 @@ class LoaderTest : DescribeSpec({
         loadedOn shouldBeLessThan loader.loadedOn
 
         val result2 = loader.budget
-        result2.budget.balances["test-account"]?.get(Month(2019, Month.MAR)) shouldBe Balance(
+        result2.budget.balances["test-account"]?.get(MAR / 2019) shouldBe Balance(
           20000, LocalDate(2019, 3, 1),
           BalanceType.CONFIRMED
         )
@@ -123,7 +124,7 @@ class LoaderTest : DescribeSpec({
 
       Loader(tallyPath).use { loader ->
         val result1 = loader.budget
-        result1.budget.balances["test-account"]?.get(Month(2019, Month.MAR)) shouldBe Balance(
+        result1.budget.balances["test-account"]?.get(MAR / 2019) shouldBe Balance(
           10000, LocalDate(2019, 3, 1),
           BalanceType.CONFIRMED
         )
@@ -147,7 +148,7 @@ class LoaderTest : DescribeSpec({
         loader.loadedOn shouldBe loadedOn
 
         val result2 = loader.budget
-        result2.budget.balances["test-account"]?.get(Month(2019, Month.MAR)) shouldBe Balance(
+        result2.budget.balances["test-account"]?.get(MAR / 2019) shouldBe Balance(
           10000, LocalDate(2019, 3, 1),
           BalanceType.CONFIRMED
         )

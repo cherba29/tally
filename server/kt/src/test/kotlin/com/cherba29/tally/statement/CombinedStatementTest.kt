@@ -4,7 +4,8 @@ import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.AccountType
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.BalanceType
-import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.MonthName.JAN
+import com.cherba29.tally.core.MonthName.MAR
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate
@@ -18,8 +19,8 @@ class CombinedStatementTest : DescribeSpec({
       )
       val statement = CombinedStatement(
         account,
-        month = Month(2026, Month.MAR),
-        startMonth = Month(2026, Month.JAN),
+        month = MAR / 2026,
+        startMonth = JAN / 2026,
       )
       statement.isClosed shouldBe false
       statement.percentChange shouldBe null
@@ -34,8 +35,8 @@ class CombinedStatementTest : DescribeSpec({
 
       val combined = CombinedStatement.fromStatements(
         account,
-        startMonth = Month(2026, Month.JAN),
-        endMonth = Month(2026, Month.MAR),
+        startMonth = JAN / 2026,
+        endMonth = MAR / 2026,
         statements = mapOf()
       )
       combined.isClosed shouldBe false
@@ -49,7 +50,7 @@ class CombinedStatementTest : DescribeSpec({
         name = "test-account",
         type = AccountType.EXTERNAL,
       )
-      val startMonth = Month(2026, Month.JAN)
+      val startMonth = JAN / 2026
       val statement = TransactionStatement(
         account = account,
         month = startMonth,
@@ -62,7 +63,7 @@ class CombinedStatementTest : DescribeSpec({
       val combined = CombinedStatement.fromStatements(
         account,
         startMonth,
-        endMonth = Month(2026, Month.MAR),
+        endMonth = MAR / 2026,
         statements = mapOf(startMonth to statement)
       )
       combined.isClosed shouldBe false
