@@ -29,8 +29,8 @@ fun buildTransactionStatementTable(budget: Budget, owner: String?): List<Transac
     TransactionStatement.fromTransfers(
       account,
       month,
-      budget.transfers[account.name]?.get(month.toString()),
-      budget.balances[account.name]?.get(month.toString())
+      budget.transfers[account.name]?.get(month),
+      budget.balances[account.name]?.get(month)
     )
   }
 

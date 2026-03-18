@@ -146,7 +146,7 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
           "For ${account.name} account $balance and month $month are $balanceMonthDiff months apart (2 max)."
         )
       }
-      budgetBuilder.setBalance(account.name, month.toString(), balance)
+      budgetBuilder.setBalance(account.name, month, balance)
     }
   }
   if (data.transfersTo != null) {

@@ -118,8 +118,8 @@ class LoadYamlTest : DescribeSpec({
 
       val balances = budget.balances["test-account"]!!
       balances.size shouldBe 2
-      balances["Jan2020"] shouldBe Balance(0, LocalDate.parse("2020-01-01"), BalanceType.CONFIRMED)
-      balances["Feb2020"] shouldBe Balance(1000, LocalDate.parse("2020-02-01"), BalanceType.PROJECTED)
+      balances[Month(2020, Month.JAN)] shouldBe Balance(0, LocalDate.parse("2020-01-01"), BalanceType.CONFIRMED)
+      balances[Month(2020, Month.FEB)] shouldBe Balance(1000, LocalDate.parse("2020-02-01"), BalanceType.PROJECTED)
     }
 
     it("fails without balance month") {
@@ -257,7 +257,7 @@ class LoadYamlTest : DescribeSpec({
 
       val testAccountTransfers = budget.transfers["test-account"]!!
       testAccountTransfers.size shouldBe 1
-      val testAccountMonthTransfers = testAccountTransfers["Jan2020"]
+      val testAccountMonthTransfers = testAccountTransfers[Month(2020, Month.JAN)]
       testAccountMonthTransfers shouldBe setOf(
         Transfer(
           fromAccount = testAccount,
@@ -278,7 +278,7 @@ class LoadYamlTest : DescribeSpec({
       )
       val externalAccountTransfers = budget.transfers["external"]!!
       externalAccountTransfers.size shouldBe 1
-      val externalAccountMonthTransfers = externalAccountTransfers["Jan2020"]
+      val externalAccountMonthTransfers = externalAccountTransfers[Month(2020, Month.JAN)]
       externalAccountMonthTransfers shouldBe setOf(
         Transfer(
           fromAccount = testAccount,

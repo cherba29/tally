@@ -38,17 +38,17 @@ class BudgetTest : DescribeSpec({
     builder.setAccount(account3)
     builder.setBalance(
       "test-account1",
-      "Nov2019",
+      Month(2019, Month.NOV),
       Balance(100, LocalDate(2019, 11, 1), BalanceType.PROJECTED)
     )
     builder.setBalance(
       "test-account1",
-      "Dec2019",
+      Month(2019, Month.DEC),
       Balance(200, LocalDate(2019, 12, 1), BalanceType.PROJECTED)
     )
     builder.setBalance(
       "test-account2",
-      "Nov2019",
+      Month(2019, Month.NOV),
       Balance(200, LocalDate(2019, 11, 3), BalanceType.CONFIRMED)
     )
     builder.addTransfer(
@@ -82,7 +82,7 @@ class BudgetTest : DescribeSpec({
   }
 
   it("build budget - duplicate balance") {
-    val builder = BudgetBuilder();
+    val builder = BudgetBuilder()
     val account1 = Account(
       name = "test-account1",
       type = AccountType.EXTERNAL,
@@ -91,13 +91,13 @@ class BudgetTest : DescribeSpec({
     builder.setAccount(account1)
     builder.setBalance(
       "test-account1",
-      "Nov2019",
+      Month(2019, Month.NOV),
       Balance(10000, LocalDate(2019, 11, 1), BalanceType.PROJECTED)
-    );
+    )
     val exception = shouldThrow<IllegalArgumentException> {
       builder.setBalance(
         "test-account1",
-        "Nov2019",
+        Month(2019, Month.NOV),
         Balance(20000, LocalDate(2020, 3, 1), BalanceType.PROJECTED)
       )
     }
@@ -105,7 +105,7 @@ class BudgetTest : DescribeSpec({
   }
 
   it("build budget - bad to account") {
-    val builder = BudgetBuilder();
+    val builder = BudgetBuilder()
     builder.addTransfer(
       TransferData(
         toAccount = "test-account1",
@@ -121,13 +121,13 @@ class BudgetTest : DescribeSpec({
   }
 
   it("build budget - bad from account") {
-    val builder = BudgetBuilder();
+    val builder = BudgetBuilder()
     val account1 = Account(
       name = "test-account1",
       type = AccountType.EXTERNAL,
       owners = listOf(),
     )
-    builder.setAccount(account1);
+    builder.setAccount(account1)
     builder.addTransfer(
       TransferData(
         toAccount = "test-account1",
@@ -144,7 +144,7 @@ class BudgetTest : DescribeSpec({
 
   describe("findActive accounts") {
     it("no accounts") {
-      val builder = BudgetBuilder();
+      val builder = BudgetBuilder()
       val budget = builder.build()
 
       budget.accounts.size shouldBe 0
@@ -152,13 +152,13 @@ class BudgetTest : DescribeSpec({
     }
 
     it("no months") {
-      val builder = BudgetBuilder();
+      val builder = BudgetBuilder()
       val account1 = Account(
         name = "test-account1",
         type = AccountType.EXTERNAL,
         owners = listOf(),
       )
-      builder.setAccount(account1);
+      builder.setAccount(account1)
       val budget = builder.build()
 
       budget.accounts.size shouldBe 1
@@ -166,7 +166,7 @@ class BudgetTest : DescribeSpec({
     }
 
     it("open account") {
-      val builder = BudgetBuilder();
+      val builder = BudgetBuilder()
 
       val account1 = Account(
         name = "test-account1",
@@ -174,7 +174,7 @@ class BudgetTest : DescribeSpec({
         owners = listOf(),
         openedOn = Month(2026, 3)
       )
-      builder.setAccount(account1);
+      builder.setAccount(account1)
       val budget = builder.build()
 
       budget.accounts.size shouldBe 1
@@ -182,7 +182,7 @@ class BudgetTest : DescribeSpec({
     }
 
     it("multiple accounts") {
-      val builder = BudgetBuilder();
+      val builder = BudgetBuilder()
 
       val account1 = Account(
         name = "test-account1",
@@ -205,9 +205,9 @@ class BudgetTest : DescribeSpec({
         closedOn = Month(2020, 1),
       )
 
-      builder.setAccount(account1);
-      builder.setAccount(account2);
-      builder.setAccount(account3);
+      builder.setAccount(account1)
+      builder.setAccount(account2)
+      builder.setAccount(account3)
       val budget = builder.build()
 
       budget.accounts.size shouldBe 3
