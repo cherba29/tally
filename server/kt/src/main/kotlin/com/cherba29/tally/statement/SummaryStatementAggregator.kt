@@ -77,4 +77,13 @@ class SummaryStatementAggregator {
       }
     }
   }
+
+  companion object {
+    private fun traverseBottomUp(root: String, tree: Map<String, Set<String>>): Sequence<String> = sequence {
+      for (child in tree[root] ?: setOf()) {
+        yieldAll(traverseBottomUp(child, tree))
+      }
+      yield(root)
+    }
+  }
 }

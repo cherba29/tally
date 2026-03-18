@@ -98,5 +98,17 @@ data class Month(val year: Int, val month: Int) : Comparable<Month> {
     fun fromDate(date: LocalDate): Month = Month(date.year, date.month.number - 1)
     fun min(vararg args: Month): Month = args.min()
     fun max(vararg args: Month): Month = args.max()
+    const val JAN = 0
+    const val FEB = 1
+    const val MAR = 2
+    const val APR = 3
+    const val MAY = 4
+    const val JUN = 5
+    const val JUL = 6
+    const val AUG = 7
+    const val SEP = 8
+    const val OCT = 9
+    const val NOV = 10
+    const val DEC = 11
   }
 }

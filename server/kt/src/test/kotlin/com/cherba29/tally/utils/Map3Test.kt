@@ -3,7 +3,7 @@ package com.cherba29.tally.utils
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
-class UtilsTest : DescribeSpec({
+class Map3Test : DescribeSpec({
   describe("Map3") {
     it("get and set") {
       val map = Map3<Int>()
