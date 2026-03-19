@@ -45,6 +45,7 @@ private fun <T> getMonthTransfers(
   return monthTransfers
 }
 
+// TODO: define DSL for building the budget.
 class BudgetBuilder(
   private var minMonth: Month? = null,
   private var maxMonth: Month? = null,
@@ -54,7 +55,7 @@ class BudgetBuilder(
   val balances: MutableMap<String, MutableMap<Month, Balance>> = mutableMapOf(),
   val transfers: MutableList<TransferData> = mutableListOf()
 ) {
-  fun setAccount(account: Account) {
+  fun setAccount(account: Account): BudgetBuilder {
     accounts[account.name] = account
     if (account.openedOn != null) {
       minMonth = if (minMonth != null) Month.min(minMonth!!, account.openedOn) else account.openedOn
@@ -64,9 +65,10 @@ class BudgetBuilder(
       minMonth = if (minMonth != null) Month.min(minMonth!!, account.closedOn) else account.closedOn
       maxMonth = if (maxMonth != null) Month.max(maxMonth!!, account.closedOn) else account.closedOn
     }
+    return this
   }
 
-  fun setBalance(accountName: String, month: Month, balance: Balance) {
+  fun setBalance(accountName: String, month: Month, balance: Balance): BudgetBuilder {
     var accountBalances = balances[accountName]
     if (accountBalances == null) {
       accountBalances = mutableMapOf()
@@ -80,6 +82,7 @@ class BudgetBuilder(
 
     minMonth = if (minMonth != null) Month.min(minMonth!!, month) else month
     maxMonth = if (maxMonth != null) Month.max(maxMonth!!, month) else month
+    return this
   }
 
   fun addTransfer(transferData: TransferData) {

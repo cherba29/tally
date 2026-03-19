@@ -77,7 +77,12 @@ fun buildGqlTable(payload: DataPayload, owner: String?, startMonth: Month, endMo
   val months = payload.budget.months.filter { m -> m <= endMonth && startMonth <= m }.sortedDescending()
   val activeAccounts = payload.budget.findActiveAccounts()
   val owners = activeAccounts.map { account -> account.owners }.flatten().distinct().sorted()
-  val forOwner = if (owner == null || owner.isEmpty()) owners.first() else owner
+  val forOwner = if (owner == null || owner.isEmpty()) {
+    owners.firstOrNull { !it.isEmpty() }
+      ?: throw IllegalArgumentException("No owner is specified and one cannot be derived from accounts")
+  } else {
+    owner
+  }
   val accounts = activeAccounts.filter { a -> a.owners.contains(forOwner) }
 
   val rows = mutableListOf<GqlTableRow>()
@@ -88,7 +93,9 @@ fun buildGqlTable(payload: DataPayload, owner: String?, startMonth: Month, endMo
   for (entry in ordering) {
     if (entry.isTotal) {
       val summaryMonthMap = payload.summaries.get2(forOwner, entry.id)
-        ?: throw NotFoundException("Did not find summary statement for ['$forOwner', '${entry.id}']")
+        ?: throw java.lang.IllegalArgumentException(
+          "Did not find summary statement at '${entry.id}' for owner '$forOwner' in payload summaries"
+        )
       val cells: List<GqlTableCell> = months.mapNotNull { month ->
         summaryMonthMap[month.toString()]?.toGqlTableCell()
       }
