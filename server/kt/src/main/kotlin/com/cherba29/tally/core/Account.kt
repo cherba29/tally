@@ -35,7 +35,14 @@ data class Account(
     INVESTMENT("investment"),
     RETIREMENT("retirement"),
     SUMMARY("_summary_"),
-    TAX("tax_"),
+    TAX("tax_");
+
+    companion object {
+      fun fromString(value: String?): Type? {
+        if (value == null) { return UNSPECIFIED }
+        return entries.find { it.id == value }
+      }
+    }
   }
 
   override fun toString(): String = "Account $name ${type.id}${if (closedOn == null) "" else " Closed $closedOn"}"

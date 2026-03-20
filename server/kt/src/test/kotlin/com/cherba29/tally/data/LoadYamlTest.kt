@@ -148,7 +148,6 @@ class LoadYamlTest : DescribeSpec({
     }
 
     it("fails with bad balance month") {
-      val budgetBuilder = BudgetBuilder()
       val relativeFilePath = Paths.get("path/file.yaml")
       val content = """
       name: test-account
@@ -157,16 +156,11 @@ class LoadYamlTest : DescribeSpec({
       balances:
       - { grp: Xxx2020, date: 2020-01-01, camt:  0.00 }
       """.trimIndent()
-      val parsedContent = parseYamlContent(content, relativeFilePath)
-      parsedContent shouldNotBe null
       val exception = shouldThrow<IllegalArgumentException> {
-        loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
+        parseYamlContent(content, relativeFilePath)
       }
-      // TODO: do not test for BalanceData toString representation.
-      exception.message shouldBe "Balance BalanceYamlData(" +
-          "grp=Xxx2020, date=2020-01-01, camt=0.0, pamt=null, desc=null) " +
-          "has bad grp setting: Bad month name 'Xxx' for 'Xxx2020', valid names " +
-          "[Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec] while processing path/file.yaml"
+      exception.message shouldContain "Bad month name 'Xxx' for 'Xxx2020', valid names " +
+          "[Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec]"
     }
 
     it("fails without balance date") {

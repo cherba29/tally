@@ -6,15 +6,13 @@ import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.BudgetBuilder
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.TransferData
+import com.cherba29.tally.data.yaml.CustomProblemHandler
+import com.cherba29.tally.data.yaml.LocalDateDeserializer
+import com.cherba29.tally.data.yaml.MonthDeserializer
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.JsonMappingException
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
@@ -26,7 +24,7 @@ import kotlinx.datetime.LocalDate
 
 @JsonIgnoreProperties(value = ["xamt"])
 data class BalanceYamlData(
-  val grp: String?,
+  val grp: Month?,
   val date: LocalDate?,
   val camt: Double?,
   val pamt: Double?,
@@ -36,7 +34,7 @@ data class BalanceYamlData(
 
 // TODO: add checks for duplicate keys, eg: two desc fields are provided.
 data class TransferYamlData(
-  val grp: String?,
+  val grp: Month?,
   val date: LocalDate?,
   val camt: Double?,
   val pamt: Double?,
@@ -54,9 +52,9 @@ data class YamlData(
   val path: List<String>?,
   val type: String?,
   @param:JsonProperty("opened_on")
-  val openedOn: String?,
+  val openedOn: Month?,
   @param:JsonProperty("closed_on")
-  val closedOn: String?,
+  val closedOn: Month?,
   val owner: List<String>?,
   val url: String?,
   val phone: String?,
@@ -67,8 +65,6 @@ data class YamlData(
   @param:JsonProperty("transfers_to")
   val transfersTo: Map<String, List<TransferYamlData>?>?,
 )
-
-fun lookupAccountType(type: String): Account.Type? = Account.Type.entries.find { it.id == type }
 
 private fun BalanceYamlData.toBalance(): Balance {
   var amount: Int
@@ -94,7 +90,7 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
     // Ignore data which dont represent account.
     return
   }
-  val accountType = if (data.type == null) Account.Type.UNSPECIFIED else lookupAccountType(data.type)
+  val accountType = Account.Type.fromString(data.type)
   if (accountType == null) {
     throw IllegalArgumentException("Unknown type '${data.type}' for account '${data.name}'")
   }
@@ -117,8 +113,8 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
     path = data.path ?: listOf(),
     type = accountType,
     number = data.number,
-    openedOn = if (data.openedOn != null) Month.fromString(data.openedOn) else null,
-    closedOn = if (data.closedOn != null) Month.fromString(data.closedOn) else null,
+    openedOn = data.openedOn,
+    closedOn = data.closedOn,
     owners = data.owner,
     url = data.url,
     phone = data.phone,
@@ -134,7 +130,7 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
       }
       var month: Month
       try {
-        month = Month.fromString(balanceData.grp)
+        month = balanceData.grp
       } catch (e: Exception) {
         throw IllegalArgumentException("Balance $balanceData has bad grp setting: ${e.message}")
       }
@@ -183,7 +179,7 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
           )
         }
 
-        val transferMonth = Month.fromString(transferData.grp)
+        val transferMonth = transferData.grp
         val balanceMonth = Month.fromDate(balance.date)
         if (abs(balanceMonth - transferMonth) > 2) {
           throw IllegalArgumentException(
@@ -206,38 +202,12 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
   }
 }
 
-class LocalDateDeserializer : JsonDeserializer<LocalDate>() {
-  override fun deserialize(p: JsonParser, ctxt: DeserializationContext): LocalDate {
-    val node: JsonNode = p.codec.readTree(p)
-    return LocalDate.parse(node.asText())
-  }
-}
-
-class CustomProblemHandler : DeserializationProblemHandler() {
-  private val yamlIgnoredFields = mutableListOf<String>()
-
-  val ignoredFields: List<String> get() = yamlIgnoredFields
-
-  override fun handleUnknownProperty(
-    ctxt: DeserializationContext,
-    p: JsonParser,
-    deserializer: JsonDeserializer<*>,
-    beanOrClass: Any,
-    propertyName: String?
-  ): Boolean {
-    if (propertyName != null) {
-      yamlIgnoredFields.add(p.parsingContext.pathAsPointer(false).toString())
-    }
-    p.skipChildren()  // Skip the unknown property's value
-    return true  // Mark as handled
-  }
-}
-
 // TODO: make it a class so mapper does not have to be instantiated every time.
 fun parseYamlContent(content: String, relativeFilePath: Path): YamlData {
   val mapper = ObjectMapper(YAMLFactory()).registerKotlinModule()
   val module = SimpleModule()
   module.addDeserializer(LocalDate::class.java, LocalDateDeserializer())
+  module.addDeserializer(Month::class.java, MonthDeserializer())
   mapper.registerModule(module)
   val problemHandler = CustomProblemHandler()
   mapper.addHandler(problemHandler)
