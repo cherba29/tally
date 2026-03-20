@@ -53,7 +53,7 @@ class LoaderTest : DescribeSpec({
         val result = loader.budget
 
         result.statements.size shouldBe 1
-        val tranStatement = result.statements["test-account"]?.get("Mar2019")!!
+        val tranStatement = result.statements["test-account"]?.get(MAR / 2019)!!
         tranStatement.month shouldBe Month(2019, 2)
         tranStatement.account.name shouldBe "test-account"
 

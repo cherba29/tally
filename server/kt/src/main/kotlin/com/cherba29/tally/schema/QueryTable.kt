@@ -10,15 +10,14 @@ class NotFoundException(message: String) : RuntimeException(message)
 
 data class RowEntry(
   val title: String,
-  val id: String,
+  val pathId: String,
   val isTotal: Boolean,
   val account: Account?,
   val depth: Int,
 )
 
-/** Sequence for presentation summaries and accounts based on their names. */
-private fun sequenceStatements(owner: String, accounts: List<Account>): List<RowEntry> {
-  // Build a tree based on paths.
+// Build a tree based on paths.
+private fun buildAccountPathTree(accounts: List<Account>): Map<String, Set<String>> {
   val tree = mutableMapOf<String, MutableSet<String>>()
   for (account in accounts) {
     if (account.path.isEmpty()) {
@@ -39,11 +38,14 @@ private fun sequenceStatements(owner: String, accounts: List<Account>): List<Row
       entry = subPathId
     }
   }
-  // Iterate over tree in depth-first fashion to sequence rows representing the tree.
-  val nameToAccount = mutableMapOf<String, Account>()
-  for (account in accounts) {
-    nameToAccount[account.name] = account
-  }
+  return tree
+}
+
+/** Sequence for presentation summaries and accounts based on their names. */
+private fun sequenceStatements(owner: String, accounts: List<Account>): List<RowEntry> {
+  val tree = buildAccountPathTree(accounts)
+  val nameToAccount = accounts.associateBy { it.name }
+  // Iterate over tree in sorted depth-first fashion to sequence rows representing the tree.
   val entries = mutableListOf<RowEntry>()
   var nodesToProcess = mutableListOf("/")
   while (nodesToProcess.isNotEmpty()) {
@@ -56,7 +58,7 @@ private fun sequenceStatements(owner: String, accounts: List<Account>): List<Row
     entries.add(
       RowEntry(
         title = if (subPath.isNotEmpty()) subPath[subPath.lastIndex] else owner,
-        id = subTreeId,
+        pathId = subTreeId,
         account = account,
         isTotal = children?.isNotEmpty() ?: (account == null),
         depth = subPath.size
@@ -92,9 +94,9 @@ fun buildGqlTable(payload: DataPayload, owner: String?, startMonth: Month, endMo
 
   for (entry in ordering) {
     if (entry.isTotal) {
-      val summaryMonthMap = payload.summaries.get2(forOwner, entry.id)
+      val summaryMonthMap = payload.summaries.get2(forOwner, entry.pathId)
         ?: throw java.lang.IllegalArgumentException(
-          "Did not find summary statement at '${entry.id}' for owner '$forOwner' in payload summaries"
+          "Did not find summary statement at '${entry.pathId}' for owner '$forOwner' in payload summaries"
         )
       val cells: List<GqlTableCell> = months.mapNotNull { month ->
         summaryMonthMap[month.toString()]?.toGqlTableCell()
@@ -118,9 +120,10 @@ fun buildGqlTable(payload: DataPayload, owner: String?, startMonth: Month, endMo
       val account = entry.account!!
       var isClosed = true
       for (month in months) {
-        val stmt = payload.statements[account.name]?.get(month.toString())
-        isClosed = isClosed && (stmt?.isClosed ?: false)
-        cells.add(stmt!!.toGqlTableCell())
+        val stmt = payload.statements[account.name]?.get(month)
+          ?: throw IllegalStateException("Could not find statement for '${account.name}' for month $month")
+        isClosed = isClosed && stmt.isClosed
+        cells.add(stmt.toGqlTableCell())
       }
       if (!isClosed) {
         // Don't add accounts which are closed over selected timeframe.
@@ -139,9 +142,7 @@ fun buildGqlTable(payload: DataPayload, owner: String?, startMonth: Month, endMo
     }
   }
   logger.info { "gql table $endMonth--$startMonth in ${Clock.System.now().toEpochMilliseconds() - startTimeMs}ms" }
-  return GqlTable(
-    currentOwner = forOwner, owners, months, rows
-  )
+  return GqlTable(currentOwner = forOwner, owners, months, rows)
 }
 
 private val logger = KotlinLogging.logger {}

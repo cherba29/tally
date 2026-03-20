@@ -2,6 +2,7 @@ package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Budget
 import com.cherba29.tally.core.BudgetBuilder
+import com.cherba29.tally.core.Month
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import com.cherba29.tally.statement.buildSummaryStatementTable
@@ -43,7 +44,7 @@ fun listFiles(tallyPath: Path): List<String> {
 class ProcessedBudget {
   private val parsedAccountData = mutableMapOf<String, YamlData>()
   var budget: Budget? = null
-  val accountToMonthToTransactionStatement: MutableMap<String, MutableMap<String, TransactionStatement>> =
+  val accountToMonthToTransactionStatement: MutableMap<String, MutableMap<Month, TransactionStatement>> =
     mutableMapOf()
   var summaryNameMonthMap = Map3<SummaryStatement>()
 
@@ -87,7 +88,7 @@ class ProcessedBudget {
         monthToStatement = mutableMapOf()
         accountToMonthToTransactionStatement[stmt.account.name] = monthToStatement
       }
-      monthToStatement[stmt.month.toString()] = stmt
+      monthToStatement[stmt.month] = stmt
     }
     logger.info {
       "Done building ${transactionStatementTable.size} transaction statements in ${
@@ -124,7 +125,7 @@ class ProcessedBudget {
 
 data class DataPayload(
   val budget: Budget,
-  val statements: Map<String, Map<String, TransactionStatement>>,
+  val statements: Map<String, Map<Month, TransactionStatement>>,
   // owner -> account name -> month -> summary.
   val summaries: Map3<SummaryStatement>,
 )
