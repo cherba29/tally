@@ -1,6 +1,6 @@
 package com.cherba29.tally.data
 
-import com.cherba29.tally.core.AccountType
+import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.BudgetBuilder
@@ -84,7 +84,7 @@ class LoadYamlTest : DescribeSpec({
       account.name shouldBe "test-account"
       account.description shouldBe "Testing account"
       account.number shouldBe "1223344"
-      account.type shouldBe AccountType.EXTERNAL
+      account.type shouldBe Account.Type.EXTERNAL
       account.path shouldBe listOf()
       account.url shouldBe "example.com"
       account.phone shouldBe "111-222-3344"
@@ -141,7 +141,8 @@ class LoadYamlTest : DescribeSpec({
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
       }
-      exception.message shouldBe "Balance entry BalanceData(" +
+      // TODO: do not test for BalanceData toString representation.
+      exception.message shouldBe "Balance entry BalanceYamlData(" +
           "grp=null, date=2020-01-01, camt=0.0, pamt=null, desc=null) " +
           "has no grp setting. while processing path/file.yaml"
     }
@@ -162,7 +163,7 @@ class LoadYamlTest : DescribeSpec({
         loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
       }
       // TODO: do not test for BalanceData toString representation.
-      exception.message shouldBe "Balance BalanceData(" +
+      exception.message shouldBe "Balance BalanceYamlData(" +
           "grp=Xxx2020, date=2020-01-01, camt=0.0, pamt=null, desc=null) " +
           "has bad grp setting: Bad month name 'Xxx' for 'Xxx2020', valid names " +
           "[Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec] while processing path/file.yaml"
@@ -183,7 +184,8 @@ class LoadYamlTest : DescribeSpec({
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
       }
-      exception.message shouldBe "Balance BalanceData(" +
+      // TODO: do not test for BalanceData toString representation.
+      exception.message shouldBe "Balance BalanceYamlData(" +
           "grp=Jan2020, date=null, camt=0.0, pamt=null, desc=null)" +
           " does not have date set. while processing path/file.yaml"
     }
@@ -219,7 +221,8 @@ class LoadYamlTest : DescribeSpec({
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
       }
-      exception.message shouldBe "Balance BalanceData(" +
+      // TODO: do not test for BalanceData toString representation.
+      exception.message shouldBe "Balance BalanceYamlData(" +
           "grp=Jan2020, date=2020-01-01, camt=null, pamt=null, desc=null) " +
           "does not have amount type set, expected camt or pamt entry. while processing path/file.yaml"
     }

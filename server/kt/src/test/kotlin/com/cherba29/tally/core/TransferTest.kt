@@ -9,12 +9,12 @@ class TransferTest : DescribeSpec({
     it("basic") {
       val account1 = Account(
         name = "test-account1",
-        type = AccountType.CHECKING,
+        type = Account.Type.CHECKING,
         owners = listOf("john"),
       )
       val account2 = Account(
         name = "test-account2",
-        type = AccountType.CREDIT,
+        type = Account.Type.CREDIT,
         owners = listOf("john"),
       )
       val month = Month(2020, 1)

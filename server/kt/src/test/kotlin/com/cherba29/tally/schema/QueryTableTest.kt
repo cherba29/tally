@@ -1,13 +1,12 @@
 package com.cherba29.tally.schema
 
 import com.cherba29.tally.core.Account
-import com.cherba29.tally.core.AccountType
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.BudgetBuilder
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
-import com.cherba29.tally.data.DataPayload
+import com.cherba29.tally.data.Loader.DataPayload
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import com.cherba29.tally.utils.Map3
@@ -56,7 +55,7 @@ class QueryTableTest : DescribeSpec({
     it("empty - no open accounts") {
       val account = Account(
         name = "test-account",
-        type = AccountType.EXTERNAL,
+        type = Account.Type.EXTERNAL,
         owners = listOf("john"),
       )
       val summary = SummaryStatement(
@@ -86,7 +85,7 @@ class QueryTableTest : DescribeSpec({
     it("single open account without path") {
       val account = Account(
         name = "test-account",
-        type = AccountType.EXTERNAL,
+        type = Account.Type.EXTERNAL,
         owners = listOf("john"),
         openedOn = JAN / 2026
       )
@@ -163,7 +162,7 @@ class QueryTableTest : DescribeSpec({
     it("single open account with path") {
       val account = Account(
         name = "test-account",
-        type = AccountType.EXTERNAL,
+        type = Account.Type.EXTERNAL,
         path = listOf("outside"),
         owners = listOf("john"),
         openedOn = JAN / 2026

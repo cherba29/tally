@@ -1,9 +1,6 @@
 package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Account
-import com.cherba29.tally.core.AccountType
-import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.utils.Map3
 import kotlin.collections.iterator
@@ -84,12 +81,12 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
   if (maxMonth == null) {
     throw IllegalArgumentException("Could not determine end month")
   }
-  val summaryAccount = Account(name = stmtName, type = AccountType.SUMMARY, owners = owners)
+  val summaryAccount = Account(name = stmtName, type = Account.Type.SUMMARY, owners = owners)
   val combined = SummaryStatement(summaryAccount, maxMonth, minMonth)
   for ((acctName, acctStatements) in accountStatements) {
     // Combine all statements for a given account over all months in the range.
     val stmt = CombinedStatement.fromStatements(
-      Account(name = acctName, type = AccountType.SUMMARY, owners = listOf()),
+      Account(name = acctName, type = Account.Type.SUMMARY, owners = listOf()),
       minMonth,
       maxMonth,
       acctStatements

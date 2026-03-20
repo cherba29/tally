@@ -1,7 +1,6 @@
 package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Account
-import com.cherba29.tally.core.AccountType
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.BudgetBuilder
 import com.cherba29.tally.core.MonthName.DEC
@@ -29,7 +28,7 @@ class TransactionTest : DescribeSpec({
       val builder = BudgetBuilder()
       val account = Account(
         name = "test-account",
-        type = AccountType.EXTERNAL,
+        type = Account.Type.EXTERNAL,
         owners = listOf(),
         openedOn = DEC / 2019,
       )
@@ -61,7 +60,7 @@ class TransactionTest : DescribeSpec({
       val builder = BudgetBuilder()
       val account1 = Account(
         name = "test-account1",
-        type = AccountType.CHECKING,
+        type = Account.Type.CHECKING,
         owners = listOf("john"),
       )
       builder.setAccount(account1)
@@ -84,12 +83,12 @@ class TransactionTest : DescribeSpec({
       val builder = BudgetBuilder()
       val account1 = Account(
         name = "test-account1",
-        type = AccountType.CHECKING,
+        type = Account.Type.CHECKING,
         owners = listOf("john"),
       )
       val account2 = Account(
         name = "test-account2",
-        type = AccountType.CREDIT,
+        type = Account.Type.CREDIT,
         owners = listOf("john"),
       )
 
@@ -130,12 +129,12 @@ class TransactionTest : DescribeSpec({
       val builder = BudgetBuilder()
       val account1 = Account(
         name = "test-account1",
-        type = AccountType.EXTERNAL,
+        type = Account.Type.EXTERNAL,
         owners = listOf(),
       )
       val account2 = Account(
         name = "test-account2",
-        type = AccountType.CREDIT,
+        type = Account.Type.CREDIT,
         owners = listOf("john"),
       )
 
@@ -176,7 +175,7 @@ class TransactionTest : DescribeSpec({
       val builder = BudgetBuilder()
       val account1 = Account(
         name = "test-account1",
-        type = AccountType.CHECKING,
+        type = Account.Type.CHECKING,
         owners = listOf("john"),
       )
       builder.setAccount(account1)
@@ -204,7 +203,7 @@ class TransactionTest : DescribeSpec({
       val builder = BudgetBuilder()
       val account1 = Account(
         name = "test-account1",
-        type = AccountType.CHECKING,
+        type = Account.Type.CHECKING,
         owners = listOf("john"),
       )
       builder.setAccount(account1)
@@ -232,7 +231,7 @@ class TransactionTest : DescribeSpec({
       val builder = BudgetBuilder()
       val account1 = Account(
         name = "test-account1",
-        type = AccountType.CHECKING,
+        type = Account.Type.CHECKING,
         owners = listOf("john"),
         closedOn = NOV / 2019  // closed before TransactionStatement month
       )
@@ -260,17 +259,17 @@ class TransactionTest : DescribeSpec({
       val builder = BudgetBuilder()
       val account1 = Account(
         name = "test-account1",
-        type = AccountType.CHECKING,
+        type = Account.Type.CHECKING,
         owners = listOf("john"),
       )
       val account2 = Account(
         name = "test-account2",
-        type = AccountType.CREDIT,
+        type = Account.Type.CREDIT,
         owners = listOf("john"),
       )
       val account3 = Account(
         name = "test-account3",
-        type = AccountType.EXTERNAL,
+        type = Account.Type.EXTERNAL,
         owners = listOf(),
       )
       builder.setAccount(account1)

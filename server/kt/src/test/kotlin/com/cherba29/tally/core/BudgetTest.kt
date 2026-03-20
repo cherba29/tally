@@ -24,17 +24,17 @@ class BudgetTest : DescribeSpec({
     val builder = BudgetBuilder()
     val account1 = Account(
       name = "test-account1",
-      type = AccountType.EXTERNAL,
+      type = Account.Type.EXTERNAL,
       owners = listOf(),
     )
     val account2 = Account(
       name = "test-account2",
-      type = AccountType.BILL,
+      type = Account.Type.BILL,
       owners = listOf(),
     )
     val account3 = Account(
       name = "test-account3",
-      type = AccountType.BILL,
+      type = Account.Type.BILL,
       owners = listOf(),
     )
 
@@ -90,7 +90,7 @@ class BudgetTest : DescribeSpec({
     val builder = BudgetBuilder()
     val account1 = Account(
       name = "test-account1",
-      type = AccountType.EXTERNAL,
+      type = Account.Type.EXTERNAL,
       owners = listOf(),
     )
     builder.setAccount(account1)
@@ -129,7 +129,7 @@ class BudgetTest : DescribeSpec({
     val builder = BudgetBuilder()
     val account1 = Account(
       name = "test-account1",
-      type = AccountType.EXTERNAL,
+      type = Account.Type.EXTERNAL,
       owners = listOf(),
     )
     builder.setAccount(account1)
@@ -160,7 +160,7 @@ class BudgetTest : DescribeSpec({
       val builder = BudgetBuilder()
       val account1 = Account(
         name = "test-account1",
-        type = AccountType.EXTERNAL,
+        type = Account.Type.EXTERNAL,
         owners = listOf(),
       )
       builder.setAccount(account1)
@@ -175,7 +175,7 @@ class BudgetTest : DescribeSpec({
 
       val account1 = Account(
         name = "test-account1",
-        type = AccountType.EXTERNAL,
+        type = Account.Type.EXTERNAL,
         owners = listOf(),
         openedOn = APR / 2026
       )
@@ -191,20 +191,20 @@ class BudgetTest : DescribeSpec({
 
       val account1 = Account(
         name = "test-account1",
-        type = AccountType.EXTERNAL,
+        type = Account.Type.EXTERNAL,
         owners = listOf(),
         openedOn = APR / 2026
       )
 
       val account2 = Account(
         name = "test-account2",
-        type = AccountType.EXTERNAL,
+        type = Account.Type.EXTERNAL,
         owners = listOf(),
       )
 
       val account3 = Account(
         name = "test-account3",
-        type = AccountType.EXTERNAL,
+        type = Account.Type.EXTERNAL,
         owners = listOf(),
         openedOn = JAN / 2020,
         closedOn = FEB / 2020,

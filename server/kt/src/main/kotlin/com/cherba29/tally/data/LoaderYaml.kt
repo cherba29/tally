@@ -1,7 +1,6 @@
 package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Account
-import com.cherba29.tally.core.AccountType
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.BudgetBuilder
@@ -26,7 +25,7 @@ import kotlin.math.roundToInt
 import kotlinx.datetime.LocalDate
 
 @JsonIgnoreProperties(value = ["xamt"])
-data class BalanceData(
+data class BalanceYamlData(
   val grp: String?,
   val date: LocalDate?,
   val camt: Double?,
@@ -64,29 +63,29 @@ data class YamlData(
   val address: String?,
   val username: String?,
   val pswd: String?,
-  val balances: List<BalanceData>?,
+  val balances: List<BalanceYamlData>?,
   @param:JsonProperty("transfers_to")
   val transfersTo: Map<String, List<TransferYamlData>?>?,
 )
 
-fun lookupAccountType(type: String): AccountType? = AccountType.entries.find { it.id == type }
+fun lookupAccountType(type: String): Account.Type? = Account.Type.entries.find { it.id == type }
 
-fun makeBalance(data: BalanceData): Balance {
+private fun BalanceYamlData.toBalance(): Balance {
   var amount: Int
   var balanceType: BalanceType
-  if (data.camt != null) {
-    amount = (100.0 * data.camt).roundToInt()
+  if (camt != null) {
+    amount = (100.0 * camt).roundToInt()
     balanceType = BalanceType.CONFIRMED
-  } else if (data.pamt != null) {
-    amount = (100.0 * data.pamt).roundToInt()
+  } else if (pamt != null) {
+    amount = (100.0 * pamt).roundToInt()
     balanceType = BalanceType.PROJECTED
   } else {
-    throw IllegalArgumentException("Balance $data does not have amount type set, expected camt or pamt entry.")
+    throw IllegalArgumentException("Balance $this does not have amount type set, expected camt or pamt entry.")
   }
-  if (data.date == null) {
-    throw IllegalArgumentException("Balance $data does not have date set.")
+  if (date == null) {
+    throw IllegalArgumentException("Balance $this does not have date set.")
   }
-  return Balance(amount, data.date, balanceType)
+  return Balance(amount, date, balanceType)
 }
 
 // TODO: Preprocess but do not put it into budget builder yet, so warnings are only produced files that change.
@@ -95,7 +94,7 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
     // Ignore data which dont represent account.
     return
   }
-  val accountType = if (data.type == null) AccountType.UNSPECIFIED else lookupAccountType(data.type)
+  val accountType = if (data.type == null) Account.Type.UNSPECIFIED else lookupAccountType(data.type)
   if (accountType == null) {
     throw IllegalArgumentException("Unknown type '${data.type}' for account '${data.name}'")
   }
@@ -139,7 +138,7 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
       } catch (e: Exception) {
         throw IllegalArgumentException("Balance $balanceData has bad grp setting: ${e.message}")
       }
-      val balance = makeBalance(balanceData)
+      val balance = balanceData.toBalance()
       val balanceMonthDiff = abs(balance.date.year * 12 + balance.date.month.ordinal - month.year * 12 - month.month)
       if (balanceMonthDiff > 2) {
         throw IllegalArgumentException(

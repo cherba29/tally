@@ -1,7 +1,6 @@
 package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Account
-import com.cherba29.tally.core.AccountType
 import com.cherba29.tally.utils.Map3
 
 // TODO: add tests for this class.
@@ -25,7 +24,7 @@ class SummaryStatementAggregator {
     val key = "$owner - $name"
     var account = summaryAccounts[key]
     if (account == null) {
-      account = Account(name, type = AccountType.SUMMARY, owners = listOf(owner), path = path.slice(0..path.size - 2))
+      account = Account(name, type = Account.Type.SUMMARY, owners = listOf(owner), path = path.slice(0..path.size - 2))
       summaryAccounts[key] = account
     }
     return account

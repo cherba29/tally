@@ -1,7 +1,7 @@
 package com.cherba29.tally.schema
 
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.data.DataPayload
+import com.cherba29.tally.data.Loader.DataPayload
 import com.cherba29.tally.statement.CombinedStatement
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement

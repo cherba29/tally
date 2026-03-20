@@ -1,7 +1,6 @@
 package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Account
-import com.cherba29.tally.core.AccountType
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.MonthName.JAN
@@ -15,7 +14,7 @@ class CombinedStatementTest : DescribeSpec({
     it("empty") {
       val account = Account(
         name = "test-account",
-        type = AccountType.EXTERNAL,
+        type = Account.Type.EXTERNAL,
       )
       val statement = CombinedStatement(
         account,
@@ -30,7 +29,7 @@ class CombinedStatementTest : DescribeSpec({
     it("from empty list of statements") {
       val account = Account(
         name = "test-account",
-        type = AccountType.EXTERNAL,
+        type = Account.Type.EXTERNAL,
       )
 
       val combined = CombinedStatement.fromStatements(
@@ -48,7 +47,7 @@ class CombinedStatementTest : DescribeSpec({
     it("from single statement") {
       val account = Account(
         name = "test-account",
-        type = AccountType.EXTERNAL,
+        type = Account.Type.EXTERNAL,
       )
       val startMonth = JAN / 2026
       val statement = TransactionStatement(

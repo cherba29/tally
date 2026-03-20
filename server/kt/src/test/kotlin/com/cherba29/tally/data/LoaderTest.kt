@@ -8,7 +8,6 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.longs.shouldBeLessThan
 import io.kotest.matchers.shouldBe
-import kotlin.io.path.createDirectories
 import kotlin.io.path.createFile
 import kotlin.io.path.div
 import kotlin.io.path.writeText
@@ -16,25 +15,6 @@ import kotlinx.coroutines.delay
 import kotlinx.datetime.LocalDate
 
 class LoaderTest : DescribeSpec({
-  describe("listFiles") {
-    it("returns empty on empty directory") {
-      val tallyPath = tempdir("tally-", keepOnFailure = false).toPath()
-      listFiles(tallyPath) shouldBe listOf()
-    }
-
-    it("returns recursively yaml file entries") {
-      val tallyPath = tempdir("tally-", keepOnFailure = false).toPath()
-      val subdir1 = (tallyPath / "subdir1").createDirectories()
-      (subdir1 / "file1.json").createFile()
-      (subdir1 / "file2.yaml").createFile()
-      val subdir2 = (tallyPath / "subdir2").createDirectories()
-      (subdir2 / "file1.json").createFile()
-      (subdir2 / "file2.yaml").createFile()
-
-      listFiles(tallyPath) shouldBe listOf("subdir1/file2.yaml", "subdir2/file2.yaml")
-    }
-  }
-
   describe("loadBudget") {
     it("just single account") {
       val tallyPath = tempdir("tally-", keepOnFailure = false).toPath()
