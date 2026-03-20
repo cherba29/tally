@@ -13,6 +13,7 @@ import kotlin.concurrent.withLock
 import kotlin.io.path.extension
 import kotlin.io.path.pathString
 import kotlin.time.Clock
+import kotlin.time.TimeSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -20,10 +21,10 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
-class Loader(tallyFilesPath: Path): AutoCloseable {
+class Loader(tallyFilesPath: Path, timeSource: TimeSource = TimeSource.Monotonic): AutoCloseable {
   private val watchedPath: Path = tallyFilesPath.toRealPath()
 
-  private val processedBudget = ProcessedBudget()
+  private val processedBudget = ProcessedBudget(timeSource)
 
   private val dataLock = ReentrantLock()
   private val signalLock = ReentrantLock()

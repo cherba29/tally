@@ -13,10 +13,11 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.collections.contains
 import kotlin.io.path.readText
-import kotlin.time.Clock
+import kotlin.time.TimeSource
+import kotlin.time.measureTime
+import kotlin.time.measureTimedValue
 
-// TODO: separate this logic into separate module.
-class ProcessedBudget {
+class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
   private val parsedAccountData = mutableMapOf<String, YamlData>()
   var budget: Budget? = null
   val accountToMonthToTransactionStatement: MutableMap<String, MutableMap<Month, TransactionStatement>> =
@@ -24,66 +25,62 @@ class ProcessedBudget {
   var summaryNameMonthMap = Map3<SummaryStatement>()
 
   fun reProcess() {
-    // TODO: use measure time.
-    val startTimeMs: Long = Clock.System.now().toEpochMilliseconds()
-    val budgetBuilder = BudgetBuilder()
-    val unwantedFiles = mutableListOf<String>()
-    for ((filePath, accountData) in parsedAccountData) {
-      try {
-        loadYamlFile(budgetBuilder, accountData, Paths.get(filePath))
-        if (!budgetBuilder.accounts.contains(accountData.name ?: "")) {
-          logger.warn { "warning: $filePath is not an account file." }
-          unwantedFiles.add(filePath)
+    val elapsedBudgetTime = timeSource.measureTime {
+      val budgetBuilder = BudgetBuilder()
+      val unwantedFiles = mutableListOf<String>()
+      for ((filePath, accountData) in parsedAccountData) {
+        try {
+          loadYamlFile(budgetBuilder, accountData, Paths.get(filePath))
+          if (!budgetBuilder.accounts.contains(accountData.name ?: "")) {
+            logger.warn { "warning: $filePath is not an account file." }
+            unwantedFiles.add(filePath)
+          }
+        } catch (e: Exception) {
+          logger.error { "error: Failed to add $filePath, $e" }
+          return
         }
-      } catch (e: Exception) {
-        logger.error { "error: Failed to add $filePath, $e" }
-        return
       }
+      // Since reprocess is called multiple times, no need reprocess them.
+      for (filePath in unwantedFiles) {
+        parsedAccountData.remove(filePath)
+      }
+      budget = budgetBuilder.build()
     }
-    // Since reprocess is called multiple times, no need reprocess them.
-    for (filePath in unwantedFiles) {
-      parsedAccountData.remove(filePath)
-    }
-    budget = budgetBuilder.build()
     logger.info {
-      "Done building budget for ${budget?.accounts?.size} accounts  in ${
-        Clock.System.now().toEpochMilliseconds() - startTimeMs
-      }ms"
+      "Done building budget for ${budget?.accounts?.size} accounts  in $elapsedBudgetTime"
     }
 
     accountToMonthToTransactionStatement.clear()
     summaryNameMonthMap.clear()
 
-    // TODO: use measureTime.
-    val startBuildTransactionStatementsTimeMs: Long = Clock.System.now().toEpochMilliseconds()
-    val transactionStatementTable = buildTransactionStatementTable(budget!!, owner = null)
-    for (stmt in transactionStatementTable) {
-      var monthToStatement = accountToMonthToTransactionStatement[stmt.account.name]
-      if (monthToStatement == null) {
-        monthToStatement = mutableMapOf()
-        accountToMonthToTransactionStatement[stmt.account.name] = monthToStatement
+    val (transactionStatementTable, elapsedTransactionTime) = timeSource.measureTimedValue {
+      val transactionStatementTable = buildTransactionStatementTable(budget!!, owner = null)
+      for (stmt in transactionStatementTable) {
+        var monthToStatement = accountToMonthToTransactionStatement[stmt.account.name]
+        if (monthToStatement == null) {
+          monthToStatement = mutableMapOf()
+          accountToMonthToTransactionStatement[stmt.account.name] = monthToStatement
+        }
+        monthToStatement[stmt.month] = stmt
       }
-      monthToStatement[stmt.month] = stmt
+      transactionStatementTable
     }
     logger.info {
-      "Done building ${transactionStatementTable.size} transaction statements in ${
-        Clock.System.now().toEpochMilliseconds() - startBuildTransactionStatementsTimeMs
-      }ms"
+      "Done building ${transactionStatementTable.size} transaction statements in ${elapsedTransactionTime}ms"
     }
 
-    val startBuildSummaryStatementsTimeMs: Long = Clock.System.now().toEpochMilliseconds()
-    summaryNameMonthMap = buildSummaryStatementTable(transactionStatementTable, selectedOwner = null)
+    val elapsedBuildSummaryStatements = timeSource.measureTime {
+      summaryNameMonthMap = buildSummaryStatementTable(transactionStatementTable, selectedOwner = null)
+    }
     val numSummaryStatements = summaryNameMonthMap.size
     logger.info {
-      "Done building $numSummaryStatements summary statements in ${
-        Clock.System.now().toEpochMilliseconds() - startBuildSummaryStatementsTimeMs
-      }ms"
+      "Done building $numSummaryStatements summary statements in $elapsedBuildSummaryStatements"
     }
 
     logger.info {
       "Done reprocessing ${parsedAccountData.size} file(s) ${transactionStatementTable.size} tran statements and $numSummaryStatements summaries in ${
-        Clock.System.now().toEpochMilliseconds() - startTimeMs
-      }ms"
+        elapsedBudgetTime + elapsedTransactionTime + elapsedBuildSummaryStatements
+      }"
     }
   }
 
