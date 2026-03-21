@@ -6,6 +6,7 @@ import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.BudgetBuilder
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
+import com.cherba29.tally.core.budget
 import com.cherba29.tally.data.Loader.DataPayload
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
@@ -19,7 +20,7 @@ class QueryTableTest : DescribeSpec({
   describe("buildGqlTable") {
     it("no owner") {
       val payload = DataPayload(
-        budget = BudgetBuilder().build(),
+        budget = budget {},
         statements = mapOf(),
         summaries = Map3()
       )
@@ -36,7 +37,7 @@ class QueryTableTest : DescribeSpec({
 
     it("empty") {
       val payload = DataPayload(
-        budget = BudgetBuilder().build(),
+        budget =  budget {},
         statements = mapOf(),
         summaries = Map3()
       )
@@ -66,7 +67,7 @@ class QueryTableTest : DescribeSpec({
       val summaries = Map3<SummaryStatement>()
       summaries.set("john", "/", "Mar2026", summary)
       val payload = DataPayload(
-        budget = BudgetBuilder().build(),
+        budget =  budget {},
         statements = mapOf(),
         summaries
       )
@@ -97,12 +98,15 @@ class QueryTableTest : DescribeSpec({
       val summaries = Map3<SummaryStatement>()
       summaries.set("john", "/", "Mar2026", summary)
       val payload = DataPayload(
-        budget = BudgetBuilder().setAccount(account).setBalance(
-          "test-account", MAR / 2026, Balance(
-            amount = 100,
-            date = LocalDate(2026, 3, 1),
-            type = BalanceType.CONFIRMED
-          )).build(),
+        budget = budget {
+          setAccount(account)
+          setBalance(
+            "test-account", MAR / 2026, Balance(
+              amount = 100,
+              date = LocalDate(2026, 3, 1),
+              type = BalanceType.CONFIRMED
+          ))
+        },
         statements = mapOf(),
         summaries
       )
@@ -185,12 +189,15 @@ class QueryTableTest : DescribeSpec({
       summaries.set("john", "/outside", "Mar2026", summary)
       summaries.set("john", "/", "Mar2026", summary)
       val payload = DataPayload(
-        budget = BudgetBuilder().setAccount(account).setBalance(
-          "test-account", MAR / 2026, Balance(
-            amount = 100,
-            date = LocalDate(2026, 3, 1),
-            type = BalanceType.CONFIRMED
-          )).build(),
+        budget = budget {
+          setAccount(account)
+          setBalance(
+            "test-account", MAR / 2026, Balance(
+              amount = 100,
+              date = LocalDate(2026, 3, 1),
+              type = BalanceType.CONFIRMED
+            ))
+        },
         statements = mapOf(account.name to mapOf(MAR / 2026 to transactionStatement)),
         summaries
       )

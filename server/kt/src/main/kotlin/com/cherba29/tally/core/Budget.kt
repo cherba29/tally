@@ -147,3 +147,9 @@ class BudgetBuilder(
     private val logger = KotlinLogging.logger {}
   }
 }
+
+fun budget(block: BudgetBuilder.()->Unit): Budget {
+  val builder = BudgetBuilder()
+  block(builder)
+  return builder.build()
+}

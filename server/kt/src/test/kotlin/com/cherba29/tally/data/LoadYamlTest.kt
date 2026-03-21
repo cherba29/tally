@@ -10,6 +10,7 @@ import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthName.NOV
 import com.cherba29.tally.core.Transfer
+import com.cherba29.tally.core.budget
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -21,41 +22,42 @@ import kotlinx.datetime.LocalDate
 class LoadYamlTest : DescribeSpec({
   describe("loadYaml") {
     it("empty") {
-      val budgetBuilder = BudgetBuilder()
       val relativeFilePath = Paths.get("path/file.yaml")
-      loadYamlFile(budgetBuilder, parseYamlContent("number: 123", relativeFilePath), relativeFilePath)
-      val budget = budgetBuilder.build()
+      val budget = budget {
+        loadYamlFile(this, parseYamlContent("number: 123", relativeFilePath), relativeFilePath)
+      }
       budget.accounts.size shouldBe 0
     }
 
     it("fails when unknown account type") {
-      val budgetBuilder = BudgetBuilder()
       val relativeFilePath = Paths.get("path/file.yaml")
       val exception = shouldThrow<IllegalArgumentException> {
-        loadYamlFile(
-          budgetBuilder,
-          parseYamlContent("name: test\ntype: SOMETHING", relativeFilePath),
-          relativeFilePath
-        )
+        budget {
+          loadYamlFile(
+            this,
+            parseYamlContent("name: test\ntype: SOMETHING", relativeFilePath),
+            relativeFilePath
+          )
+        }
       }
       exception.message shouldBe "Unknown type 'SOMETHING' for account 'test' while processing path/file.yaml"
     }
 
     it("fails when account has no owners") {
-      val budgetBuilder = BudgetBuilder()
       val relativeFilePath = Paths.get("path/file.yaml")
       val exception = shouldThrow<IllegalArgumentException> {
-        loadYamlFile(
-          budgetBuilder,
-          parseYamlContent("name: test\ntype: external\nowner: []", relativeFilePath),
-          relativeFilePath
-        )
+        budget {
+          loadYamlFile(
+            this,
+            parseYamlContent("name: test\ntype: external\nowner: []", relativeFilePath),
+            relativeFilePath
+          )
+        }
       }
       exception.message shouldBe "Account 'test' has no owners while processing path/file.yaml"
     }
 
     it("empty account") {
-      val budgetBuilder = BudgetBuilder()
       val relativeFilePath = Paths.get("path/file.yaml")
       val content = """
       name: test-account
@@ -76,8 +78,9 @@ class LoadYamlTest : DescribeSpec({
       val parsedContent = parseYamlContent(content, relativeFilePath)
       parsedContent.openedOn shouldNotBe null
       parsedContent.closedOn shouldNotBe null
-      loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
-      val budget = budgetBuilder.build()
+      val budget = budget {
+        loadYamlFile(this, parsedContent, relativeFilePath)
+      }
       budget.accounts.size shouldBe 1
 
       val account = budget.accounts["test-account"]!!
@@ -101,7 +104,6 @@ class LoadYamlTest : DescribeSpec({
     }
 
     it("account with balances") {
-      val budgetBuilder = BudgetBuilder()
       val relativeFilePath = Paths.get("path/test.yaml")
       val content = """
       name: test-account
@@ -113,8 +115,9 @@ class LoadYamlTest : DescribeSpec({
       """.trimIndent()
       val parsedContent = parseYamlContent(content, relativeFilePath)
       parsedContent shouldNotBe null
-      loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
-      val budget = budgetBuilder.build()
+      val budget = budget {
+        loadYamlFile(this, parsedContent, relativeFilePath)
+      }
       budget.accounts.size shouldBe 1
       budget.balances.size shouldBe 1
       budget.months.size shouldBe 2
@@ -222,7 +225,6 @@ class LoadYamlTest : DescribeSpec({
     }
 
     it("with projected and confirmed transfers") {
-      val budgetBuilder = BudgetBuilder()
       val relativeFilePath = Paths.get("path/file.yaml")
       val testAccountData = """
       name: test-account
@@ -238,7 +240,7 @@ class LoadYamlTest : DescribeSpec({
       """.trimIndent()
       val parsedContent = parseYamlContent(testAccountData, relativeFilePath)
       parsedContent shouldNotBe null
-      loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
+
       val externalAccountData = """
       name: external
       owner: [ someone ]
@@ -246,9 +248,11 @@ class LoadYamlTest : DescribeSpec({
       """.trimIndent()
       val parsedExternalContent = parseYamlContent(externalAccountData, relativeFilePath)
       parsedExternalContent shouldNotBe null
-      loadYamlFile(budgetBuilder, parsedExternalContent, relativeFilePath)
 
-      val budget = budgetBuilder.build()
+      val budget = budget {
+        loadYamlFile(this, parsedContent, relativeFilePath)
+        loadYamlFile(this, parsedExternalContent, relativeFilePath)
+      }
       budget.accounts.size shouldBe 2
       val testAccount = budget.accounts["test-account"]!!
       val externalAccount = budget.accounts["external"]!!

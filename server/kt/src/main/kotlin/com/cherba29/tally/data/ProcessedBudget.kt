@@ -1,8 +1,8 @@
 package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Budget
-import com.cherba29.tally.core.BudgetBuilder
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.budget
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import com.cherba29.tally.statement.buildSummaryStatementTable
@@ -26,25 +26,25 @@ class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
 
   fun reProcess() {
     val elapsedBudgetTime = timeSource.measureTime {
-      val budgetBuilder = BudgetBuilder()
-      val unwantedFiles = mutableListOf<String>()
-      for ((filePath, accountData) in parsedAccountData) {
-        try {
-          loadYamlFile(budgetBuilder, accountData, Paths.get(filePath))
-          if (!budgetBuilder.accounts.contains(accountData.name ?: "")) {
-            logger.warn { "warning: $filePath is not an account file." }
-            unwantedFiles.add(filePath)
+      budget = budget {
+        val unwantedFiles = mutableListOf<String>()
+        for ((filePath, accountData) in parsedAccountData) {
+          try {
+            loadYamlFile(this, accountData, Paths.get(filePath))
+            if (!accounts.contains(accountData.name ?: "")) {
+              logger.warn { "warning: $filePath is not an account file." }
+              unwantedFiles.add(filePath)
+            }
+          } catch (e: Exception) {
+            logger.error { "error: Failed to add $filePath, $e" }
+            continue
           }
-        } catch (e: Exception) {
-          logger.error { "error: Failed to add $filePath, $e" }
-          return
+        }
+        // Since reprocess is called multiple times, no need reprocess them.
+        for (filePath in unwantedFiles) {
+          parsedAccountData.remove(filePath)
         }
       }
-      // Since reprocess is called multiple times, no need reprocess them.
-      for (filePath in unwantedFiles) {
-        parsedAccountData.remove(filePath)
-      }
-      budget = budgetBuilder.build()
     }
     logger.info {
       "Done building budget for ${budget?.accounts?.size} accounts  in $elapsedBudgetTime"

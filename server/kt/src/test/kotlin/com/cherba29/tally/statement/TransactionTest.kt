@@ -8,6 +8,7 @@ import com.cherba29.tally.core.MonthName.FEB
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.NOV
 import com.cherba29.tally.core.TransferData
+import com.cherba29.tally.core.budget
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
@@ -17,23 +18,23 @@ import java.lang.IllegalStateException
 class TransactionTest : DescribeSpec({
   describe("Build") {
     it("no months") {
-      val builder = BudgetBuilder()
       val exception = shouldThrow<IllegalArgumentException> {
-        buildTransactionStatementTable(builder.build(), owner = null)
+        buildTransactionStatementTable(budget {}, owner = null)
       }
       exception.message shouldBe "Budget must have at least one month."
     }
 
     it("single account no transfers") {
-      val builder = BudgetBuilder()
       val account = Account(
         name = "test-account",
         type = Account.Type.EXTERNAL,
         owners = listOf(),
         openedOn = DEC / 2019,
       )
-      builder.setAccount(account)
-      val table = buildTransactionStatementTable(builder.build(), owner = null)
+      val budget = budget {
+        setAccount(account)
+      }
+      val table = buildTransactionStatementTable(budget, owner = null)
       table.size shouldBe 1
       val stmt = table.first()
       assertSoftly {
@@ -57,30 +58,31 @@ class TransactionTest : DescribeSpec({
     }
 
     it("bad account name on transfer") {
-      val builder = BudgetBuilder()
       val account1 = Account(
         name = "test-account1",
         type = Account.Type.CHECKING,
         owners = listOf("john"),
       )
-      builder.setAccount(account1)
-      builder.addTransfer(
-        TransferData(
-          fromAccount = "test-account1",
-          toAccount = "test-account2",
-          toMonth = DEC / 2019,
-          fromMonth = DEC / 2019,
-          balance = Balance.projected(2000, "2019-12-05"),
-          description = "First transfer",
-        )
-      )
       val exception =
-        shouldThrow<IllegalArgumentException> { buildTransactionStatementTable(builder.build(), owner = null) }
+        shouldThrow<IllegalArgumentException> {
+          budget {
+            setAccount(account1)
+            addTransfer(
+              TransferData(
+                fromAccount = "test-account1",
+                toAccount = "test-account2",
+                toMonth = DEC / 2019,
+                fromMonth = DEC / 2019,
+                balance = Balance.projected(2000, "2019-12-05"),
+                description = "First transfer",
+              )
+            )
+          }
+        }
       exception.message shouldBe "Unknown account test-account2"
     }
 
     it("two accounts with common owner and transfers") {
-      val builder = BudgetBuilder()
       val account1 = Account(
         name = "test-account1",
         type = Account.Type.CHECKING,
@@ -91,42 +93,41 @@ class TransactionTest : DescribeSpec({
         type = Account.Type.CREDIT,
         owners = listOf("john"),
       )
-
-      builder.setAccount(account1)
-      builder.setBalance("test-account1", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
-      builder.setBalance("test-account1", JAN / 2020, Balance.confirmed(20, "2020-01-01"))
-      builder.setBalance("test-account1", FEB / 2020, Balance.projected(30, "2020-02-01"))
-      builder.setAccount(account2)
-      builder.addTransfer(
-        TransferData(
-          fromAccount = "test-account1",
-          toAccount = "test-account2",
-          toMonth = DEC / 2019,
-          fromMonth = DEC / 2019,
-          balance = Balance.projected(2000, "2019-12-05"),
-          description = "First transfer",
+      val budget = budget {
+        setAccount(account1)
+        setBalance("test-account1", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
+        setBalance("test-account1", JAN / 2020, Balance.confirmed(20, "2020-01-01"))
+        setBalance("test-account1", FEB / 2020, Balance.projected(30, "2020-02-01"))
+        setAccount(account2)
+        addTransfer(
+          TransferData(
+            fromAccount = "test-account1",
+            toAccount = "test-account2",
+            toMonth = DEC / 2019,
+            fromMonth = DEC / 2019,
+            balance = Balance.projected(2000, "2019-12-05"),
+            description = "First transfer",
+          )
         )
-      )
 
-      builder.addTransfer(
-        TransferData(
-          fromAccount = "test-account1",
-          toAccount = "test-account2",
-          toMonth = DEC / 2019,
-          fromMonth = DEC / 2019,
-          balance = Balance.projected(1000, "2019-12-05"),
-          description = "Second transfer",
+        addTransfer(
+          TransferData(
+            fromAccount = "test-account1",
+            toAccount = "test-account2",
+            toMonth = DEC / 2019,
+            fromMonth = DEC / 2019,
+            balance = Balance.projected(1000, "2019-12-05"),
+            description = "Second transfer",
+          )
         )
-      )
-
-      val table = buildTransactionStatementTable(builder.build(), owner = null)
+      }
+      val table = buildTransactionStatementTable(budget, owner = null)
       table.size shouldBe 6
       // TODO: enable snapshot tests.
       // table.toMatchSnapshot()
     }
 
     it("two accounts with external transfer") {
-      val builder = BudgetBuilder()
       val account1 = Account(
         name = "test-account1",
         type = Account.Type.EXTERNAL,
@@ -137,90 +138,90 @@ class TransactionTest : DescribeSpec({
         type = Account.Type.CREDIT,
         owners = listOf("john"),
       )
-
-      builder.setAccount(account1)
-      builder.setBalance("test-account1", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
-      builder.setBalance("test-account1", JAN / 2020, Balance.confirmed(20, "2020-01-01"))
-      builder.setBalance("test-account1", FEB / 2020, Balance.projected(30, "2020-02-01"))
-      builder.setAccount(account2)
-      builder.addTransfer(
-        TransferData(
-          fromAccount = "test-account1",
-          toAccount = "test-account2",
-          toMonth = DEC / 2019,
-          fromMonth = DEC / 2019,
-          balance = Balance.projected(2000, "2019-12-05"),
-          description = "First transfer",
+      val budget = budget {
+        setAccount(account1)
+        setBalance("test-account1", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
+        setBalance("test-account1", JAN / 2020, Balance.confirmed(20, "2020-01-01"))
+        setBalance("test-account1", FEB / 2020, Balance.projected(30, "2020-02-01"))
+        setAccount(account2)
+        addTransfer(
+          TransferData(
+            fromAccount = "test-account1",
+            toAccount = "test-account2",
+            toMonth = DEC / 2019,
+            fromMonth = DEC / 2019,
+            balance = Balance.projected(2000, "2019-12-05"),
+            description = "First transfer",
+          )
         )
-      )
 
-      builder.addTransfer(
-        TransferData(
-          fromAccount = "test-account1",
-          toAccount = "test-account2",
-          toMonth = DEC / 2019,
-          fromMonth = DEC / 2019,
-          balance = Balance.projected(1000, "2019-12-05"),
-          description = "Second transfer",
+        addTransfer(
+          TransferData(
+            fromAccount = "test-account1",
+            toAccount = "test-account2",
+            toMonth = DEC / 2019,
+            fromMonth = DEC / 2019,
+            balance = Balance.projected(1000, "2019-12-05"),
+            description = "Second transfer",
+          )
         )
-      )
-
-      val table = buildTransactionStatementTable(builder.build(), owner = null)
+      }
+      val table = buildTransactionStatementTable(budget, owner = null)
       table.size shouldBe 6
       // TODO: enable snapshot tests.
       // table.toMatchSnapshot()
     }
 
     it("single account with transfers") {
-      val builder = BudgetBuilder()
       val account1 = Account(
         name = "test-account1",
         type = Account.Type.CHECKING,
         owners = listOf("john"),
       )
-      builder.setAccount(account1)
-      builder.setBalance("test-account1", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
-      builder.setBalance("test-account1", JAN / 2020, Balance.confirmed(20, "2020-01-01"))
-      builder.setBalance("test-account1", FEB / 2020, Balance.projected(30, "2020-02-01"))
-      builder.addTransfer(
-        TransferData(
-          fromAccount = "test-account1",
-          toAccount = "test-account1",
-          toMonth = DEC / 2019,
-          fromMonth = DEC / 2019,
-          balance = Balance.projected(2000, "2019-12-05"),
-          description = "First transfer",
+      val budget = budget {
+        setAccount(account1)
+        setBalance("test-account1", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
+        setBalance("test-account1", JAN / 2020, Balance.confirmed(20, "2020-01-01"))
+        setBalance("test-account1", FEB / 2020, Balance.projected(30, "2020-02-01"))
+        addTransfer(
+          TransferData(
+            fromAccount = "test-account1",
+            toAccount = "test-account1",
+            toMonth = DEC / 2019,
+            fromMonth = DEC / 2019,
+            balance = Balance.projected(2000, "2019-12-05"),
+            description = "First transfer",
+          )
         )
-      )
-
-      val table = buildTransactionStatementTable(builder.build(), owner = null)
+      }
+      val table = buildTransactionStatementTable(budget, owner = null)
       table.size shouldBe 3
       // // TODO: enable snapshot tests.
       // table.toMatchSnapshot()
     }
 
     it("transfer with date before start balance") {
-      val builder = BudgetBuilder()
       val account1 = Account(
         name = "test-account1",
         type = Account.Type.CHECKING,
         owners = listOf("john"),
       )
-      builder.setAccount(account1)
-      builder.setBalance("test-account1", DEC / 2019, Balance.confirmed(1000, "2019-12-01"))
-      builder.addTransfer(
-        TransferData(
-          fromAccount = "test-account1",
-          toAccount = "test-account1",
-          toMonth = DEC / 2019,
-          fromMonth = DEC / 2019,
-          balance = Balance.projected(2000, "2019-11-25"),
-          description = "First transfer",
+      val budget = budget {
+        setAccount(account1)
+        setBalance("test-account1", DEC / 2019, Balance.confirmed(1000, "2019-12-01"))
+        addTransfer(
+          TransferData(
+            fromAccount = "test-account1",
+            toAccount = "test-account1",
+            toMonth = DEC / 2019,
+            fromMonth = DEC / 2019,
+            balance = Balance.projected(2000, "2019-11-25"),
+            description = "First transfer",
+          )
         )
-      )
-
+      }
       val exception =
-        shouldThrow<IllegalStateException> { buildTransactionStatementTable(builder.build(), owner = null) }
+        shouldThrow<IllegalStateException> { buildTransactionStatementTable(budget, owner = null) }
       exception.message shouldBe "Balance Dec2019 Balance { amount: 10.00, date: 2019-12-01, type: CONFIRMED } " +
           "for account test-account1 starts after transaction test-account1 --> " +
           "test-account1/Balance { amount: 20.00, date: 2019-11-25, type: PROJECTED } " +
@@ -228,26 +229,27 @@ class TransactionTest : DescribeSpec({
     }
 
     it("transfer to closed account") {
-      val builder = BudgetBuilder()
       val account1 = Account(
         name = "test-account1",
         type = Account.Type.CHECKING,
         owners = listOf("john"),
         closedOn = NOV / 2019  // closed before TransactionStatement month
       )
-      builder.setAccount(account1)
-      builder.setBalance("test-account1", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
-      builder.addTransfer(
-        TransferData(
-          fromAccount = "test-account1",
-          toAccount = "test-account1",
-          toMonth = DEC / 2019,
-          fromMonth = DEC / 2019,
-          balance = Balance.projected(2000, "2019-12-05"),
-          description = "First transfer",
+      val budget = budget {
+        setAccount(account1)
+        setBalance("test-account1", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
+        addTransfer(
+          TransferData(
+            fromAccount = "test-account1",
+            toAccount = "test-account1",
+            toMonth = DEC / 2019,
+            fromMonth = DEC / 2019,
+            balance = Balance.projected(2000, "2019-12-05"),
+            description = "First transfer",
+          )
         )
-      )
-      val table = buildTransactionStatementTable(builder.build(), owner = null)
+      }
+      val table = buildTransactionStatementTable(budget, owner = null)
       table.size shouldBe 2  // Two transaction statements for the account
       table[0].month shouldBe DEC / 2019
       table[0].isClosed shouldBe true
@@ -256,7 +258,6 @@ class TransactionTest : DescribeSpec({
     }
 
     it("get transaction type") {
-      val builder = BudgetBuilder()
       val account1 = Account(
         name = "test-account1",
         type = Account.Type.CHECKING,
@@ -272,34 +273,36 @@ class TransactionTest : DescribeSpec({
         type = Account.Type.EXTERNAL,
         owners = listOf(),
       )
-      builder.setAccount(account1)
-      builder.setAccount(account2)
-      builder.setAccount(account3)
-      builder.setBalance("test-account1", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
-      builder.setBalance("test-account2", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
-      builder.setBalance("test-account3", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
-      builder.addTransfer(
-        TransferData(
-          fromAccount = "test-account1",
-          toAccount = "test-account2",
-          toMonth = DEC / 2019,
-          fromMonth = DEC / 2019,
-          balance = Balance.projected(2000, "2019-12-05"),
-          description = "First transfer",
+      val budget = budget {
+        setAccount(account1)
+        setAccount(account2)
+        setAccount(account3)
+        setBalance("test-account1", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
+        setBalance("test-account2", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
+        setBalance("test-account3", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
+        addTransfer(
+          TransferData(
+            fromAccount = "test-account1",
+            toAccount = "test-account2",
+            toMonth = DEC / 2019,
+            fromMonth = DEC / 2019,
+            balance = Balance.projected(2000, "2019-12-05"),
+            description = "First transfer",
+          )
         )
-      )
 
-      builder.addTransfer(
-        TransferData(
-          fromAccount = "test-account1",
-          toAccount = "test-account3",
-          toMonth = DEC / 2019,
-          fromMonth = DEC / 2019,
-          balance = Balance.projected(1000, "2019-12-05"),
-          description = "Second transfer",
+        addTransfer(
+          TransferData(
+            fromAccount = "test-account1",
+            toAccount = "test-account3",
+            toMonth = DEC / 2019,
+            fromMonth = DEC / 2019,
+            balance = Balance.projected(1000, "2019-12-05"),
+            description = "Second transfer",
+          )
         )
-      )
-      val table = buildTransactionStatementTable(builder.build(), owner = null)
+      }
+      val table = buildTransactionStatementTable(budget, owner = null)
       table.size shouldBe 3  // 3 accounts
       table[0].transactions.size shouldBe 2  // 2 transactions for account1
       assertSoftly {
