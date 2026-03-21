@@ -30,6 +30,20 @@ class TransactionStatement(account: Account, month: Month, startBalance: Balance
 
   override val isClosed: Boolean = account.isClosed(this.month)
 
+  override fun toSnapshot(): String {
+    return """TransactionStatement {
+          ${super.toSnapshot()}
+          coversPrevious = $coversPrevious
+          coversProjectedPrevious = $coversProjectedPrevious
+          hasProjectedTransfer = $hasProjectedTransfer
+          isCovered = $isCovered
+          isProjectedCovered = $isProjectedCovered
+          isClosed = $isClosed
+          transactions {
+            ${transactions.joinToString("\n") { it.toSnapshot() }}
+          }
+        }""".trimIndent()
+  }
   companion object {
     fun fromTransfers(
       account: Account,

@@ -35,6 +35,19 @@ abstract class Statement(
   // Amount transferred from external entities.
   var income: Int = 0,
 ) {
+  open fun toSnapshot(): String {
+    return """Statement {
+      account = ${account.toSnapshot()}
+      month = $month
+      startBalance = $startBalance
+      endBalance = $endBalance
+      inFlows = $inFlows
+      outFlows = $outFlows
+      totalTransfers = $totalTransfers
+      totalPayments = $totalPayments
+      income = $income
+    } """.trimMargin()
+  }
   val addSub: Int
     get() = inFlows + outFlows
   val change: Int? get() = startBalance?.let { s ->

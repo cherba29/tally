@@ -45,7 +45,7 @@ class StatementTest : DescribeSpec({
     }
   }
 
-  it("with inFlow outFlow no start/end balance") {
+  it("with inFlow outFlow no start-end balance") {
     val stmt = TestStatement(
       Account(name = "test", type = Account.Type.BILL, owners = listOf()),
       Month.fromString("Mar2021")
@@ -68,7 +68,7 @@ class StatementTest : DescribeSpec({
     stmt.unaccounted shouldBe null
   }
 
-  it("with inFlow outFlow with start/end balance") {
+  it("with inFlow outFlow with start-end balance") {
     val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), BalanceType.PROJECTED)
     val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), BalanceType.PROJECTED)
     val stmt = TestStatement(
@@ -111,7 +111,7 @@ class StatementTest : DescribeSpec({
     stmt.isEmpty() shouldBe true
   }
 
-  it("with no start/end balance") {
+  it("with no start-end balance") {
     val stmt = TestStatement(
       Account(name = "test", type = Account.Type.BILL, owners = listOf()),
       Month.fromString("Mar2021")

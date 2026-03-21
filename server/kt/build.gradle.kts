@@ -53,9 +53,15 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.core)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.kotlinx.coroutines.test.jvm)
+//    testImplementation(libs.selfie.kotest)
+//    testImplementation(libs.selfie.kotest.jvm)
+    testImplementation(libs.selfie.lib)
+    testImplementation(libs.selfie.lib.jvm)
+    testImplementation(libs.selfie.junit5)
     testImplementation(libs.turbine)
 
     testRuntimeOnly(libs.logback.classic)
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 jacoco {
@@ -82,6 +88,11 @@ tasks {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+    // systemProperty("kotest.framework.config.fqn", "io.kotest.provided.ProjectConfig")
+//    environment(properties.filter { it.key == "selfie" }) // optional, see "Overwrite everything" below
+//    inputs.files(fileTree("src/test") { // optional, improves up-to-date checking
+//        include("**/*.ss")
+//    })
 }
 
 graphql {

@@ -4,7 +4,7 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
 class AccountTest : DescribeSpec({
-  describe("open/closed") {
+  describe("open-closed") {
     it("isClosed - false by default") {
       val account = Account(
         name = "testAccount",

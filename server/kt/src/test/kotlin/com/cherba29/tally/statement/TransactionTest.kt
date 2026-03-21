@@ -2,13 +2,13 @@ package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.BudgetBuilder
 import com.cherba29.tally.core.MonthName.DEC
 import com.cherba29.tally.core.MonthName.FEB
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.NOV
 import com.cherba29.tally.core.TransferData
 import com.cherba29.tally.core.budget
+import com.diffplug.selfie.coroutines.expectSelfie
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
@@ -123,8 +123,7 @@ class TransactionTest : DescribeSpec({
       }
       val table = buildTransactionStatementTable(budget, owner = null)
       table.size shouldBe 6
-      // TODO: enable snapshot tests.
-      // table.toMatchSnapshot()
+      expectSelfie("[\n" + table.joinToString { it.toSnapshot() } + "\n]\n").toMatchDisk()
     }
 
     it("two accounts with external transfer") {

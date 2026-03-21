@@ -20,6 +20,16 @@ data class Transaction(
     INCOME,
     EXPENSE,
   }
+
+  fun toSnapshot(): String {
+    return """Transaction {
+      account = ${account.toSnapshot()}
+      balance = ${balance.toSnapshot()}
+      description = $description
+      type = $type
+      balanceFromStart = $balanceFromStart
+    """.trimIndent()
+  }
 }
 
 fun buildTransactionStatementTable(budget: Budget, owner: String?): List<TransactionStatement> {
