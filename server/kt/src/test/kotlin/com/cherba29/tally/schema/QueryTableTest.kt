@@ -2,8 +2,6 @@ package com.cherba29.tally.schema
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.BalanceType
-import com.cherba29.tally.core.BudgetBuilder
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.budget
@@ -104,7 +102,7 @@ class QueryTableTest : DescribeSpec({
             "test-account", MAR / 2026, Balance(
               amount = 100,
               date = LocalDate(2026, 3, 1),
-              type = BalanceType.CONFIRMED
+              type = Balance.Type.CONFIRMED
           ))
         },
         statements = mapOf(),
@@ -182,7 +180,7 @@ class QueryTableTest : DescribeSpec({
         startBalance = Balance(
           amount = 100,
           date = LocalDate(2026, 3, 1),
-          type = BalanceType.CONFIRMED
+          type = Balance.Type.CONFIRMED
         )
       )
       val summaries = Map3<SummaryStatement>()
@@ -195,7 +193,7 @@ class QueryTableTest : DescribeSpec({
             "test-account", MAR / 2026, Balance(
               amount = 100,
               date = LocalDate(2026, 3, 1),
-              type = BalanceType.CONFIRMED
+              type = Balance.Type.CONFIRMED
             ))
         },
         statements = mapOf(account.name to mapOf(MAR / 2026 to transactionStatement)),

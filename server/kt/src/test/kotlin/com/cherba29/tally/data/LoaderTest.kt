@@ -1,7 +1,6 @@
 package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthName.MAR
 import io.kotest.core.spec.style.DescribeSpec
@@ -39,7 +38,7 @@ class LoaderTest : DescribeSpec({
 
         result.budget.balances["test-account"]?.get(MAR / 2019) shouldBe Balance(
           10000, LocalDate(2019, 3, 1),
-          BalanceType.CONFIRMED
+          Balance.Type.CONFIRMED
         )
       }
     }
@@ -61,7 +60,7 @@ class LoaderTest : DescribeSpec({
         val result1 = loader.budget
         result1.budget.balances["test-account"]?.get(MAR / 2019) shouldBe Balance(
           10000, LocalDate(2019, 3, 1),
-          BalanceType.CONFIRMED
+          Balance.Type.CONFIRMED
         )
         val loadedOn = loader.loadedOn
 
@@ -84,7 +83,7 @@ class LoaderTest : DescribeSpec({
         val result2 = loader.budget
         result2.budget.balances["test-account"]?.get(MAR / 2019) shouldBe Balance(
           20000, LocalDate(2019, 3, 1),
-          BalanceType.CONFIRMED
+          Balance.Type.CONFIRMED
         )
       }
     }
@@ -106,7 +105,7 @@ class LoaderTest : DescribeSpec({
         val result1 = loader.budget
         result1.budget.balances["test-account"]?.get(MAR / 2019) shouldBe Balance(
           10000, LocalDate(2019, 3, 1),
-          BalanceType.CONFIRMED
+          Balance.Type.CONFIRMED
         )
         val loadedOn = loader.loadedOn
 
@@ -130,7 +129,7 @@ class LoaderTest : DescribeSpec({
         val result2 = loader.budget
         result2.budget.balances["test-account"]?.get(MAR / 2019) shouldBe Balance(
           10000, LocalDate(2019, 3, 1),
-          BalanceType.CONFIRMED
+          Balance.Type.CONFIRMED
         )
       }
     }

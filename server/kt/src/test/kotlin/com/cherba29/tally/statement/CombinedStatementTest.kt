@@ -2,7 +2,6 @@ package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import io.kotest.core.spec.style.DescribeSpec
@@ -56,7 +55,7 @@ class CombinedStatementTest : DescribeSpec({
         startBalance = Balance(
           100,
           date = LocalDate(2026, 1, 1),
-          type = BalanceType.CONFIRMED
+          type = Balance.Type.CONFIRMED
         )
       )
       val combined = CombinedStatement.fromStatements(

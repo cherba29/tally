@@ -2,7 +2,6 @@ package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.Month
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.doubles.plusOrMinus
@@ -69,8 +68,8 @@ class StatementTest : DescribeSpec({
   }
 
   it("with inFlow outFlow with start-end balance") {
-    val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), BalanceType.PROJECTED)
-    val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), BalanceType.PROJECTED)
+    val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), Balance.Type.PROJECTED)
+    val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
       Account(name = "test", type = Account.Type.BILL, owners = listOf()),
       Month.fromString("Mar2021"),
@@ -127,7 +126,7 @@ class StatementTest : DescribeSpec({
   }
 
   it("with inFlow outFlow with start balance") {
-    val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), BalanceType.PROJECTED)
+    val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
       Account(name = "test", type = Account.Type.BILL, owners = listOf()),
       Month.fromString("Mar2021"),
@@ -145,7 +144,7 @@ class StatementTest : DescribeSpec({
   }
 
   it("with inFlow outFlow with end balance") {
-    val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), BalanceType.PROJECTED)
+    val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
       Account(name = "test", type = Account.Type.BILL, owners = listOf()),
       Month.fromString("Mar2021"),
@@ -164,8 +163,8 @@ class StatementTest : DescribeSpec({
   }
 
   it("percentChange") {
-    val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), BalanceType.PROJECTED)
-    val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), BalanceType.PROJECTED)
+    val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), Balance.Type.PROJECTED)
+    val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
 
     val stmt = TestStatement(
       Account(name = "test", type = Account.Type.BILL, owners = listOf()),
@@ -182,8 +181,8 @@ class StatementTest : DescribeSpec({
   }
 
   it("change") {
-    val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), BalanceType.PROJECTED)
-    val endBalance = Balance(1020, LocalDate.parse("2020-02-01"), BalanceType.PROJECTED)
+    val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), Balance.Type.PROJECTED)
+    val endBalance = Balance(1020, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
       Account(name = "test", type = Account.Type.BILL, owners = listOf()),
       Month.fromString("Mar2021"),

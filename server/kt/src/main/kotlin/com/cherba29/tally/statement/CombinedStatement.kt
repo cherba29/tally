@@ -2,7 +2,6 @@ package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.Month
 import kotlin.math.abs
 import kotlin.math.pow
@@ -67,10 +66,10 @@ class CombinedStatement(account: Account, month: Month, val startMonth: Month) :
     ): Statement {
       val stmt = currStmt ?: EmptyStatement(account, month)
       if (stmt.startBalance == null) {
-        stmt.startBalance = prevStmt?.endBalance ?: Balance(0, month.toDate(), BalanceType.PROJECTED)
+        stmt.startBalance = prevStmt?.endBalance ?: Balance(0, month.toDate(), Balance.Type.PROJECTED)
       }
       if (stmt.endBalance == null) {
-        stmt.endBalance = nextStmt?.startBalance ?: Balance(0, month.toDate(), BalanceType.PROJECTED)
+        stmt.endBalance = nextStmt?.startBalance ?: Balance(0, month.toDate(), Balance.Type.PROJECTED)
       }
       return stmt
     }

@@ -18,7 +18,7 @@ class TransferTest : DescribeSpec({
         owners = listOf("john"),
       )
       val month = Month(2020, 1)
-      val balance = Balance(100, LocalDate(2020, 2, 3), BalanceType.CONFIRMED)
+      val balance = Balance(100, LocalDate(2020, 2, 3), Balance.Type.CONFIRMED)
       val transfer = Transfer(
         fromAccount = account1,
         toAccount = account2,

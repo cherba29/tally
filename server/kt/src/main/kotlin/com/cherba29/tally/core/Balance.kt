@@ -2,20 +2,19 @@ package com.cherba29.tally.core
 
 import kotlinx.datetime.LocalDate
 
-// TODO: fold it into Balance class.
-enum class BalanceType(val id: String) {
-  UNKNOWN("UNKNOWN"),
-  CONFIRMED("CONFIRMED"),
-  PROJECTED("PROJECTED"),
-  AUTO_PROJECTED("AUTO_PROJECTED");
-
-  companion object {
-    fun combineTypes(t1: BalanceType, t2: BalanceType): BalanceType = if (t1.ordinal < t2.ordinal) t2 else t1
-  }
-}
-
 // TODO: add desc field.
-data class Balance(val amount: Int, val date: LocalDate, val type: BalanceType) : Comparable<Balance> {
+data class Balance(val amount: Int, val date: LocalDate, val type: Type) : Comparable<Balance> {
+  enum class Type(val id: String) {
+    UNKNOWN("UNKNOWN"),
+    CONFIRMED("CONFIRMED"),
+    PROJECTED("PROJECTED"),
+    AUTO_PROJECTED("AUTO_PROJECTED");
+
+    companion object {
+      fun combineTypes(t1: Type, t2: Type): Type = if (t1.ordinal < t2.ordinal) t2 else t1
+    }
+  }
+
   override fun compareTo(other: Balance): Int {
     val dateDiff = date.compareTo(other.date)
     if (dateDiff != 0) {
@@ -35,11 +34,11 @@ data class Balance(val amount: Int, val date: LocalDate, val type: BalanceType) 
   companion object {
     // Helper constructor.
     fun confirmed(amount: Int, date: String): Balance {
-      return Balance(amount, LocalDate.parse(date), BalanceType.CONFIRMED)
+      return Balance(amount, LocalDate.parse(date), Type.CONFIRMED)
     }
 
     fun projected(amount: Int, date: String): Balance {
-      return Balance(amount, LocalDate.parse(date), BalanceType.PROJECTED)
+      return Balance(amount, LocalDate.parse(date), Type.PROJECTED)
     }
 
     fun negated(balance: Balance): Balance {
@@ -49,7 +48,7 @@ data class Balance(val amount: Int, val date: LocalDate, val type: BalanceType) 
     fun add(balance1: Balance, balance2: Balance): Balance {
       val maxDate = if (balance1.date < balance2.date) balance2.date else balance1.date
       return Balance(
-        balance1.amount + balance2.amount, maxDate, BalanceType.combineTypes(balance1.type, balance2.type)
+        balance1.amount + balance2.amount, maxDate, Type.combineTypes(balance1.type, balance2.type)
       )
     }
 

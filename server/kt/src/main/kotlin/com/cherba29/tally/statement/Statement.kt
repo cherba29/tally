@@ -3,7 +3,6 @@ package com.cherba29.tally.statement
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.data.yaml.toObjectNode
 import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sign

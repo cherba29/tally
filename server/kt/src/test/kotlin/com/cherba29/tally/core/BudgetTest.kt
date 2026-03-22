@@ -42,17 +42,17 @@ class BudgetTest : DescribeSpec({
       setBalance(
         "test-account1",
         NOV / 2019,
-        Balance(100, LocalDate(2019, 11, 1), BalanceType.PROJECTED)
+        Balance(100, LocalDate(2019, 11, 1), Balance.Type.PROJECTED)
       )
       setBalance(
         "test-account1",
         DEC / 2019,
-        Balance(200, LocalDate(2019, 12, 1), BalanceType.PROJECTED)
+        Balance(200, LocalDate(2019, 12, 1), Balance.Type.PROJECTED)
       )
       setBalance(
         "test-account2",
         NOV / 2019,
-        Balance(200, LocalDate(2019, 11, 3), BalanceType.CONFIRMED)
+        Balance(200, LocalDate(2019, 11, 3), Balance.Type.CONFIRMED)
       )
       addTransfer(
         TransferData(
@@ -60,7 +60,7 @@ class BudgetTest : DescribeSpec({
           toMonth = NOV / 2019,
           fromAccount = "test-account2",
           fromMonth = NOV / 2019,
-          balance = Balance(50, LocalDate(2019, 11, 2), BalanceType.CONFIRMED),
+          balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
           description = null
         )
       )
@@ -70,7 +70,7 @@ class BudgetTest : DescribeSpec({
           toMonth = NOV / 2019,
           fromAccount = "test-account2",
           fromMonth = NOV / 2019,
-          balance = Balance(70, LocalDate(2019, 11, 2), BalanceType.CONFIRMED),
+          balance = Balance(70, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
           description = null
         )
       )
@@ -94,13 +94,13 @@ class BudgetTest : DescribeSpec({
     builder.setBalance(
       "test-account1",
       NOV / 2019,
-      Balance(10000, LocalDate(2019, 11, 1), BalanceType.PROJECTED)
+      Balance(10000, LocalDate(2019, 11, 1), Balance.Type.PROJECTED)
     )
     val exception = shouldThrow<IllegalArgumentException> {
       builder.setBalance(
         "test-account1",
         NOV / 2019,
-        Balance(20000, LocalDate(2020, 3, 1), BalanceType.PROJECTED)
+        Balance(20000, LocalDate(2020, 3, 1), Balance.Type.PROJECTED)
       )
     }
     exception.message shouldBe "Balance for 'test-account1' 'Nov2019' is already set to Balance { amount: 200.00, date: 2020-03-01, type: PROJECTED }"
@@ -115,7 +115,7 @@ class BudgetTest : DescribeSpec({
             toMonth = NOV / 2019,
             fromAccount = "test-account2",
             fromMonth = NOV / 2019,
-            balance = Balance(50, LocalDate(2019, 12, 2), BalanceType.CONFIRMED),
+            balance = Balance(50, LocalDate(2019, 12, 2), Balance.Type.CONFIRMED),
             description = null,
           )
         )
@@ -139,7 +139,7 @@ class BudgetTest : DescribeSpec({
             toMonth = NOV / 2019,
             fromAccount = "test-account2",
             fromMonth = NOV / 2019,
-            balance = Balance(50, LocalDate(2019, 11, 2), BalanceType.CONFIRMED),
+            balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
             description = null,
           )
         )

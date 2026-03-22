@@ -2,7 +2,6 @@ package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.BudgetBuilder
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthName.FEB
@@ -125,8 +124,8 @@ class LoadYamlTest : DescribeSpec({
 
       val balances = budget.balances["test-account"]!!
       balances.size shouldBe 2
-      balances[JAN / 2020] shouldBe Balance(0, LocalDate.parse("2020-01-01"), BalanceType.CONFIRMED)
-      balances[FEB / 2020] shouldBe Balance(1000, LocalDate.parse("2020-02-01"), BalanceType.PROJECTED)
+      balances[JAN / 2020] shouldBe Balance(0, LocalDate.parse("2020-01-01"), Balance.Type.CONFIRMED)
+      balances[FEB / 2020] shouldBe Balance(1000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     }
 
     it("fails without balance month") {
@@ -269,7 +268,7 @@ class LoadYamlTest : DescribeSpec({
           toAccount = externalAccount,
           fromMonth = Month.fromString("Jan2020"),
           toMonth = Month.fromString("Jan2020"),
-          balance = Balance(3750, LocalDate.parse("2020-01-17"), BalanceType.PROJECTED),
+          balance = Balance(3750, LocalDate.parse("2020-01-17"), Balance.Type.PROJECTED),
           description = null,
         ),
         Transfer(
@@ -277,7 +276,7 @@ class LoadYamlTest : DescribeSpec({
           toAccount = externalAccount,
           fromMonth = Month.fromString("Jan2020"),
           toMonth = Month.fromString("Jan2020"),
-          balance = Balance(-2248, LocalDate.parse("2020-01-15"), BalanceType.CONFIRMED),
+          balance = Balance(-2248, LocalDate.parse("2020-01-15"), Balance.Type.CONFIRMED),
           description = null,
         ),
       )
@@ -290,7 +289,7 @@ class LoadYamlTest : DescribeSpec({
           toAccount = externalAccount,
           fromMonth = Month.fromString("Jan2020"),
           toMonth = Month.fromString("Jan2020"),
-          balance = Balance(3750, LocalDate.parse("2020-01-17"), BalanceType.PROJECTED),
+          balance = Balance(3750, LocalDate.parse("2020-01-17"), Balance.Type.PROJECTED),
           description = null,
         ),
         Transfer(
@@ -298,7 +297,7 @@ class LoadYamlTest : DescribeSpec({
           toAccount = externalAccount,
           fromMonth = Month.fromString("Jan2020"),
           toMonth = Month.fromString("Jan2020"),
-          balance = Balance(-2248, LocalDate.parse("2020-01-15"), BalanceType.CONFIRMED),
+          balance = Balance(-2248, LocalDate.parse("2020-01-15"), Balance.Type.CONFIRMED),
           description = null,
         ),
       )

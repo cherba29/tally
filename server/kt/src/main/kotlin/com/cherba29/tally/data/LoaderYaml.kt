@@ -2,7 +2,6 @@ package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.BudgetBuilder
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.TransferData
@@ -68,13 +67,13 @@ data class YamlData(
 
 private fun BalanceYamlData.toBalance(): Balance {
   var amount: Int
-  var balanceType: BalanceType
+  var balanceType: Balance.Type
   if (camt != null) {
     amount = (100.0 * camt).roundToInt()
-    balanceType = BalanceType.CONFIRMED
+    balanceType = Balance.Type.CONFIRMED
   } else if (pamt != null) {
     amount = (100.0 * pamt).roundToInt()
-    balanceType = BalanceType.PROJECTED
+    balanceType = Balance.Type.PROJECTED
   } else {
     throw IllegalArgumentException("Balance $this does not have amount type set, expected camt or pamt entry.")
   }
@@ -163,13 +162,13 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
           balance = Balance(
             (100 * transferData.pamt).roundToInt(),
             transferData.date,
-            BalanceType.PROJECTED
+            Balance.Type.PROJECTED
           )
         } else if (transferData.camt != null) {
           balance = Balance(
             (100 * transferData.camt).roundToInt(),
             transferData.date,
-            BalanceType.CONFIRMED
+            Balance.Type.CONFIRMED
           )
         }
         if (balance == null) {

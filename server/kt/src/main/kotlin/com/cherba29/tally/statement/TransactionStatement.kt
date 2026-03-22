@@ -2,7 +2,6 @@ package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.Transfer
 
@@ -86,7 +85,7 @@ class TransactionStatement(account: Account, month: Month, startBalance: Balance
 
       for (t in descTransfers) {
         statement.hasProjectedTransfer =
-          statement.hasProjectedTransfer || t.balance.type == BalanceType.PROJECTED
+          statement.hasProjectedTransfer || t.balance.type == Balance.Type.PROJECTED
         var otherAccount: Account
         var balance: Balance
         var transactionType: Transaction.Type
@@ -106,7 +105,7 @@ class TransactionStatement(account: Account, month: Month, startBalance: Balance
         }
         if (!statement.coversPrevious && balance.amount > 0 && t.fromAccount.hasCommonOwner(account)) {
           statement.coversProjectedPrevious = true
-          if (balance.type != BalanceType.PROJECTED) {
+          if (balance.type != Balance.Type.PROJECTED) {
             statement.coversPrevious = true
           }
         }

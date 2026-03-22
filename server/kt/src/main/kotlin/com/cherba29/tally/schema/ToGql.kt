@@ -2,7 +2,6 @@ package com.cherba29.tally.schema
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.BalanceType
 import com.cherba29.tally.statement.CombinedStatement
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
@@ -28,7 +27,7 @@ fun Account.toGql(): GqlAccount = GqlAccount(
   phone = phone ?: "",
 )
 
-fun BalanceType.toGql() = id
+fun Balance.Type.toGql() = id
 
 fun Balance.toGql(): GqlBalance = GqlBalance(
   amount = amount,
@@ -77,7 +76,7 @@ fun TransactionStatement.toGqlTableCell(): GqlTableCell = GqlTableCell(
   isClosed = isClosed,
   addSub = addSub,
   balance = endBalance?.amount,
-  isProjected = (endBalance != null && endBalance?.type != BalanceType.CONFIRMED) || hasProjectedTransfer,
+  isProjected = (endBalance != null && endBalance?.type != Balance.Type.CONFIRMED) || hasProjectedTransfer,
   isCovered = isCovered,
   isProjectedCovered = isProjectedCovered,
   hasProjectedTransfer = hasProjectedTransfer,
@@ -114,7 +113,7 @@ fun Statement.toGqlTableCell(): GqlTableCell = GqlTableCell(
   isClosed = isClosed,
   addSub = addSub,
   balance = endBalance?.amount,
-  isProjected = endBalance?.type != BalanceType.CONFIRMED,
+  isProjected = endBalance?.type != Balance.Type.CONFIRMED,
   isCovered = false,
   isProjectedCovered = false,
   hasProjectedTransfer = false,
