@@ -3,6 +3,7 @@ package com.cherba29.tally.statement
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.data.yaml.toObjectNode
 import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sign
@@ -35,19 +36,6 @@ abstract class Statement(
   // Amount transferred from external entities.
   var income: Int = 0,
 ) {
-  open fun toSnapshot(): String {
-    return """Statement {
-      account = ${account.toSnapshot()}
-      month = $month
-      startBalance = $startBalance
-      endBalance = $endBalance
-      inFlows = $inFlows
-      outFlows = $outFlows
-      totalTransfers = $totalTransfers
-      totalPayments = $totalPayments
-      income = $income
-    } """.trimMargin()
-  }
   val addSub: Int
     get() = inFlows + outFlows
   val change: Int? get() = startBalance?.let { s ->

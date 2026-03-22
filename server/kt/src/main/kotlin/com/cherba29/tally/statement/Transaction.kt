@@ -4,6 +4,7 @@ import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Budget
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.data.yaml.toObjectNode
 
 
 data class Transaction(
@@ -19,16 +20,6 @@ data class Transaction(
     TRANSFER,
     INCOME,
     EXPENSE,
-  }
-
-  fun toSnapshot(): String {
-    return """Transaction {
-      account = ${account.toSnapshot()}
-      balance = ${balance.toSnapshot()}
-      description = $description
-      type = $type
-      balanceFromStart = $balanceFromStart
-    """.trimIndent()
   }
 }
 

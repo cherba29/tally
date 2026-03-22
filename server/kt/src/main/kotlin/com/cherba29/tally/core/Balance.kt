@@ -32,14 +32,6 @@ data class Balance(val amount: Int, val date: LocalDate, val type: BalanceType) 
     return "Balance { amount: ${String.format("%.2f", amount / 100.0)}, date: $date, type: ${type.id} }"
   }
 
-  fun toSnapshot(): String {
-    return """Balance {
-      amount = $amount
-      date = $date
-      type = $type
-    } """.trimIndent()
-  }
-
   companion object {
     // Helper constructor.
     fun confirmed(amount: Int, date: String): Balance {

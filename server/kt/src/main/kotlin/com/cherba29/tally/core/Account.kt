@@ -47,24 +47,6 @@ data class Account(
 
   override fun toString(): String = "Account $name ${type.id}${if (closedOn == null) "" else " Closed $closedOn"}"
 
-  fun toSnapshot(): String {
-     return """Account {
-       name = $name
-       description = $description
-       path = [${path.joinToString()}]
-       type = $type
-       number = $number
-       openedOn = $openedOn
-       closedOn = $closedOn
-       owners = [${owners.joinToString()}]
-       url = $url
-       address = $address
-       phone = $phone
-       userName = $userName
-       password = $password
-     }""".trimIndent()
-  }
-
   fun isClosed(month: Month): Boolean {
     return (closedOn != null) && (closedOn < month) || // After closed.
            (openedOn != null) && (month < openedOn) // Before or on open.

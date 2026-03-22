@@ -8,7 +8,10 @@ import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.NOV
 import com.cherba29.tally.core.TransferData
 import com.cherba29.tally.core.budget
+import com.cherba29.tally.data.yaml.toObjectNode
 import com.diffplug.selfie.coroutines.expectSelfie
+import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
+import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
@@ -16,6 +19,16 @@ import io.kotest.matchers.shouldBe
 import java.lang.IllegalStateException
 
 class TransactionTest : DescribeSpec({
+  fun List<TransactionStatement>.toSnapshot(): String {
+    val mapper = YAMLMapper.builder()
+      .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
+      .enable(YAMLGenerator.Feature.MINIMIZE_QUOTES)
+      .build()
+    val arrayNode = mapper.createArrayNode()
+    forEach { it.toObjectNode(arrayNode.addObject()) }
+    return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(arrayNode)
+  }
+
   describe("Build") {
     it("no months") {
       val exception = shouldThrow<IllegalArgumentException> {
@@ -123,7 +136,7 @@ class TransactionTest : DescribeSpec({
       }
       val table = buildTransactionStatementTable(budget, owner = null)
       table.size shouldBe 6
-      expectSelfie("[\n" + table.joinToString { it.toSnapshot() } + "\n]\n").toMatchDisk()
+      expectSelfie(table.toSnapshot()).toMatchDisk()
     }
 
     it("two accounts with external transfer") {
@@ -167,8 +180,7 @@ class TransactionTest : DescribeSpec({
       }
       val table = buildTransactionStatementTable(budget, owner = null)
       table.size shouldBe 6
-      // TODO: enable snapshot tests.
-      // table.toMatchSnapshot()
+      expectSelfie(table.toSnapshot()).toMatchDisk()
     }
 
     it("single account with transfers") {
@@ -195,8 +207,7 @@ class TransactionTest : DescribeSpec({
       }
       val table = buildTransactionStatementTable(budget, owner = null)
       table.size shouldBe 3
-      // // TODO: enable snapshot tests.
-      // table.toMatchSnapshot()
+      expectSelfie(table.toSnapshot()).toMatchDisk()
     }
 
     it("transfer with date before start balance") {
