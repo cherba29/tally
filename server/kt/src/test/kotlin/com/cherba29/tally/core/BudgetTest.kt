@@ -55,24 +55,20 @@ class BudgetTest : DescribeSpec({
         Balance(200, LocalDate(2019, 11, 3), Balance.Type.CONFIRMED)
       )
       addTransfer(
-        TransferData(
-          toAccount = "test-account1",
-          toMonth = NOV / 2019,
-          fromAccount = "test-account2",
-          fromMonth = NOV / 2019,
-          balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
-          description = null
-        )
+        toAccount = "test-account1",
+        toMonth = NOV / 2019,
+        fromAccount = "test-account2",
+        fromMonth = NOV / 2019,
+        balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
+        description = null
       )
       addTransfer(
-        TransferData(
-          toAccount = "test-account3",
-          toMonth = NOV / 2019,
-          fromAccount = "test-account2",
-          fromMonth = NOV / 2019,
-          balance = Balance(70, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
-          description = null
-        )
+        toAccount = "test-account3",
+        toMonth = NOV / 2019,
+        fromAccount = "test-account2",
+        fromMonth = NOV / 2019,
+        balance = Balance(70, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
+        description = null
       )
     }
     budget.accounts.size shouldBe 3
@@ -107,17 +103,21 @@ class BudgetTest : DescribeSpec({
   }
 
   it("build budget - bad to account") {
+    val account1 = Account(
+      name = "test-account2",
+      type = Account.Type.EXTERNAL,
+      owners = listOf(),
+    )
     val exception = shouldThrow<IllegalArgumentException> {
       budget {
+        setAccount(account1)
         addTransfer(
-          TransferData(
-            toAccount = "test-account1",
-            toMonth = NOV / 2019,
-            fromAccount = "test-account2",
-            fromMonth = NOV / 2019,
-            balance = Balance(50, LocalDate(2019, 12, 2), Balance.Type.CONFIRMED),
-            description = null,
-          )
+          toAccount = "test-account1",
+          toMonth = NOV / 2019,
+          fromAccount = "test-account2",
+          fromMonth = NOV / 2019,
+          balance = Balance(50, LocalDate(2019, 12, 2), Balance.Type.CONFIRMED),
+          description = null,
         )
       }
     }
@@ -134,14 +134,12 @@ class BudgetTest : DescribeSpec({
       budget {
         setAccount(account1)
         addTransfer(
-          TransferData(
-            toAccount = "test-account1",
-            toMonth = NOV / 2019,
-            fromAccount = "test-account2",
-            fromMonth = NOV / 2019,
-            balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
-            description = null,
-          )
+          toAccount = "test-account1",
+          toMonth = NOV / 2019,
+          fromAccount = "test-account2",
+          fromMonth = NOV / 2019,
+          balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
+          description = null,
         )
       }
     }

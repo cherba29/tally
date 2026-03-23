@@ -4,7 +4,6 @@ import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.BudgetBuilder
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.core.TransferData
 import com.cherba29.tally.data.yaml.CustomProblemHandler
 import com.cherba29.tally.data.yaml.LocalDateDeserializer
 import com.cherba29.tally.data.yaml.MonthDeserializer
@@ -84,10 +83,10 @@ private fun BalanceYamlData.toBalance(): Balance {
 }
 
 // TODO: Preprocess but do not put it into budget builder yet, so warnings are only produced files that change.
-fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
+fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
   if (data.name == null) {
     // Ignore data which dont represent account.
-    return
+    return false
   }
   val accountType = Account.Type.fromString(data.type)
   if (accountType == null) {
@@ -186,7 +185,8 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
                 "for $transferMonth date ${balance.date} (${balanceMonth}) are too far apart."
           )
         }
-        val transfer = TransferData(
+
+        budgetBuilder.addTransfer(
           fromAccount = account.name,
           fromMonth = transferMonth,
           toAccount = accountName,
@@ -194,11 +194,10 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData) {
           balance = balance,
           description = transferData.desc,
         )
-
-        budgetBuilder.addTransfer(transfer)
       }
     }
   }
+  return true
 }
 
 // TODO: make it a class so mapper does not have to be instantiated every time.
@@ -222,8 +221,8 @@ fun parseYamlContent(content: String, relativeFilePath: Path): YamlData {
   return result
 }
 
-fun loadYamlFile(budgetBuilder: BudgetBuilder, accountData: YamlData, relativeFilePath: Path) {
-  try {
+fun loadYamlFile(budgetBuilder: BudgetBuilder, accountData: YamlData, relativeFilePath: Path): Boolean {
+  return try {
     processYamlData(budgetBuilder, accountData)
   } catch (e: IllegalArgumentException) {
     logger.error { e.javaClass.simpleName + ": " + e.message }

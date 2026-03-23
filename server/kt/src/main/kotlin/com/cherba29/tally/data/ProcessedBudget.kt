@@ -11,7 +11,6 @@ import com.cherba29.tally.utils.Map3
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.nio.file.Paths
-import kotlin.collections.contains
 import kotlin.io.path.readText
 import kotlin.time.TimeSource
 import kotlin.time.measureTime
@@ -30,8 +29,7 @@ class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
         val unwantedFiles = mutableListOf<String>()
         for ((filePath, accountData) in parsedAccountData) {
           try {
-            loadYamlFile(this, accountData, Paths.get(filePath))
-            if (!accounts.contains(accountData.name ?: "")) {
+            if (!loadYamlFile(this, accountData, Paths.get(filePath))) {
               logger.warn { "warning: $filePath is not an account file." }
               unwantedFiles.add(filePath)
             }

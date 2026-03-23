@@ -6,7 +6,6 @@ import com.cherba29.tally.core.MonthName.DEC
 import com.cherba29.tally.core.MonthName.FEB
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.NOV
-import com.cherba29.tally.core.TransferData
 import com.cherba29.tally.core.budget
 import com.cherba29.tally.data.yaml.toObjectNode
 import com.diffplug.selfie.coroutines.expectSelfie
@@ -81,14 +80,12 @@ class TransactionTest : DescribeSpec({
           budget {
             setAccount(account1)
             addTransfer(
-              TransferData(
-                fromAccount = "test-account1",
-                toAccount = "test-account2",
-                toMonth = DEC / 2019,
-                fromMonth = DEC / 2019,
-                balance = Balance.projected(2000, "2019-12-05"),
-                description = "First transfer",
-              )
+              fromAccount = "test-account1",
+              toAccount = "test-account2",
+              toMonth = DEC / 2019,
+              fromMonth = DEC / 2019,
+              balance = Balance.projected(2000, "2019-12-05"),
+              description = "First transfer",
             )
           }
         }
@@ -113,25 +110,21 @@ class TransactionTest : DescribeSpec({
         setBalance("test-account1", FEB / 2020, Balance.projected(30, "2020-02-01"))
         setAccount(account2)
         addTransfer(
-          TransferData(
-            fromAccount = "test-account1",
-            toAccount = "test-account2",
-            toMonth = DEC / 2019,
-            fromMonth = DEC / 2019,
-            balance = Balance.projected(2000, "2019-12-05"),
-            description = "First transfer",
-          )
+          fromAccount = "test-account1",
+          toAccount = "test-account2",
+          toMonth = DEC / 2019,
+          fromMonth = DEC / 2019,
+          balance = Balance.projected(2000, "2019-12-05"),
+          description = "First transfer",
         )
 
         addTransfer(
-          TransferData(
-            fromAccount = "test-account1",
-            toAccount = "test-account2",
-            toMonth = DEC / 2019,
-            fromMonth = DEC / 2019,
-            balance = Balance.projected(1000, "2019-12-05"),
-            description = "Second transfer",
-          )
+          fromAccount = "test-account1",
+          toAccount = "test-account2",
+          toMonth = DEC / 2019,
+          fromMonth = DEC / 2019,
+          balance = Balance.projected(1000, "2019-12-05"),
+          description = "Second transfer",
         )
       }
       val table = buildTransactionStatementTable(budget, owner = null)
@@ -157,25 +150,21 @@ class TransactionTest : DescribeSpec({
         setBalance("test-account1", FEB / 2020, Balance.projected(30, "2020-02-01"))
         setAccount(account2)
         addTransfer(
-          TransferData(
-            fromAccount = "test-account1",
-            toAccount = "test-account2",
-            toMonth = DEC / 2019,
-            fromMonth = DEC / 2019,
-            balance = Balance.projected(2000, "2019-12-05"),
-            description = "First transfer",
-          )
+          fromAccount = "test-account1",
+          toAccount = "test-account2",
+          toMonth = DEC / 2019,
+          fromMonth = DEC / 2019,
+          balance = Balance.projected(2000, "2019-12-05"),
+          description = "First transfer",
         )
 
         addTransfer(
-          TransferData(
-            fromAccount = "test-account1",
-            toAccount = "test-account2",
-            toMonth = DEC / 2019,
-            fromMonth = DEC / 2019,
-            balance = Balance.projected(1000, "2019-12-05"),
-            description = "Second transfer",
-          )
+          fromAccount = "test-account1",
+          toAccount = "test-account2",
+          toMonth = DEC / 2019,
+          fromMonth = DEC / 2019,
+          balance = Balance.projected(1000, "2019-12-05"),
+          description = "Second transfer",
         )
       }
       val table = buildTransactionStatementTable(budget, owner = null)
@@ -195,14 +184,12 @@ class TransactionTest : DescribeSpec({
         setBalance("test-account1", JAN / 2020, Balance.confirmed(20, "2020-01-01"))
         setBalance("test-account1", FEB / 2020, Balance.projected(30, "2020-02-01"))
         addTransfer(
-          TransferData(
-            fromAccount = "test-account1",
-            toAccount = "test-account1",
-            toMonth = DEC / 2019,
-            fromMonth = DEC / 2019,
-            balance = Balance.projected(2000, "2019-12-05"),
-            description = "First transfer",
-          )
+          fromAccount = "test-account1",
+          toAccount = "test-account1",
+          toMonth = DEC / 2019,
+          fromMonth = DEC / 2019,
+          balance = Balance.projected(2000, "2019-12-05"),
+          description = "First transfer",
         )
       }
       val table = buildTransactionStatementTable(budget, owner = null)
@@ -220,14 +207,12 @@ class TransactionTest : DescribeSpec({
         setAccount(account1)
         setBalance("test-account1", DEC / 2019, Balance.confirmed(1000, "2019-12-01"))
         addTransfer(
-          TransferData(
-            fromAccount = "test-account1",
-            toAccount = "test-account1",
-            toMonth = DEC / 2019,
-            fromMonth = DEC / 2019,
-            balance = Balance.projected(2000, "2019-11-25"),
-            description = "First transfer",
-          )
+          fromAccount = "test-account1",
+          toAccount = "test-account1",
+          toMonth = DEC / 2019,
+          fromMonth = DEC / 2019,
+          balance = Balance.projected(2000, "2019-11-25"),
+          description = "First transfer",
         )
       }
       val exception =
@@ -249,14 +234,12 @@ class TransactionTest : DescribeSpec({
         setAccount(account1)
         setBalance("test-account1", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
         addTransfer(
-          TransferData(
-            fromAccount = "test-account1",
-            toAccount = "test-account1",
-            toMonth = DEC / 2019,
-            fromMonth = DEC / 2019,
-            balance = Balance.projected(2000, "2019-12-05"),
-            description = "First transfer",
-          )
+          fromAccount = "test-account1",
+          toAccount = "test-account1",
+          toMonth = DEC / 2019,
+          fromMonth = DEC / 2019,
+          balance = Balance.projected(2000, "2019-12-05"),
+          description = "First transfer",
         )
       }
       val table = buildTransactionStatementTable(budget, owner = null)
@@ -291,25 +274,21 @@ class TransactionTest : DescribeSpec({
         setBalance("test-account2", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
         setBalance("test-account3", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
         addTransfer(
-          TransferData(
-            fromAccount = "test-account1",
-            toAccount = "test-account2",
-            toMonth = DEC / 2019,
-            fromMonth = DEC / 2019,
-            balance = Balance.projected(2000, "2019-12-05"),
-            description = "First transfer",
-          )
+          fromAccount = "test-account1",
+          toAccount = "test-account2",
+          toMonth = DEC / 2019,
+          fromMonth = DEC / 2019,
+          balance = Balance.projected(2000, "2019-12-05"),
+          description = "First transfer",
         )
 
         addTransfer(
-          TransferData(
-            fromAccount = "test-account1",
-            toAccount = "test-account3",
-            toMonth = DEC / 2019,
-            fromMonth = DEC / 2019,
-            balance = Balance.projected(1000, "2019-12-05"),
-            description = "Second transfer",
-          )
+          fromAccount = "test-account1",
+          toAccount = "test-account3",
+          toMonth = DEC / 2019,
+          fromMonth = DEC / 2019,
+          balance = Balance.projected(1000, "2019-12-05"),
+          description = "Second transfer",
         )
       }
       val table = buildTransactionStatementTable(budget, owner = null)

@@ -6,11 +6,20 @@ class BudgetBuilder(
   private var minMonth: Month? = null,
   private var maxMonth: Month? = null,
   // Account name to account map.
-  val accounts: MutableMap<String, Account> = mutableMapOf(),
+  private val accounts: MutableMap<String, Account> = mutableMapOf(),
   // Account name -> month -> balance map.
-  val balances: MutableMap<String, MutableMap<Month, Balance>> = mutableMapOf(),
-  val transfers: MutableList<TransferData> = mutableListOf()
+  private val balances: MutableMap<String, MutableMap<Month, Balance>> = mutableMapOf(),
+  private val transfers: MutableList<TransferData> = mutableListOf()
 ) {
+  data class TransferData(
+    val toAccount: String,
+    val toMonth: Month,
+    val fromAccount: String,
+    val fromMonth: Month,
+    val balance: Balance,
+    val description: String?,
+  )
+
   fun setAccount(account: Account): BudgetBuilder {
     accounts[account.name] = account
     if (account.openedOn != null) {
@@ -41,18 +50,23 @@ class BudgetBuilder(
     return this
   }
 
-  fun addTransfer(transferData: TransferData) {
+  fun addTransfer(fromAccount: String,
+                  fromMonth: Month,
+                  toAccount: String,
+                  toMonth: Month,
+                  balance: Balance,
+                  description: String?) {
+    val transferData = TransferData(
+      toAccount,
+      toMonth,
+      fromAccount,
+      fromMonth,
+      balance,
+      description,
+    )
     transfers.add(transferData)
-    minMonth = Month.min(
-      minMonth ?: transferData.toMonth,
-      transferData.toMonth,
-      transferData.fromMonth
-    )
-    maxMonth = Month.max(
-      maxMonth ?: transferData.toMonth,
-      transferData.toMonth,
-      transferData.fromMonth
-    )
+    minMonth = Month.min(minMonth ?: toMonth, toMonth, fromMonth)
+    maxMonth = Month.max(maxMonth ?: toMonth, toMonth, fromMonth)
   }
 
   fun build(): Budget {
