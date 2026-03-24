@@ -24,16 +24,19 @@ class BudgetTest : DescribeSpec({
       name = "test-account1",
       type = Account.Type.EXTERNAL,
       owners = listOf(),
+      openedOn = NOV / 2019,
     )
     val account2 = Account(
       name = "test-account2",
       type = Account.Type.BILL,
       owners = listOf(),
+      openedOn = NOV / 2019,
     )
     val account3 = Account(
       name = "test-account3",
       type = Account.Type.BILL,
       owners = listOf(),
+      openedOn = NOV / 2019,
     )
     val budget = budget {
       setAccount(account1)
@@ -85,6 +88,7 @@ class BudgetTest : DescribeSpec({
       name = "test-account1",
       type = Account.Type.EXTERNAL,
       owners = listOf(),
+      openedOn = NOV / 2019,
     )
     builder.setAccount(account1)
     builder.setBalance(
@@ -107,6 +111,7 @@ class BudgetTest : DescribeSpec({
       name = "test-account2",
       type = Account.Type.EXTERNAL,
       owners = listOf(),
+      openedOn = NOV / 2019,
     )
     val exception = shouldThrow<IllegalArgumentException> {
       budget {
@@ -129,6 +134,7 @@ class BudgetTest : DescribeSpec({
       name = "test-account1",
       type = Account.Type.EXTERNAL,
       owners = listOf(),
+      openedOn = NOV / 2019,
     )
     val exception = shouldThrow<IllegalArgumentException> {
       budget {
@@ -159,13 +165,14 @@ class BudgetTest : DescribeSpec({
         name = "test-account1",
         type = Account.Type.EXTERNAL,
         owners = listOf(),
+        openedOn = NOV / 2019
       )
       val budget = budget {
         setAccount(account1)
       }
 
       budget.accounts.size shouldBe 1
-      budget.findActiveAccounts() shouldBe listOf()
+      budget.findActiveAccounts() shouldBe listOf(account1)
     }
 
     it("open account") {
@@ -194,6 +201,7 @@ class BudgetTest : DescribeSpec({
         name = "test-account2",
         type = Account.Type.EXTERNAL,
         owners = listOf(),
+        openedOn = NOV / 2019,
       )
 
       val account3 = Account(

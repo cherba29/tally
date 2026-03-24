@@ -6,6 +6,7 @@
       __type: Account
       name: test-account1
       type: CHECKING
+      openedOn: Dec2019
       owner:
       - john
     month: Feb2020
@@ -27,6 +28,7 @@
       __type: Account
       name: test-account1
       type: CHECKING
+      openedOn: Dec2019
       owner:
       - john
     month: Jan2020
@@ -53,6 +55,7 @@
       __type: Account
       name: test-account1
       type: CHECKING
+      openedOn: Dec2019
       owner:
       - john
     month: Dec2019
@@ -80,6 +83,7 @@
       __type: Account
       name: test-account1
       type: CHECKING
+      openedOn: Dec2019
       owner:
       - john
     balance:
@@ -95,6 +99,7 @@
       __type: Account
       name: test-account1
       type: CHECKING
+      openedOn: Dec2019
       owner:
       - john
     balance:
@@ -114,6 +119,7 @@
       __type: Account
       name: test-account1
       type: CHECKING
+      openedOn: Dec2019
       owner:
       - john
     month: Feb2020
@@ -135,6 +141,7 @@
       __type: Account
       name: test-account1
       type: CHECKING
+      openedOn: Dec2019
       owner:
       - john
     month: Jan2020
@@ -161,6 +168,7 @@
       __type: Account
       name: test-account1
       type: CHECKING
+      openedOn: Dec2019
       owner:
       - john
     month: Dec2019
@@ -188,6 +196,7 @@
       __type: Account
       name: test-account2
       type: CREDIT
+      openedOn: Dec2019
       owner:
       - john
     balance:
@@ -203,6 +212,7 @@
       __type: Account
       name: test-account2
       type: CREDIT
+      openedOn: Dec2019
       owner:
       - john
     balance:
@@ -220,6 +230,7 @@
       __type: Account
       name: test-account2
       type: CREDIT
+      openedOn: Dec2019
       owner:
       - john
     month: Feb2020
@@ -236,6 +247,7 @@
       __type: Account
       name: test-account2
       type: CREDIT
+      openedOn: Dec2019
       owner:
       - john
     month: Jan2020
@@ -252,6 +264,7 @@
       __type: Account
       name: test-account2
       type: CREDIT
+      openedOn: Dec2019
       owner:
       - john
     month: Dec2019
@@ -269,6 +282,7 @@
       __type: Account
       name: test-account1
       type: CHECKING
+      openedOn: Dec2019
       owner:
       - john
     balance:
@@ -283,6 +297,7 @@
       __type: Account
       name: test-account1
       type: CHECKING
+      openedOn: Dec2019
       owner:
       - john
     balance:
@@ -301,6 +316,7 @@
       __type: Account
       name: test-account1
       type: EXTERNAL
+      openedOn: Dec2019
     month: Feb2020
     startBalance:
       __type: Balance
@@ -320,6 +336,7 @@
       __type: Account
       name: test-account1
       type: EXTERNAL
+      openedOn: Dec2019
     month: Jan2020
     startBalance:
       __type: Balance
@@ -344,6 +361,7 @@
       __type: Account
       name: test-account1
       type: EXTERNAL
+      openedOn: Dec2019
     month: Dec2019
     startBalance:
       __type: Balance
@@ -369,6 +387,7 @@
       __type: Account
       name: test-account2
       type: CREDIT
+      openedOn: Dec2019
       owner:
       - john
     balance:
@@ -384,6 +403,7 @@
       __type: Account
       name: test-account2
       type: CREDIT
+      openedOn: Dec2019
       owner:
       - john
     balance:
@@ -401,6 +421,7 @@
       __type: Account
       name: test-account2
       type: CREDIT
+      openedOn: Dec2019
       owner:
       - john
     month: Feb2020
@@ -417,6 +438,7 @@
       __type: Account
       name: test-account2
       type: CREDIT
+      openedOn: Dec2019
       owner:
       - john
     month: Jan2020
@@ -433,6 +455,7 @@
       __type: Account
       name: test-account2
       type: CREDIT
+      openedOn: Dec2019
       owner:
       - john
     month: Dec2019
@@ -450,6 +473,7 @@
       __type: Account
       name: test-account1
       type: EXTERNAL
+      openedOn: Dec2019
     balance:
       __type: Balance
       amount: 2000
@@ -462,6 +486,7 @@
       __type: Account
       name: test-account1
       type: EXTERNAL
+      openedOn: Dec2019
     balance:
       __type: Balance
       amount: 1000

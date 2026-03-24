@@ -1,7 +1,5 @@
 package com.cherba29.tally.data.yaml
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.statement.Statement
@@ -23,9 +21,8 @@ fun Account.toObjectNode(root: ObjectNode) {
   if (number != null) {
     root.put("number", number)
   }
-  if (openedOn != null) {
-    root.put("openedOn", openedOn.toString())
-  }
+  root.put("openedOn", openedOn.toString())
+
   if (closedOn != null) {
     root.put("closedOn", closedOn.toString())
   }

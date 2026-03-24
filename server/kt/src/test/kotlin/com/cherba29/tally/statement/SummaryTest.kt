@@ -3,6 +3,7 @@ package com.cherba29.tally.statement
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.utils.Map3
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -28,7 +29,12 @@ class SummaryTest : DescribeSpec({
       tranStmt.startBalance = Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       val statements: Map3<SummaryStatement> = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
       val stmt1 = statements["john", "john CHECKING", "Mar2021"]
-      stmt1?.account shouldBe Account(name = "john CHECKING", type = Account.Type.SUMMARY, owners = listOf("john"))
+      stmt1?.account shouldBe Account(
+        name = "john CHECKING",
+        type = Account.Type.SUMMARY,
+        owners = listOf("john"),
+        openedOn = MAR / 2021,
+      )
       stmt1?.startBalance shouldBe null
       stmt1?.endBalance shouldBe null
       stmt1?.inFlows shouldBe 0
@@ -41,7 +47,12 @@ class SummaryTest : DescribeSpec({
       stmt1?.totalTransfers shouldBe 0
 
       val stmt2 = statements["john", "john SUMMARY", "Mar2021"]
-      stmt2?.account shouldBe Account(name = "john SUMMARY", type = Account.Type.SUMMARY, owners = listOf("john"))
+      stmt2?.account shouldBe Account(
+        name = "john SUMMARY",
+        type = Account.Type.SUMMARY,
+        owners = listOf("john"),
+        openedOn = MAR / 2021,
+      )
       stmt2?.startBalance shouldBe null
       stmt2?.endBalance shouldBe null
       stmt2?.inFlows shouldBe 0
@@ -66,7 +77,12 @@ class SummaryTest : DescribeSpec({
       tranStmt.startBalance = Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       val statements: Map3<SummaryStatement> = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
       val stmt = statements["john", "john EXTERNAL", "Mar2021"]!!
-      stmt.account shouldBe Account(name = "john EXTERNAL", type = Account.Type.SUMMARY, owners = listOf("john"))
+      stmt.account shouldBe Account(
+        name = "john EXTERNAL",
+        type = Account.Type.SUMMARY,
+        owners = listOf("john"),
+        openedOn = MAR / 2021,
+      )
       stmt.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       stmt.endBalance shouldBe null
       stmt.inFlows shouldBe 0
@@ -91,7 +107,12 @@ class SummaryTest : DescribeSpec({
       tranStmt.startBalance = Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       val statements: Map3<SummaryStatement> = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
       val stmt1 = statements["john", "john CHECKING", "Mar2021"]!!
-      stmt1.account shouldBe Account(name = "john CHECKING", type = Account.Type.SUMMARY, owners = listOf("john"))
+      stmt1.account shouldBe Account(
+        name = "john CHECKING",
+        type = Account.Type.SUMMARY,
+        owners = listOf("john"),
+        openedOn = MAR / 2021,
+      )
       stmt1.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       stmt1.endBalance shouldBe null
       stmt1.inFlows shouldBe 0
@@ -104,7 +125,12 @@ class SummaryTest : DescribeSpec({
       stmt1.totalTransfers shouldBe 0
 
       val stmt2 = statements["john", "john SUMMARY", "Mar2021"]!!
-      stmt2.account shouldBe Account(name = "john SUMMARY", type = Account.Type.SUMMARY, owners = listOf("john"))
+      stmt2.account shouldBe Account(
+        name = "john SUMMARY",
+        type = Account.Type.SUMMARY,
+        owners = listOf("john"),
+        openedOn = MAR / 2021,
+      )
       stmt2.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       stmt2.endBalance shouldBe null
       stmt2.inFlows shouldBe 0

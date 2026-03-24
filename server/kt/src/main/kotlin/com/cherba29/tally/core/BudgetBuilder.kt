@@ -22,10 +22,8 @@ class BudgetBuilder(
 
   fun setAccount(account: Account): BudgetBuilder {
     accounts[account.name] = account
-    if (account.openedOn != null) {
-      minMonth = if (minMonth != null) Month.min(minMonth!!, account.openedOn) else account.openedOn
-      maxMonth = if (maxMonth != null) Month.max(maxMonth!!, account.openedOn) else account.openedOn
-    }
+    minMonth = if (minMonth != null) Month.min(minMonth!!, account.openedOn) else account.openedOn
+    maxMonth = if (maxMonth != null) Month.max(maxMonth!!, account.openedOn) else account.openedOn
     if (account.closedOn != null) {
       minMonth = if (minMonth != null) Month.min(minMonth!!, account.closedOn) else account.closedOn
       maxMonth = if (maxMonth != null) Month.max(maxMonth!!, account.closedOn) else account.closedOn

@@ -74,6 +74,7 @@ class TransactionTest : DescribeSpec({
         name = "test-account1",
         type = Account.Type.CHECKING,
         owners = listOf("john"),
+        openedOn = DEC / 2021,
       )
       val exception =
         shouldThrow<IllegalArgumentException> {
@@ -97,11 +98,13 @@ class TransactionTest : DescribeSpec({
         name = "test-account1",
         type = Account.Type.CHECKING,
         owners = listOf("john"),
+        openedOn = DEC / 2019,
       )
       val account2 = Account(
         name = "test-account2",
         type = Account.Type.CREDIT,
         owners = listOf("john"),
+        openedOn = DEC / 2019,
       )
       val budget = budget {
         setAccount(account1)
@@ -137,11 +140,13 @@ class TransactionTest : DescribeSpec({
         name = "test-account1",
         type = Account.Type.EXTERNAL,
         owners = listOf(),
+        openedOn = DEC / 2019,
       )
       val account2 = Account(
         name = "test-account2",
         type = Account.Type.CREDIT,
         owners = listOf("john"),
+        openedOn = DEC / 2019,
       )
       val budget = budget {
         setAccount(account1)
@@ -177,6 +182,7 @@ class TransactionTest : DescribeSpec({
         name = "test-account1",
         type = Account.Type.CHECKING,
         owners = listOf("john"),
+        openedOn = DEC / 2019,
       )
       val budget = budget {
         setAccount(account1)
@@ -202,6 +208,7 @@ class TransactionTest : DescribeSpec({
         name = "test-account1",
         type = Account.Type.CHECKING,
         owners = listOf("john"),
+        openedOn = DEC / 2021,
       )
       val budget = budget {
         setAccount(account1)
@@ -228,6 +235,7 @@ class TransactionTest : DescribeSpec({
         name = "test-account1",
         type = Account.Type.CHECKING,
         owners = listOf("john"),
+        openedOn = NOV / 2019,
         closedOn = NOV / 2019  // closed before TransactionStatement month
       )
       val budget = budget {
@@ -255,16 +263,19 @@ class TransactionTest : DescribeSpec({
         name = "test-account1",
         type = Account.Type.CHECKING,
         owners = listOf("john"),
+        openedOn = DEC / 2019,
       )
       val account2 = Account(
         name = "test-account2",
         type = Account.Type.CREDIT,
         owners = listOf("john"),
+        openedOn = DEC / 2019,
       )
       val account3 = Account(
         name = "test-account3",
         type = Account.Type.EXTERNAL,
         owners = listOf(),
+        openedOn = DEC / 2019,
       )
       val budget = budget {
         setAccount(account1)

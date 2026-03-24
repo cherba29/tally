@@ -14,6 +14,7 @@ class CombinedStatementTest : DescribeSpec({
       val account = Account(
         name = "test-account",
         type = Account.Type.EXTERNAL,
+        openedOn = MAR / 2026,
       )
       val statement = CombinedStatement(
         account,
@@ -29,6 +30,7 @@ class CombinedStatementTest : DescribeSpec({
       val account = Account(
         name = "test-account",
         type = Account.Type.EXTERNAL,
+        openedOn = MAR / 2026,
       )
 
       val combined = CombinedStatement.fromStatements(
@@ -47,6 +49,7 @@ class CombinedStatementTest : DescribeSpec({
       val account = Account(
         name = "test-account",
         type = Account.Type.EXTERNAL,
+        openedOn = MAR / 2026,
       )
       val startMonth = JAN / 2026
       val statement = TransactionStatement(

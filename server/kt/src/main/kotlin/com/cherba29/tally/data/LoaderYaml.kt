@@ -104,6 +104,9 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
   if (data.path == null || data.path.isEmpty()) {
     logger.warn { "${data.name} is missing path field." }
   }
+  if (data.openedOn == null) {
+    throw IllegalArgumentException("${data.name} is missing opened_on field.")
+  }
 
   val account = Account(
     name = data.name,

@@ -108,6 +108,7 @@ class LoadYamlTest : DescribeSpec({
       name: test-account
       owner: [ someone ]
       type: external
+      opened_on: Jan2020
       balances:
       - { grp: Feb2020, date: 2020-02-01, pamt: 10.00 }
       - { grp: Jan2020, date: 2020-01-01, camt:  0.00 }
@@ -135,6 +136,7 @@ class LoadYamlTest : DescribeSpec({
       name: test-account
       owner: [ someone ]
       type: external
+      opened_on: Jan2020
       balances:
       - { date: 2020-01-01, camt:  0.00 }
       """.trimIndent()
@@ -155,6 +157,7 @@ class LoadYamlTest : DescribeSpec({
       name: test-account
       owner: [ someone ]
       type: external
+      opened_on: Jan2020
       balances:
       - { grp: Xxx2020, date: 2020-01-01, camt:  0.00 }
       """.trimIndent()
@@ -172,6 +175,7 @@ class LoadYamlTest : DescribeSpec({
       name: test-account
       owner: [ someone ]
       type: external
+      opened_on: Jan2020
       balances:
       - { grp: Jan2020, camt:  0.00 }
       """.trimIndent()
@@ -192,6 +196,7 @@ class LoadYamlTest : DescribeSpec({
       name: test-account
       owner: [ someone ]
       type: external
+      opened_on: Jan2020
       balances:
       - { grp: Jan2020, date: 20200101, camt:  0.00 }
       """.trimIndent()
@@ -209,6 +214,7 @@ class LoadYamlTest : DescribeSpec({
       name: test-account
       owner: [ someone ]
       type: external
+      opened_on: Jan2020
       balances:
       - { grp: Jan2020, date: 2020-01-01, xamt:  0.00 }
       """.trimIndent()
@@ -229,6 +235,7 @@ class LoadYamlTest : DescribeSpec({
       name: test-account
       owner: [ someone ]
       type: external
+      opened_on: Jan2020
       balances:
       - { grp: Feb2020, date: 2020-02-01, pamt: 10.00 }
       - { grp: Jan2020, date: 2020-01-01, camt:  0.00 }
@@ -244,6 +251,7 @@ class LoadYamlTest : DescribeSpec({
       name: external
       owner: [ someone ]
       type: external
+      opened_on: Jan2020
       """.trimIndent()
       val parsedExternalContent = parseYamlContent(externalAccountData, relativeFilePath)
       parsedExternalContent shouldNotBe null
@@ -310,6 +318,7 @@ class LoadYamlTest : DescribeSpec({
       name: test-account
       owner: [ someone ]
       type: external
+      opened_on: Jan2020
       transfers_to:
         external:
         - { date: 2020-01-17, pamt: 37.50 }
@@ -329,6 +338,7 @@ class LoadYamlTest : DescribeSpec({
       name: test-account
       owner: [ someone ]
       type: external
+      opened_on: Jan2020
       transfers_to:
         external:
         - { grp: Jan2020, pamt: 37.50 }
@@ -349,6 +359,7 @@ class LoadYamlTest : DescribeSpec({
       name: test-account
       owner: [ someone ]
       type: external
+      opened_on: Jan2020
       transfers_to:
         external:
         - { grp: Jan2020, date: 2020-04-01, pamt: 37.50 }
@@ -369,6 +380,7 @@ class LoadYamlTest : DescribeSpec({
       name: test-account
       owner: [ someone ]
       type: external
+      opened_on: Jan2020
       transfers_to:
         external:
         - { grp: Jan2020, date: 2020-01-17 }

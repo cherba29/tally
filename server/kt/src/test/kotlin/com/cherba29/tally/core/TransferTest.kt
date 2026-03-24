@@ -1,5 +1,6 @@
 package com.cherba29.tally.core
 
+import com.cherba29.tally.core.MonthName.FEB
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate
@@ -11,11 +12,13 @@ class TransferTest : DescribeSpec({
         name = "test-account1",
         type = Account.Type.CHECKING,
         owners = listOf("john"),
+        openedOn = FEB / 2020,
       )
       val account2 = Account(
         name = "test-account2",
         type = Account.Type.CREDIT,
         owners = listOf("john"),
+        openedOn = FEB / 2020,
       )
       val month = Month(2020, 1)
       val balance = Balance(100, LocalDate(2020, 2, 3), Balance.Type.CONFIRMED)

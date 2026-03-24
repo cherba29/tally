@@ -56,6 +56,7 @@ class QueryTableTest : DescribeSpec({
         name = "test-account",
         type = Account.Type.EXTERNAL,
         owners = listOf("john"),
+        openedOn = MAR / 2026,
       )
       val summary = SummaryStatement(
         account,

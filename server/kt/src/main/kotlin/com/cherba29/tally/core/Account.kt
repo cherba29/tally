@@ -4,12 +4,13 @@ data class Account(
   val name: String,
   val description: String? = null,
   val path: List<String> = listOf(),
+  // TODO: remove type as path has replaced it.
   // Account type, for example 'CREDIT_CARD'.
   val type: Type,
   // Real account number associated with this account.
   val number: String? = null,
   // Month when account was opened and possibly closed.
-  val openedOn: Month? = null,
+  val openedOn: Month,
   val closedOn: Month? = null,
   // List of account owner ids.
   val owners: List<String> = listOf(),
@@ -49,7 +50,7 @@ data class Account(
 
   fun isClosed(month: Month): Boolean {
     return (closedOn != null) && (closedOn < month) || // After closed.
-           (openedOn != null) && (month < openedOn) // Before or on open.
+           (month < openedOn) // Before or on open.
   }
 
   val isExternal: Boolean = type === Type.EXTERNAL ||

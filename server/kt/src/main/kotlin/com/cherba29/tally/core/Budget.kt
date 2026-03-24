@@ -13,7 +13,11 @@ data class Budget(
   val transfers: Map<String, Map<Month, List<Transfer>>>
 ) {
   // TODO: is this needed, since this will always return all accounts.
-  fun findActiveAccounts(): List<Account> = accounts.values.filter {
-    account -> months.any { !account.isClosed(it) }
+  fun findActiveAccounts(): List<Account> {
+    val filtered = accounts.values.filter {
+        account -> months.any { !account.isClosed(it) }
+    }
+    require(filtered.size == accounts.size)
+    return filtered
   }
 }

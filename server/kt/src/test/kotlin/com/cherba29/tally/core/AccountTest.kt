@@ -1,5 +1,11 @@
 package com.cherba29.tally.core
 
+import com.cherba29.tally.core.MonthName.APR
+import com.cherba29.tally.core.MonthName.FEB
+import com.cherba29.tally.core.MonthName.JAN
+import com.cherba29.tally.core.MonthName.MAR
+import com.cherba29.tally.core.MonthName.MAY
+import com.cherba29.tally.core.MonthName.NOV
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
@@ -10,8 +16,9 @@ class AccountTest : DescribeSpec({
         name = "testAccount",
         type = Account.Type.CHECKING,
         owners = listOf("bob"),
+        openedOn = JAN / 2021
       )
-      account.isClosed(Month(2021, 2)) shouldBe false
+      account.isClosed(MAR / 2021) shouldBe false
     }
 
     it("isClosed false if closedOn not set") {
@@ -19,9 +26,9 @@ class AccountTest : DescribeSpec({
         name = "testAccount",
         type = Account.Type.CHECKING,
         owners = listOf("bob"),
-        openedOn = Month(2021, 1),
+        openedOn = NOV / 2020,
       )
-      account.isClosed(Month(2021, 2)) shouldBe false
+      account.isClosed(MAR / 2021) shouldBe false
     }
 
     it("isClosed true if closedOn is set") {
@@ -29,10 +36,10 @@ class AccountTest : DescribeSpec({
         name = "testAccount",
         type = Account.Type.CHECKING,
         owners = listOf("bob"),
-        openedOn = Month(2021, 1),
-        closedOn = Month(2021, 3),
+        openedOn = FEB / 2021,
+        closedOn = APR / 2021,
       )
-      account.isClosed(Month(2021, 4)) shouldBe true
+      account.isClosed(MAY / 2021) shouldBe true
     }
 
     it("isClosed true if not opened yet") {
@@ -40,8 +47,8 @@ class AccountTest : DescribeSpec({
         name = "testAccount",
         type = Account.Type.CHECKING,
         owners = listOf("bob"),
-        openedOn = Month(2021, 1),
-        closedOn = Month(2021, 3),
+        openedOn = FEB / 2021,
+        closedOn = APR / 2021,
       )
       account.isClosed(Month(2020, 1)) shouldBe true
     }
@@ -53,6 +60,7 @@ class AccountTest : DescribeSpec({
         name = "testAccount",
         type = Account.Type.CHECKING,
         owners = listOf("bob"),
+        openedOn = JAN / 2021
       )
       account.isSummary shouldBe false
     }
@@ -62,6 +70,7 @@ class AccountTest : DescribeSpec({
         name = "testAccount",
         type = Account.Type.SUMMARY,
         owners = listOf("bob"),
+        openedOn = JAN / 2021
       )
       account.isSummary shouldBe true
     }
@@ -71,6 +80,7 @@ class AccountTest : DescribeSpec({
         name = "testAccount",
         type = Account.Type.CHECKING,
         owners = listOf("bob"),
+        openedOn = JAN / 2021
       )
       account.isExternal shouldBe false
     }
@@ -80,6 +90,7 @@ class AccountTest : DescribeSpec({
         name = "testAccount",
         type = Account.Type.EXTERNAL,
         owners = listOf("bob"),
+        openedOn = JAN / 2021
       )
       account.isExternal shouldBe true
     }
@@ -89,6 +100,7 @@ class AccountTest : DescribeSpec({
         name = "testAccount",
         type = Account.Type.TAX,
         owners = listOf("bob"),
+        openedOn = JAN / 2021
       )
       account.isExternal shouldBe true
     }
@@ -98,6 +110,7 @@ class AccountTest : DescribeSpec({
         name = "testAccount",
         type = Account.Type.DEFERRED_INCOME,
         owners = listOf("bob"),
+        openedOn = JAN / 2021
       )
       account.isExternal shouldBe true
     }
@@ -108,11 +121,13 @@ class AccountTest : DescribeSpec({
         name = "testAccount",
         type = Account.Type.CHECKING,
         owners = listOf("bob"),
+        openedOn = JAN / 2021
       )
       val account2 = Account(
         name = "testAccount",
         type = Account.Type.CHECKING,
         owners = listOf("john'"),
+        openedOn = JAN / 2021
       )
 
       account1.hasCommonOwner(account2) shouldBe false
@@ -123,11 +138,13 @@ class AccountTest : DescribeSpec({
         name = "testAccount",
         type = Account.Type.CHECKING,
         owners = listOf("bob"),
+        openedOn = JAN / 2021
       )
       val account2 = Account(
         name = "testAccount",
         type = Account.Type.CHECKING,
         owners = listOf("john", "bob"),
+        openedOn = JAN / 2021
       )
 
       account1.hasCommonOwner(account2) shouldBe true
@@ -140,6 +157,7 @@ class AccountTest : DescribeSpec({
         name = "testAccount",
         type = Account.Type.TAX,
         owners = listOf("bob"),
+        openedOn = JAN / 2021
       )
       account.toString() shouldBe "Account testAccount tax_"
     }
@@ -149,10 +167,10 @@ class AccountTest : DescribeSpec({
         name = "testAccount",
         type = Account.Type.TAX,
         owners = listOf("bob"),
-        closedOn = Month(2026, 2)
+        openedOn = JAN / 2021,
+        closedOn = MAR / 2026
       )
       account.toString() shouldBe "Account testAccount tax_ Closed Mar2026"
     }
-
   }
 })

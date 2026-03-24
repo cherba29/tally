@@ -81,12 +81,12 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
   if (maxMonth == null) {
     throw IllegalArgumentException("Could not determine end month")
   }
-  val summaryAccount = Account(name = stmtName, type = Account.Type.SUMMARY, owners = owners)
+  val summaryAccount = Account(name = stmtName, type = Account.Type.SUMMARY, owners = owners, openedOn = minMonth)
   val combined = SummaryStatement(summaryAccount, maxMonth, minMonth)
   for ((acctName, acctStatements) in accountStatements) {
     // Combine all statements for a given account over all months in the range.
     val stmt = CombinedStatement.fromStatements(
-      Account(name = acctName, type = Account.Type.SUMMARY, owners = listOf()),
+      Account(name = acctName, type = Account.Type.SUMMARY, owners = listOf(), openedOn = minMonth),
       minMonth,
       maxMonth,
       acctStatements
