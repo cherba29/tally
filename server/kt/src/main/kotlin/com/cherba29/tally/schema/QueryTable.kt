@@ -77,7 +77,7 @@ private fun sequenceStatements(owner: String, accounts: List<Account>): List<Row
 fun buildGqlTable(payload: DataPayload, owner: String?, startMonth: Month, endMonth: Month): GqlTable {
   val startTimeMs: Long = Clock.System.now().toEpochMilliseconds()
   val months = payload.budget.months.filter { m -> m <= endMonth && startMonth <= m }.sortedDescending()
-  val activeAccounts = payload.budget.findActiveAccounts()
+  val activeAccounts = payload.budget.accounts.values
   val owners = activeAccounts.map { account -> account.owners }.flatten().distinct().sorted()
   val forOwner = if (owner == null || owner.isEmpty()) {
     owners.firstOrNull { !it.isEmpty() }

@@ -1,7 +1,5 @@
 package com.cherba29.tally.core
 
-import io.github.oshai.kotlinlogging.KotlinLogging
-
 data class Budget(
   // Period over which the budget is defined.
   val months: List<Month>,
@@ -11,13 +9,4 @@ data class Budget(
   val balances: Map<String, Map<Month, Balance>>,
   // Account name -> month -> transfers map.
   val transfers: Map<String, Map<Month, List<Transfer>>>
-) {
-  // TODO: is this needed, since this will always return all accounts.
-  fun findActiveAccounts(): List<Account> {
-    val filtered = accounts.values.filter {
-        account -> months.any { !account.isClosed(it) }
-    }
-    require(filtered.size == accounts.size)
-    return filtered
-  }
-}
+)

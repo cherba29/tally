@@ -157,22 +157,6 @@ class BudgetTest : DescribeSpec({
       val budget = budget {}
 
       budget.accounts.size shouldBe 0
-      budget.findActiveAccounts() shouldBe listOf()
-    }
-
-    it("no months") {
-      val account1 = Account(
-        name = "test-account1",
-        type = Account.Type.EXTERNAL,
-        owners = listOf(),
-        openedOn = NOV / 2019
-      )
-      val budget = budget {
-        setAccount(account1)
-      }
-
-      budget.accounts.size shouldBe 1
-      budget.findActiveAccounts() shouldBe listOf(account1)
     }
 
     it("open account") {
@@ -185,8 +169,7 @@ class BudgetTest : DescribeSpec({
       val budget = budget {
         setAccount(account1)
       }
-      budget.accounts.size shouldBe 1
-      budget.findActiveAccounts() shouldBe listOf(account1)
+      budget.accounts shouldBe mapOf("test-account1" to account1)
     }
 
     it("multiple accounts") {
@@ -217,8 +200,7 @@ class BudgetTest : DescribeSpec({
         setAccount(account3)
       }
       budget.accounts.size shouldBe 3
-      budget.findActiveAccounts() shouldBe listOf(account1, account2, account3)
+      budget.accounts.values shouldBe listOf(account1, account2, account3)
     }
   }
-
 })
