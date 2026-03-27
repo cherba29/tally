@@ -16,7 +16,7 @@ fun buildSummaryStatementTable(
       if (selectedOwner != null && owner != selectedOwner || statement.isEmpty()) {
         continue
       }
-      val summariesToAddTo = mutableListOf("$owner ${statement.account.typeIdName}", "$owner SUMMARY")
+      val summariesToAddTo = mutableListOf<String>()
       if (statement.account.path.isNotEmpty()) {
         summariesToAddTo.add("/" + statement.account.path.joinToString("/"))
       }
@@ -81,12 +81,12 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
   if (maxMonth == null) {
     throw IllegalArgumentException("Could not determine end month")
   }
-  val summaryAccount = Account(name = stmtName, type = Account.Type.SUMMARY, owners = owners, openedOn = minMonth)
+  val summaryAccount = Account(name = stmtName, owners = owners, openedOn = minMonth)
   val combined = SummaryStatement(summaryAccount, maxMonth, minMonth)
   for ((acctName, acctStatements) in accountStatements) {
     // Combine all statements for a given account over all months in the range.
     val stmt = CombinedStatement.fromStatements(
-      Account(name = acctName, type = Account.Type.SUMMARY, owners = listOf(), openedOn = minMonth),
+      Account(name = acctName, owners = listOf(), openedOn = minMonth),
       minMonth,
       maxMonth,
       acctStatements

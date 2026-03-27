@@ -44,7 +44,7 @@ class ApplicationTest : DescribeSpec({
     """
         name: test-account
         owner: [someone]
-        type: external
+        path: [ external ]
         opened_on: Mar2019
         balances:
           - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
@@ -152,8 +152,6 @@ class ApplicationTest : DescribeSpec({
           path: [String!]!
           phone: String!
           summary: Boolean!
-          "Account type. Determines how account is grouped."
-          type: String!
           url: String!
           userName: String!
         }

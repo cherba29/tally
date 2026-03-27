@@ -40,6 +40,7 @@ data class TransferYamlData(
   // TODO: choose cat or tags and wire it in.
   val cat: String?,
   val tags: List<String>?,
+  // TODO: add option for running annual total.
 )
 
 @JsonIgnoreProperties(value = [])
@@ -88,10 +89,6 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
     // Ignore data which dont represent account.
     return false
   }
-  val accountType = Account.Type.fromString(data.type)
-  if (accountType == null) {
-    throw IllegalArgumentException("Unknown type '${data.type}' for account '${data.name}'")
-  }
   if (data.path == null) {
     logger.warn { "Account '${data.name}' has no path set" }
   }
@@ -102,7 +99,7 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
     logger.warn { "${data.name} is missing description field." }
   }
   if (data.path == null || data.path.isEmpty()) {
-    logger.warn { "${data.name} is missing path field." }
+    throw IllegalArgumentException("${data.name} is missing path field.")
   }
   if (data.openedOn == null) {
     throw IllegalArgumentException("${data.name} is missing opened_on field.")
@@ -112,7 +109,7 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
     name = data.name,
     description = data.desc,
     path = data.path ?: listOf(),
-    type = accountType,
+//    type = accountType,
     number = data.number,
     openedOn = data.openedOn,
     closedOn = data.closedOn,

@@ -27,7 +27,6 @@ class SummaryStatementAggregator {
     if (account == null) {
       account = Account(
         name,
-        type = Account.Type.SUMMARY,
         owners = listOf(owner),
         path = path.slice(0..path.size - 2),
         openedOn = month

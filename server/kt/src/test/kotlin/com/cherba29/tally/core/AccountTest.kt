@@ -14,8 +14,6 @@ class AccountTest : DescribeSpec({
     it("isClosed - false by default") {
       val account = Account(
         name = "testAccount",
-        type = Account.Type.CHECKING,
-        owners = listOf("bob"),
         openedOn = JAN / 2021
       )
       account.isClosed(MAR / 2021) shouldBe false
@@ -24,8 +22,6 @@ class AccountTest : DescribeSpec({
     it("isClosed false if closedOn not set") {
       val account = Account(
         name = "testAccount",
-        type = Account.Type.CHECKING,
-        owners = listOf("bob"),
         openedOn = NOV / 2020,
       )
       account.isClosed(MAR / 2021) shouldBe false
@@ -34,8 +30,6 @@ class AccountTest : DescribeSpec({
     it("isClosed true if closedOn is set") {
       val account = Account(
         name = "testAccount",
-        type = Account.Type.CHECKING,
-        owners = listOf("bob"),
         openedOn = FEB / 2021,
         closedOn = APR / 2021,
       )
@@ -45,8 +39,6 @@ class AccountTest : DescribeSpec({
     it("isClosed true if not opened yet") {
       val account = Account(
         name = "testAccount",
-        type = Account.Type.CHECKING,
-        owners = listOf("bob"),
         openedOn = FEB / 2021,
         closedOn = APR / 2021,
       )
@@ -58,8 +50,6 @@ class AccountTest : DescribeSpec({
     it("isSummary false if type is not summary") {
       val account = Account(
         name = "testAccount",
-        type = Account.Type.CHECKING,
-        owners = listOf("bob"),
         openedOn = JAN / 2021
       )
       account.isSummary shouldBe false
@@ -67,9 +57,7 @@ class AccountTest : DescribeSpec({
 
     it("isSummary when type is summary") {
       val account = Account(
-        name = "testAccount",
-        type = Account.Type.SUMMARY,
-        owners = listOf("bob"),
+        name = "/test/summary",
         openedOn = JAN / 2021
       )
       account.isSummary shouldBe true
@@ -78,54 +66,31 @@ class AccountTest : DescribeSpec({
     it("isExternal false by default") {
       val account = Account(
         name = "testAccount",
-        type = Account.Type.CHECKING,
-        owners = listOf("bob"),
         openedOn = JAN / 2021
       )
       account.isExternal shouldBe false
     }
 
-    it("isExternal true when type is EXTERNAL") {
+    it("isExternal true when path starts with external") {
       val account = Account(
         name = "testAccount",
-        type = Account.Type.EXTERNAL,
-        owners = listOf("bob"),
-        openedOn = JAN / 2021
-      )
-      account.isExternal shouldBe true
-    }
-
-    it("isExternal true when type is TAX") {
-      val account = Account(
-        name = "testAccount",
-        type = Account.Type.TAX,
-        owners = listOf("bob"),
-        openedOn = JAN / 2021
-      )
-      account.isExternal shouldBe true
-    }
-
-    it("isExternal true when type is DEFERRED_INCOME") {
-      val account = Account(
-        name = "testAccount",
-        type = Account.Type.DEFERRED_INCOME,
+        path = listOf("external"),
         owners = listOf("bob"),
         openedOn = JAN / 2021
       )
       account.isExternal shouldBe true
     }
   }
+
   describe("owner") {
     it("has common owner is false if no common owners") {
       val account1 = Account(
         name = "testAccount",
-        type = Account.Type.CHECKING,
         owners = listOf("bob"),
         openedOn = JAN / 2021
       )
       val account2 = Account(
         name = "testAccount",
-        type = Account.Type.CHECKING,
         owners = listOf("john'"),
         openedOn = JAN / 2021
       )
@@ -136,13 +101,11 @@ class AccountTest : DescribeSpec({
     it("has common owner is true if common owners") {
       val account1 = Account(
         name = "testAccount",
-        type = Account.Type.CHECKING,
         owners = listOf("bob"),
         openedOn = JAN / 2021
       )
       val account2 = Account(
         name = "testAccount",
-        type = Account.Type.CHECKING,
         owners = listOf("john", "bob"),
         openedOn = JAN / 2021
       )
@@ -155,22 +118,21 @@ class AccountTest : DescribeSpec({
     it("toString") {
       val account = Account(
         name = "testAccount",
-        type = Account.Type.TAX,
         owners = listOf("bob"),
         openedOn = JAN / 2021
       )
-      account.toString() shouldBe "Account testAccount tax_"
+      account.toString() shouldBe "Account testAccount /"
     }
 
     it("toString closed") {
       val account = Account(
         name = "testAccount",
-        type = Account.Type.TAX,
+        path = listOf("internal", "tax"),
         owners = listOf("bob"),
         openedOn = JAN / 2021,
         closedOn = MAR / 2026
       )
-      account.toString() shouldBe "Account testAccount tax_ Closed Mar2026"
+      account.toString() shouldBe "Account testAccount /internal/tax Closed Mar2026"
     }
   }
 })

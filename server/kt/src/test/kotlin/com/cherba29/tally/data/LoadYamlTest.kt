@@ -1,6 +1,5 @@
 package com.cherba29.tally.data
 
-import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.BudgetBuilder
 import com.cherba29.tally.core.Month
@@ -28,20 +27,6 @@ class LoadYamlTest : DescribeSpec({
       budget.accounts.size shouldBe 0
     }
 
-    it("fails when unknown account type") {
-      val relativeFilePath = Paths.get("path/file.yaml")
-      val exception = shouldThrow<IllegalArgumentException> {
-        budget {
-          loadYamlFile(
-            this,
-            parseYamlContent("name: test\ntype: SOMETHING", relativeFilePath),
-            relativeFilePath
-          )
-        }
-      }
-      exception.message shouldBe "Unknown type 'SOMETHING' for account 'test' while processing path/file.yaml"
-    }
-
     it("fails when account has no owners") {
       val relativeFilePath = Paths.get("path/file.yaml")
       val exception = shouldThrow<IllegalArgumentException> {
@@ -65,7 +50,7 @@ class LoadYamlTest : DescribeSpec({
       owner: [ arthur ]
       opened_on: Nov2019
       closed_on: Mar2020
-      type: external
+      path: [ external ]
       url: "example.com"
       phone: "111-222-3344"
       address: "55 Road"
@@ -86,8 +71,7 @@ class LoadYamlTest : DescribeSpec({
       account.name shouldBe "test-account"
       account.description shouldBe "Testing account"
       account.number shouldBe "1223344"
-      account.type shouldBe Account.Type.EXTERNAL
-      account.path shouldBe listOf()
+      account.path shouldBe listOf("external")
       account.url shouldBe "example.com"
       account.phone shouldBe "111-222-3344"
       account.address shouldBe "55 Road"
@@ -107,7 +91,7 @@ class LoadYamlTest : DescribeSpec({
       val content = """
       name: test-account
       owner: [ someone ]
-      type: external
+      path: [ external ]
       opened_on: Jan2020
       balances:
       - { grp: Feb2020, date: 2020-02-01, pamt: 10.00 }
@@ -135,7 +119,7 @@ class LoadYamlTest : DescribeSpec({
       val content = """
       name: test-account
       owner: [ someone ]
-      type: external
+      path: [ external ]
       opened_on: Jan2020
       balances:
       - { date: 2020-01-01, camt:  0.00 }
@@ -156,7 +140,7 @@ class LoadYamlTest : DescribeSpec({
       val content = """
       name: test-account
       owner: [ someone ]
-      type: external
+      path: [ external ]
       opened_on: Jan2020
       balances:
       - { grp: Xxx2020, date: 2020-01-01, camt:  0.00 }
@@ -174,7 +158,7 @@ class LoadYamlTest : DescribeSpec({
       val content = """
       name: test-account
       owner: [ someone ]
-      type: external
+      path: [ external ]
       opened_on: Jan2020
       balances:
       - { grp: Jan2020, camt:  0.00 }
@@ -195,7 +179,7 @@ class LoadYamlTest : DescribeSpec({
       val content = """
       name: test-account
       owner: [ someone ]
-      type: external
+      path: [ external ]
       opened_on: Jan2020
       balances:
       - { grp: Jan2020, date: 20200101, camt:  0.00 }
@@ -213,7 +197,7 @@ class LoadYamlTest : DescribeSpec({
       val content = """
       name: test-account
       owner: [ someone ]
-      type: external
+      path: [ external ]
       opened_on: Jan2020
       balances:
       - { grp: Jan2020, date: 2020-01-01, xamt:  0.00 }
@@ -234,7 +218,7 @@ class LoadYamlTest : DescribeSpec({
       val testAccountData = """
       name: test-account
       owner: [ someone ]
-      type: external
+      path: [ external ]
       opened_on: Jan2020
       balances:
       - { grp: Feb2020, date: 2020-02-01, pamt: 10.00 }
@@ -250,7 +234,7 @@ class LoadYamlTest : DescribeSpec({
       val externalAccountData = """
       name: external
       owner: [ someone ]
-      type: external
+      path: [ external ]
       opened_on: Jan2020
       """.trimIndent()
       val parsedExternalContent = parseYamlContent(externalAccountData, relativeFilePath)
@@ -317,7 +301,7 @@ class LoadYamlTest : DescribeSpec({
       val testAccountData = """
       name: test-account
       owner: [ someone ]
-      type: external
+      path: [ external ]
       opened_on: Jan2020
       transfers_to:
         external:
@@ -337,7 +321,7 @@ class LoadYamlTest : DescribeSpec({
       val testAccountData = """
       name: test-account
       owner: [ someone ]
-      type: external
+      path: [ external ]
       opened_on: Jan2020
       transfers_to:
         external:
@@ -358,7 +342,7 @@ class LoadYamlTest : DescribeSpec({
       val testAccountData = """
       name: test-account
       owner: [ someone ]
-      type: external
+      path: [ external ]
       opened_on: Jan2020
       transfers_to:
         external:
@@ -379,7 +363,7 @@ class LoadYamlTest : DescribeSpec({
       val testAccountData = """
       name: test-account
       owner: [ someone ]
-      type: external
+      path: [ external ]
       opened_on: Jan2020
       transfers_to:
         external:

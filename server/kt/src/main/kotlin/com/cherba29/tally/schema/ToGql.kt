@@ -13,7 +13,6 @@ fun Account.toGql(): GqlAccount = GqlAccount(
   name = name,
   description = description ?: "",
   path = path,
-  type = typeIdName,
   external = isExternal,
   summary = isSummary,
   number = number,

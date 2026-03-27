@@ -31,6 +31,7 @@ class ProcessedBudgetTest : DescribeSpec({
       val filePath = (folder / "file2.yaml").createFile()
       filePath.writeText("""
         name: test-account
+        path: [external]
         owner: [john]
         opened_on: Mar2026
        """.trimIndent())

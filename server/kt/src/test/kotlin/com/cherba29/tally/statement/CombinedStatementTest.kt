@@ -13,7 +13,7 @@ class CombinedStatementTest : DescribeSpec({
     it("empty") {
       val account = Account(
         name = "test-account",
-        type = Account.Type.EXTERNAL,
+        path = listOf("external"),
         openedOn = MAR / 2026,
       )
       val statement = CombinedStatement(
@@ -29,7 +29,7 @@ class CombinedStatementTest : DescribeSpec({
     it("from empty list of statements") {
       val account = Account(
         name = "test-account",
-        type = Account.Type.EXTERNAL,
+        path = listOf("external"),
         openedOn = MAR / 2026,
       )
 
@@ -48,7 +48,7 @@ class CombinedStatementTest : DescribeSpec({
     it("from single statement") {
       val account = Account(
         name = "test-account",
-        type = Account.Type.EXTERNAL,
+        path = listOf("external"),
         openedOn = MAR / 2026,
       )
       val startMonth = JAN / 2026

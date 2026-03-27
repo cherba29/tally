@@ -17,7 +17,6 @@ fun Account.toObjectNode(root: ObjectNode) {
     val pathNode = root.putArray("path")
     path.forEach { pathNode.add(it) }
   }
-  root.put("type", type.toString())
   if (number != null) {
     root.put("number", number)
   }

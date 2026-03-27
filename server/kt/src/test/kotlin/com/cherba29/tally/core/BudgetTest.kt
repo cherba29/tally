@@ -22,19 +22,16 @@ class BudgetTest : DescribeSpec({
   it("build simple") {
     val account1 = Account(
       name = "test-account1",
-      type = Account.Type.EXTERNAL,
       owners = listOf(),
       openedOn = NOV / 2019,
     )
     val account2 = Account(
       name = "test-account2",
-      type = Account.Type.BILL,
       owners = listOf(),
       openedOn = NOV / 2019,
     )
     val account3 = Account(
       name = "test-account3",
-      type = Account.Type.BILL,
       owners = listOf(),
       openedOn = NOV / 2019,
     )
@@ -86,7 +83,6 @@ class BudgetTest : DescribeSpec({
     val builder = BudgetBuilder()
     val account1 = Account(
       name = "test-account1",
-      type = Account.Type.EXTERNAL,
       owners = listOf(),
       openedOn = NOV / 2019,
     )
@@ -109,7 +105,6 @@ class BudgetTest : DescribeSpec({
   it("build budget - bad to account") {
     val account1 = Account(
       name = "test-account2",
-      type = Account.Type.EXTERNAL,
       owners = listOf(),
       openedOn = NOV / 2019,
     )
@@ -132,7 +127,6 @@ class BudgetTest : DescribeSpec({
   it("build budget - bad from account") {
     val account1 = Account(
       name = "test-account1",
-      type = Account.Type.EXTERNAL,
       owners = listOf(),
       openedOn = NOV / 2019,
     )
@@ -162,7 +156,6 @@ class BudgetTest : DescribeSpec({
     it("open account") {
       val account1 = Account(
         name = "test-account1",
-        type = Account.Type.EXTERNAL,
         owners = listOf(),
         openedOn = APR / 2026
       )
@@ -175,21 +168,18 @@ class BudgetTest : DescribeSpec({
     it("multiple accounts") {
       val account1 = Account(
         name = "test-account1",
-        type = Account.Type.EXTERNAL,
         owners = listOf(),
         openedOn = APR / 2026
       )
 
       val account2 = Account(
         name = "test-account2",
-        type = Account.Type.EXTERNAL,
         owners = listOf(),
         openedOn = NOV / 2019,
       )
 
       val account3 = Account(
         name = "test-account3",
-        type = Account.Type.EXTERNAL,
         owners = listOf(),
         openedOn = JAN / 2020,
         closedOn = FEB / 2020,

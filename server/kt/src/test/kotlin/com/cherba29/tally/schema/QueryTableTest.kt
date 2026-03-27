@@ -54,7 +54,7 @@ class QueryTableTest : DescribeSpec({
     it("empty - no open accounts") {
       val account = Account(
         name = "test-account",
-        type = Account.Type.EXTERNAL,
+        path = listOf("external"),
         owners = listOf("john"),
         openedOn = MAR / 2026,
       )
@@ -85,7 +85,7 @@ class QueryTableTest : DescribeSpec({
     it("single open account without path") {
       val account = Account(
         name = "test-account",
-        type = Account.Type.EXTERNAL,
+        path = listOf("external"),
         owners = listOf("john"),
         openedOn = JAN / 2026
       )
@@ -96,6 +96,7 @@ class QueryTableTest : DescribeSpec({
       )
       val summaries = Map3<SummaryStatement>()
       summaries.set("john", "/", "Mar2026", summary)
+      summaries.set("john", "/external", "Mar2026", summary)
       val payload = DataPayload(
         budget = budget {
           setAccount(account)
@@ -106,7 +107,11 @@ class QueryTableTest : DescribeSpec({
               type = Balance.Type.CONFIRMED
           ))
         },
-        statements = mapOf(),
+        statements = mapOf("test-account" to mapOf(MAR / 2026 to TransactionStatement(
+          account = account,
+          month = MAR / 2026,
+          startBalance = Balance(100, LocalDate(2026, 3, 1), Balance.Type.CONFIRMED)
+        ))),
         summaries
       )
       val table = buildGqlTable(
@@ -124,8 +129,7 @@ class QueryTableTest : DescribeSpec({
           account=GqlAccount(
             name="test-account",
             description="",
-            path=listOf(),
-            type="EXTERNAL",
+            path=listOf("external"),
             external=true,
             summary=false,
             number=null,
@@ -158,6 +162,84 @@ class QueryTableTest : DescribeSpec({
               balanced=true
             )
           )
+        ),
+        GqlTableRow(
+          title="external",
+          account=GqlAccount(
+            name="test-account",
+            description="",
+            path=listOf("external"),
+            external=true,
+            summary=false,
+            number=null,
+            openedOn=JAN / 2026,
+            closedOn=null,
+            owners=listOf("john"),
+            url="",
+            address="",
+            userName="",
+            password="",
+            phone=""
+          ),
+          indent=1,
+          isSpace=false,
+          isTotal=true,
+          isNormal=false,
+          cells=listOf(
+            GqlTableCell(
+              month=MAR / 2026,
+              isClosed=false,
+              addSub=0,
+              balance=null,
+              isProjected=true,
+              isCovered=false,
+              isProjectedCovered=false,
+              hasProjectedTransfer=false,
+              percentChange=0.0f,
+              annualizedPercentChange=0.0f,
+              unaccounted=null,
+              balanced=true
+            )
+          )
+        ),
+        GqlTableRow(
+          title="test-account",
+          account=GqlAccount(
+            name="test-account",
+            description="",
+            path=listOf("external"),
+            external=true,
+            summary=false,
+            number=null,
+            openedOn=JAN / 2026,
+            closedOn=null,
+            owners=listOf("john"),
+            url="",
+            address="",
+            userName="",
+            password="",
+            phone=""
+          ),
+          indent=2,
+          isSpace=false,
+          isTotal=false,
+          isNormal=true,
+          cells=listOf(
+            GqlTableCell(
+              month=MAR / 2026,
+              isClosed=false,
+              addSub=0,
+              balance=null,
+              isProjected=false,
+              isCovered=false,
+              isProjectedCovered=false,
+              hasProjectedTransfer=false,
+              percentChange=0.0f,
+              annualizedPercentChange=0.0f,
+              unaccounted=null,
+              balanced=true
+            )
+          )
         )
       )
     }
@@ -165,7 +247,6 @@ class QueryTableTest : DescribeSpec({
     it("single open account with path") {
       val account = Account(
         name = "test-account",
-        type = Account.Type.EXTERNAL,
         path = listOf("outside"),
         owners = listOf("john"),
         openedOn = JAN / 2026
@@ -214,9 +295,9 @@ class QueryTableTest : DescribeSpec({
           title="john",
           account=GqlAccount(
             name="test-account",
-            description="", path=listOf("outside"),
-            type="EXTERNAL",
-            external=true,
+            description="",
+            path=listOf("outside"),
+            external=false,
             summary=false,
             number=null,
             openedOn=JAN / 2026,
@@ -255,8 +336,7 @@ class QueryTableTest : DescribeSpec({
             name="test-account",
             description="",
             path=listOf("outside"),
-            type="EXTERNAL",
-            external=true,
+            external=false,
             summary=false,
             number=null,
             openedOn=JAN / 2026,
@@ -295,8 +375,7 @@ class QueryTableTest : DescribeSpec({
             name="test-account",
             description="",
             path=listOf("outside"),
-            type="EXTERNAL",
-            external=true,
+            external=false,
             summary=false,
             number=null,
             openedOn=JAN / 2026,

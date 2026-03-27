@@ -74,7 +74,7 @@ class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
     logger.info {
       "Done building $numSummaryStatements summary statements in $elapsedBuildSummaryStatements"
     }
-
+    // TODO: Show all timing info in one log line.
     logger.info {
       "Done reprocessing ${parsedAccountData.size} file(s) ${transactionStatementTable.size} tran statements and $numSummaryStatements summaries in ${
         elapsedBudgetTime + elapsedTransactionTime + elapsedBuildSummaryStatements

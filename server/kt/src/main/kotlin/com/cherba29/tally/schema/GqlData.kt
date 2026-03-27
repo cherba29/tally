@@ -11,9 +11,6 @@ data class GqlAccount(
   val description: String,
   @param:GraphQLDescription("Replacement for type, so that accounts are grouped.")
   val path: List<String>,
-  //  TODO: This should change to enum, but maybe remove now that we have path.
-  @param:GraphQLDescription("Account type. Determines how account is grouped.")
-  val type: String,
   val external: Boolean,
   val summary: Boolean,
   @param:GraphQLDescription("Account number. Can be null or unknown for external or proxy accounts.")

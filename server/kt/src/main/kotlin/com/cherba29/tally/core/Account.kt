@@ -4,9 +4,6 @@ data class Account(
   val name: String,
   val description: String? = null,
   val path: List<String> = listOf(),
-  // TODO: remove type as path has replaced it.
-  // Account type, for example 'CREDIT_CARD'.
-  val type: Type,
   // Real account number associated with this account.
   val number: String? = null,
   // Month when account was opened and possibly closed.
@@ -24,41 +21,16 @@ data class Account(
   val userName: String? = null,
   val password: String? = null,
 ) {
-  enum class Type(val id: String) {
-    UNSPECIFIED("_unspecified_"),
-    BILL("bill"),
-    CHECKING("checking"),
-    CREDIT("credit"),
-    CREDIT_CARD("credit-card"),
-    DEFERRED_INCOME("deferred income"),
-    EXTERNAL("external"),
-    INCOME("income"),
-    INVESTMENT("investment"),
-    RETIREMENT("retirement"),
-    SUMMARY("_summary_"),
-    TAX("tax_");
-
-    companion object {
-      fun fromString(value: String?): Type? {
-        if (value == null) { return UNSPECIFIED }
-        return entries.find { it.id == value }
-      }
-    }
-  }
-
-  override fun toString(): String = "Account $name ${type.id}${if (closedOn == null) "" else " Closed $closedOn"}"
+  override fun toString(): String = "Account $name /${path.joinToString("/")}${if (closedOn == null) "" else " Closed $closedOn"}"
 
   fun isClosed(month: Month): Boolean {
     return (closedOn != null) && (closedOn < month) || // After closed.
            (month < openedOn) // Before or on open.
   }
 
-  val isExternal: Boolean = type === Type.EXTERNAL ||
-      type === Type.TAX || type === Type.DEFERRED_INCOME
-
-  val isSummary: Boolean = type == Type.SUMMARY
+  val isExternal: Boolean = path.firstOrNull() == "external"
+  val isSummary: Boolean = name.startsWith("/")
 
   fun hasCommonOwner(other: Account): Boolean = owners.intersect(other.owners).isNotEmpty()
-
-  val typeIdName = type.name
 }
+

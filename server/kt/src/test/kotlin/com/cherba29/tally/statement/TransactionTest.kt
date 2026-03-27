@@ -39,7 +39,7 @@ class TransactionTest : DescribeSpec({
     it("single account no transfers") {
       val account = Account(
         name = "test-account",
-        type = Account.Type.EXTERNAL,
+        path = listOf("external"),
         owners = listOf(),
         openedOn = DEC / 2019,
       )
@@ -72,7 +72,7 @@ class TransactionTest : DescribeSpec({
     it("bad account name on transfer") {
       val account1 = Account(
         name = "test-account1",
-        type = Account.Type.CHECKING,
+        path = listOf("external"),
         owners = listOf("john"),
         openedOn = DEC / 2021,
       )
@@ -96,13 +96,13 @@ class TransactionTest : DescribeSpec({
     it("two accounts with common owner and transfers") {
       val account1 = Account(
         name = "test-account1",
-        type = Account.Type.CHECKING,
+        path = listOf("external"),
         owners = listOf("john"),
         openedOn = DEC / 2019,
       )
       val account2 = Account(
         name = "test-account2",
-        type = Account.Type.CREDIT,
+        path = listOf("external"),
         owners = listOf("john"),
         openedOn = DEC / 2019,
       )
@@ -138,13 +138,13 @@ class TransactionTest : DescribeSpec({
     it("two accounts with external transfer") {
       val account1 = Account(
         name = "test-account1",
-        type = Account.Type.EXTERNAL,
+        path = listOf("external"),
         owners = listOf(),
         openedOn = DEC / 2019,
       )
       val account2 = Account(
         name = "test-account2",
-        type = Account.Type.CREDIT,
+        path = listOf("external"),
         owners = listOf("john"),
         openedOn = DEC / 2019,
       )
@@ -180,7 +180,7 @@ class TransactionTest : DescribeSpec({
     it("single account with transfers") {
       val account1 = Account(
         name = "test-account1",
-        type = Account.Type.CHECKING,
+        path = listOf("external"),
         owners = listOf("john"),
         openedOn = DEC / 2019,
       )
@@ -206,7 +206,7 @@ class TransactionTest : DescribeSpec({
     it("transfer with date before start balance") {
       val account1 = Account(
         name = "test-account1",
-        type = Account.Type.CHECKING,
+        path = listOf("external"),
         owners = listOf("john"),
         openedOn = DEC / 2021,
       )
@@ -233,7 +233,7 @@ class TransactionTest : DescribeSpec({
     it("transfer to closed account") {
       val account1 = Account(
         name = "test-account1",
-        type = Account.Type.CHECKING,
+        path = listOf("external"),
         owners = listOf("john"),
         openedOn = NOV / 2019,
         closedOn = NOV / 2019  // closed before TransactionStatement month
@@ -261,19 +261,19 @@ class TransactionTest : DescribeSpec({
     it("get transaction type") {
       val account1 = Account(
         name = "test-account1",
-        type = Account.Type.CHECKING,
+        path = listOf("internal", "checking"),
         owners = listOf("john"),
         openedOn = DEC / 2019,
       )
       val account2 = Account(
         name = "test-account2",
-        type = Account.Type.CREDIT,
+        path = listOf("internal", "credit"),
         owners = listOf("john"),
         openedOn = DEC / 2019,
       )
       val account3 = Account(
         name = "test-account3",
-        type = Account.Type.EXTERNAL,
+        path = listOf("external", "expense"),
         owners = listOf(),
         openedOn = DEC / 2019,
       )

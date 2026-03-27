@@ -5,7 +5,8 @@
     account:
       __type: Account
       name: test-account1
-      type: CHECKING
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
@@ -27,7 +28,8 @@
     account:
       __type: Account
       name: test-account1
-      type: CHECKING
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
@@ -54,7 +56,8 @@
     account:
       __type: Account
       name: test-account1
-      type: CHECKING
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
@@ -70,7 +73,7 @@
       date: 2020-01-01
       type: CONFIRMED
     inFlows: 4000
-    totalTransfers: 4000
+    income: 4000
   coversPrevious: false
   coversProjectedPrevious: true
   hasProjectedTransfer: true
@@ -82,7 +85,8 @@
     account:
       __type: Account
       name: test-account1
-      type: CHECKING
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
@@ -92,13 +96,14 @@
       date: 2019-12-05
       type: PROJECTED
     description: First transfer
-    type: TRANSFER
+    type: INCOME
     balanceFromStart: 4010
   - __type: Transaction
     account:
       __type: Account
       name: test-account1
-      type: CHECKING
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
@@ -108,7 +113,7 @@
       date: 2019-12-05
       type: PROJECTED
     description: First transfer
-    type: TRANSFER
+    type: INCOME
     balanceFromStart: 2010
 
 ╔═ two accounts with common owner and transfers ═╗
@@ -118,7 +123,8 @@
     account:
       __type: Account
       name: test-account1
-      type: CHECKING
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
@@ -140,7 +146,8 @@
     account:
       __type: Account
       name: test-account1
-      type: CHECKING
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
@@ -167,7 +174,8 @@
     account:
       __type: Account
       name: test-account1
-      type: CHECKING
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
@@ -183,7 +191,7 @@
       date: 2020-01-01
       type: CONFIRMED
     outFlows: -3000
-    totalTransfers: -3000
+    totalPayments: -3000
   coversPrevious: false
   coversProjectedPrevious: false
   hasProjectedTransfer: true
@@ -195,7 +203,8 @@
     account:
       __type: Account
       name: test-account2
-      type: CREDIT
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
@@ -205,13 +214,14 @@
       date: 2019-12-05
       type: PROJECTED
     description: First transfer
-    type: TRANSFER
+    type: EXPENSE
     balanceFromStart: -2990
   - __type: Transaction
     account:
       __type: Account
       name: test-account2
-      type: CREDIT
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
@@ -221,7 +231,7 @@
       date: 2019-12-05
       type: PROJECTED
     description: Second transfer
-    type: TRANSFER
+    type: EXPENSE
     balanceFromStart: -990
 - __type: TransactionStatement
   __base:
@@ -229,7 +239,8 @@
     account:
       __type: Account
       name: test-account2
-      type: CREDIT
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
@@ -246,7 +257,8 @@
     account:
       __type: Account
       name: test-account2
-      type: CREDIT
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
@@ -263,13 +275,14 @@
     account:
       __type: Account
       name: test-account2
-      type: CREDIT
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
     month: Dec2019
     inFlows: 3000
-    totalTransfers: 3000
+    income: 3000
   coversPrevious: false
   coversProjectedPrevious: true
   hasProjectedTransfer: true
@@ -281,7 +294,8 @@
     account:
       __type: Account
       name: test-account1
-      type: CHECKING
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
@@ -291,12 +305,13 @@
       date: 2019-12-05
       type: PROJECTED
     description: First transfer
-    type: TRANSFER
+    type: INCOME
   - __type: Transaction
     account:
       __type: Account
       name: test-account1
-      type: CHECKING
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
@@ -306,7 +321,7 @@
       date: 2019-12-05
       type: PROJECTED
     description: Second transfer
-    type: TRANSFER
+    type: INCOME
 
 ╔═ two accounts with external transfer ═╗
 - __type: TransactionStatement
@@ -315,7 +330,8 @@
     account:
       __type: Account
       name: test-account1
-      type: EXTERNAL
+      path:
+      - external
       openedOn: Dec2019
     month: Feb2020
     startBalance:
@@ -335,7 +351,8 @@
     account:
       __type: Account
       name: test-account1
-      type: EXTERNAL
+      path:
+      - external
       openedOn: Dec2019
     month: Jan2020
     startBalance:
@@ -360,7 +377,8 @@
     account:
       __type: Account
       name: test-account1
-      type: EXTERNAL
+      path:
+      - external
       openedOn: Dec2019
     month: Dec2019
     startBalance:
@@ -386,7 +404,8 @@
     account:
       __type: Account
       name: test-account2
-      type: CREDIT
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
@@ -402,7 +421,8 @@
     account:
       __type: Account
       name: test-account2
-      type: CREDIT
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
@@ -420,7 +440,8 @@
     account:
       __type: Account
       name: test-account2
-      type: CREDIT
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
@@ -437,7 +458,8 @@
     account:
       __type: Account
       name: test-account2
-      type: CREDIT
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
@@ -454,7 +476,8 @@
     account:
       __type: Account
       name: test-account2
-      type: CREDIT
+      path:
+      - external
       openedOn: Dec2019
       owner:
       - john
@@ -472,7 +495,8 @@
     account:
       __type: Account
       name: test-account1
-      type: EXTERNAL
+      path:
+      - external
       openedOn: Dec2019
     balance:
       __type: Balance
@@ -485,7 +509,8 @@
     account:
       __type: Account
       name: test-account1
-      type: EXTERNAL
+      path:
+      - external
       openedOn: Dec2019
     balance:
       __type: Balance

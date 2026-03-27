@@ -21,7 +21,7 @@ class LoaderTest : DescribeSpec({
         """
         name: test-account
         owner: [someone]
-        type: external
+        path: [external]
         opened_on: Mar2019
         balances:
           - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
@@ -49,7 +49,7 @@ class LoaderTest : DescribeSpec({
         """
           name: test-account
           owner: [someone]
-          type: external
+          path: [external]
           opened_on: Mar2019
           balances:
             - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
@@ -68,7 +68,7 @@ class LoaderTest : DescribeSpec({
           """
           name: test-account
           owner: [someone]
-          type: external
+          path: [external]
           opened_on: Mar2019
           balances:
             - { grp: Mar2019, date: 2019-03-01, camt: 200.00 }
@@ -94,7 +94,7 @@ class LoaderTest : DescribeSpec({
         """
           name: test-account
           owner: [someone]
-          type: external
+          path: [ external ]
           opened_on: Mar2019
           balances:
             - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
@@ -113,7 +113,7 @@ class LoaderTest : DescribeSpec({
           """
           name: test-account
           owner: [someone]
-          type: external
+          path: [ external ]
           opened_on: Mar2019
           balances:
             - { grp: Mar2019, date: 2019-0301, camt: 200.00 }
