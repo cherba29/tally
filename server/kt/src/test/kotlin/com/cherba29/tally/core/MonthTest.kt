@@ -1,10 +1,12 @@
 package com.cherba29.tally.core
 
+import com.cherba29.tally.core.MonthName.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.ints.shouldBeLessThan
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import kotlinx.datetime.LocalDate
 
 
@@ -269,7 +271,7 @@ class MonthTest : DescribeSpec({
       val end = Month(2020, 1)
 
       val exception = shouldThrow<IllegalArgumentException> { start..end step -1  }
-      exception.message shouldBe "Month step should be positive, but got '-1'"
+      exception.message shouldBe "Step must be positive, was: -1."
     }
 
     it("fails with negative reverse step") {
@@ -277,7 +279,158 @@ class MonthTest : DescribeSpec({
       val end = Month(2020, 1)
 
       val exception = shouldThrow<IllegalArgumentException> { end downTo start step -1  }
-      exception.message shouldBe "Month step should be positive, but got '-1'"
+      exception.message shouldBe "Step must be positive, was: -1."
+    }
+  }
+
+  describe("MonthProgression") {
+    it("empty") {
+      MonthProgression(MAR / 2026, FEB / 2026, 1).isEmpty() shouldBe true
+      MonthProgression(MAR / 2026, FEB / 2026, -1).isEmpty() shouldBe false
+      MonthProgression(FEB / 2026, MAR / 2026, 1).isEmpty() shouldBe false
+      MonthProgression(FEB / 2026, MAR / 2026, -1).isEmpty() shouldBe true
+      MonthProgression(MAR / 2026, FEB / 2026, 1).hashCode() shouldBe -1
+    }
+
+    it("toString") {
+      val progression = MonthProgression(MAR / 2026, FEB / 2026, 1)
+      progression.toString() shouldBe "Mar2026..Feb2026 step 1"
+      val progressionNeg = MonthProgression(MAR / 2026, FEB / 2026, -2)
+      progressionNeg.toString() shouldBe "Mar2026 downTo Mar2026 step 2"
+    }
+
+    it("zero step") {
+      val exception = shouldThrow<IllegalArgumentException> { MonthProgression(MAR / 2026, JUN / 2026, 0) }
+      exception.message shouldBe "Step must be non-zero."
+    }
+
+    it("min step") {
+      val exception = shouldThrow<IllegalArgumentException> { MonthProgression(MAR / 2026, JUN / 2026, Int.MIN_VALUE) }
+      exception.message shouldBe "Step must be greater than Int.MIN_VALUE to avoid overflow on negation."
+    }
+
+    it("last step 2") {
+      val progression = MonthProgression(MAR / 2026, JUN / 2026, 2)
+      progression.last shouldBe MAY / 2026
+    }
+
+    it("last step -2") {
+      val progression = MonthProgression(JUN / 2026, MAR / 2026, -2)
+      progression.last shouldBe APR / 2026
+    }
+
+    it("equal") {
+      val empty1 = MonthProgression(MAR / 2026, FEB / 2026, 1)
+      val empty2 = MonthProgression(FEB / 2026, MAR / 2026, -1)
+      val range = MonthProgression(MAR / 2026, APR / 2026, 1)
+      range shouldNotBe "Mar2026..Apr2026"  // Is not equal to another type.
+      range shouldNotBe MonthProgression(MAR / 2026, MAY / 2026,1)
+      range shouldNotBe MonthProgression(FEB / 2026, APR / 2026, 1)
+      range shouldNotBe MonthProgression(MAR / 2026, APR / 2026, -1)
+      range shouldBe MonthProgression(MAR / 2026, APR / 2026, 1)
+      range shouldNotBe empty1
+      range shouldNotBe empty2
+      empty1 shouldNotBe range
+      empty2 shouldNotBe range
+      empty1 shouldBe empty2
+      empty2 shouldBe empty1
+    }
+
+    describe("hashCode") {
+      it("consistent") {
+        val range = MonthProgression(MAR / 2026, APR / 2026, 1)
+        range.hashCode() shouldBe range.hashCode()
+      }
+      it("equal") {
+        val range1 = MonthProgression(MAR / 2026, APR / 2026, 1)
+        val range2 = MonthProgression(MAR / 2026, APR / 2026, 1)
+        range1.hashCode() shouldBe range2.hashCode()
+        range1 shouldBe range2
+      }
+      it("distribution") {
+        val start = MAR / 2026
+        val hashCodes = (1..1000).map {
+          MonthProgression(start,start.next(it), 1).hashCode()
+        }.toSet()
+        hashCodes.size shouldBe 1000
+      }
+    }
+  }
+
+  describe("MonthProgressionIteration") {
+    it("empty") {
+      val progression = MonthProgressionIterator(MAR / 2026, FEB / 2026, 1)
+      progression.hasNext() shouldBe false
+      val exception = shouldThrow<NoSuchElementException> { progression.next() }
+      exception.message shouldBe null
+    }
+
+    it("next") {
+      val progression = MonthProgressionIterator(MAR / 2026, APR / 2026, 1)
+      progression.hasNext() shouldBe true
+      progression.next() shouldBe MAR / 2026
+      progression.next() shouldBe APR / 2026
+      shouldThrow<NoSuchElementException> { progression.next() }
+    }
+
+    it("next reversed") {
+      val progression = MonthProgressionIterator(APR / 2026, MAR / 2026, -1)
+      progression.hasNext() shouldBe true
+      progression.next() shouldBe APR / 2026
+      progression.next() shouldBe MAR / 2026
+      shouldThrow<NoSuchElementException> { progression.next() }
+    }
+  }
+
+  describe("MonthRange") {
+    it("empty") {
+      val emptyRange = MonthRange.EMPTY
+      emptyRange.isEmpty() shouldBe true
+      emptyRange.toList() shouldBe listOf()
+      emptyRange.hashCode() shouldBe -1
+
+      val start = Month(2019, 10)
+      val otherEmpty = start..start.previous()
+      otherEmpty.isEmpty() shouldBe true
+      emptyRange shouldBe otherEmpty
+    }
+
+    it("endExclusive") {
+      val range = MAR / 2026..APR / 2026
+      range.endInclusive shouldBe APR / 2026
+      range.endExclusive shouldBe MAY / 2026
+    }
+
+    it("equal") {
+      val range = MAR / 2026 .. APR / 2026
+      range shouldNotBe "Mar2026..Apr2026"  // Is not equal to another type.
+      range shouldNotBe MAR / 2026 .. MAY / 2026
+      range shouldNotBe FEB / 2026 .. APR / 2026
+      range shouldNotBe MonthRange.EMPTY
+      MonthRange.EMPTY shouldNotBe range
+    }
+
+    it("toString") {
+      val range = MonthRange(MAR / 2026,  APR / 2026)
+      range.toString() shouldBe "Mar2026..Apr2026"
+    }
+
+    describe("hashCode") {
+      it("consistent") {
+        val range = MonthRange(MAR / 2026, APR / 2026)
+        range.hashCode() shouldBe range.hashCode()
+      }
+      it("equal") {
+        val range1 = MonthRange(MAR / 2026, APR / 2026)
+        val range2 = MonthRange(MAR / 2026, APR / 2026)
+        range1.hashCode() shouldBe range2.hashCode()
+        range1 shouldBe range2
+      }
+      it("distribution") {
+        val start = MAR / 2026
+        val hashCodes = (1..1000).map { (start..start.next(it)).hashCode() }.toSet()
+        hashCodes.size shouldBe 1000
+      }
     }
   }
 })

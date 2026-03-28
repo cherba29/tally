@@ -8,9 +8,11 @@ import kotlin.math.pow
 import kotlin.math.sign
 
 abstract class Statement(
+  // TODO: perhaps just replace by name/id. Concept of account does not apply to derived classes.
   // Account to which this statement belongs to.
   val account: Account,
 
+  // TODO: perhaps replace by MonthRange.
   // Period of time for the statement
   val month: Month,
 
