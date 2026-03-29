@@ -75,7 +75,7 @@ abstract class MonthIterator : Iterator<Month> {
    * Returns the next element in the iteration without boxing conversion.
    * @throws NoSuchElementException if the iteration has no next element.
    */
-  public abstract fun nextMonth(): Month
+  abstract fun nextMonth(): Month
 }
 
 /**
@@ -176,8 +176,9 @@ class MonthProgressionIterator(first: Month, last: Month, val step: Int) : Month
 }
 
 /**
- * A range of values of type `Int`.
+ * A range of values of type `Month`.
  */
+// TODO: introduce open-ended ranges perhaps making start and end nullable.
 class MonthRange(start: Month, endInclusive: Month) : MonthProgression(start, endInclusive, 1), ClosedRange<Month>, OpenEndRange<Month> {
   override val start: Month get() = first
   override val endInclusive: Month get() = last

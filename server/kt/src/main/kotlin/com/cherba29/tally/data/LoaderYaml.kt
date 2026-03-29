@@ -41,6 +41,7 @@ data class TransferYamlData(
   val cat: String?,
   val tags: List<String>?,
   // TODO: add option for running annual total.
+  // TODO: add support for confirmation number to display it.
 )
 
 @JsonIgnoreProperties(value = [])
@@ -108,8 +109,7 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
   val account = Account(
     name = data.name,
     description = data.desc,
-    path = data.path ?: listOf(),
-//    type = accountType,
+    path = data.path,
     number = data.number,
     openedOn = data.openedOn,
     closedOn = data.closedOn,

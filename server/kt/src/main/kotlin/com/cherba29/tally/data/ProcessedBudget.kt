@@ -52,6 +52,7 @@ class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
     summaryNameMonthMap.clear()
 
     val (transactionStatementTable, elapsedTransactionTime) = timeSource.measureTimedValue {
+      // TODO: this might throw due to so invariant being violated. Need to recover to previous state.
       val transactionStatementTable = buildTransactionStatementTable(budget!!, owner = null)
       for (stmt in transactionStatementTable) {
         var monthToStatement = accountToMonthToTransactionStatement[stmt.account.name]

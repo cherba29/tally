@@ -1,5 +1,6 @@
 package com.cherba29.tally.core
 
+// TODO: Introduce some notion of order/priority, so that those can be displayed higher up the list.
 data class Account(
   val name: String,
   val description: String? = null,
@@ -28,6 +29,7 @@ data class Account(
            (month < openedOn) // Before or on open.
   }
 
+  // TODO: this is too specific. Need better notion of external.
   val isExternal: Boolean = path.firstOrNull() == "external"
   val isSummary: Boolean = name.startsWith("/")
 
