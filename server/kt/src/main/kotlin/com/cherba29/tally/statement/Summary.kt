@@ -2,7 +2,9 @@ package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.utils.Map3
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.collections.iterator
 
 // TODO: add tests.
@@ -12,18 +14,12 @@ fun buildSummaryStatementTable(
 ): Map3<SummaryStatement> {
   val statementsAggregator = SummaryStatementAggregator()
   for (statement in statements) {
-    for (owner in statement.account.owners) {
+    for (owner in statement.nodeId.owners) {
       if (selectedOwner != null && owner != selectedOwner || statement.isEmpty()) {
         continue
       }
-      val summariesToAddTo = mutableListOf<String>()
-      if (statement.account.path.isNotEmpty()) {
-        summariesToAddTo.add("/" + statement.account.path.joinToString("/"))
-      }
-      for (summaryName in summariesToAddTo) {
-        if (statement.account.isExternal && summaryName.contains("SUMMARY")) {
-          continue
-        }
+      if (statement.nodeId.path.isNotEmpty()) {
+        val summaryName = "/" + statement.nodeId.path.joinToString("/")
         statementsAggregator.addStatement(summaryName, owner, statement)
       }
     }
@@ -42,15 +38,15 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
   var minMonth: Month? = null
   var maxMonth: Month? = null
   // Map of 'account name' -> month -> 'summary statement'.
-  val accountStatements = mutableMapOf<String, MutableMap<Month, Statement>>()
+  val accountStatements = mutableMapOf<NodeId, MutableMap<Month, Statement>>()
 
   for (summaryStmt in summaryStatements) {
     if (stmtName == null) {
-      stmtName = summaryStmt.account.name
-      owners = summaryStmt.account.owners
-    } else if (stmtName !== summaryStmt.account.name) {
+      stmtName = summaryStmt.nodeId.name
+      owners = summaryStmt.nodeId.owners
+    } else if (stmtName !== summaryStmt.nodeId.name) {
       throw IllegalArgumentException(
-        "Cant combine different summary statements $stmtName and ${summaryStmt.account.name}"
+        "Cant combine different summary statements $stmtName and ${summaryStmt.nodeId.name}"
       )
     }
     if (minMonth == null || summaryStmt.month < minMonth) {
@@ -60,14 +56,14 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
       maxMonth = summaryStmt.month
     }
     for (stmt in summaryStmt.statements) {
-      var accountMonthlyStatements = accountStatements[stmt.account.name]
+      var accountMonthlyStatements = accountStatements[stmt.nodeId]
       if (accountMonthlyStatements == null) {
         accountMonthlyStatements = mutableMapOf()
-        accountStatements[stmt.account.name] = accountMonthlyStatements
+        accountStatements[stmt.nodeId] = accountMonthlyStatements
       }
       val monthStatement = accountMonthlyStatements[stmt.month]
       if (monthStatement != null) {
-        throw IllegalArgumentException("Duplicate month statement for ${stmt.account.name} for ${stmt.month}")
+        throw IllegalArgumentException("Duplicate month statement for ${stmt.nodeId.name} for ${stmt.month}")
       }
       accountMonthlyStatements[stmt.month] = stmt
     }
@@ -81,12 +77,12 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
   if (maxMonth == null) {
     throw IllegalArgumentException("Could not determine end month")
   }
-  val summaryAccount = Account(name = stmtName, owners = owners, openedOn = minMonth)
-  val combined = SummaryStatement(summaryAccount, maxMonth, minMonth)
+  val summaryAccount = Account(NodeId(stmtName, owners), openedOn = minMonth)
+  val combined = SummaryStatement(summaryAccount.nodeId, maxMonth, minMonth)
   for ((acctName, acctStatements) in accountStatements) {
     // Combine all statements for a given account over all months in the range.
     val stmt = CombinedStatement.fromStatements(
-      Account(name = acctName, owners = listOf(), openedOn = minMonth),
+      acctName,
       minMonth,
       maxMonth,
       acctStatements
@@ -96,4 +92,4 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
   return combined
 }
 
-// private val logger = KotlinLogging.logger {}
+private val logger = KotlinLogging.logger {}

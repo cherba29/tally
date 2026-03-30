@@ -1,39 +1,33 @@
 package com.cherba29.tally.statement
 
-import com.cherba29.tally.core.Account
-import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.utils.Map3
 
 // TODO: add tests for this class.
 class SummaryStatementAggregator {
   // Map of owner -> 'summary name' -> month -> 'summary statement'.
   val summaryStatements = Map3<SummaryStatement>()
-  private val summaryAccounts: MutableMap<String, Account> = mutableMapOf()
+  private val summaryNodes: MutableMap<String, NodeId> = mutableMapOf()
 
   fun addStatement(summaryName: String, owner: String, statement: Statement) {
-    val summaryAccount = getAccount(summaryName, owner, statement.account.path, statement.month)
+    val summaryNodeId = getNodeId(summaryName, owner, statement.nodeId.path)
 
     val accountMonthSummaryStatement = summaryStatements.getDefault(
-      owner, summaryAccount.name, statement.month.toString()
+      owner, summaryNodeId.name, statement.month.toString()
     ) {
-      SummaryStatement(summaryAccount, statement.month, startMonth = statement.month)
+      SummaryStatement(summaryNodeId, statement.month, startMonth = statement.month)
     }
     accountMonthSummaryStatement.addStatement(statement)
   }
 
-  private fun getAccount(name: String, owner: String, path: List<String>, month: Month): Account {
+  private fun getNodeId(name: String, owner: String, path: List<String>): NodeId {
     val key = "$owner - $name"
-    var account = summaryAccounts[key]
-    if (account == null) {
-      account = Account(
-        name,
-        owners = listOf(owner),
-        path = path.slice(0..path.size - 2),
-        openedOn = month
-      )
-      summaryAccounts[key] = account
+    var nodeId = summaryNodes[key]
+    if (nodeId == null) {
+      nodeId = NodeId(name, listOf(owner), path.slice(0..path.size - 2))
+      summaryNodes[key] = nodeId
     }
-    return account
+    return nodeId
   }
 
   // Make sure totals are computed for parent summary accounts up the path to the root.
@@ -41,12 +35,12 @@ class SummaryStatementAggregator {
     // Build a multi-root tree based on account paths for each owner.
     val tree: MutableMap<String, MutableSet<String>> = mutableMapOf()  // node -> set of children.
     val owners: MutableSet<String> = mutableSetOf()
-    for (account in summaryAccounts.values) {
-      for (owner in account.owners) {
+    for (nodeId in summaryNodes.values) {
+      for (owner in nodeId.owners) {
         owners.add(owner)
-        if (!account.name.startsWith('/')) continue
-        val path = account.path
-        var entry = "/" + owner + account.name
+        if (!nodeId.isSummary) continue
+        val path = nodeId.path
+        var entry = "/" + owner + nodeId.name
         for (sub in path.size downTo 0) {
           val subPath = path.slice(0..sub - 1)
           val subPathId = "/" + owner + "/" + subPath.joinToString("/")

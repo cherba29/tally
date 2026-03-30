@@ -1,17 +1,17 @@
 package com.cherba29.tally.statement
 
-import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.core.MonthName.MAR
+import com.cherba29.tally.core.NodeId
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate
 
 internal class TestStatement(
-  account: Account,
+  nodeId: NodeId,
   month: Month,
+  isClosed: Boolean = false,
   startBalance: Balance? = null,
   endBalance: Balance? = null,
   inFlows: Int = 0,
@@ -19,7 +19,7 @@ internal class TestStatement(
   totalTransfers: Int = 0,
   totalPayments: Int = 0,
   income: Int = 0,
-) : Statement(account, month, startBalance, endBalance, inFlows, outFlows, totalTransfers, totalPayments, income) {
+) : Statement(nodeId, month, isClosed, startBalance, endBalance, inFlows, outFlows, totalTransfers, totalPayments, income) {
   override val isClosed: Boolean = true
 }
 
@@ -27,14 +27,10 @@ class StatementTest : DescribeSpec({
   describe("Creation") {
     it("basic") {
       val stmt = TestStatement(
-        Account(
-          name = "test",
-          owners = listOf(),
-          openedOn = MAR / 2021
-        ),
+        NodeId(name = "test"),
         Month.fromString("Mar2021")
       )
-      stmt.account shouldBe Account(name = "test", owners = listOf(), openedOn = MAR / 2021)
+      stmt.nodeId shouldBe NodeId("test")
       stmt.month shouldBe Month(2021, 2)
       stmt.inFlows shouldBe 0.0
       stmt.income shouldBe 0.0
@@ -51,12 +47,7 @@ class StatementTest : DescribeSpec({
 
   it("with inFlow outFlow no start-end balance") {
     val stmt = TestStatement(
-      Account(
-        name = "test",
-        path = listOf("external"),
-        owners = listOf(),
-        openedOn = MAR / 2021
-      ),
+      NodeId(name = "test", path = listOf("external")),
       Month.fromString("Mar2021")
     )
     stmt.addInFlow(100)
@@ -81,13 +72,9 @@ class StatementTest : DescribeSpec({
     val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), Balance.Type.PROJECTED)
     val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
-      Account(
-        name = "test",
-        path = listOf("external"),
-        owners = listOf(),
-        openedOn = MAR / 2021
-      ),
+      NodeId(name = "test", path = listOf("external")),
       Month.fromString("Mar2021"),
+      false,
       startBalance,
       endBalance,
     )
@@ -112,12 +99,7 @@ class StatementTest : DescribeSpec({
 
   it("with empty statement") {
     val stmt = TestStatement(
-      Account(
-        name = "test",
-        path = listOf("external"),
-        owners = listOf(),
-        openedOn = MAR / 2021
-      ),
+      NodeId(name = "test", path = listOf("external")),
       Month.fromString("Mar2021")
     )
     stmt.startBalance shouldBe null
@@ -132,12 +114,7 @@ class StatementTest : DescribeSpec({
 
   it("with no start-end balance") {
     val stmt = TestStatement(
-      Account(
-        name = "test",
-        path = listOf("external"),
-        owners = listOf(),
-        openedOn = MAR / 2021
-      ),
+      NodeId(name = "test", path = listOf("external")),
       Month.fromString("Mar2021")
     )
     stmt.addInFlow(100)
@@ -153,13 +130,9 @@ class StatementTest : DescribeSpec({
   it("with inFlow outFlow with start balance") {
     val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
-      Account(
-        name = "test",
-        path = listOf("external"),
-        owners = listOf(),
-        openedOn = MAR / 2021
-      ),
+      NodeId(name = "test", path = listOf("external")),
       Month.fromString("Mar2021"),
+      false,
       startBalance
     )
 
@@ -176,13 +149,9 @@ class StatementTest : DescribeSpec({
   it("with inFlow outFlow with end balance") {
     val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
-      Account(
-        name = "test",
-        path = listOf("external"),
-        owners = listOf(),
-        openedOn = MAR / 2021
-      ),
+      NodeId(name = "test", path = listOf("external")),
       Month.fromString("Mar2021"),
+      false,
       null,
       endBalance
     )
@@ -202,13 +171,9 @@ class StatementTest : DescribeSpec({
     val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
 
     val stmt = TestStatement(
-      Account(
-        name = "test",
-        path = listOf("external"),
-        owners = listOf(),
-        openedOn = MAR / 2021
-      ),
+      NodeId(name = "test", path = listOf("external")),
       Month.fromString("Mar2021"),
+      false,
       startBalance,
       endBalance
     )
@@ -224,13 +189,9 @@ class StatementTest : DescribeSpec({
     val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), Balance.Type.PROJECTED)
     val endBalance = Balance(1020, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
-      Account(
-        name = "test",
-        path = listOf("external"),
-        owners = listOf(),
-        openedOn = MAR / 2021
-      ),
+      NodeId(name = "test", path = listOf("external")),
       Month.fromString("Mar2021"),
+      false,
       startBalance,
       endBalance
     )

@@ -10,15 +10,15 @@ import com.cherba29.tally.statement.TransactionStatement
 import kotlin.math.roundToInt
 
 fun Account.toGql(): GqlAccount = GqlAccount(
-  name = name,
+  name = nodeId.name,
   description = description ?: "",
-  path = path,
-  external = isExternal,
-  summary = isSummary,
+  path = nodeId.path,
+  external = nodeId.isExternal,
+  summary = nodeId.isSummary,
   number = number,
   openedOn = openedOn,
   closedOn = closedOn,
-  owners = owners,
+  owners = nodeId.owners,
   url = url ?: "",
   address = address ?: "",
   userName = userName ?: "",
@@ -35,7 +35,7 @@ fun Balance.toGql(): GqlBalance = GqlBalance(
 )
 
 fun Transaction.toGql(): GqlTransaction = GqlTransaction(
-  toAccountName = account.name,
+  toAccountName = nodeId.name,
   isIncome = type == Transaction.Type.INCOME,
   isExpense = type == Transaction.Type.EXPENSE,
   balance = balance.toGql(),
@@ -49,9 +49,9 @@ private fun Double?.round2Float(): Float {
 }
 
 fun TransactionStatement.toGql(): GqlStatement = GqlStatement(
-  name = account.name,
+  name = nodeId.name,
   month = month,
-  isClosed = account.isClosed(month),
+  isClosed = isClosed,
   isCovered = isCovered,
   isProjectedCovered = isProjectedCovered,
   hasProjectedTransfer = hasProjectedTransfer,
@@ -86,9 +86,9 @@ fun TransactionStatement.toGqlTableCell(): GqlTableCell = GqlTableCell(
 )
 
 fun CombinedStatement.toGqlStatement(): GqlStatement = GqlStatement(
-  name = account.name,
+  name = nodeId.name,
   month = month,
-  isClosed = account.isClosed(month),
+  isClosed = isClosed,
   isCovered = true,
   isProjectedCovered = false,
   hasProjectedTransfer = false,
@@ -123,9 +123,9 @@ fun Statement.toGqlTableCell(): GqlTableCell = GqlTableCell(
 )
 
 fun SummaryStatement.toGql(): GqlSummaryStatement = GqlSummaryStatement(
-  name = account.name,
+  name = nodeId.name,
   month = month,
-  accounts = statements.map { it.account.name }.sorted(),
+  accounts = statements.map { it.nodeId.name }.sorted(),
   addSub = addSub,
   income = income,
   change = change ?: 0,
@@ -141,9 +141,9 @@ fun SummaryStatement.toGql(): GqlSummaryStatement = GqlSummaryStatement(
 )
 
 fun SummaryStatement.toGqlStatement(): GqlStatement = GqlStatement(
-  name = account.name,
+  name = nodeId.name,
   month = month,
-  isClosed = account.isClosed(month),
+  isClosed = isClosed,
   isCovered = true,
   isProjectedCovered = true,
   hasProjectedTransfer = false,

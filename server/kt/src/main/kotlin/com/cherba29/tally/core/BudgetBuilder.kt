@@ -6,22 +6,22 @@ class BudgetBuilder(
   private var minMonth: Month? = null,
   private var maxMonth: Month? = null,
   // Account name to account map.
-  private val accounts: MutableMap<String, Account> = mutableMapOf(),
+  private val accounts: MutableMap<NodeId, Account> = mutableMapOf(),
   // Account name -> month -> balance map.
-  private val balances: MutableMap<String, MutableMap<Month, Balance>> = mutableMapOf(),
+  private val balances: MutableMap<NodeId, MutableMap<Month, Balance>> = mutableMapOf(),
   private val transfers: MutableList<TransferData> = mutableListOf()
 ) {
   data class TransferData(
-    val toAccount: String,
+    val toAccount: String,  // not NodeId as actual account still unknown.
     val toMonth: Month,
-    val fromAccount: String,
+    val fromAccount: NodeId,
     val fromMonth: Month,
     val balance: Balance,
     val description: String?,
   )
 
   fun setAccount(account: Account): BudgetBuilder {
-    accounts[account.name] = account
+    accounts[account.nodeId] = account
     minMonth = if (minMonth != null) Month.min(minMonth!!, account.openedOn) else account.openedOn
     maxMonth = if (maxMonth != null) Month.max(maxMonth!!, account.openedOn) else account.openedOn
     if (account.closedOn != null) {
@@ -31,15 +31,15 @@ class BudgetBuilder(
     return this
   }
 
-  fun setBalance(accountName: String, month: Month, balance: Balance): BudgetBuilder {
-    var accountBalances = balances[accountName]
+  fun setBalance(nodeId: NodeId, month: Month, balance: Balance): BudgetBuilder {
+    var accountBalances = balances[nodeId]
     if (accountBalances == null) {
       accountBalances = mutableMapOf()
-      balances[accountName] = accountBalances
+      balances[nodeId] = accountBalances
     }
     val existingBalance = accountBalances[month]
     if (existingBalance != null) {
-      throw IllegalArgumentException("Balance for '$accountName' '$month' is already set to $balance")
+      throw IllegalArgumentException("Balance for '$nodeId' '$month' is already set to $balance")
     }
     accountBalances[month] = balance
 
@@ -48,7 +48,7 @@ class BudgetBuilder(
     return this
   }
 
-  fun addTransfer(fromAccount: String,
+  fun addTransfer(fromAccount: NodeId,
                   fromMonth: Month,
                   toAccount: String,
                   toMonth: Month,
@@ -68,21 +68,20 @@ class BudgetBuilder(
   }
 
   fun build(): Budget {
-    val budgetTransfers: MutableMap<String, MutableMap<Month, MutableList<Transfer>>> = mutableMapOf()
+    val budgetTransfers: MutableMap<NodeId, MutableMap<Month, MutableList<Transfer>>> = mutableMapOf()
     for (transferData in transfers) {
-      val toAccount = accounts[transferData.toAccount] ?: throw IllegalArgumentException(
-        "Unknown account ${transferData.toAccount}"
-      )
+      val toAccount = accounts.values.find { it.nodeId.name == transferData.toAccount }
+        ?: throw IllegalArgumentException("Unknown account ${transferData.toAccount}")
 
       val fromAccount = accounts[transferData.fromAccount] ?: throw IllegalArgumentException(
         "Unknown account ${transferData.fromAccount}"
       )
 
-      if (toAccount.owners.sorted().joinToString() != fromAccount.owners.sorted().joinToString()) {
+      if (toAccount.nodeId.owners.sorted().joinToString() != fromAccount.nodeId.owners.sorted().joinToString()) {
         logger.warn {
           "WARNING: Transaction ${transferData.fromMonth} -> ${transferData.toMonth} has " +
-              "to account ${toAccount.name} from ${fromAccount.name} with different owners " +
-              "${toAccount.owners.joinToString()} vs ${fromAccount.owners.joinToString()}"
+              "to account ${toAccount.nodeId.name} from ${fromAccount.nodeId.name} with different owners " +
+              "${toAccount.nodeId.owners.joinToString()} vs ${fromAccount.nodeId.owners.joinToString()}"
         }
       }
       val transfer = Transfer(
@@ -95,13 +94,13 @@ class BudgetBuilder(
       )
       val toMonthTransfers = getMonthTransfers(
         budgetTransfers,
-        toAccount.name,
+        toAccount.nodeId,
         transferData.toMonth
       )
       toMonthTransfers.add(transfer)
       val fromMonthTransfers = getMonthTransfers(
         budgetTransfers,
-        fromAccount.name,
+        fromAccount.nodeId,
         transferData.fromMonth
       )
       fromMonthTransfers.add(transfer)
@@ -115,14 +114,14 @@ class BudgetBuilder(
     private val logger = KotlinLogging.logger {}
 
     private fun <T> getMonthTransfers(
-      transfers: MutableMap<String, MutableMap<Month, MutableList<T>>>,
-      accountName: String,
+      transfers: MutableMap<NodeId, MutableMap<Month, MutableList<T>>>,
+      nodeId: NodeId,
       month: Month
     ): MutableList<T> {
-      var accountTransfers = transfers[accountName]
+      var accountTransfers = transfers[nodeId]
       if (accountTransfers == null) {
         accountTransfers = mutableMapOf()
-        transfers[accountName] = accountTransfers
+        transfers[nodeId] = accountTransfers
       }
       var monthTransfers = accountTransfers[month]
       if (monthTransfers == null) {

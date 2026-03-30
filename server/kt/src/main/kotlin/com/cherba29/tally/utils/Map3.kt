@@ -55,4 +55,6 @@ class Map3<ValueType> : Iterable<Entry3<ValueType>> {
       }
     }
   }.iterator()
+
+  override fun toString(): String = store.toString()
 }

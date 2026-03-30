@@ -1,14 +1,12 @@
 package com.cherba29.tally.statement
 
-import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Budget
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.data.yaml.toObjectNode
-
+import com.cherba29.tally.core.NodeId
 
 data class Transaction(
-  val account: Account,
+  val nodeId: NodeId,
   val balance: Balance,
   val description: String?,
   val type: Type,
@@ -26,12 +24,13 @@ data class Transaction(
 fun buildTransactionStatementTable(budget: Budget, owner: String?): List<TransactionStatement> {
   val statementTable = mutableListOf<TransactionStatement>()
 
-  val makeStatement: (Account, Month) -> TransactionStatement = { account, month ->
+  val makeStatement: (NodeId, Month, Boolean) -> TransactionStatement = { nodeId, month, isClosed ->
     TransactionStatement.fromTransfers(
-      account,
+      nodeId,
       month,
-      budget.transfers[account.name]?.get(month),
-      budget.balances[account.name]?.get(month)
+      isClosed,
+      budget.transfers[nodeId]?.get(month),
+      budget.balances[nodeId]?.get(month)
     )
   }
 
@@ -42,14 +41,14 @@ fun buildTransactionStatementTable(budget: Budget, owner: String?): List<Transac
   }
 
   for (account in budget.accounts.values) {
-    if (owner != null && !account.owners.contains(owner)) {
+    if (owner != null && !account.nodeId.owners.contains(owner)) {
       continue
     }
     val accountStatements = mutableListOf<TransactionStatement>()
     // Make statement outside range so that its attributes relating to previous can be used.
-    var nextMonthStatement = makeStatement(account, months[0].next())
+    var nextMonthStatement = makeStatement(account.nodeId, months[0].next(), account.isClosed(months[0].next()))
     for (month in months) {
-      val statement = makeStatement(account, month)
+      val statement = makeStatement(account.nodeId, month, account.isClosed(month))
       statement.endBalance = nextMonthStatement.startBalance
       statement.isCovered =
         statement.endBalance == null || statement.endBalance!!.amount >= 0 || nextMonthStatement.coversPrevious

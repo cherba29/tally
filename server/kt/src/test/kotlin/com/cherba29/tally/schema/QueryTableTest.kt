@@ -4,6 +4,7 @@ import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
+import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.budget
 import com.cherba29.tally.data.Loader.DataPayload
 import com.cherba29.tally.statement.SummaryStatement
@@ -53,13 +54,11 @@ class QueryTableTest : DescribeSpec({
 
     it("empty - no open accounts") {
       val account = Account(
-        name = "test-account",
-        path = listOf("external"),
-        owners = listOf("john"),
+        NodeId(name = "test-account", path = listOf("external"), owners = listOf("john")),
         openedOn = MAR / 2026,
       )
       val summary = SummaryStatement(
-        account,
+        account.nodeId,
         month = MAR / 2026,
         startMonth = MAR / 2026
       )
@@ -84,13 +83,11 @@ class QueryTableTest : DescribeSpec({
 
     it("single open account without path") {
       val account = Account(
-        name = "test-account",
-        path = listOf("external"),
-        owners = listOf("john"),
+        NodeId(name = "test-account", path = listOf("external"), owners = listOf("john")),
         openedOn = JAN / 2026
       )
       val summary = SummaryStatement(
-        account,
+        account.nodeId,
         month = MAR / 2026,
         startMonth = MAR / 2026
       )
@@ -101,15 +98,16 @@ class QueryTableTest : DescribeSpec({
         budget = budget {
           setAccount(account)
           setBalance(
-            "test-account", MAR / 2026, Balance(
+            account.nodeId, MAR / 2026, Balance(
               amount = 100,
               date = LocalDate(2026, 3, 1),
               type = Balance.Type.CONFIRMED
           ))
         },
-        statements = mapOf("test-account" to mapOf(MAR / 2026 to TransactionStatement(
-          account = account,
+        statements = mapOf(account.nodeId to mapOf(MAR / 2026 to TransactionStatement(
+          account.nodeId,
           month = MAR / 2026,
+          isClosed = false,
           startBalance = Balance(100, LocalDate(2026, 3, 1), Balance.Type.CONFIRMED)
         ))),
         summaries
@@ -246,19 +244,18 @@ class QueryTableTest : DescribeSpec({
 
     it("single open account with path") {
       val account = Account(
-        name = "test-account",
-        path = listOf("outside"),
-        owners = listOf("john"),
+        NodeId(name = "test-account", path = listOf("outside"), owners = listOf("john")),
         openedOn = JAN / 2026
       )
       val summary = SummaryStatement(
-        account,
+        account.nodeId,
         month = MAR / 2026,
         startMonth = MAR / 2026
       )
       val transactionStatement = TransactionStatement(
-        account,
+        account.nodeId,
         month = MAR / 2026,
+        isClosed = false,
         startBalance = Balance(
           amount = 100,
           date = LocalDate(2026, 3, 1),
@@ -272,13 +269,13 @@ class QueryTableTest : DescribeSpec({
         budget = budget {
           setAccount(account)
           setBalance(
-            "test-account", MAR / 2026, Balance(
+            account.nodeId, MAR / 2026, Balance(
               amount = 100,
               date = LocalDate(2026, 3, 1),
               type = Balance.Type.CONFIRMED
             ))
         },
-        statements = mapOf(account.name to mapOf(MAR / 2026 to transactionStatement)),
+        statements = mapOf(account.nodeId to mapOf(MAR / 2026 to transactionStatement)),
         summaries
       )
       val table = buildGqlTable(

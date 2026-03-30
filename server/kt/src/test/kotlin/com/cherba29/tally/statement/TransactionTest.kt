@@ -6,6 +6,7 @@ import com.cherba29.tally.core.MonthName.DEC
 import com.cherba29.tally.core.MonthName.FEB
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.NOV
+import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.budget
 import com.cherba29.tally.data.yaml.toObjectNode
 import com.diffplug.selfie.coroutines.expectSelfie
@@ -37,12 +38,12 @@ class TransactionTest : DescribeSpec({
     }
 
     it("single account no transfers") {
-      val account = Account(
+      val nodeId = NodeId(
         name = "test-account",
         path = listOf("external"),
-        owners = listOf(),
-        openedOn = DEC / 2019,
+        owners = listOf()
       )
+      val account = Account(nodeId, openedOn = DEC / 2019)
       val budget = budget {
         setAccount(account)
       }
@@ -50,7 +51,7 @@ class TransactionTest : DescribeSpec({
       table.size shouldBe 1
       val stmt = table.first()
       assertSoftly {
-        stmt.account shouldBe account
+        stmt.nodeId shouldBe nodeId
         stmt.coversPrevious shouldBe false
         stmt.coversProjectedPrevious shouldBe false
         stmt.endBalance shouldBe null
@@ -70,18 +71,18 @@ class TransactionTest : DescribeSpec({
     }
 
     it("bad account name on transfer") {
-      val account1 = Account(
+      val node1 = NodeId(
         name = "test-account1",
         path = listOf("external"),
-        owners = listOf("john"),
-        openedOn = DEC / 2021,
+        owners = listOf("john")
       )
+      val account1 = Account(node1, openedOn = DEC / 2021)
       val exception =
         shouldThrow<IllegalArgumentException> {
           budget {
             setAccount(account1)
             addTransfer(
-              fromAccount = "test-account1",
+              fromAccount = node1,
               toAccount = "test-account2",
               toMonth = DEC / 2019,
               fromMonth = DEC / 2019,
@@ -94,27 +95,28 @@ class TransactionTest : DescribeSpec({
     }
 
     it("two accounts with common owner and transfers") {
-      val account1 = Account(
+      val node1 = NodeId(
         name = "test-account1",
         path = listOf("external"),
-        owners = listOf("john"),
-        openedOn = DEC / 2019,
+        owners = listOf("john")
       )
-      val account2 = Account(
+      val account1 = Account(node1, openedOn = DEC / 2019)
+      val node2 = NodeId(
         name = "test-account2",
         path = listOf("external"),
-        owners = listOf("john"),
-        openedOn = DEC / 2019,
+        owners = listOf("john")
       )
+
+      val account2 = Account(node2, openedOn = DEC / 2019)
       val budget = budget {
         setAccount(account1)
-        setBalance("test-account1", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
-        setBalance("test-account1", JAN / 2020, Balance.confirmed(20, "2020-01-01"))
-        setBalance("test-account1", FEB / 2020, Balance.projected(30, "2020-02-01"))
+        setBalance(node1, DEC / 2019, Balance.confirmed(10, "2019-12-01"))
+        setBalance(node1, JAN / 2020, Balance.confirmed(20, "2020-01-01"))
+        setBalance(node1, FEB / 2020, Balance.projected(30, "2020-02-01"))
         setAccount(account2)
         addTransfer(
-          fromAccount = "test-account1",
-          toAccount = "test-account2",
+          fromAccount = node1,
+          toAccount = node2.name,
           toMonth = DEC / 2019,
           fromMonth = DEC / 2019,
           balance = Balance.projected(2000, "2019-12-05"),
@@ -122,8 +124,8 @@ class TransactionTest : DescribeSpec({
         )
 
         addTransfer(
-          fromAccount = "test-account1",
-          toAccount = "test-account2",
+          fromAccount = node1,
+          toAccount = node2.name,
           toMonth = DEC / 2019,
           fromMonth = DEC / 2019,
           balance = Balance.projected(1000, "2019-12-05"),
@@ -136,27 +138,27 @@ class TransactionTest : DescribeSpec({
     }
 
     it("two accounts with external transfer") {
-      val account1 = Account(
+      val node1 = NodeId(
         name = "test-account1",
         path = listOf("external"),
-        owners = listOf(),
-        openedOn = DEC / 2019,
+        owners = listOf()
       )
-      val account2 = Account(
+      val account1 = Account(node1, openedOn = DEC / 2019)
+      val node2 = NodeId(
         name = "test-account2",
         path = listOf("external"),
         owners = listOf("john"),
-        openedOn = DEC / 2019,
       )
+      val account2 = Account(node2, openedOn = DEC / 2019)
       val budget = budget {
         setAccount(account1)
-        setBalance("test-account1", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
-        setBalance("test-account1", JAN / 2020, Balance.confirmed(20, "2020-01-01"))
-        setBalance("test-account1", FEB / 2020, Balance.projected(30, "2020-02-01"))
+        setBalance(node1, DEC / 2019, Balance.confirmed(10, "2019-12-01"))
+        setBalance(node1, JAN / 2020, Balance.confirmed(20, "2020-01-01"))
+        setBalance(node1, FEB / 2020, Balance.projected(30, "2020-02-01"))
         setAccount(account2)
         addTransfer(
-          fromAccount = "test-account1",
-          toAccount = "test-account2",
+          fromAccount = node1,
+          toAccount = node2.name,
           toMonth = DEC / 2019,
           fromMonth = DEC / 2019,
           balance = Balance.projected(2000, "2019-12-05"),
@@ -164,8 +166,8 @@ class TransactionTest : DescribeSpec({
         )
 
         addTransfer(
-          fromAccount = "test-account1",
-          toAccount = "test-account2",
+          fromAccount = node1,
+          toAccount = node2.name,
           toMonth = DEC / 2019,
           fromMonth = DEC / 2019,
           balance = Balance.projected(1000, "2019-12-05"),
@@ -178,20 +180,20 @@ class TransactionTest : DescribeSpec({
     }
 
     it("single account with transfers") {
-      val account1 = Account(
+      val node1 = NodeId(
         name = "test-account1",
         path = listOf("external"),
         owners = listOf("john"),
-        openedOn = DEC / 2019,
       )
+      val account1 = Account(node1, openedOn = DEC / 2019)
       val budget = budget {
         setAccount(account1)
-        setBalance("test-account1", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
-        setBalance("test-account1", JAN / 2020, Balance.confirmed(20, "2020-01-01"))
-        setBalance("test-account1", FEB / 2020, Balance.projected(30, "2020-02-01"))
+        setBalance(node1, DEC / 2019, Balance.confirmed(10, "2019-12-01"))
+        setBalance(node1, JAN / 2020, Balance.confirmed(20, "2020-01-01"))
+        setBalance(node1, FEB / 2020, Balance.projected(30, "2020-02-01"))
         addTransfer(
-          fromAccount = "test-account1",
-          toAccount = "test-account1",
+          fromAccount = node1,
+          toAccount = node1.name,
           toMonth = DEC / 2019,
           fromMonth = DEC / 2019,
           balance = Balance.projected(2000, "2019-12-05"),
@@ -204,18 +206,18 @@ class TransactionTest : DescribeSpec({
     }
 
     it("transfer with date before start balance") {
-      val account1 = Account(
+      val node1 = NodeId(
         name = "test-account1",
         path = listOf("external"),
         owners = listOf("john"),
-        openedOn = DEC / 2021,
       )
+      val account1 = Account(node1, openedOn = DEC / 2021)
       val budget = budget {
         setAccount(account1)
-        setBalance("test-account1", DEC / 2019, Balance.confirmed(1000, "2019-12-01"))
+        setBalance(node1, DEC / 2019, Balance.confirmed(1000, "2019-12-01"))
         addTransfer(
-          fromAccount = "test-account1",
-          toAccount = "test-account1",
+          fromAccount = node1,
+          toAccount = node1.name,
           toMonth = DEC / 2019,
           fromMonth = DEC / 2019,
           balance = Balance.projected(2000, "2019-11-25"),
@@ -225,25 +227,29 @@ class TransactionTest : DescribeSpec({
       val exception =
         shouldThrow<IllegalStateException> { buildTransactionStatementTable(budget, owner = null) }
       exception.message shouldBe "Balance Dec2019 Balance { amount: 10.00, date: 2019-12-01, type: CONFIRMED } " +
-          "for account test-account1 starts after transaction test-account1 --> " +
+          "for account /external/test-account1 starts after transaction test-account1 --> " +
           "test-account1/Balance { amount: 20.00, date: 2019-11-25, type: PROJECTED } " +
           "desc 'First transfer'"
     }
 
     it("transfer to closed account") {
-      val account1 = Account(
+      val node1 = NodeId(
         name = "test-account1",
         path = listOf("external"),
         owners = listOf("john"),
+      )
+
+      val account1 = Account(
+        node1,
         openedOn = NOV / 2019,
         closedOn = NOV / 2019  // closed before TransactionStatement month
       )
       val budget = budget {
         setAccount(account1)
-        setBalance("test-account1", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
+        setBalance(node1, DEC / 2019, Balance.confirmed(10, "2019-12-01"))
         addTransfer(
-          fromAccount = "test-account1",
-          toAccount = "test-account1",
+          fromAccount = node1,
+          toAccount = node1.name,
           toMonth = DEC / 2019,
           fromMonth = DEC / 2019,
           balance = Balance.projected(2000, "2019-12-05"),
@@ -259,34 +265,35 @@ class TransactionTest : DescribeSpec({
     }
 
     it("get transaction type") {
-      val account1 = Account(
+      val node1 = NodeId(
         name = "test-account1",
         path = listOf("internal", "checking"),
         owners = listOf("john"),
-        openedOn = DEC / 2019,
       )
-      val account2 = Account(
+      val account1 = Account(node1, openedOn = DEC / 2019)
+      val node2 = NodeId(
         name = "test-account2",
         path = listOf("internal", "credit"),
         owners = listOf("john"),
-        openedOn = DEC / 2019,
       )
-      val account3 = Account(
+      val account2 = Account(node2, openedOn = DEC / 2019)
+      val node3 = NodeId(
         name = "test-account3",
         path = listOf("external", "expense"),
         owners = listOf(),
-        openedOn = DEC / 2019,
       )
+
+      val account3 = Account(node3, openedOn = DEC / 2019)
       val budget = budget {
         setAccount(account1)
         setAccount(account2)
         setAccount(account3)
-        setBalance("test-account1", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
-        setBalance("test-account2", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
-        setBalance("test-account3", DEC / 2019, Balance.confirmed(10, "2019-12-01"))
+        setBalance(node1, DEC / 2019, Balance.confirmed(10, "2019-12-01"))
+        setBalance(node2, DEC / 2019, Balance.confirmed(10, "2019-12-01"))
+        setBalance(node3, DEC / 2019, Balance.confirmed(10, "2019-12-01"))
         addTransfer(
-          fromAccount = "test-account1",
-          toAccount = "test-account2",
+          fromAccount = node1,
+          toAccount = node2.name,
           toMonth = DEC / 2019,
           fromMonth = DEC / 2019,
           balance = Balance.projected(2000, "2019-12-05"),
@@ -294,8 +301,8 @@ class TransactionTest : DescribeSpec({
         )
 
         addTransfer(
-          fromAccount = "test-account1",
-          toAccount = "test-account3",
+          fromAccount = node1,
+          toAccount = node3.name,
           toMonth = DEC / 2019,
           fromMonth = DEC / 2019,
           balance = Balance.projected(1000, "2019-12-05"),

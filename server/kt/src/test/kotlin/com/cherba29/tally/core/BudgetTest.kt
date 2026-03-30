@@ -21,18 +21,15 @@ class BudgetTest : DescribeSpec({
 
   it("build simple") {
     val account1 = Account(
-      name = "test-account1",
-      owners = listOf(),
+      nodeId = NodeId("test-account1"),
       openedOn = NOV / 2019,
     )
     val account2 = Account(
-      name = "test-account2",
-      owners = listOf(),
+      nodeId = NodeId("test-account2"),
       openedOn = NOV / 2019,
     )
     val account3 = Account(
-      name = "test-account3",
-      owners = listOf(),
+      nodeId = NodeId("test-account3"),
       openedOn = NOV / 2019,
     )
     val budget = budget {
@@ -40,24 +37,24 @@ class BudgetTest : DescribeSpec({
       setAccount(account2)
       setAccount(account3)
       setBalance(
-        "test-account1",
+        NodeId("test-account1"),
         NOV / 2019,
         Balance(100, LocalDate(2019, 11, 1), Balance.Type.PROJECTED)
       )
       setBalance(
-        "test-account1",
+        NodeId("test-account1"),
         DEC / 2019,
         Balance(200, LocalDate(2019, 12, 1), Balance.Type.PROJECTED)
       )
       setBalance(
-        "test-account2",
+        NodeId("test-account2"),
         NOV / 2019,
         Balance(200, LocalDate(2019, 11, 3), Balance.Type.CONFIRMED)
       )
       addTransfer(
         toAccount = "test-account1",
         toMonth = NOV / 2019,
-        fromAccount = "test-account2",
+        fromAccount = NodeId("test-account2"),
         fromMonth = NOV / 2019,
         balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
         description = null
@@ -65,15 +62,15 @@ class BudgetTest : DescribeSpec({
       addTransfer(
         toAccount = "test-account3",
         toMonth = NOV / 2019,
-        fromAccount = "test-account2",
+        fromAccount = NodeId("test-account2"),
         fromMonth = NOV / 2019,
         balance = Balance(70, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
         description = null
       )
     }
     budget.accounts.size shouldBe 3
-    budget.accounts["test-account1"] shouldBe account1
-    budget.accounts["test-account2"] shouldBe account2
+    budget.accounts[NodeId("test-account1")] shouldBe account1
+    budget.accounts[NodeId("test-account2")] shouldBe account2
     budget.balances.size shouldBe 2
     budget.months shouldBe listOf("Nov2019", "Dec2019").map { Month.fromString(it) }
     budget.transfers.size shouldBe 3
@@ -82,39 +79,38 @@ class BudgetTest : DescribeSpec({
   it("build budget - duplicate balance") {
     val builder = BudgetBuilder()
     val account1 = Account(
-      name = "test-account1",
-      owners = listOf(),
+      nodeId = NodeId("test-account1", path=listOf("internal")),
       openedOn = NOV / 2019,
     )
     builder.setAccount(account1)
     builder.setBalance(
-      "test-account1",
+      nodeId = account1.nodeId,
       NOV / 2019,
       Balance(10000, LocalDate(2019, 11, 1), Balance.Type.PROJECTED)
     )
     val exception = shouldThrow<IllegalArgumentException> {
       builder.setBalance(
-        "test-account1",
+        nodeId = account1.nodeId,
         NOV / 2019,
         Balance(20000, LocalDate(2020, 3, 1), Balance.Type.PROJECTED)
       )
     }
-    exception.message shouldBe "Balance for 'test-account1' 'Nov2019' is already set to Balance { amount: 200.00, date: 2020-03-01, type: PROJECTED }"
+    exception.message shouldBe "Balance for '/internal/test-account1' 'Nov2019' is already set to" +
+        " Balance { amount: 200.00, date: 2020-03-01, type: PROJECTED }"
   }
 
   it("build budget - bad to account") {
-    val account1 = Account(
-      name = "test-account2",
-      owners = listOf(),
+    val account2 = Account(
+      nodeId = NodeId("test-account2"),
       openedOn = NOV / 2019,
     )
     val exception = shouldThrow<IllegalArgumentException> {
       budget {
-        setAccount(account1)
+        setAccount(account2)
         addTransfer(
           toAccount = "test-account1",
           toMonth = NOV / 2019,
-          fromAccount = "test-account2",
+          fromAccount = account2.nodeId,
           fromMonth = NOV / 2019,
           balance = Balance(50, LocalDate(2019, 12, 2), Balance.Type.CONFIRMED),
           description = null,
@@ -126,8 +122,7 @@ class BudgetTest : DescribeSpec({
 
   it("build budget - bad from account") {
     val account1 = Account(
-      name = "test-account1",
-      owners = listOf(),
+      nodeId = NodeId("test-account1"),
       openedOn = NOV / 2019,
     )
     val exception = shouldThrow<IllegalArgumentException> {
@@ -136,14 +131,14 @@ class BudgetTest : DescribeSpec({
         addTransfer(
           toAccount = "test-account1",
           toMonth = NOV / 2019,
-          fromAccount = "test-account2",
+          fromAccount = NodeId("test-account2", path=listOf("external")),
           fromMonth = NOV / 2019,
           balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
           description = null,
         )
       }
     }
-    exception.message shouldBe "Unknown account test-account2"
+    exception.message shouldBe "Unknown account /external/test-account2"
   }
 
   describe("findActive accounts") {
@@ -155,32 +150,28 @@ class BudgetTest : DescribeSpec({
 
     it("open account") {
       val account1 = Account(
-        name = "test-account1",
-        owners = listOf(),
+        nodeId = NodeId("test-account1", path=listOf("internal")),
         openedOn = APR / 2026
       )
       val budget = budget {
         setAccount(account1)
       }
-      budget.accounts shouldBe mapOf("test-account1" to account1)
+      budget.accounts shouldBe mapOf(account1.nodeId to account1)
     }
 
     it("multiple accounts") {
       val account1 = Account(
-        name = "test-account1",
-        owners = listOf(),
+        nodeId = NodeId("test-account1"),
         openedOn = APR / 2026
       )
 
       val account2 = Account(
-        name = "test-account2",
-        owners = listOf(),
+        nodeId = NodeId("test-account2"),
         openedOn = NOV / 2019,
       )
 
       val account3 = Account(
-        name = "test-account3",
-        owners = listOf(),
+        nodeId = NodeId("test-account3"),
         openedOn = JAN / 2020,
         closedOn = FEB / 2020,
       )

@@ -4,6 +4,7 @@ import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.BudgetBuilder
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.data.yaml.CustomProblemHandler
 import com.cherba29.tally.data.yaml.LocalDateDeserializer
 import com.cherba29.tally.data.yaml.MonthDeserializer
@@ -107,13 +108,11 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
   }
 
   val account = Account(
-    name = data.name,
+    nodeId = NodeId(data.name, data.owner, data.path),
     description = data.desc,
-    path = data.path,
     number = data.number,
     openedOn = data.openedOn,
     closedOn = data.closedOn,
-    owners = data.owner,
     url = data.url,
     phone = data.phone,
     address = data.address,
@@ -136,10 +135,10 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
       val balanceMonthDiff = abs(balance.date.year * 12 + balance.date.month.ordinal - month.year * 12 - month.month)
       if (balanceMonthDiff > 2) {
         throw IllegalArgumentException(
-          "For ${account.name} account $balance and month $month are $balanceMonthDiff months apart (2 max)."
+          "For ${account.nodeId} account $balance and month $month are $balanceMonthDiff months apart (2 max)."
         )
       }
-      budgetBuilder.setBalance(account.name, month, balance)
+      budgetBuilder.setBalance(account.nodeId, month, balance)
     }
   }
   if (data.transfersTo != null) {
@@ -148,12 +147,12 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
       for (transferData in transfers) {
         if (transferData.grp == null) {
           throw IllegalArgumentException(
-            "For account '${account.name}' transfer to '$accountName' does not have 'grp' field."
+            "For account '${account.nodeId}' transfer to '$accountName' does not have 'grp' field."
           )
         }
         if (transferData.date == null) {
           throw IllegalArgumentException(
-            "For account '${account.name}' transfer to '${accountName}' does not have a valid 'date' field."
+            "For account '${account.nodeId}' transfer to '${accountName}' does not have a valid 'date' field."
           )
         }
         var balance: Balance? = null
@@ -172,7 +171,7 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
         }
         if (balance == null) {
           throw IllegalArgumentException(
-            "For account '${account.name}' transfer to '${accountName}' " +
+            "For account '${account.nodeId}' transfer to '${accountName}' " +
                 "does not have 'pamt' or 'camt' field: ${transferData}."
           )
         }
@@ -181,13 +180,13 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
         val balanceMonth = Month.fromDate(balance.date)
         if (abs(balanceMonth - transferMonth) > 2) {
           throw IllegalArgumentException(
-            "For account '${account.name}' transfer to '${accountName}' " +
+            "For account '${account.nodeId}' transfer to '${accountName}' " +
                 "for $transferMonth date ${balance.date} (${balanceMonth}) are too far apart."
           )
         }
 
         budgetBuilder.addTransfer(
-          fromAccount = account.name,
+          fromAccount = account.nodeId,
           fromMonth = transferMonth,
           toAccount = accountName,
           toMonth = transferMonth,

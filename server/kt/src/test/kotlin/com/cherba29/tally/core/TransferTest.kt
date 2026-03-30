@@ -9,15 +9,19 @@ class TransferTest : DescribeSpec({
   describe("Creation") {
     it("basic") {
       val account1 = Account(
-        name = "test-account1",
-        path = listOf("external"),
-        owners = listOf("john"),
+        nodeId = NodeId(
+          "test-account1",
+          path = listOf("external"),
+          owners = listOf("john")
+        ),
         openedOn = FEB / 2020,
       )
       val account2 = Account(
-        name = "test-account2",
-        path = listOf("external"),
-        owners = listOf("john"),
+        nodeId = NodeId(
+          "test-account2",
+          path = listOf("external"),
+          owners = listOf("john")
+        ),
         openedOn = FEB / 2020,
       )
       val month = Month(2020, 1)
@@ -30,8 +34,8 @@ class TransferTest : DescribeSpec({
         description = "test",
         balance
       )
-      transfer.fromAccount.name shouldBe "test-account1"
-      transfer.toAccount.name shouldBe "test-account2"
+      transfer.fromAccount.nodeId.name shouldBe "test-account1"
+      transfer.toAccount.nodeId.name shouldBe "test-account2"
       transfer.fromMonth.toString() shouldBe "Feb2020"
       transfer.toMonth.toString() shouldBe "Feb2020"
       transfer.balance.amount shouldBe 100.0

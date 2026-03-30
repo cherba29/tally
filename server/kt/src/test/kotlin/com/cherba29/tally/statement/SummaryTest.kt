@@ -1,10 +1,11 @@
 package com.cherba29.tally.statement
 
-import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthName.MAR
+import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.utils.Map3
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate
@@ -17,52 +18,60 @@ class SummaryTest : DescribeSpec({
     }
 
     it("single closed account - produces summary without it") {
-      val account1 = Account(
+      val node1 = NodeId(
         name = "test-account1",
         path = listOf("external"),
         owners = listOf("john"),
-        openedOn = Month.fromString("Jan2019"),
-        closedOn = Month.fromString("Jan2020"),
       )
-
-      val tranStmt = TransactionStatement(account1, Month.fromString("Mar2021"), startBalance = null)
-      tranStmt.startBalance = Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
+      val startBalance = Balance(
+        100,
+        LocalDate(2023, 12, 2),
+        Balance.Type.CONFIRMED
+      )
+      val tranStmt = TransactionStatement(
+        node1,
+        MAR / 2021,
+        false,
+        startBalance
+      )
       val statements: Map3<SummaryStatement> = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
-      statements.isEmpty shouldBe false
-      statements.size shouldBe 2
-      statements.keys.keys shouldBe setOf("john")
-      statements.keys["john"] shouldBe setOf("/external", "/")
+      withClue("should contain: $statements") {
+        statements.isEmpty shouldBe false
+        statements.size shouldBe 2
+        statements.keys.keys shouldBe setOf("john")
+        statements.keys["john"] shouldBe setOf("/external", "/")
+      }
       val stmt1 = statements["john", "/external", "Mar2021"]
-      stmt1?.account shouldBe Account(
+      stmt1?.nodeId shouldBe NodeId(
         name = "/external",
         path = listOf(),
-        owners = listOf("john"),
-        openedOn = MAR / 2021,
+        owners = listOf("john")
       )
-      stmt1?.startBalance shouldBe null
-      stmt1?.endBalance shouldBe null
-      stmt1?.inFlows shouldBe 0
-      stmt1?.income shouldBe 0
-      stmt1?.month shouldBe Month.fromString("Mar2021")
-      stmt1?.startMonth shouldBe Month.fromString("Mar2021")
-      stmt1?.outFlows shouldBe 0
-      stmt1?.statements shouldBe listOf()
-      stmt1?.totalPayments shouldBe 0
-      stmt1?.totalTransfers shouldBe 0
+      withClue("statement: $stmt1") {
+        stmt1?.startBalance shouldBe startBalance
+        stmt1?.endBalance shouldBe null
+        stmt1?.inFlows shouldBe 0
+        stmt1?.income shouldBe 0
+        stmt1?.month shouldBe MAR / 2021
+        stmt1?.startMonth shouldBe MAR / 2021
+        stmt1?.outFlows shouldBe 0
+        stmt1?.statements shouldBe listOf(tranStmt)
+        stmt1?.totalPayments shouldBe 0
+        stmt1?.totalTransfers shouldBe 0
+      }
 
       val stmt2 = statements["john", "/", "Mar2021"]
-      stmt2?.account shouldBe Account(
+      stmt2?.nodeId shouldBe NodeId(
         name = "/",
         path = listOf(),
-        owners = listOf("john"),
-        openedOn = MAR / 2021,
+        owners = listOf("john")
       )
-      stmt2?.startBalance shouldBe null
+      stmt2?.startBalance shouldBe startBalance
       stmt2?.endBalance shouldBe null
       stmt2?.inFlows shouldBe 0
       stmt2?.income shouldBe 0
-      stmt2?.month shouldBe Month.fromString("Mar2021")
-      stmt2?.startMonth shouldBe Month.fromString("Mar2021")
+      stmt2?.month shouldBe MAR / 2021
+      stmt2?.startMonth shouldBe MAR / 2021
       stmt2?.outFlows shouldBe 0
       stmt2?.statements shouldBe listOf(stmt1)
       stmt2?.totalPayments shouldBe 0
@@ -70,14 +79,13 @@ class SummaryTest : DescribeSpec({
     }
 
     it("single external account - no SUMMARY") {
-      val account1 = Account(
+      val node1 = NodeId(
         name = "test-account1",
         path = listOf("external"),
-        owners = listOf("john"),
-        openedOn = Month.fromString("Jan2019"),
+        owners = listOf("john")
       )
 
-      val tranStmt = TransactionStatement(account1, Month.fromString("Mar2021"), startBalance = null)
+      val tranStmt = TransactionStatement(node1, Month.fromString("Mar2021"), false, startBalance = null)
       tranStmt.startBalance = Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       val statements: Map3<SummaryStatement> = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
       statements.isEmpty shouldBe false
@@ -86,11 +94,10 @@ class SummaryTest : DescribeSpec({
       statements.keys["john"] shouldBe setOf("/external", "/")
 
       val stmt = statements["john", "/", "Mar2021"]!!
-      stmt.account shouldBe Account(
+      stmt.nodeId shouldBe NodeId(
         name = "/",
         path = listOf(),
         owners = listOf("john"),
-        openedOn = MAR / 2021,
       )
       stmt.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       stmt.endBalance shouldBe null
@@ -105,14 +112,13 @@ class SummaryTest : DescribeSpec({
     }
 
     it("single account - no transfers") {
-      val account1 = Account(
+      val node1 = NodeId(
         name = "test-account1",
         path = listOf("external"),
-        owners = listOf("john"),
-        openedOn = Month.fromString("Jan2021"),
+        owners = listOf("john")
       )
 
-      val tranStmt = TransactionStatement(account1, Month.fromString("Mar2021"), startBalance = null)
+      val tranStmt = TransactionStatement(node1, Month.fromString("Mar2021"), false, startBalance = null)
       tranStmt.startBalance = Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       val statements: Map3<SummaryStatement> = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
       statements.isEmpty shouldBe false
@@ -121,11 +127,10 @@ class SummaryTest : DescribeSpec({
       statements.keys["john"] shouldBe setOf("/external", "/")
 
       val stmt1 = statements["john", "/external", "Mar2021"]!!
-      stmt1.account shouldBe Account(
+      stmt1.nodeId shouldBe NodeId(
         name = "/external",
         path = listOf(),
-        owners = listOf("john"),
-        openedOn = MAR / 2021,
+        owners = listOf("john")
       )
       stmt1.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       stmt1.endBalance shouldBe null
@@ -139,11 +144,10 @@ class SummaryTest : DescribeSpec({
       stmt1.totalTransfers shouldBe 0
 
       val stmt2 = statements["john", "/", "Mar2021"]!!
-      stmt2.account shouldBe Account(
+      stmt2.nodeId shouldBe NodeId(
         name = "/",
         path = listOf(),
         owners = listOf("john"),
-        openedOn = MAR / 2021,
       )
       stmt2.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       stmt2.endBalance shouldBe null

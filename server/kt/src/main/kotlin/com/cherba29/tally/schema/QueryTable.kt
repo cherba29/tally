@@ -2,6 +2,7 @@ package com.cherba29.tally.schema
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.data.Loader.DataPayload
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.time.Clock
@@ -12,12 +13,12 @@ data class RowEntry(
   val title: String,
   val pathId: String,
   val isTotal: Boolean,
-  val account: Account?,
+  val nodeId: NodeId?,
   val depth: Int,
 )
 
 // Build a tree based on paths.
-private fun buildAccountPathTree(accounts: List<Account>): Map<String, Set<String>> {
+private fun buildAccountPathTree(accounts: List<NodeId>): Map<String, Set<String>> {
   val tree = mutableMapOf<String, MutableSet<String>>()
   for (account in accounts) {
     if (account.path.isEmpty()) {
@@ -25,7 +26,7 @@ private fun buildAccountPathTree(accounts: List<Account>): Map<String, Set<Strin
       continue
     }
     val path = account.path
-    var entry = "/${path.joinToString("/")}/${account.name}"
+    var entry = account.toString()
     for (sub in path.size downTo 0) {
       val subPath = path.slice(0..sub-1)
       val subPathId = "/" + subPath.joinToString("/")
@@ -42,7 +43,7 @@ private fun buildAccountPathTree(accounts: List<Account>): Map<String, Set<Strin
 }
 
 /** Sequence for presentation summaries and accounts based on their names. */
-private fun sequenceStatements(owner: String, accounts: List<Account>): List<RowEntry> {
+private fun sequenceStatements(owner: String, accounts: List<NodeId>): List<RowEntry> {
   val tree = buildAccountPathTree(accounts)
   val nameToAccount = accounts.associateBy { it.name }
   // Iterate over tree in sorted depth-first fashion to sequence rows representing the tree.
@@ -50,6 +51,7 @@ private fun sequenceStatements(owner: String, accounts: List<Account>): List<Row
   var nodesToProcess = mutableListOf("/")
   while (nodesToProcess.isNotEmpty()) {
     val subTreeId = nodesToProcess.removeFirst()
+    // TODO: use nodeId.path and list structure instead of splitting.
     val subPath = subTreeId.split("/").filter { it.isNotEmpty() }
     val children = tree[subTreeId]
     val account = if (children != null) null
@@ -59,7 +61,7 @@ private fun sequenceStatements(owner: String, accounts: List<Account>): List<Row
       RowEntry(
         title = if (subPath.isNotEmpty()) subPath[subPath.lastIndex] else owner,
         pathId = subTreeId,
-        account = account,
+        nodeId = account,
         isTotal = children?.isNotEmpty() ?: (account == null),
         depth = subPath.size
       )
@@ -77,7 +79,7 @@ private fun sequenceStatements(owner: String, accounts: List<Account>): List<Row
 fun buildGqlTable(payload: DataPayload, owner: String?, startMonth: Month, endMonth: Month): GqlTable {
   val startTimeMs: Long = Clock.System.now().toEpochMilliseconds()
   val months = payload.budget.months.filter { m -> m <= endMonth && startMonth <= m }.sortedDescending()
-  val activeAccounts = payload.budget.accounts.values
+  val activeAccounts = payload.budget.accounts.keys
   val owners = activeAccounts.map { account -> account.owners }.flatten().distinct().sorted()
   val forOwner = if (owner == null || owner.isEmpty()) {
     owners.firstOrNull { !it.isEmpty() }
@@ -90,7 +92,6 @@ fun buildGqlTable(payload: DataPayload, owner: String?, startMonth: Month, endMo
   val rows = mutableListOf<GqlTableRow>()
 
   val ordering = sequenceStatements(forOwner, accounts)
-  // logger.info { "Statement ordering is $ordering" }
 
   for (entry in ordering) {
     if (entry.isTotal) {
@@ -102,7 +103,10 @@ fun buildGqlTable(payload: DataPayload, owner: String?, startMonth: Month, endMo
         summaryMonthMap[month.toString()]?.toGqlTableCell()
       }
       if (cells.any { c -> !c.isClosed }) {
-        val account = summaryMonthMap.values.first().account
+        val nodeId = summaryMonthMap.values.first().nodeId
+        val account = payload.budget.accounts.getOrElse(nodeId) {
+          Account(nodeId, openedOn = Month(2010, 0))
+        }
         rows.add(
           GqlTableRow(
             title = entry.title,
@@ -117,11 +121,14 @@ fun buildGqlTable(payload: DataPayload, owner: String?, startMonth: Month, endMo
       }
     } else {
       val cells = mutableListOf<GqlTableCell>()
-      val account = entry.account!!
+      val nodeId = entry.nodeId!!
+      val account = payload.budget.accounts.getOrElse(nodeId) {
+        Account(nodeId, openedOn = Month(2010, 0))
+      }
       var isClosed = true
       for (month in months) {
-        val stmt = payload.statements[account.name]?.get(month)
-          ?: throw IllegalStateException("Could not find statement for '${account.name}' for month $month")
+        val stmt = payload.statements[nodeId]?.get(month)
+          ?: throw IllegalStateException("Could not find statement for '$nodeId' for month $month")
         isClosed = isClosed && stmt.isClosed
         cells.add(stmt.toGqlTableCell())
       }

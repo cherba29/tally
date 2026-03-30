@@ -1,13 +1,13 @@
 package com.cherba29.tally.statement
 
-import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.NodeId
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sign
 
-class CombinedStatement(account: Account, month: Month, val startMonth: Month) : Statement(account, month) {
+class CombinedStatement(nodeId: NodeId, month: Month, val startMonth: Month) : Statement(nodeId, month) {
   override val annualizedPercentChange: Double?
     get() {
       val prctChange = percentChange ?: return null
@@ -18,19 +18,17 @@ class CombinedStatement(account: Account, month: Month, val startMonth: Month) :
       return if (result < 10) 100 * prctChange.sign * result else null
     }
 
-  override val isClosed: Boolean get() = false
-
   companion object {
     fun fromStatements(
-      account: Account,
+      nodeId: NodeId,
       startMonth: Month,
       endMonth: Month,
       statements: Map<Month, Statement>
     ): CombinedStatement {
-      val combined = CombinedStatement(account, endMonth, startMonth)
+      val combined = CombinedStatement(nodeId, endMonth, startMonth)
       for (currentMonth in startMonth..endMonth) {
         val stmt: Statement = makeProxyStatement(
-          account,
+          nodeId,
           currentMonth,
           statements[currentMonth],
           statements[currentMonth.previous()],
@@ -58,13 +56,13 @@ class CombinedStatement(account: Account, month: Month, val startMonth: Month) :
     }
 
     private fun makeProxyStatement(
-      account: Account,
+      nodeId: NodeId,
       month: Month,
       currStmt: Statement?,
       prevStmt: Statement?,
       nextStmt: Statement?
     ): Statement {
-      val stmt = currStmt ?: EmptyStatement(account, month)
+      val stmt = currStmt ?: Statement(nodeId, month)
       if (stmt.startBalance == null) {
         stmt.startBalance = prevStmt?.endBalance ?: Balance(0, month.toDate(), Balance.Type.PROJECTED)
       }

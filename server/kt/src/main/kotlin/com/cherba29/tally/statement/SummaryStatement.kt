@@ -1,13 +1,13 @@
 package com.cherba29.tally.statement
 
-import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.NodeId
 import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sign
 
-class SummaryStatement(account: Account, month: Month, val startMonth: Month) : Statement(account, month) {
+class SummaryStatement(nodeId: NodeId, month: Month, val startMonth: Month) : Statement(nodeId, month) {
   val statements: MutableList<Statement> = mutableListOf()
 
   override val isClosed: Boolean
@@ -26,7 +26,7 @@ class SummaryStatement(account: Account, month: Month, val startMonth: Month) : 
   fun addStatement(statement: Statement) {
     if (statement.month.compareTo(month) != 0) {
       throw IllegalArgumentException(
-        "${statement.account.name} statement for month ${statement.month} is being added to summary for month $month"
+        "${statement.nodeId} statement for month ${statement.month} is being added to summary for month $month"
       )
     }
     if (statement.isClosed) {
@@ -50,4 +50,6 @@ class SummaryStatement(account: Account, month: Month, val startMonth: Month) : 
     income += statement.income
     statements.add(statement)
   }
+
+  override fun toString(): String = "${super.toString()}, statements=$statements"
 }

@@ -30,7 +30,7 @@ fun buildSummaryData(payload: DataPayload, owner: String, accountType:String, st
   val summary = if (summaryStatements.size == 1) summaryStatements.first() else combineSummaryStatements(summaryStatements)
   val result = GqlSummaryData(
     statements = summary.statements.sortedWith { a, b ->
-      if (a.account.name < b.account.name) -1 else 1
+      if (a.nodeId.name < b.nodeId.name) -1 else 1
     }.map {
       stmt ->
       when (stmt) {

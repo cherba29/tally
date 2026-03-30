@@ -1,6 +1,7 @@
 package com.cherba29.tally.data
 
 import com.cherba29.tally.core.MonthName.MAR
+import com.cherba29.tally.core.NodeId
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.engine.spec.tempdir
@@ -46,10 +47,11 @@ class ProcessedBudgetTest : DescribeSpec({
       processedBudget.summaryNameMonthMap.isEmpty shouldBe true
       processedBudget.accountToMonthToTransactionStatement.size shouldBe 1
 
-      val transactionStatement = processedBudget.accountToMonthToTransactionStatement["test-account"]?.get(MAR / 2026)!!
-      transactionStatement.account.name shouldBe "test-account"
-      transactionStatement.account.openedOn shouldBe MAR / 2026
-      transactionStatement.account.owners shouldBe listOf("john")
+      val nodeId = NodeId("test-account", listOf("john"), listOf("external"))
+      val transactionStatement = processedBudget.accountToMonthToTransactionStatement[nodeId]?.get(MAR / 2026)!!
+      transactionStatement.nodeId.name shouldBe "test-account"
+      transactionStatement.month shouldBe MAR / 2026
+      transactionStatement.nodeId.owners shouldBe listOf("john")
 
       transactionStatement.transactions.isEmpty() shouldBe true
     }

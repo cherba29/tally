@@ -2,6 +2,7 @@ package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Budget
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.budget
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
@@ -19,7 +20,7 @@ import kotlin.time.measureTimedValue
 class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
   private val parsedAccountData = mutableMapOf<String, YamlData>()
   var budget: Budget? = null
-  val accountToMonthToTransactionStatement: MutableMap<String, MutableMap<Month, TransactionStatement>> =
+  val accountToMonthToTransactionStatement: MutableMap<NodeId, MutableMap<Month, TransactionStatement>> =
     mutableMapOf()
   var summaryNameMonthMap = Map3<SummaryStatement>()
 
@@ -55,10 +56,10 @@ class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
       // TODO: this might throw due to so invariant being violated. Need to recover to previous state.
       val transactionStatementTable = buildTransactionStatementTable(budget!!, owner = null)
       for (stmt in transactionStatementTable) {
-        var monthToStatement = accountToMonthToTransactionStatement[stmt.account.name]
+        var monthToStatement = accountToMonthToTransactionStatement[stmt.nodeId]
         if (monthToStatement == null) {
           monthToStatement = mutableMapOf()
-          accountToMonthToTransactionStatement[stmt.account.name] = monthToStatement
+          accountToMonthToTransactionStatement[stmt.nodeId] = monthToStatement
         }
         monthToStatement[stmt.month] = stmt
       }

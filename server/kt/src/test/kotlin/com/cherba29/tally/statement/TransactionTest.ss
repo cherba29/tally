@@ -2,12 +2,11 @@
 - __type: TransactionStatement
   __base:
     __type: Statement
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account1
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     month: Feb2020
@@ -25,12 +24,11 @@
 - __type: TransactionStatement
   __base:
     __type: Statement
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account1
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     month: Jan2020
@@ -53,12 +51,11 @@
 - __type: TransactionStatement
   __base:
     __type: Statement
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account1
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     month: Dec2019
@@ -82,12 +79,11 @@
   isClosed: false
   transactions:
   - __type: Transaction
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account1
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     balance:
@@ -99,12 +95,11 @@
     type: INCOME
     balanceFromStart: 4010
   - __type: Transaction
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account1
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     balance:
@@ -120,12 +115,11 @@
 - __type: TransactionStatement
   __base:
     __type: Statement
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account1
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     month: Feb2020
@@ -143,12 +137,11 @@
 - __type: TransactionStatement
   __base:
     __type: Statement
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account1
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     month: Jan2020
@@ -171,12 +164,11 @@
 - __type: TransactionStatement
   __base:
     __type: Statement
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account1
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     month: Dec2019
@@ -200,12 +192,11 @@
   isClosed: false
   transactions:
   - __type: Transaction
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account2
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     balance:
@@ -217,12 +208,11 @@
     type: EXPENSE
     balanceFromStart: -2990
   - __type: Transaction
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account2
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     balance:
@@ -236,12 +226,11 @@
 - __type: TransactionStatement
   __base:
     __type: Statement
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account2
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     month: Feb2020
@@ -254,12 +243,11 @@
 - __type: TransactionStatement
   __base:
     __type: Statement
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account2
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     month: Jan2020
@@ -272,12 +260,11 @@
 - __type: TransactionStatement
   __base:
     __type: Statement
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account2
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     month: Dec2019
@@ -291,12 +278,11 @@
   isClosed: false
   transactions:
   - __type: Transaction
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account1
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     balance:
@@ -307,12 +293,11 @@
     description: First transfer
     type: INCOME
   - __type: Transaction
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account1
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     balance:
@@ -327,12 +312,11 @@
 - __type: TransactionStatement
   __base:
     __type: Statement
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account1
       path:
       - external
-      openedOn: Dec2019
     month: Feb2020
     startBalance:
       __type: Balance
@@ -348,12 +332,11 @@
 - __type: TransactionStatement
   __base:
     __type: Statement
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account1
       path:
       - external
-      openedOn: Dec2019
     month: Jan2020
     startBalance:
       __type: Balance
@@ -374,12 +357,11 @@
 - __type: TransactionStatement
   __base:
     __type: Statement
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account1
       path:
       - external
-      openedOn: Dec2019
     month: Dec2019
     startBalance:
       __type: Balance
@@ -401,12 +383,11 @@
   isClosed: false
   transactions:
   - __type: Transaction
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account2
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     balance:
@@ -418,12 +399,11 @@
     type: EXPENSE
     balanceFromStart: -2990
   - __type: Transaction
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account2
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     balance:
@@ -437,12 +417,11 @@
 - __type: TransactionStatement
   __base:
     __type: Statement
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account2
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     month: Feb2020
@@ -455,12 +434,11 @@
 - __type: TransactionStatement
   __base:
     __type: Statement
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account2
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     month: Jan2020
@@ -473,12 +451,11 @@
 - __type: TransactionStatement
   __base:
     __type: Statement
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account2
       path:
       - external
-      openedOn: Dec2019
       owner:
       - john
     month: Dec2019
@@ -492,12 +469,11 @@
   isClosed: false
   transactions:
   - __type: Transaction
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account1
       path:
       - external
-      openedOn: Dec2019
     balance:
       __type: Balance
       amount: 2000
@@ -506,12 +482,11 @@
     description: First transfer
     type: INCOME
   - __type: Transaction
-    account:
-      __type: Account
+    nodeId:
+      __type: NodeId
       name: test-account1
       path:
       - external
-      openedOn: Dec2019
     balance:
       __type: Balance
       amount: 1000

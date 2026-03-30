@@ -2,20 +2,30 @@ package com.cherba29.tally.data.yaml
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.statement.TransactionStatement
 import com.fasterxml.jackson.databind.node.ObjectNode
 
-fun Account.toObjectNode(root: ObjectNode) {
+fun NodeId.toObjectNode(root: ObjectNode) {
   root.put("__type", this.javaClass.simpleName)
   root.put("name", name)
-  if (description != null) {
-    root.put("desc", description)
-  }
   if (path.isNotEmpty()) {
     val pathNode = root.putArray("path")
     path.forEach { pathNode.add(it) }
+  }
+  if (owners.isNotEmpty()) {
+    val ownersNode = root.putArray("owner")
+    owners.forEach { ownersNode.add(it) }
+  }
+}
+
+fun Account.toObjectNode(root: ObjectNode) {
+  root.put("__type", this.javaClass.simpleName)
+  nodeId.toObjectNode(root.putObject("nodeId"))
+  if (description != null) {
+    root.put("desc", description)
   }
   if (number != null) {
     root.put("number", number)
@@ -24,10 +34,6 @@ fun Account.toObjectNode(root: ObjectNode) {
 
   if (closedOn != null) {
     root.put("closedOn", closedOn.toString())
-  }
-  if (owners.isNotEmpty()) {
-    val ownersNode = root.putArray("owner")
-    owners.forEach { ownersNode.add(it) }
   }
   if (url != null) {
     root.put("url", url)
@@ -48,7 +54,7 @@ fun Account.toObjectNode(root: ObjectNode) {
 
 fun Statement.toObjectNode(root: ObjectNode) {
   root.put("__type", "Statement")
-  account.toObjectNode(root.putObject("account"))
+  nodeId.toObjectNode(root.putObject("nodeId"))
   root.put("month", month.toString())
   startBalance?.toObjectNode(root.putObject("startBalance"))
   endBalance?.toObjectNode(root.putObject("endBalance"))
@@ -78,7 +84,7 @@ fun Balance.toObjectNode(root: ObjectNode) {
 
 fun Transaction.toObjectNode(root: ObjectNode) {
   root.put("__type", this.javaClass.simpleName)
-  account.toObjectNode(root.putObject("account"))
+  nodeId.toObjectNode(root.putObject("nodeId"))
   balance.toObjectNode(root.putObject("balance"))
   if (description != null) {
     root.put("description", description)

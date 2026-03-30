@@ -1,9 +1,9 @@
 package com.cherba29.tally.statement
 
-import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
+import com.cherba29.tally.core.NodeId
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate
@@ -11,13 +11,9 @@ import kotlinx.datetime.LocalDate
 class CombinedStatementTest : DescribeSpec({
   describe("Build") {
     it("empty") {
-      val account = Account(
-        name = "test-account",
-        path = listOf("external"),
-        openedOn = MAR / 2026,
-      )
+      val nodeId = NodeId(name = "test-account", path = listOf("external"))
       val statement = CombinedStatement(
-        account,
+        nodeId,
         month = MAR / 2026,
         startMonth = JAN / 2026,
       )
@@ -27,14 +23,9 @@ class CombinedStatementTest : DescribeSpec({
     }
 
     it("from empty list of statements") {
-      val account = Account(
-        name = "test-account",
-        path = listOf("external"),
-        openedOn = MAR / 2026,
-      )
-
+      val nodeId = NodeId(name = "test-account", path = listOf("external"))
       val combined = CombinedStatement.fromStatements(
-        account,
+        nodeId,
         startMonth = JAN / 2026,
         endMonth = MAR / 2026,
         statements = mapOf()
@@ -46,15 +37,12 @@ class CombinedStatementTest : DescribeSpec({
     }
 
     it("from single statement") {
-      val account = Account(
-        name = "test-account",
-        path = listOf("external"),
-        openedOn = MAR / 2026,
-      )
+      val nodeId = NodeId(name = "test-account", path = listOf("external"))
       val startMonth = JAN / 2026
       val statement = TransactionStatement(
-        account = account,
+        nodeId,
         month = startMonth,
+        isClosed = false,
         startBalance = Balance(
           100,
           date = LocalDate(2026, 1, 1),
@@ -62,7 +50,7 @@ class CombinedStatementTest : DescribeSpec({
         )
       )
       val combined = CombinedStatement.fromStatements(
-        account,
+        nodeId,
         startMonth,
         endMonth = MAR / 2026,
         statements = mapOf(startMonth to statement)

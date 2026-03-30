@@ -1,20 +1,20 @@
 package com.cherba29.tally.statement
 
-import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.NodeId
 import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sign
 
-abstract class Statement(
-  // TODO: perhaps just replace by name/id. Concept of account does not apply to derived classes.
-  // Account to which this statement belongs to.
-  val account: Account,
+open class Statement(
+  val nodeId: NodeId,
 
   // TODO: perhaps replace by MonthRange.
   // Period of time for the statement
   val month: Month,
+
+  open val isClosed: Boolean = false,
 
   // Recorded start balance for the statement.
   var startBalance: Balance? = null,
@@ -61,8 +61,6 @@ abstract class Statement(
   val unaccounted: Int?
     get() = change?.let { it - addSub }
 
-  abstract val isClosed: Boolean
-
   // TODO: make inFlows/outFlows immutable.
   fun addInFlow(inFlowAmount: Int) {
     if (inFlowAmount > 0) {
@@ -83,4 +81,8 @@ abstract class Statement(
   fun isEmpty(): Boolean =
     startBalance == null && endBalance == null && totalTransfers == 0 && income == 0 &&
         inFlows == 0 && outFlows == 0 && totalPayments == 0
+
+  override fun toString(): String {
+    return "$nodeId month=$month isClodes=$isClosed startBalance=$startBalance endBalance=$endBalance"
+  }
 }

@@ -2,6 +2,7 @@ package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Budget
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import com.cherba29.tally.utils.Map3
@@ -35,7 +36,7 @@ class Loader(tallyFilesPath: Path, timeSource: TimeSource = TimeSource.Monotonic
 
   data class DataPayload(
     val budget: Budget,
-    val statements: Map<String, Map<Month, TransactionStatement>>,
+    val statements: Map<NodeId, Map<Month, TransactionStatement>>,
     // owner -> account name -> month -> summary.
     val summaries: Map3<SummaryStatement>,
   )

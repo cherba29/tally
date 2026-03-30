@@ -9,7 +9,8 @@ fun buildStatement(payload: DataPayload, owner:String, account: String, month: M
   // TODO: use measure time.
   val startTimeMs: Long = Clock.System.now().toEpochMilliseconds()
 
-  val statement = payload.statements[account]?.get(month)
+  val accountNode = payload.budget.accounts.values.find { it.nodeId.name == account }
+  val statement = accountNode?.let { payload.statements[it.nodeId]?.get(month) }
     ?: throw NotFoundException("Did not find statement for $owner $account $month")
   val result = statement.toGql()
   logger.info { "gql statement in ${Clock.System.now().toEpochMilliseconds() - startTimeMs}ms" }
