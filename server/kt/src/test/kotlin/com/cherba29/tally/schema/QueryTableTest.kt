@@ -54,7 +54,7 @@ class QueryTableTest : DescribeSpec({
 
     it("empty - no open accounts") {
       val account = Account(
-        NodeId(name = "test-account", path = listOf("external"), owners = listOf("john")),
+        NodeId(name = "test-account", path = listOf("external"), owners = setOf("john")),
         openedOn = MAR / 2026,
       )
       val summary = SummaryStatement(
@@ -83,7 +83,7 @@ class QueryTableTest : DescribeSpec({
 
     it("single open account without path") {
       val account = Account(
-        NodeId(name = "test-account", path = listOf("external"), owners = listOf("john")),
+        NodeId(name = "test-account", path = listOf("external"), owners = setOf("john")),
         openedOn = JAN / 2026
       )
       val summary = SummaryStatement(
@@ -244,7 +244,7 @@ class QueryTableTest : DescribeSpec({
 
     it("single open account with path") {
       val account = Account(
-        NodeId(name = "test-account", path = listOf("internal"), owners = listOf("john")),
+        NodeId(name = "test-account", path = listOf("internal"), owners = setOf("john")),
         openedOn = JAN / 2026
       )
       val summary = SummaryStatement(

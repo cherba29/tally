@@ -49,7 +49,7 @@ class AccountTest : DescribeSpec({
   describe("conversions") {
     it("toString") {
       val account = Account(
-        nodeId = NodeId(name = "testAccount", owners = listOf("bob")),
+        nodeId = NodeId(name = "testAccount", owners = setOf("bob")),
         openedOn = JAN / 2021
       )
       account.toString() shouldBe "Account testAccount /"
@@ -57,7 +57,7 @@ class AccountTest : DescribeSpec({
 
     it("toString closed") {
       val account = Account(
-        nodeId = NodeId(name = "testAccount", owners = listOf("bob"), path = listOf("internal", "tax")),
+        nodeId = NodeId(name = "testAccount", owners = setOf("bob"), path = listOf("internal", "tax")),
         openedOn = JAN / 2021,
         closedOn = MAR / 2026
       )

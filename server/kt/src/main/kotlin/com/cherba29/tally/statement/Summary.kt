@@ -4,7 +4,6 @@ import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.utils.Map3
-import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.collections.iterator
 
 // TODO: add tests.
@@ -34,7 +33,7 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
     throw IllegalArgumentException("Cant combine empty list of summary statements")
   }
   var stmtName: String? = null
-  var owners: List<String> = listOf()
+  var owners: Set<String> = setOf()
   var minMonth: Month? = null
   var maxMonth: Month? = null
   // Map of 'account name' -> month -> 'summary statement'.
@@ -91,5 +90,3 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
   }
   return combined
 }
-
-private val logger = KotlinLogging.logger {}

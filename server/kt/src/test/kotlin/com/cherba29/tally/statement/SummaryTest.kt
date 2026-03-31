@@ -21,7 +21,7 @@ class SummaryTest : DescribeSpec({
       val node1 = NodeId(
         name = "test-account1",
         path = listOf("external"),
-        owners = listOf("john"),
+        owners = setOf("john"),
       )
       val startBalance = Balance(
         100,
@@ -45,7 +45,7 @@ class SummaryTest : DescribeSpec({
       stmt1?.nodeId shouldBe NodeId(
         name = "/external",
         path = listOf(),
-        owners = listOf("john")
+        owners = setOf("john")
       )
       withClue("statement: $stmt1") {
         stmt1?.startBalance shouldBe startBalance
@@ -64,7 +64,7 @@ class SummaryTest : DescribeSpec({
       stmt2?.nodeId shouldBe NodeId(
         name = "/",
         path = listOf(),
-        owners = listOf("john")
+        owners = setOf("john")
       )
       stmt2?.startBalance shouldBe startBalance
       stmt2?.endBalance shouldBe null
@@ -82,7 +82,7 @@ class SummaryTest : DescribeSpec({
       val node1 = NodeId(
         name = "test-account1",
         path = listOf("external"),
-        owners = listOf("john")
+        owners = setOf("john")
       )
 
       val tranStmt = TransactionStatement(node1, Month.fromString("Mar2021"), false, startBalance = null)
@@ -97,7 +97,7 @@ class SummaryTest : DescribeSpec({
       stmt.nodeId shouldBe NodeId(
         name = "/",
         path = listOf(),
-        owners = listOf("john"),
+        owners = setOf("john"),
       )
       stmt.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       stmt.endBalance shouldBe null
@@ -115,7 +115,7 @@ class SummaryTest : DescribeSpec({
       val node1 = NodeId(
         name = "test-account1",
         path = listOf("external"),
-        owners = listOf("john")
+        owners = setOf("john")
       )
 
       val tranStmt = TransactionStatement(node1, Month.fromString("Mar2021"), false, startBalance = null)
@@ -130,7 +130,7 @@ class SummaryTest : DescribeSpec({
       stmt1.nodeId shouldBe NodeId(
         name = "/external",
         path = listOf(),
-        owners = listOf("john")
+        owners = setOf("john")
       )
       stmt1.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       stmt1.endBalance shouldBe null
@@ -147,7 +147,7 @@ class SummaryTest : DescribeSpec({
       stmt2.nodeId shouldBe NodeId(
         name = "/",
         path = listOf(),
-        owners = listOf("john"),
+        owners = setOf("john"),
       )
       stmt2.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       stmt2.endBalance shouldBe null

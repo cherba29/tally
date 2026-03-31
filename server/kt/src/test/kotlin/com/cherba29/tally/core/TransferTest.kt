@@ -12,7 +12,7 @@ class TransferTest : DescribeSpec({
         nodeId = NodeId(
           "test-account1",
           path = listOf("external"),
-          owners = listOf("john")
+          owners = setOf("john")
         ),
         openedOn = FEB / 2020,
       )
@@ -20,7 +20,7 @@ class TransferTest : DescribeSpec({
         nodeId = NodeId(
           "test-account2",
           path = listOf("external"),
-          owners = listOf("john")
+          owners = setOf("john")
         ),
         openedOn = FEB / 2020,
       )

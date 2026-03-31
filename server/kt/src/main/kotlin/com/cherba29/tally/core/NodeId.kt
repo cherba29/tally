@@ -4,7 +4,7 @@ package com.cherba29.tally.core
 data class NodeId(
   val name: String,
   // List of node owner ids.
-  val owners: List<String> = listOf(),
+  val owners: Set<String> = setOf(),
   // Path of this node in the tree.
   val path: List<String> = listOf(),
 ) {
@@ -13,6 +13,8 @@ data class NodeId(
   val isSummary: Boolean = name.startsWith("/")
 
   fun hasCommonOwner(other: NodeId): Boolean = owners.intersect(other.owners).isNotEmpty()
+
+  fun hasSameOwners(other: NodeId): Boolean = owners == other.owners
 
   override fun toString(): String = if (path.isNotEmpty()) "/${path.joinToString("/")}/$name" else "/$name"
 

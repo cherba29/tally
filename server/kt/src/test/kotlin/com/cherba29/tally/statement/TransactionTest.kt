@@ -41,7 +41,6 @@ class TransactionTest : DescribeSpec({
       val nodeId = NodeId(
         name = "test-account",
         path = listOf("external"),
-        owners = listOf()
       )
       val account = Account(nodeId, openedOn = DEC / 2019)
       val budget = budget {
@@ -74,7 +73,7 @@ class TransactionTest : DescribeSpec({
       val node1 = NodeId(
         name = "test-account1",
         path = listOf("external"),
-        owners = listOf("john")
+        owners = setOf("john")
       )
       val account1 = Account(node1, openedOn = DEC / 2021)
       val exception =
@@ -98,13 +97,13 @@ class TransactionTest : DescribeSpec({
       val node1 = NodeId(
         name = "test-account1",
         path = listOf("external"),
-        owners = listOf("john")
+        owners = setOf("john")
       )
       val account1 = Account(node1, openedOn = DEC / 2019)
       val node2 = NodeId(
         name = "test-account2",
         path = listOf("external"),
-        owners = listOf("john")
+        owners = setOf("john")
       )
 
       val account2 = Account(node2, openedOn = DEC / 2019)
@@ -141,13 +140,12 @@ class TransactionTest : DescribeSpec({
       val node1 = NodeId(
         name = "test-account1",
         path = listOf("external"),
-        owners = listOf()
       )
       val account1 = Account(node1, openedOn = DEC / 2019)
       val node2 = NodeId(
         name = "test-account2",
         path = listOf("external"),
-        owners = listOf("john"),
+        owners = setOf("john"),
       )
       val account2 = Account(node2, openedOn = DEC / 2019)
       val budget = budget {
@@ -183,7 +181,7 @@ class TransactionTest : DescribeSpec({
       val node1 = NodeId(
         name = "test-account1",
         path = listOf("external"),
-        owners = listOf("john"),
+        owners = setOf("john"),
       )
       val account1 = Account(node1, openedOn = DEC / 2019)
       val budget = budget {
@@ -209,7 +207,7 @@ class TransactionTest : DescribeSpec({
       val node1 = NodeId(
         name = "test-account1",
         path = listOf("external"),
-        owners = listOf("john"),
+        owners = setOf("john"),
       )
       val account1 = Account(node1, openedOn = DEC / 2021)
       val budget = budget {
@@ -236,7 +234,7 @@ class TransactionTest : DescribeSpec({
       val node1 = NodeId(
         name = "test-account1",
         path = listOf("external"),
-        owners = listOf("john"),
+        owners = setOf("john"),
       )
 
       val account1 = Account(
@@ -268,19 +266,19 @@ class TransactionTest : DescribeSpec({
       val node1 = NodeId(
         name = "test-account1",
         path = listOf("internal", "checking"),
-        owners = listOf("john"),
+        owners = setOf("john"),
       )
       val account1 = Account(node1, openedOn = DEC / 2019)
       val node2 = NodeId(
         name = "test-account2",
         path = listOf("internal", "credit"),
-        owners = listOf("john"),
+        owners = setOf("john"),
       )
       val account2 = Account(node2, openedOn = DEC / 2019)
       val node3 = NodeId(
         name = "test-account3",
         path = listOf("external", "expense"),
-        owners = listOf(),
+        owners = setOf(),
       )
 
       val account3 = Account(node3, openedOn = DEC / 2019)

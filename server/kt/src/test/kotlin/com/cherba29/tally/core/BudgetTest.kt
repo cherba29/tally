@@ -77,9 +77,9 @@ class BudgetTest : DescribeSpec({
   }
 
   it("build ambiguous account") {
-    val node1 = NodeId("test-account1", owners = listOf("bob"))
+    val node1 = NodeId("test-account1", owners = setOf("bob"))
     val account1 = Account(nodeId = node1, openedOn = NOV / 2019)
-    val node2 = NodeId("test-account1", owners = listOf("alice"))
+    val node2 = NodeId("test-account1", owners = setOf("alice"))
     val account2 = Account(nodeId = node2, openedOn = NOV / 2019)
     val exception = shouldThrow<IllegalArgumentException> {
       budget {

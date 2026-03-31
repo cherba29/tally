@@ -108,7 +108,7 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
   }
 
   val account = Account(
-    nodeId = NodeId(data.name, data.owner, data.path),
+    nodeId = NodeId(data.name, data.owner.toSet(), data.path),
     description = data.desc,
     number = data.number,
     openedOn = data.openedOn,

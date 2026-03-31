@@ -32,7 +32,7 @@ class LoaderTest : DescribeSpec({
       Loader(tallyPath).use { loader ->
         val result = loader.budget
 
-        val nodeId = NodeId("test-account", listOf("someone"), listOf("external"))
+        val nodeId = NodeId("test-account", setOf("someone"), listOf("external"))
         result.statements.size shouldBe 1
         val tranStatement = result.statements[nodeId]?.get(MAR / 2019)!!
         tranStatement.month shouldBe Month(2019, 2)
@@ -60,7 +60,7 @@ class LoaderTest : DescribeSpec({
 
       Loader(tallyPath).use { loader ->
         val result1 = loader.budget
-        val nodeId = NodeId("test-account", listOf("someone"), listOf("external"))
+        val nodeId = NodeId("test-account", setOf("someone"), listOf("external"))
         result1.budget.balances[nodeId]?.get(MAR / 2019) shouldBe Balance(
           10000, LocalDate(2019, 3, 1),
           Balance.Type.CONFIRMED
@@ -106,7 +106,7 @@ class LoaderTest : DescribeSpec({
 
       Loader(tallyPath).use { loader ->
         val result1 = loader.budget
-        val nodeId = NodeId("test-account", listOf("someone"), listOf("external"))
+        val nodeId = NodeId("test-account", setOf("someone"), listOf("external"))
         result1.budget.balances[nodeId]?.get(MAR / 2019) shouldBe Balance(
           10000, LocalDate(2019, 3, 1),
           Balance.Type.CONFIRMED

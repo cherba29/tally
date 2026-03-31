@@ -24,7 +24,7 @@ class SummaryStatementAggregator {
     val key = "$owner - $name"
     var nodeId = summaryNodes[key]
     if (nodeId == null) {
-      nodeId = NodeId(name, listOf(owner), path.slice(0..path.size - 2))
+      nodeId = NodeId(name, setOf(owner), path.slice(0..path.size - 2))
       summaryNodes[key] = nodeId
     }
     return nodeId

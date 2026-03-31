@@ -68,7 +68,7 @@ class LoadYamlTest : DescribeSpec({
       }
       budget.accounts.size shouldBe 1
 
-      val account = budget.accounts[NodeId("test-account", owners = listOf("arthur"), path=listOf("external"))]!!
+      val account = budget.accounts[NodeId("test-account", owners = setOf("arthur"), path=listOf("external"))]!!
       account.nodeId.name shouldBe "test-account"
       account.description shouldBe "Testing account"
       account.number shouldBe "1223344"
@@ -108,7 +108,7 @@ class LoadYamlTest : DescribeSpec({
       budget.months.size shouldBe 2
       budget.transfers.size shouldBe 0
 
-      val balances = budget.balances[NodeId("test-account", listOf("someone"), listOf("external"))]!!
+      val balances = budget.balances[NodeId("test-account", setOf("someone"), listOf("external"))]!!
       balances.size shouldBe 2
       balances[JAN / 2020] shouldBe Balance(0, LocalDate.parse("2020-01-01"), Balance.Type.CONFIRMED)
       balances[FEB / 2020] shouldBe Balance(1000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
@@ -246,8 +246,8 @@ class LoadYamlTest : DescribeSpec({
         loadYamlFile(this, parsedExternalContent, relativeFilePath)
       }
       budget.accounts.size shouldBe 2
-      val testAccount = budget.accounts[NodeId("test-account", listOf("someone"), listOf("external"))]!!
-      val externalAccount = budget.accounts[NodeId("external", listOf("someone"), listOf("external"))]!!
+      val testAccount = budget.accounts[NodeId("test-account", setOf("someone"), listOf("external"))]!!
+      val externalAccount = budget.accounts[NodeId("external", setOf("someone"), listOf("external"))]!!
       budget.balances.size shouldBe 1
       budget.months.size shouldBe 2
       budget.transfers.size shouldBe 2

@@ -15,7 +15,7 @@ class NodeIdTest : DescribeSpec({
       val nodeId = NodeId(
         name = "testAccount",
         path = listOf("external", "tax"),
-        owners = listOf("bob", "alice")
+        owners = setOf("bob", "alice")
       )
       nodeId.name shouldBe "testAccount"
       nodeId.isSummary shouldBe false
@@ -45,7 +45,7 @@ class NodeIdTest : DescribeSpec({
       val nodeId = NodeId(
         name = "testAccount",
         path = listOf("external"),
-        owners = listOf("bob")
+        owners = setOf("bob")
       )
       nodeId.isExternal shouldBe true
     }
@@ -53,15 +53,15 @@ class NodeIdTest : DescribeSpec({
 
   describe("owner") {
     it("has common owner is false if no common owners") {
-      val nodeId1 = NodeId(name = "testAccount", owners = listOf("bob"))
-      val nodeId2 = NodeId(name = "testAccount", owners = listOf("john"))
+      val nodeId1 = NodeId(name = "testAccount", owners = setOf("bob"))
+      val nodeId2 = NodeId(name = "testAccount", owners = setOf("john"))
 
       nodeId1.hasCommonOwner(nodeId2) shouldBe false
     }
 
     it("has common owner is true if common owners") {
-      val nodeId1 = NodeId(name = "testAccount", owners = listOf("bob"))
-      val nodeId2 = NodeId(name = "testAccount", owners = listOf("bob"))
+      val nodeId1 = NodeId(name = "testAccount", owners = setOf("bob"))
+      val nodeId2 = NodeId(name = "testAccount", owners = setOf("bob"))
 
       nodeId1.hasCommonOwner(nodeId2) shouldBe true
     }
@@ -78,7 +78,7 @@ class NodeIdTest : DescribeSpec({
       NodeId("test", path=listOf("external", "tax")).toString() shouldBe "/external/tax/test"
     }
     it("toString with path and owners") {
-      NodeId("test", path=listOf("external"), owners=listOf("bob")).toString() shouldBe "/external/test"
+      NodeId("test", path=listOf("external"), owners=setOf("bob")).toString() shouldBe "/external/test"
     }
   }
 })
