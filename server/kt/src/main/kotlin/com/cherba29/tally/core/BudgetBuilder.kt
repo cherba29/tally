@@ -70,8 +70,17 @@ class BudgetBuilder(
   fun build(): Budget {
     val budgetTransfers: MutableMap<NodeId, MutableMap<Month, MutableList<Transfer>>> = mutableMapOf()
     for (transferData in transfers) {
-      val toAccount = accounts.values.find { it.nodeId.name == transferData.toAccount }
-        ?: throw IllegalArgumentException("Unknown account ${transferData.toAccount}")
+      val toAccounts = accounts.filterKeys { it.name == transferData.toAccount }
+      if (toAccounts.isEmpty()) {
+        throw IllegalArgumentException("Unknown account ${transferData.toAccount}")
+      } else if (toAccounts.size > 1) {
+        throw IllegalArgumentException(
+          "Ambiguous transfer from ${transferData.fromAccount} to ${transferData.toAccount}, " +
+              "found multiple candidate accounts " +
+              "${toAccounts.keys.map { "name=${it.name} path=${it.path} owners=${it.owners}" }}"
+        )
+      }
+      val toAccount = toAccounts.values.first()
 
       val fromAccount = accounts[transferData.fromAccount] ?: throw IllegalArgumentException(
         "Unknown account ${transferData.fromAccount}"

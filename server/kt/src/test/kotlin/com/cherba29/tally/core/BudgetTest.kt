@@ -76,6 +76,44 @@ class BudgetTest : DescribeSpec({
     budget.transfers.size shouldBe 3
   }
 
+  it("build ambiguous account") {
+    val node1 = NodeId("test-account1", owners = listOf("bob"))
+    val account1 = Account(nodeId = node1, openedOn = NOV / 2019)
+    val node2 = NodeId("test-account1", owners = listOf("alice"))
+    val account2 = Account(nodeId = node2, openedOn = NOV / 2019)
+    val exception = shouldThrow<IllegalArgumentException> {
+      budget {
+        setAccount(account1)
+        setAccount(account2)
+        setBalance(
+          node1,
+          NOV / 2019,
+          Balance(100, LocalDate(2019, 11, 1), Balance.Type.PROJECTED)
+        )
+        setBalance(
+          node1,
+          DEC / 2019,
+          Balance(200, LocalDate(2019, 12, 1), Balance.Type.PROJECTED)
+        )
+        setBalance(
+          node2,
+          NOV / 2019,
+          Balance(200, LocalDate(2019, 11, 3), Balance.Type.CONFIRMED)
+        )
+        addTransfer(
+          toAccount = "test-account1",
+          toMonth = NOV / 2019,
+          fromAccount = node2,
+          fromMonth = NOV / 2019,
+          balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
+          description = null
+        )
+      }
+    }
+    exception.message shouldBe "Ambiguous transfer from /test-account1 to test-account1, found multiple candidate " +
+        "accounts [name=test-account1 path=[] owners=[bob], name=test-account1 path=[] owners=[alice]]"
+  }
+
   it("build budget - duplicate balance") {
     val builder = BudgetBuilder()
     val account1 = Account(
