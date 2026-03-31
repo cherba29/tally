@@ -244,7 +244,7 @@ class QueryTableTest : DescribeSpec({
 
     it("single open account with path") {
       val account = Account(
-        NodeId(name = "test-account", path = listOf("outside"), owners = listOf("john")),
+        NodeId(name = "test-account", path = listOf("internal"), owners = listOf("john")),
         openedOn = JAN / 2026
       )
       val summary = SummaryStatement(
@@ -263,7 +263,7 @@ class QueryTableTest : DescribeSpec({
         )
       )
       val summaries = Map3<SummaryStatement>()
-      summaries.set("john", "/outside", "Mar2026", summary)
+      summaries.set("john", "/internal", "Mar2026", summary)
       summaries.set("john", "/", "Mar2026", summary)
       val payload = DataPayload(
         budget = budget {
@@ -293,7 +293,7 @@ class QueryTableTest : DescribeSpec({
           account=GqlAccount(
             name="test-account",
             description="",
-            path=listOf("outside"),
+            path=listOf("internal"),
             external=false,
             summary=false,
             number=null,
@@ -328,11 +328,11 @@ class QueryTableTest : DescribeSpec({
           )
         ),
         GqlTableRow(
-          title="outside",
+          title="internal",
           account=GqlAccount(
             name="test-account",
             description="",
-            path=listOf("outside"),
+            path=listOf("internal"),
             external=false,
             summary=false,
             number=null,
@@ -371,7 +371,7 @@ class QueryTableTest : DescribeSpec({
           account=GqlAccount(
             name="test-account",
             description="",
-            path=listOf("outside"),
+            path=listOf("internal"),
             external=false,
             summary=false,
             number=null,

@@ -14,5 +14,11 @@ data class NodeId(
 
   fun hasCommonOwner(other: NodeId): Boolean = owners.intersect(other.owners).isNotEmpty()
 
-  override fun toString(): String = "/${path.joinToString("/")}/$name"
+  override fun toString(): String = if (path.isNotEmpty()) "/${path.joinToString("/")}/$name" else "/$name"
+
+  init {
+    require(path.isEmpty() || isExternal || path.firstOrNull() == "internal") {
+      "Node should have empty, external or internal path but was $path"
+    }
+  }
 }
