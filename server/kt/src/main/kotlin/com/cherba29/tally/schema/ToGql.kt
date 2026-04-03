@@ -50,7 +50,7 @@ private fun Double?.round2Float(): Float {
 
 fun TransactionStatement.toGql(): GqlStatement = GqlStatement(
   name = nodeId.name,
-  month = month,
+  month = monthRange.first,
   isClosed = isClosed,
   isCovered = isCovered,
   isProjectedCovered = isProjectedCovered,
@@ -71,7 +71,7 @@ fun TransactionStatement.toGql(): GqlStatement = GqlStatement(
 )
 
 fun TransactionStatement.toGqlTableCell(): GqlTableCell = GqlTableCell(
-  month = month,
+  month = monthRange.first,
   isClosed = isClosed,
   addSub = addSub,
   balance = endBalance?.amount,
@@ -87,7 +87,7 @@ fun TransactionStatement.toGqlTableCell(): GqlTableCell = GqlTableCell(
 
 fun CombinedStatement.toGqlStatement(): GqlStatement = GqlStatement(
   name = nodeId.name,
-  month = month,
+  month = monthRange.first,
   isClosed = isClosed,
   isCovered = true,
   isProjectedCovered = false,
@@ -108,7 +108,7 @@ fun CombinedStatement.toGqlStatement(): GqlStatement = GqlStatement(
 )
 
 fun Statement.toGqlTableCell(): GqlTableCell = GqlTableCell(
-  month = month,
+  month = monthRange.first,
   isClosed = isClosed,
   addSub = addSub,
   balance = endBalance?.amount,
@@ -124,7 +124,7 @@ fun Statement.toGqlTableCell(): GqlTableCell = GqlTableCell(
 
 fun SummaryStatement.toGql(): GqlSummaryStatement = GqlSummaryStatement(
   name = nodeId.name,
-  month = month,
+  month = monthRange.first,
   accounts = statements.map { it.nodeId.name }.sorted(),
   addSub = addSub,
   income = income,
@@ -142,7 +142,7 @@ fun SummaryStatement.toGql(): GqlSummaryStatement = GqlSummaryStatement(
 
 fun SummaryStatement.toGqlStatement(): GqlStatement = GqlStatement(
   name = nodeId.name,
-  month = month,
+  month = monthRange.first,
   isClosed = isClosed,
   isCovered = true,
   isProjectedCovered = true,

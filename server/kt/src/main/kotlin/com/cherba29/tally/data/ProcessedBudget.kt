@@ -61,7 +61,7 @@ class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
           monthToStatement = mutableMapOf()
           accountToMonthToTransactionStatement[stmt.nodeId] = monthToStatement
         }
-        monthToStatement[stmt.month] = stmt
+        monthToStatement[stmt.monthRange.first] = stmt
       }
       transactionStatementTable
     }

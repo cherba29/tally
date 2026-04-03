@@ -20,7 +20,7 @@ fun buildSummaryData(payload: DataPayload, owner: String, accountType:String, st
     throw NotFoundException("Summary $accountType for $owner not found.")
   }
   val summaryStatements = monthSummaries.values.filter {
-    stmt -> if (startMonth != null) stmt.month in startMonth..endMonth else stmt.month <= endMonth
+    stmt -> if (startMonth != null) stmt.monthRange.first in startMonth..endMonth else stmt.monthRange.last <= endMonth
   }
   if (summaryStatements.isEmpty()) {
     throw NotFoundException(

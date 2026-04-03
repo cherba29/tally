@@ -59,7 +59,7 @@ class TransactionTest : DescribeSpec({
         stmt.income shouldBe 0.0
         stmt.isCovered shouldBe true
         stmt.isProjectedCovered shouldBe true
-        stmt.month shouldBe DEC / 2019
+        stmt.monthRange shouldBe DEC / 2019 .. DEC / 2019
         stmt.outFlows shouldBe 0.0
         stmt.startBalance shouldBe null
         stmt.totalPayments shouldBe 0.0
@@ -256,9 +256,9 @@ class TransactionTest : DescribeSpec({
       }
       val table = buildTransactionStatementTable(budget, owner = null)
       table.size shouldBe 2  // Two transaction statements for the account
-      table[0].month shouldBe DEC / 2019
+      table[0].monthRange shouldBe DEC / 2019 .. DEC / 2019
       table[0].isClosed shouldBe true
-      table[1].month shouldBe NOV / 2019
+      table[1].monthRange shouldBe NOV / 2019 .. NOV / 2019
       table[1].isClosed shouldBe false
     }
 

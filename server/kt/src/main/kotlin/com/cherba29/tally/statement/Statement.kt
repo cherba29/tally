@@ -1,7 +1,7 @@
 package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.NodeId
 import kotlin.math.absoluteValue
 import kotlin.math.pow
@@ -10,9 +10,8 @@ import kotlin.math.sign
 open class Statement(
   val nodeId: NodeId,
 
-  // TODO: perhaps replace by MonthRange.
   // Period of time for the statement
-  val month: Month,
+  val monthRange: MonthRange,
 
   open val isClosed: Boolean = false,
 
@@ -52,11 +51,15 @@ open class Statement(
     }
   }
 
-  open val annualizedPercentChange: Double? get() = percentChange?.let {
-    val result = (1 + (it.absoluteValue) / 100).pow(12) - 1
-    // Don't consider 1000% and more as meaningful annualized numbers.
-    if (result < 10) 100 * it.sign * result else null
-  }
+  val annualizedPercentChange: Double?
+    get() {
+      val prctChange = percentChange ?: return null
+      val numberOfMonths = monthRange.size
+      val annualFrequency = 12.0 / numberOfMonths
+      val result = (1 + prctChange.absoluteValue / 100).pow(annualFrequency) - 1
+      // Annualized percentage change is not that meaningful if large.
+      return if (result < 10) 100 * prctChange.sign * result else null
+    }
 
   val unaccounted: Int?
     get() = change?.let { it - addSub }
@@ -83,6 +86,6 @@ open class Statement(
         inFlows == 0 && outFlows == 0 && totalPayments == 0
 
   override fun toString(): String {
-    return "$nodeId month=$month isClodes=$isClosed startBalance=$startBalance endBalance=$endBalance"
+    return "$nodeId months=$monthRange isClodes=$isClosed startBalance=$startBalance endBalance=$endBalance"
   }
 }

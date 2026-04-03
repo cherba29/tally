@@ -9,7 +9,7 @@
       - external
       owner:
       - john
-    month: Feb2020
+    months: Feb2020..Feb2020
     startBalance:
       __type: Balance
       amount: 30
@@ -31,7 +31,7 @@
       - external
       owner:
       - john
-    month: Jan2020
+    months: Jan2020..Jan2020
     startBalance:
       __type: Balance
       amount: 20
@@ -58,7 +58,7 @@
       - external
       owner:
       - john
-    month: Dec2019
+    months: Dec2019..Dec2019
     startBalance:
       __type: Balance
       amount: 10
@@ -122,7 +122,7 @@
       - external
       owner:
       - john
-    month: Feb2020
+    months: Feb2020..Feb2020
     startBalance:
       __type: Balance
       amount: 30
@@ -144,7 +144,7 @@
       - external
       owner:
       - john
-    month: Jan2020
+    months: Jan2020..Jan2020
     startBalance:
       __type: Balance
       amount: 20
@@ -171,7 +171,7 @@
       - external
       owner:
       - john
-    month: Dec2019
+    months: Dec2019..Dec2019
     startBalance:
       __type: Balance
       amount: 10
@@ -233,7 +233,7 @@
       - external
       owner:
       - john
-    month: Feb2020
+    months: Feb2020..Feb2020
   coversPrevious: false
   coversProjectedPrevious: false
   hasProjectedTransfer: false
@@ -250,7 +250,7 @@
       - external
       owner:
       - john
-    month: Jan2020
+    months: Jan2020..Jan2020
   coversPrevious: false
   coversProjectedPrevious: false
   hasProjectedTransfer: false
@@ -267,7 +267,7 @@
       - external
       owner:
       - john
-    month: Dec2019
+    months: Dec2019..Dec2019
     inFlows: 3000
     income: 3000
   coversPrevious: false
@@ -317,7 +317,7 @@
       name: test-account1
       path:
       - external
-    month: Feb2020
+    months: Feb2020..Feb2020
     startBalance:
       __type: Balance
       amount: 30
@@ -337,7 +337,7 @@
       name: test-account1
       path:
       - external
-    month: Jan2020
+    months: Jan2020..Jan2020
     startBalance:
       __type: Balance
       amount: 20
@@ -362,7 +362,7 @@
       name: test-account1
       path:
       - external
-    month: Dec2019
+    months: Dec2019..Dec2019
     startBalance:
       __type: Balance
       amount: 10
@@ -424,7 +424,7 @@
       - external
       owner:
       - john
-    month: Feb2020
+    months: Feb2020..Feb2020
   coversPrevious: false
   coversProjectedPrevious: false
   hasProjectedTransfer: false
@@ -441,7 +441,7 @@
       - external
       owner:
       - john
-    month: Jan2020
+    months: Jan2020..Jan2020
   coversPrevious: false
   coversProjectedPrevious: false
   hasProjectedTransfer: false
@@ -458,7 +458,7 @@
       - external
       owner:
       - john
-    month: Dec2019
+    months: Dec2019..Dec2019
     inFlows: 3000
     income: 3000
   coversPrevious: false

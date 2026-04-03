@@ -1,5 +1,6 @@
 package com.cherba29.tally.core
 
+import kotlin.math.absoluteValue
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format.MonthNames.Companion.ENGLISH_ABBREVIATED
 import kotlinx.datetime.number
@@ -195,6 +196,9 @@ class MonthRange(start: Month, endInclusive: Month) : MonthProgression(start, en
    * The range is empty if its start value is greater than the end value.
    */
   override fun isEmpty(): Boolean = first > last
+
+  // TODO: also add min/max and contains for month ranges.
+  val size: Int = (last - first + 1).absoluteValue
 
   override fun equals(other: Any?): Boolean =
     other is MonthRange && (isEmpty() && other.isEmpty() ||

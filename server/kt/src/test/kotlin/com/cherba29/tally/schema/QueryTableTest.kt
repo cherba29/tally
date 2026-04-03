@@ -59,8 +59,7 @@ class QueryTableTest : DescribeSpec({
       )
       val summary = SummaryStatement(
         account.nodeId,
-        month = MAR / 2026,
-        startMonth = MAR / 2026
+        MAR / 2026 .. MAR / 2026
       )
       val summaries = Map3<SummaryStatement>()
       summaries.set("john", "/", "Mar2026", summary)
@@ -88,8 +87,7 @@ class QueryTableTest : DescribeSpec({
       )
       val summary = SummaryStatement(
         account.nodeId,
-        month = MAR / 2026,
-        startMonth = MAR / 2026
+        MAR / 2026 .. MAR / 2026
       )
       val summaries = Map3<SummaryStatement>()
       summaries.set("john", "/", "Mar2026", summary)
@@ -106,7 +104,7 @@ class QueryTableTest : DescribeSpec({
         },
         statements = mapOf(account.nodeId to mapOf(MAR / 2026 to TransactionStatement(
           account.nodeId,
-          month = MAR / 2026,
+          MAR / 2026 .. MAR / 2026,
           isClosed = false,
           startBalance = Balance(100, LocalDate(2026, 3, 1), Balance.Type.CONFIRMED)
         ))),
@@ -249,12 +247,11 @@ class QueryTableTest : DescribeSpec({
       )
       val summary = SummaryStatement(
         account.nodeId,
-        month = MAR / 2026,
-        startMonth = MAR / 2026
+        MAR / 2026 .. MAR / 2026
       )
       val transactionStatement = TransactionStatement(
         account.nodeId,
-        month = MAR / 2026,
+        MAR / 2026 .. MAR / 2026,
         isClosed = false,
         startBalance = Balance(
           amount = 100,

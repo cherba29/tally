@@ -14,8 +14,7 @@ class CombinedStatementTest : DescribeSpec({
       val nodeId = NodeId(name = "test-account", path = listOf("external"))
       val statement = CombinedStatement(
         nodeId,
-        month = MAR / 2026,
-        startMonth = JAN / 2026,
+        JAN / 2026 .. MAR / 2026,
       )
       statement.isClosed shouldBe false
       statement.percentChange shouldBe null
@@ -26,8 +25,7 @@ class CombinedStatementTest : DescribeSpec({
       val nodeId = NodeId(name = "test-account", path = listOf("external"))
       val combined = CombinedStatement.fromStatements(
         nodeId,
-        startMonth = JAN / 2026,
-        endMonth = MAR / 2026,
+        JAN / 2026 .. MAR / 2026,
         statements = mapOf()
       )
       combined.isClosed shouldBe false
@@ -41,7 +39,7 @@ class CombinedStatementTest : DescribeSpec({
       val startMonth = JAN / 2026
       val statement = TransactionStatement(
         nodeId,
-        month = startMonth,
+         startMonth .. startMonth,
         isClosed = false,
         startBalance = Balance(
           100,
@@ -51,8 +49,7 @@ class CombinedStatementTest : DescribeSpec({
       )
       val combined = CombinedStatement.fromStatements(
         nodeId,
-        startMonth,
-        endMonth = MAR / 2026,
+        startMonth .. MAR / 2026,
         statements = mapOf(startMonth to statement)
       )
       combined.isClosed shouldBe false

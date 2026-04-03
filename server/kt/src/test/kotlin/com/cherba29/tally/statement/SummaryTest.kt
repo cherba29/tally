@@ -1,7 +1,6 @@
 package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.utils.Map3
@@ -30,7 +29,7 @@ class SummaryTest : DescribeSpec({
       )
       val tranStmt = TransactionStatement(
         node1,
-        MAR / 2021,
+        MAR / 2021 .. MAR / 2021,
         false,
         startBalance
       )
@@ -52,8 +51,7 @@ class SummaryTest : DescribeSpec({
         stmt1?.endBalance shouldBe null
         stmt1?.inFlows shouldBe 0
         stmt1?.income shouldBe 0
-        stmt1?.month shouldBe MAR / 2021
-        stmt1?.startMonth shouldBe MAR / 2021
+        stmt1?.monthRange shouldBe MAR / 2021 .. MAR / 2021
         stmt1?.outFlows shouldBe 0
         stmt1?.statements shouldBe listOf(tranStmt)
         stmt1?.totalPayments shouldBe 0
@@ -70,8 +68,7 @@ class SummaryTest : DescribeSpec({
       stmt2?.endBalance shouldBe null
       stmt2?.inFlows shouldBe 0
       stmt2?.income shouldBe 0
-      stmt2?.month shouldBe MAR / 2021
-      stmt2?.startMonth shouldBe MAR / 2021
+      stmt2?.monthRange shouldBe MAR / 2021 .. MAR / 2021
       stmt2?.outFlows shouldBe 0
       stmt2?.statements shouldBe listOf(stmt1)
       stmt2?.totalPayments shouldBe 0
@@ -85,7 +82,12 @@ class SummaryTest : DescribeSpec({
         owners = setOf("john")
       )
 
-      val tranStmt = TransactionStatement(node1, Month.fromString("Mar2021"), false, startBalance = null)
+      val tranStmt = TransactionStatement(
+        node1,
+        MAR / 2021 .. MAR / 2021,
+        false,
+        startBalance = null
+      )
       tranStmt.startBalance = Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       val statements: Map3<SummaryStatement> = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
       statements.isEmpty shouldBe false
@@ -103,8 +105,7 @@ class SummaryTest : DescribeSpec({
       stmt.endBalance shouldBe null
       stmt.inFlows shouldBe 0
       stmt.income shouldBe 0
-      stmt.month shouldBe Month.fromString("Mar2021")
-      stmt.startMonth shouldBe Month.fromString("Mar2021")
+      stmt.monthRange shouldBe MAR / 2021 .. MAR / 2021
       stmt.outFlows shouldBe 0
       stmt.statements shouldBe listOf(statements["john", "/external", "Mar2021"]!!)
       stmt.totalPayments shouldBe 0
@@ -118,8 +119,17 @@ class SummaryTest : DescribeSpec({
         owners = setOf("john")
       )
 
-      val tranStmt = TransactionStatement(node1, Month.fromString("Mar2021"), false, startBalance = null)
-      tranStmt.startBalance = Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
+      val tranStmt = TransactionStatement(
+        node1,
+        MAR / 2021 .. MAR / 2021,
+        false,
+        startBalance = null
+      )
+      tranStmt.startBalance = Balance(
+        100,
+        LocalDate(2023, 12, 2),
+        Balance.Type.CONFIRMED
+      )
       val statements: Map3<SummaryStatement> = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
       statements.isEmpty shouldBe false
       statements.size shouldBe 2
@@ -136,8 +146,7 @@ class SummaryTest : DescribeSpec({
       stmt1.endBalance shouldBe null
       stmt1.inFlows shouldBe 0
       stmt1.income shouldBe 0
-      stmt1.month shouldBe Month.fromString("Mar2021")
-      stmt1.startMonth shouldBe Month.fromString("Mar2021")
+      stmt1.monthRange shouldBe MAR / 2021 .. MAR / 2021
       stmt1.outFlows shouldBe 0
       stmt1.statements shouldBe listOf(tranStmt)
       stmt1.totalPayments shouldBe 0
@@ -153,8 +162,7 @@ class SummaryTest : DescribeSpec({
       stmt2.endBalance shouldBe null
       stmt2.inFlows shouldBe 0
       stmt2.income shouldBe 0
-      stmt2.month shouldBe Month.fromString("Mar2021")
-      stmt2.startMonth shouldBe Month.fromString("Mar2021")
+      stmt2.monthRange shouldBe MAR / 2021 .. MAR / 2021
       stmt2.outFlows shouldBe 0
       stmt2.statements shouldBe listOf(stmt1)
       stmt2.totalPayments shouldBe 0

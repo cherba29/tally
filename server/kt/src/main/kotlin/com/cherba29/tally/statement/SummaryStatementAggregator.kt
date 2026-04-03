@@ -13,9 +13,9 @@ class SummaryStatementAggregator {
     val summaryNodeId = getNodeId(summaryName, owner, statement.nodeId.path)
 
     val accountMonthSummaryStatement = summaryStatements.getDefault(
-      owner, summaryNodeId.name, statement.month.toString()
+      owner, summaryNodeId.name, statement.monthRange.first.toString()
     ) {
-      SummaryStatement(summaryNodeId, statement.month, startMonth = statement.month)
+      SummaryStatement(summaryNodeId, statement.monthRange)
     }
     accountMonthSummaryStatement.addStatement(statement)
   }

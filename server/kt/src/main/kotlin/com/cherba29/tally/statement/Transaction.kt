@@ -27,7 +27,7 @@ fun buildTransactionStatementTable(budget: Budget, owner: String?): List<Transac
   val makeStatement: (NodeId, Month, Boolean) -> TransactionStatement = { nodeId, month, isClosed ->
     TransactionStatement.fromTransfers(
       nodeId,
-      month,
+      month..month,
       isClosed,
       budget.transfers[nodeId]?.get(month),
       budget.balances[nodeId]?.get(month)

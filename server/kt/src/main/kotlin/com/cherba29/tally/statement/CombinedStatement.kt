@@ -2,31 +2,18 @@ package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.NodeId
-import kotlin.math.abs
-import kotlin.math.pow
-import kotlin.math.sign
 
-class CombinedStatement(nodeId: NodeId, month: Month, val startMonth: Month) : Statement(nodeId, month) {
-  override val annualizedPercentChange: Double?
-    get() {
-      val prctChange = percentChange ?: return null
-      val numberOfMonths = month - startMonth + 1
-      val annualFrequency = 12.0 / numberOfMonths
-      val result = (1 + abs(prctChange) / 100).pow(annualFrequency) - 1
-      // Annualized percentage change is not that meaningful if large.
-      return if (result < 10) 100 * prctChange.sign * result else null
-    }
-
+class CombinedStatement(nodeId: NodeId, monthRange: MonthRange) : Statement(nodeId, monthRange) {
   companion object {
     fun fromStatements(
       nodeId: NodeId,
-      startMonth: Month,
-      endMonth: Month,
+      monthRange: MonthRange,
       statements: Map<Month, Statement>
     ): CombinedStatement {
-      val combined = CombinedStatement(nodeId, endMonth, startMonth)
-      for (currentMonth in startMonth..endMonth) {
+      val combined = CombinedStatement(nodeId, monthRange)
+      for (currentMonth in monthRange) {
         val stmt: Statement = makeProxyStatement(
           nodeId,
           currentMonth,
@@ -62,7 +49,7 @@ class CombinedStatement(nodeId: NodeId, month: Month, val startMonth: Month) : S
       prevStmt: Statement?,
       nextStmt: Statement?
     ): Statement {
-      val stmt = currStmt ?: Statement(nodeId, month)
+      val stmt = currStmt ?: Statement(nodeId, month..month)
       if (stmt.startBalance == null) {
         stmt.startBalance = prevStmt?.endBalance ?: Balance(0, month.toDate(), Balance.Type.PROJECTED)
       }

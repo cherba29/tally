@@ -48,11 +48,11 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
         "Cant combine different summary statements $stmtName and ${summaryStmt.nodeId.name}"
       )
     }
-    if (minMonth == null || summaryStmt.month < minMonth) {
-      minMonth = summaryStmt.month
+    if (minMonth == null || summaryStmt.monthRange.first < minMonth) {
+      minMonth = summaryStmt.monthRange.first
     }
-    if (maxMonth == null || maxMonth < summaryStmt.month) {
-      maxMonth = summaryStmt.month
+    if (maxMonth == null || maxMonth < summaryStmt.monthRange.last) {
+      maxMonth = summaryStmt.monthRange.last
     }
     for (stmt in summaryStmt.statements) {
       var accountMonthlyStatements = accountStatements[stmt.nodeId]
@@ -60,11 +60,11 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
         accountMonthlyStatements = mutableMapOf()
         accountStatements[stmt.nodeId] = accountMonthlyStatements
       }
-      val monthStatement = accountMonthlyStatements[stmt.month]
+      val monthStatement = accountMonthlyStatements[stmt.monthRange.first]
       if (monthStatement != null) {
-        throw IllegalArgumentException("Duplicate month statement for ${stmt.nodeId.name} for ${stmt.month}")
+        throw IllegalArgumentException("Duplicate month statement for ${stmt.nodeId.name} for ${stmt.monthRange}")
       }
-      accountMonthlyStatements[stmt.month] = stmt
+      accountMonthlyStatements[stmt.monthRange.first] = stmt
     }
   }
   if (stmtName == null) {
@@ -77,13 +77,12 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
     throw IllegalArgumentException("Could not determine end month")
   }
   val summaryAccount = Account(NodeId(stmtName, owners), openedOn = minMonth)
-  val combined = SummaryStatement(summaryAccount.nodeId, maxMonth, minMonth)
+  val combined = SummaryStatement(summaryAccount.nodeId, minMonth..maxMonth)
   for ((acctName, acctStatements) in accountStatements) {
     // Combine all statements for a given account over all months in the range.
     val stmt = CombinedStatement.fromStatements(
       acctName,
-      minMonth,
-      maxMonth,
+      minMonth..maxMonth,
       acctStatements
     )
     combined.addStatement(stmt)

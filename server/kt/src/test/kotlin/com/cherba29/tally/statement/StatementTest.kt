@@ -1,7 +1,8 @@
 package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.MonthName.MAR
+import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.NodeId
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.doubles.plusOrMinus
@@ -10,7 +11,7 @@ import kotlinx.datetime.LocalDate
 
 internal class TestStatement(
   nodeId: NodeId,
-  month: Month,
+  monthRange: MonthRange,
   isClosed: Boolean = false,
   startBalance: Balance? = null,
   endBalance: Balance? = null,
@@ -19,7 +20,7 @@ internal class TestStatement(
   totalTransfers: Int = 0,
   totalPayments: Int = 0,
   income: Int = 0,
-) : Statement(nodeId, month, isClosed, startBalance, endBalance, inFlows, outFlows, totalTransfers, totalPayments, income) {
+) : Statement(nodeId, monthRange, isClosed, startBalance, endBalance, inFlows, outFlows, totalTransfers, totalPayments, income) {
   override val isClosed: Boolean = true
 }
 
@@ -28,10 +29,10 @@ class StatementTest : DescribeSpec({
     it("basic") {
       val stmt = TestStatement(
         NodeId(name = "test"),
-        Month.fromString("Mar2021")
+        MAR / 2021 .. MAR / 2021
       )
       stmt.nodeId shouldBe NodeId("test")
-      stmt.month shouldBe Month(2021, 2)
+      stmt.monthRange shouldBe MAR / 2021 .. MAR / 2021
       stmt.inFlows shouldBe 0.0
       stmt.income shouldBe 0.0
       stmt.outFlows shouldBe 0.0
@@ -48,7 +49,7 @@ class StatementTest : DescribeSpec({
   it("with inFlow outFlow no start-end balance") {
     val stmt = TestStatement(
       NodeId(name = "test", path = listOf("external")),
-      Month.fromString("Mar2021")
+      MAR / 2021 .. MAR / 2021
     )
     stmt.addInFlow(100)
     stmt.addInFlow(-10)
@@ -73,7 +74,7 @@ class StatementTest : DescribeSpec({
     val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
       NodeId(name = "test", path = listOf("external")),
-      Month.fromString("Mar2021"),
+      MAR / 2021 .. MAR / 2021,
       false,
       startBalance,
       endBalance,
@@ -100,7 +101,7 @@ class StatementTest : DescribeSpec({
   it("with empty statement") {
     val stmt = TestStatement(
       NodeId(name = "test", path = listOf("external")),
-      Month.fromString("Mar2021")
+      MAR / 2021 .. MAR / 2021
     )
     stmt.startBalance shouldBe null
     stmt.endBalance shouldBe null
@@ -115,7 +116,7 @@ class StatementTest : DescribeSpec({
   it("with no start-end balance") {
     val stmt = TestStatement(
       NodeId(name = "test", path = listOf("external")),
-      Month.fromString("Mar2021")
+      MAR / 2021 .. MAR / 2021
     )
     stmt.addInFlow(100)
     stmt.addInFlow(-10)
@@ -131,7 +132,7 @@ class StatementTest : DescribeSpec({
     val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
       NodeId(name = "test", path = listOf("external")),
-      Month.fromString("Mar2021"),
+      MAR / 2021 .. MAR / 2021,
       false,
       startBalance
     )
@@ -150,7 +151,7 @@ class StatementTest : DescribeSpec({
     val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
       NodeId(name = "test", path = listOf("external")),
-      Month.fromString("Mar2021"),
+      MAR / 2021 .. MAR / 2021,
       false,
       null,
       endBalance
@@ -172,7 +173,7 @@ class StatementTest : DescribeSpec({
 
     val stmt = TestStatement(
       NodeId(name = "test", path = listOf("external")),
-      Month.fromString("Mar2021"),
+      MAR / 2021 .. MAR / 2021,
       false,
       startBalance,
       endBalance
@@ -190,7 +191,7 @@ class StatementTest : DescribeSpec({
     val endBalance = Balance(1020, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
       NodeId(name = "test", path = listOf("external")),
-      Month.fromString("Mar2021"),
+      MAR / 2021 .. MAR / 2021,
       false,
       startBalance,
       endBalance

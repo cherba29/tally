@@ -1,7 +1,6 @@
 package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.NodeId
 import io.kotest.core.spec.style.DescribeSpec
@@ -35,7 +34,7 @@ class LoaderTest : DescribeSpec({
         val nodeId = NodeId("test-account", setOf("someone"), listOf("external"))
         result.statements.size shouldBe 1
         val tranStatement = result.statements[nodeId]?.get(MAR / 2019)!!
-        tranStatement.month shouldBe Month(2019, 2)
+        tranStatement.monthRange shouldBe MAR / 2019 .. MAR / 2019
         tranStatement.nodeId.name shouldBe "test-account"
 
         result.budget.balances[nodeId]?.get(MAR / 2019) shouldBe Balance(

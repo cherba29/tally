@@ -1,13 +1,13 @@
 package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.Transfer
 
 // Extension of Statement for transactions over an account.
-class TransactionStatement(nodeId: NodeId, month: Month, isClosed: Boolean, startBalance: Balance?) :
-  Statement(nodeId, month, isClosed, startBalance) {
+class TransactionStatement(nodeId: NodeId, monthRange: MonthRange, isClosed: Boolean, startBalance: Balance?) :
+  Statement(nodeId, monthRange, isClosed, startBalance) {
   // List of transaction in this statement.
   val transactions: MutableList<Transaction> = mutableListOf()
 
@@ -30,12 +30,12 @@ class TransactionStatement(nodeId: NodeId, month: Month, isClosed: Boolean, star
   companion object {
     fun fromTransfers(
       nodeId: NodeId,
-      month: Month,
+      monthRange: MonthRange,
       isClosed: Boolean,
       transfers: List<Transfer>?,
       startBalance: Balance?
     ): TransactionStatement {
-      val statement = TransactionStatement(nodeId, month, isClosed, startBalance)
+      val statement = TransactionStatement(nodeId, monthRange, isClosed, startBalance)
       val attributeTransfer: (NodeId, NodeId, Int) -> Transaction.Type = { fromAccount, toAccount, amount ->
         if (amount > 0) {
           statement.inFlows += amount
@@ -76,7 +76,7 @@ class TransactionStatement(nodeId: NodeId, month: Month, isClosed: Boolean, star
       val firstTransfer: Transfer? = descTransfers.lastOrNull()
       if (firstTransfer != null && startBalance != null && firstTransfer.balance.date < startBalance.date) {
         throw IllegalStateException(
-          "Balance $month $startBalance for account $nodeId starts after " +
+          "Balance ${monthRange.first} $startBalance for account $nodeId starts after " +
               "transaction ${firstTransfer.fromAccount.nodeId.name} --> " +
               "${firstTransfer.toAccount.nodeId.name}/${firstTransfer.balance} desc '${firstTransfer.description}'"
         )

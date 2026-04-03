@@ -50,7 +50,7 @@ class ProcessedBudgetTest : DescribeSpec({
       val nodeId = NodeId("test-account", setOf("john"), listOf("external"))
       val transactionStatement = processedBudget.accountToMonthToTransactionStatement[nodeId]?.get(MAR / 2026)!!
       transactionStatement.nodeId.name shouldBe "test-account"
-      transactionStatement.month shouldBe MAR / 2026
+      transactionStatement.monthRange shouldBe MAR / 2026 .. MAR / 2026
       transactionStatement.nodeId.owners shouldBe listOf("john")
 
       transactionStatement.transactions.isEmpty() shouldBe true
