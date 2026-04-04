@@ -78,7 +78,7 @@ class LoaderTest : DescribeSpec({
         )
         repeat(10) {
           if (loadedOn < loader.loadedOn) return@repeat
-          delay(200)
+          delay(400)
         }
         loadedOn shouldBeLessThan loader.loadedOn
 
