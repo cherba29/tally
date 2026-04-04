@@ -72,7 +72,7 @@ class BudgetTest : DescribeSpec({
     budget.accounts[NodeId("test-account1")] shouldBe account1
     budget.accounts[NodeId("test-account2")] shouldBe account2
     budget.balances.size shouldBe 2
-    budget.months shouldBe listOf("Nov2019", "Dec2019").map { Month.fromString(it) }
+    budget.months shouldBe NOV / 2019 .. DEC / 2019
     budget.transfers.size shouldBe 3
   }
 

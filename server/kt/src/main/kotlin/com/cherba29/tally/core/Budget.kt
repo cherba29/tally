@@ -2,7 +2,7 @@ package com.cherba29.tally.core
 
 data class Budget(
   // Period over which the budget is defined.
-  val months: List<Month>,
+  val months: MonthRange,
   // Account id to account map.
   val accounts: Map<NodeId, Account>,
   // Account id -> month -> balance map.

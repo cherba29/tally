@@ -115,7 +115,7 @@ class BudgetBuilder(
       fromMonthTransfers.add(transfer)
     }
     val months =
-      if (minMonth != null && maxMonth != null) (minMonth!!..maxMonth!!).toList() else listOf()
+      if (minMonth != null && maxMonth != null) (minMonth!!..maxMonth!!) else MonthRange.EMPTY
     return Budget(months, accounts, balances, budgetTransfers)
   }
 
