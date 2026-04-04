@@ -20,16 +20,8 @@ class SummaryStatement(nodeId: NodeId, monthRange: MonthRange) : Statement(nodeI
       // Does not contribute to the summary.
       return
     }
-    if (startBalance == null) {
-      startBalance = statement.startBalance
-    } else if (statement.startBalance != null) {
-      startBalance = Balance.add(startBalance!!, statement.startBalance!!)
-    }
-    if (endBalance == null) {
-      endBalance = statement.endBalance
-    } else if (statement.endBalance != null) {
-      endBalance = Balance.add(endBalance!!, statement.endBalance!!)
-    }
+    startBalance = Balance.add(startBalance, statement.startBalance)
+    endBalance = Balance.add(endBalance, statement.endBalance)
     addInFlow(statement.inFlows)
     addOutFlow(statement.outFlows)
     totalTransfers += statement.totalTransfers

@@ -21,18 +21,8 @@ class CombinedStatement(nodeId: NodeId, monthRange: MonthRange) : Statement(node
           statements[currentMonth.previous()],
           statements[currentMonth.next()]
         )
-        if (
-          combined.startBalance == null ||
-          (stmt.startBalance != null && combined.startBalance!!.date > stmt.startBalance!!.date)
-        ) {
-          combined.startBalance = stmt.startBalance
-        }
-        if (
-          combined.endBalance == null ||
-          (stmt.endBalance != null && combined.endBalance!!.date < stmt.endBalance!!.date)
-        ) {
-          combined.endBalance = stmt.endBalance
-        }
+        combined.startBalance = Balance.pickMinDate(combined.startBalance, stmt.startBalance)
+        combined.endBalance = Balance.pickMaxDate(combined.endBalance, stmt.endBalance)
         combined.addInFlow(stmt.inFlows)
         combined.addOutFlow(stmt.outFlows)
         combined.totalTransfers += stmt.totalTransfers

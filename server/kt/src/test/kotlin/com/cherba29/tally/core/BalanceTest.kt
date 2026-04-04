@@ -22,28 +22,69 @@ class BalanceTest : DescribeSpec({
       val balance1 = Balance(100, LocalDate(2020, 2, 3), Balance.Type.CONFIRMED)
       val balance2 = Balance(200, LocalDate(2020, 3, 3), Balance.Type.CONFIRMED)
       val sum = Balance.add(balance1, balance2)
-      sum.date shouldBe LocalDate(2020, 3, 3)
-      sum.amount shouldBe 300.0
-      sum.type shouldBe Balance.Type.CONFIRMED
+      sum?.date shouldBe LocalDate(2020, 3, 3)
+      sum?.amount shouldBe 300.0
+      sum?.type shouldBe Balance.Type.CONFIRMED
     }
 
     it("different types") {
       val balance1 = Balance(100, LocalDate(2020, 2, 3), Balance.Type.CONFIRMED)
       val balance2 = Balance(200, LocalDate(2020, 1, 3), Balance.Type.PROJECTED)
       val sum = Balance.add(balance1, balance2)
-      sum.date shouldBe LocalDate(2020, 2, 3)
-      sum.amount shouldBe 300.0
-      sum.type shouldBe Balance.Type.PROJECTED
+      sum?.date shouldBe LocalDate(2020, 2, 3)
+      sum?.amount shouldBe 300.0
+      sum?.type shouldBe Balance.Type.PROJECTED
+    }
+
+    it("first null") {
+      val balance2 = Balance(200, LocalDate(2020, 1, 3), Balance.Type.PROJECTED)
+      val sum = Balance.add(null, balance2)
+      sum?.date shouldBe LocalDate(2020, 1, 3)
+      sum?.amount shouldBe 200.0
+      sum?.type shouldBe Balance.Type.PROJECTED
+    }
+
+    it("second null") {
+      val balance1 = Balance(100, LocalDate(2020, 2, 3), Balance.Type.CONFIRMED)
+      val sum = Balance.add(balance1, null)
+      sum?.date shouldBe LocalDate(2020, 2, 3)
+      sum?.amount shouldBe 100.0
+      sum?.type shouldBe Balance.Type.CONFIRMED
+    }
+    it("both null") {
+      val sum = Balance.add(null, null)
+      sum shouldBe null
     }
   }
+
   describe("subtraction") {
     it("different types") {
       val balance1 = Balance(100, LocalDate(2020, 2, 3), Balance.Type.CONFIRMED)
       val balance2 = Balance(200, LocalDate(2020, 1, 3), Balance.Type.PROJECTED)
       val sum = Balance.subtract(balance1, balance2)
-      sum.date shouldBe LocalDate(2020, 2, 3)
-      sum.amount shouldBe -100.0
-      sum.type shouldBe Balance.Type.PROJECTED
+      sum?.date shouldBe LocalDate(2020, 2, 3)
+      sum?.amount shouldBe -100.0
+      sum?.type shouldBe Balance.Type.PROJECTED
+    }
+    it("first null") {
+      val balance2 = Balance(200, LocalDate(2020, 1, 3), Balance.Type.PROJECTED)
+      val sum = Balance.subtract(null, balance2)
+      sum?.date shouldBe LocalDate(2020, 1, 3)
+      sum?.amount shouldBe -200.0
+      sum?.type shouldBe Balance.Type.PROJECTED
+    }
+
+    it("second null") {
+      val balance1 = Balance(100, LocalDate(2020, 2, 3), Balance.Type.CONFIRMED)
+      val sum = Balance.subtract(balance1, null)
+      sum?.date shouldBe LocalDate(2020, 2, 3)
+      sum?.amount shouldBe 100.0
+      sum?.type shouldBe Balance.Type.CONFIRMED
+    }
+
+    it("both null") {
+      val sum = Balance.subtract(null, null)
+      sum shouldBe null
     }
   }
 

@@ -45,15 +45,30 @@ data class Balance(val amount: Int, val date: LocalDate, val type: Type) : Compa
       return Balance(-balance.amount, balance.date, balance.type)
     }
 
-    fun add(balance1: Balance, balance2: Balance): Balance {
+    fun add(balance1: Balance?, balance2: Balance?): Balance? {
+      if (balance1 == null) return balance2
+      if (balance2 == null)  return balance1
       val maxDate = if (balance1.date < balance2.date) balance2.date else balance1.date
       return Balance(
         balance1.amount + balance2.amount, maxDate, Type.combineTypes(balance1.type, balance2.type)
       )
     }
 
-    fun subtract(balance1: Balance, balance2: Balance): Balance {
+    fun subtract(balance1: Balance?, balance2: Balance?): Balance? {
+      if (balance2 == null) return balance1
       return add(balance1, Balance(-balance2.amount, balance2.date, balance2.type))
+    }
+
+    fun pickMinDate(first: Balance?, second: Balance?): Balance? {
+      if (first == null) return second
+      if (second == null) return first
+      return if (first.date > second.date) second else first
+    }
+
+    fun pickMaxDate(first: Balance?, second: Balance?): Balance? {
+      if (first == null) return second
+      if (second == null) return first
+      return if (first.date > second.date) first else second
     }
   }
 }
