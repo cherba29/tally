@@ -51,27 +51,7 @@ class TransactionStatement(nodeId: NodeId, monthRange: MonthRange, isClosed: Boo
         }
         transactionType
       }
-      val descTransfers = transfers?.sortedWith { b, a ->
-        var eq: Int = a.balance.compareTo(b.balance)
-        if (eq != 0) eq
-        else {
-          eq = a.fromMonth.compareTo(b.fromMonth)
-          if (eq != 0) eq
-          else {
-            eq = a.toMonth.compareTo(b.toMonth)
-            if (eq != 0) eq
-            else if (a.fromAccount.nodeId.name != b.fromAccount.nodeId.name) {
-              if (a.fromAccount.nodeId.name < b.fromAccount.nodeId.name) -1 else 1
-            } else if (a.toAccount.nodeId.name != b.toAccount.nodeId.name) {
-              if (a.toAccount.nodeId.name < b.toAccount.nodeId.name) -1 else 1
-            } else if (a.description != b.description) {
-              if (a.description.orEmpty() < b.description.orEmpty()) -1 else 1
-            } else {
-              0
-            }
-          }
-        }
-      } ?: listOf()
+      val descTransfers = transfers?.sortedDescending() ?: listOf()
 
       val firstTransfer: Transfer? = descTransfers.lastOrNull()
       if (firstTransfer != null && startBalance != null && firstTransfer.balance.date < startBalance.date) {
