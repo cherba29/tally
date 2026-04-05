@@ -1,12 +1,12 @@
 package com.cherba29.tally.statement
 
-import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.core.enlargeTo
 import com.cherba29.tally.utils.Map3
 import kotlin.collections.iterator
 
-// TODO: add tests.
 fun buildSummaryStatementTable(
   statements: List<TransactionStatement>,
   selectedOwner: String?
@@ -27,17 +27,15 @@ fun buildSummaryStatementTable(
   return statementsAggregator.summaryStatements
 }
 
-// TODO: add tests.
 fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): SummaryStatement {
   if (summaryStatements.isEmpty()) {
     throw IllegalArgumentException("Cant combine empty list of summary statements")
   }
   var stmtName: String? = null
   var owners: Set<String> = setOf()
-  var minMonth: Month? = null
-  var maxMonth: Month? = null
-  // Map of 'account name' -> month -> 'summary statement'.
-  val accountStatements = mutableMapOf<NodeId, MutableMap<Month, Statement>>()
+  var monthRange: MonthRange? = null
+  // Map of 'nodeId' -> month -> 'summary statement'.
+  val nodeMonthStatementMap = mutableMapOf<NodeId, MutableMap<Month, Statement>>()
 
   for (summaryStmt in summaryStatements) {
     if (stmtName == null) {
@@ -48,17 +46,10 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
         "Cant combine different summary statements $stmtName and ${summaryStmt.nodeId.name}"
       )
     }
-    if (minMonth == null || summaryStmt.monthRange.first < minMonth) {
-      minMonth = summaryStmt.monthRange.first
-    }
-    if (maxMonth == null || maxMonth < summaryStmt.monthRange.last) {
-      maxMonth = summaryStmt.monthRange.last
-    }
+    monthRange = monthRange.enlargeTo(summaryStmt.monthRange)
     for (stmt in summaryStmt.statements) {
-      var accountMonthlyStatements = accountStatements[stmt.nodeId]
-      if (accountMonthlyStatements == null) {
-        accountMonthlyStatements = mutableMapOf()
-        accountStatements[stmt.nodeId] = accountMonthlyStatements
+      val accountMonthlyStatements = nodeMonthStatementMap.getOrPut(stmt.nodeId) {
+        mutableMapOf()
       }
       val monthStatement = accountMonthlyStatements[stmt.monthRange.first]
       if (monthStatement != null) {
@@ -67,23 +58,13 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
       accountMonthlyStatements[stmt.monthRange.first] = stmt
     }
   }
-  if (stmtName == null) {
-    throw IllegalArgumentException("Statements do not have name set.")
-  }
-  if (minMonth == null) {
-    throw IllegalArgumentException("Could not determine start month")
-  }
-  if (maxMonth == null) {
-    throw IllegalArgumentException("Could not determine end month")
-  }
-  val summaryAccount = Account(NodeId(stmtName, owners), openedOn = minMonth)
-  val combined = SummaryStatement(summaryAccount.nodeId, minMonth..maxMonth)
-  for ((acctName, acctStatements) in accountStatements) {
+  val combined = SummaryStatement(NodeId(stmtName!!, owners), monthRange!!)
+  for ((nodeId, monthStatementMap) in nodeMonthStatementMap) {
     // Combine all statements for a given account over all months in the range.
     val stmt = CombinedStatement.fromStatements(
-      acctName,
-      minMonth..maxMonth,
-      acctStatements
+      nodeId,
+      monthRange,
+      monthStatementMap
     )
     combined.addStatement(stmt)
   }

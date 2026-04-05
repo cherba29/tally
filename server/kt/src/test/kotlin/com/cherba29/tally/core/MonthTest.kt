@@ -432,5 +432,23 @@ class MonthTest : DescribeSpec({
         hashCodes.size shouldBe 1000
       }
     }
+    describe("enlargetTo") {
+      it("same does not change") {
+        val range = MAR / 2026 .. APR / 2026
+        range.enlargeTo(range) shouldBe MAR / 2026 .. APR / 2026
+      }
+      it("with null no change") {
+        val range = MAR / 2026 .. APR / 2026
+        range.enlargeTo(null) shouldBe MAR / 2026 .. APR / 2026
+        null.enlargeTo(range) shouldBe MAR / 2026 .. APR / 2026
+        null.enlargeTo(null) shouldBe null
+      }
+      it("overlapping enlarges") {
+        val range1 = MAR / 2026 .. MAR / 2027
+        val range2 = APR / 2026 .. APR / 2027
+        range1.enlargeTo(range2) shouldBe MAR / 2026 .. APR / 2027
+        range2.enlargeTo(range1) shouldBe MAR / 2026 .. APR / 2027
+      }
+    }
   }
 })
