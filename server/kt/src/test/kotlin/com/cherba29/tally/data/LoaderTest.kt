@@ -28,7 +28,7 @@ class LoaderTest : DescribeSpec({
         """.trimIndent()
       )
 
-      Loader(tallyPath).use { loader ->
+      Loader(tallyPath.watchedEventFlow { true }).use { loader ->
         val result = loader.budget
 
         val nodeId = NodeId("test-account", setOf("someone"), listOf("external"))
@@ -57,7 +57,7 @@ class LoaderTest : DescribeSpec({
           """.trimIndent()
       )
 
-      Loader(tallyPath).use { loader ->
+      Loader(tallyPath.watchedEventFlow { true }).use { loader ->
         val result1 = loader.budget
         val nodeId = NodeId("test-account", setOf("someone"), listOf("external"))
         result1.budget.balances[nodeId]?.get(MAR / 2019) shouldBe Balance(
@@ -103,7 +103,7 @@ class LoaderTest : DescribeSpec({
           """.trimIndent()
       )
 
-      Loader(tallyPath).use { loader ->
+      Loader(tallyPath.watchedEventFlow { true }).use { loader ->
         val result1 = loader.budget
         val nodeId = NodeId("test-account", setOf("someone"), listOf("external"))
         result1.budget.balances[nodeId]?.get(MAR / 2019) shouldBe Balance(

@@ -1,9 +1,7 @@
 package com.cherba29.tally
 
-import com.cherba29.tally.StatementService
-import com.cherba29.tally.SummaryService
-import com.cherba29.tally.TableService
 import com.cherba29.tally.data.Loader
+import com.cherba29.tally.data.watchedEventFlow
 import com.cherba29.tally.schema.CustomSchemaGeneratorHooks
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.generator.federation.directives.ContactDirective
@@ -36,6 +34,8 @@ import io.ktor.server.websocket.WebSockets
 import io.ktor.server.websocket.pingPeriod
 import java.nio.file.Paths
 import kotlin.io.path.exists
+import kotlin.io.path.extension
+import kotlin.io.path.pathString
 import kotlin.time.Duration.Companion.seconds
 
 fun main(args: Array<String>) {
@@ -69,7 +69,9 @@ fun Application.graphQLModule() {
   }
 
   // TODO: Maybe use resource lifecycle https://ktor.io/docs/server-di-resource-lifecycle-management.html
-  val loader = Loader(tallyFiles)
+  val loader = Loader(tallyFiles.watchedEventFlow {
+    it.extension == "yaml" && !ignorePathRegex.containsMatchIn(it.pathString)
+  })
 
   install(WebSockets) {
     pingPeriod = 1.seconds
@@ -126,6 +128,6 @@ fun Application.graphQLModule() {
     loader.close()
   }
 }
-
+private val ignorePathRegex = Regex("(^_)|(/_)")
 private val logger = KotlinLogging.logger {}
 

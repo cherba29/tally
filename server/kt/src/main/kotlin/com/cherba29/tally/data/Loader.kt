@@ -11,20 +11,17 @@ import java.lang.AutoCloseable
 import java.nio.file.Path
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
-import kotlin.io.path.extension
-import kotlin.io.path.pathString
 import kotlin.time.Clock
 import kotlin.time.TimeSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
-class Loader(tallyFilesPath: Path, timeSource: TimeSource = TimeSource.Monotonic): AutoCloseable {
-  private val watchedPath: Path = tallyFilesPath.toRealPath()
-
+class Loader(pathUpdates: Flow<WatchResult>, timeSource: TimeSource = TimeSource.Monotonic): AutoCloseable {
   private val processedBudget = ProcessedBudget(timeSource)
 
   private val dataLock = ReentrantLock()
@@ -41,9 +38,7 @@ class Loader(tallyFilesPath: Path, timeSource: TimeSource = TimeSource.Monotonic
     val summaries: Map3<SummaryStatement>,
   )
 
-  private val watcherJob: Job = watchedPath.watchedEventFlow {
-    it.extension == "yaml" && !ignorePathRegex.containsMatchIn(it.pathString)
-  }.onEach { (rootPath: Path, relativePath: Path?, reprocess: Boolean) ->
+  private val watcherJob: Job = pathUpdates.onEach { (rootPath: Path, relativePath: Path?, reprocess: Boolean) ->
     val startTimeMs: Long = Clock.System.now().toEpochMilliseconds()
     if (relativePath != null) {
       try {
@@ -68,10 +63,6 @@ class Loader(tallyFilesPath: Path, timeSource: TimeSource = TimeSource.Monotonic
     }
   }.launchIn(CoroutineScope(Dispatchers.IO + SupervisorJob()))
 
-  init {
-    logger.info { "Watching $watchedPath" }
-  }
-
   val budget: DataPayload get() {
     if (processedOn == 0L) {
       // If first time, make sure the data has been loaded before proceeding.
@@ -95,7 +86,6 @@ class Loader(tallyFilesPath: Path, timeSource: TimeSource = TimeSource.Monotonic
   }
 
   companion object {
-    val ignorePathRegex = Regex("(^_)|(/_)")
     private val logger = KotlinLogging.logger {}
   }
 }
