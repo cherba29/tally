@@ -22,7 +22,11 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
 
-data class WatchResult(val relativePath: Path?, val reprocess: Boolean)
+data class WatchResult(
+  val rootPath: Path,
+  val relativePath: Path?,
+  val reprocess: Boolean
+)
 
 fun Path.watchedEventFlow(predicate: (Path)->Boolean): Flow<WatchResult> {
   val watcher: WatchService = FileSystems.getDefault().newWatchService()
@@ -45,10 +49,10 @@ fun Path.watchedEventFlow(predicate: (Path)->Boolean): Flow<WatchResult> {
     for (filePath in watchedPath.walk()) {
       val relativeFilePath = filePath.relativeTo(watchedPath)
       if (predicate(relativeFilePath)) {
-        emit(WatchResult(relativeFilePath, false))
+        emit(WatchResult(this@watchedEventFlow, relativeFilePath, false))
       }
     }
-    emit(WatchResult(null, true))
+    emit(WatchResult(this@watchedEventFlow,null, true))
 
     while (currentCoroutineContext().isActive) {
       coroutineScope {
@@ -66,21 +70,20 @@ fun Path.watchedEventFlow(predicate: (Path)->Boolean): Flow<WatchResult> {
         if (currentKey != null) {
           val updatedPath = watchKeys[currentKey]
           // TODO: detect creation of new directories.
-          var eventIndex = 0
-          for (event in currentKey.pollEvents()) {
+          // TODO: remove eventIndex.
+          for ((eventIndex, event) in currentKey.pollEvents().withIndex()) {
             val context = event.context() as Path // Relative path to the file/directory changed
 
             if (updatedPath != null) {
               val filePath = updatedPath.resolve(context)
               if (predicate(filePath)) {
                 logger.info { "Emitting $eventIndex $ANSI_YELLOW$filePath$ANSI_RESET for event ${event.kind()}" }
-                emit(WatchResult(filePath, true))
+                emit(WatchResult(this@watchedEventFlow, filePath, true))
               }
             } else {
               logger.warn { "Could not find registered key for $key" }
             }
-            eventIndex++
-          }
+            }
           currentKey.reset()
         }
       }
@@ -90,9 +93,9 @@ fun Path.watchedEventFlow(predicate: (Path)->Boolean): Flow<WatchResult> {
   }
 }
 
-private val ANSI_RESET = "\u001B[0m"
-private val ANSI_RED = "\u001B[31m"
-private val ANSI_GREEN = "\u001B[32m"
-private val ANSI_YELLOW = "\u001B[33m"
-private val ANSI_BLUE = "\u001B[34m"
+private const val ANSI_RESET = "\u001B[0m"
+private const val ANSI_RED = "\u001B[31m"
+private const val ANSI_GREEN = "\u001B[32m"
+private const val ANSI_YELLOW = "\u001B[33m"
+private const val ANSI_BLUE = "\u001B[34m"
 private val logger = KotlinLogging.logger {}

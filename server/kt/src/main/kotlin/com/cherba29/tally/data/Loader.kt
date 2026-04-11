@@ -43,11 +43,11 @@ class Loader(tallyFilesPath: Path, timeSource: TimeSource = TimeSource.Monotonic
 
   private val watcherJob: Job = watchedPath.watchedEventFlow {
     it.extension == "yaml" && !ignorePathRegex.containsMatchIn(it.pathString)
-  }.onEach { (relativePath: Path?, reprocess: Boolean) ->
+  }.onEach { (rootPath: Path, relativePath: Path?, reprocess: Boolean) ->
     val startTimeMs: Long = Clock.System.now().toEpochMilliseconds()
     if (relativePath != null) {
       try {
-        processedBudget.addFile(watchedPath, relativePath)
+        processedBudget.addFile(rootPath, relativePath)
       } catch (e: Exception) {
         logger.error { "Failed to reload $relativePath. $e" }
         return@onEach

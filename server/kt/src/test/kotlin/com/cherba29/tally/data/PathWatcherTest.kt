@@ -48,7 +48,7 @@ class PathWatcherTest : DescribeSpec({
       (folder / "file2.yaml").createFile()
 
       folder.watchedEventFlow { true }.takeWhile { !it.reprocess }.test {
-        awaitItem() shouldBe WatchResult(Paths.get("file2.yaml"), reprocess=false)
+        awaitItem() shouldBe WatchResult(folder, Paths.get("file2.yaml"), reprocess=false)
         awaitComplete()
       }
     }
@@ -59,7 +59,7 @@ class PathWatcherTest : DescribeSpec({
       (folder / "subfolder" / "file2.yaml").createFile()
 
       folder.watchedEventFlow { true }.takeWhile { !it.reprocess }.test {
-        awaitItem() shouldBe WatchResult(Paths.get("subfolder/file2.yaml"), reprocess=false)
+        awaitItem() shouldBe WatchResult(folder, Paths.get("subfolder/file2.yaml"), reprocess=false)
         awaitComplete()
       }
     }
@@ -74,10 +74,10 @@ class PathWatcherTest : DescribeSpec({
 
       turbineScope {
         val flow = folder.watchedEventFlow { true }.testIn(backgroundScope)
-        flow.awaitItem() shouldBe WatchResult(relativePath = Paths.get("file2.yaml"), reprocess = false)
-        flow.awaitItem() shouldBe WatchResult(relativePath = null, reprocess = true)
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file2.yaml"), reprocess = false)
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = null, reprocess = true)
         targetFile.writeText("hello")
-        flow.awaitItem() shouldBe WatchResult(relativePath = Paths.get("file2.yaml"), reprocess = true)
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file2.yaml"), reprocess = true)
         flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
       }
     }
