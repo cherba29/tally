@@ -5,6 +5,7 @@ kotest = "6.0.7"
 kotlin = "2.3.0"
 ktor = "3.0.3"
 logback = "1.4.14"
+mockk = "1.14.6"
 selfie = "3.0.0"
 
 [libraries]
@@ -39,6 +40,8 @@ ktor-server-websockets = { group = "io.ktor", name = "ktor-server-websockets", v
 
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logback-core = { module = "ch.qos.logback:logback-core", version.ref = "logback" }
+mockk-jvm = { module = "io.mockk:mockk-jvm", version.ref = "mockk" }
+mockk-dsl-jvm = { module = "io.mockk:mockk-dsl-jvm", version.ref = "mockk" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 selfie-kotest = { group = "com.diffplug.selfie", name = "selfie-runner-kotest", version.ref = "selfie" }
 selfie-kotest-jvm = { group = "com.diffplug.selfie", name = "selfie-runner-kotest-jvm", version.ref = "selfie" }

@@ -17,12 +17,25 @@ import kotlin.time.TimeSource
 import kotlin.time.measureTime
 import kotlin.time.measureTimedValue
 
+data class DataPayload(
+  val budget: Budget,
+  val statements: Map<NodeId, Map<Month, TransactionStatement>>,
+  // owner -> account name -> month -> summary.
+  val summaries: Map3<SummaryStatement>,
+)
+
 class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
   private val parsedAccountData = mutableMapOf<String, YamlData>()
   var budget: Budget? = null
   val accountToMonthToTransactionStatement: MutableMap<NodeId, MutableMap<Month, TransactionStatement>> =
     mutableMapOf()
   var summaryNameMonthMap = Map3<SummaryStatement>()
+
+  val dataPayload: DataPayload get() = DataPayload(
+    budget = budget!!,
+    statements = accountToMonthToTransactionStatement,
+    summaries = summaryNameMonthMap,
+  )
 
   fun reProcess() {
     val elapsedBudgetTime = timeSource.measureTime {

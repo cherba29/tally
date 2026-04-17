@@ -6,7 +6,7 @@ import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.budget
-import com.cherba29.tally.data.Loader.DataPayload
+import com.cherba29.tally.data.DataPayload
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import com.cherba29.tally.utils.Map3

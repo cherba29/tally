@@ -3,7 +3,7 @@ package com.cherba29.tally.schema
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.NodeId
-import com.cherba29.tally.data.Loader.DataPayload
+import com.cherba29.tally.data.DataPayload
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.time.Clock
 

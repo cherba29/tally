@@ -53,6 +53,8 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.core)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.kotlinx.coroutines.test.jvm)
+    testImplementation(libs.mockk.jvm)
+    testImplementation(libs.mockk.dsl.jvm)
 //    testImplementation(libs.selfie.kotest)
 //    testImplementation(libs.selfie.kotest.jvm)
     testImplementation(libs.selfie.lib)

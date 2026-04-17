@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
+import kotlin.time.Duration.Companion.milliseconds
 
 data class WatchResult(
   val rootPath: Path,
@@ -63,7 +64,7 @@ fun Path.watchedEventFlow(predicate: (Path)->Boolean): Flow<WatchResult> {
             key = watcher.take()
           }
           // TODO: remove this delay. Without it same modify is triggered multiple times.
-          delay(500)
+          delay(500.milliseconds)
         }.join()
 
         val currentKey = key

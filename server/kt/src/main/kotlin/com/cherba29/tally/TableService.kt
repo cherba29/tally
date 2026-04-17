@@ -7,6 +7,7 @@ import com.cherba29.tally.schema.buildGqlTable
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.runBlocking
 
 class TableService(val loader: Loader) : Query {
   @GraphQLDescription("Generates full tally table in given month range.")
@@ -14,7 +15,7 @@ class TableService(val loader: Loader) : Query {
   fun table(owner: String?, startMonth: Month, endMonth: Month): GqlTable {
     logger.info { "table owner=$owner startMonth=$startMonth endMonth=$endMonth" }
     return try {
-      buildGqlTable(loader.budget, owner, startMonth, endMonth)
+      buildGqlTable(runBlocking { loader.budget() }, owner, startMonth, endMonth)
     } catch (e: Exception) {
       logger.error(e) { "Error while processing table query owner=$owner, startMont=$startMonth, endMonth=$endMonth" }
       throw e
