@@ -7,6 +7,7 @@ import java.nio.file.StandardWatchEventKinds
 import java.nio.file.WatchKey
 import java.nio.file.WatchService
 import kotlin.io.path.PathWalkOption
+import kotlin.io.path.div
 import kotlin.io.path.isDirectory
 import kotlin.io.path.walk
 import kotlin.io.path.name
@@ -31,20 +32,21 @@ data class WatchResult(
 
 fun Path.watchedEventFlow(predicate: (Path)->Boolean): Flow<WatchResult> {
   val watcher: WatchService = FileSystems.getDefault().newWatchService()
-  val watchKeys = mutableMapOf<WatchKey, Path>()
-    logger.info { "Registering all paths under $this" }
-    this.walk(PathWalkOption.INCLUDE_DIRECTORIES).filter {
-      // TODO: reconcile with predicate.
-      it.isDirectory() && !it.name.startsWith("_")
-    }.associateTo(watchKeys) {
-      logger.info { "Registering $it" }
-      it.register(watcher,
-        StandardWatchEventKinds.ENTRY_CREATE,
-        StandardWatchEventKinds.ENTRY_DELETE,
-        StandardWatchEventKinds.ENTRY_MODIFY) to this.relativize(it)
-    }
+  val watchedPath = this.toRealPath()  // walk below does not work for relative paths.
+  val watchKeyToFolderMap = mutableMapOf<WatchKey, Path>()
 
-  val watchedPath = this
+  logger.info { "Registering all paths under $watchedPath" }
+  watchedPath.walk(PathWalkOption.INCLUDE_DIRECTORIES).filter {
+    // TODO: reconcile with predicate.
+    it.isDirectory() && !it.name.startsWith("_")
+  }.associateTo(watchKeyToFolderMap) {
+    logger.info { "Registering $it" }
+    it.register(watcher,
+      StandardWatchEventKinds.ENTRY_CREATE,
+      StandardWatchEventKinds.ENTRY_DELETE,
+      StandardWatchEventKinds.ENTRY_MODIFY) to watchedPath.relativize(it)
+  }
+
   return flow {
     // Emit existing files.
     for (filePath in watchedPath.walk()) {
@@ -61,30 +63,32 @@ fun Path.watchedEventFlow(predicate: (Path)->Boolean): Flow<WatchResult> {
         launch {
           runInterruptible(Dispatchers.IO) {
             logger.info { "Waiting for changes to $watchedPath" }
+            // TODO: Perhaps use poll so no need for runInterruptable.
             key = watcher.take()
           }
-          // TODO: remove this delay. Without it same modify is triggered multiple times.
+          // TODO: remove this delay. Without it same modify is triggered multiple times. See discussion.
+          // https://stackoverflow.com/questions/16777869/java-7-watchservice-ignoring-multiple-occurrences-of-the-same-event
+          // On linux (wsl2) this can be as low as 200ms, but on macos needed to be at least 500ms.
           delay(500.milliseconds)
         }.join()
 
         val currentKey = key
         if (currentKey != null) {
-          val updatedPath = watchKeys[currentKey]
-          // TODO: detect creation of new directories.
-          // TODO: remove eventIndex.
-          for ((eventIndex, event) in currentKey.pollEvents().withIndex()) {
-            val context = event.context() as Path // Relative path to the file/directory changed
-
-            if (updatedPath != null) {
-              val filePath = updatedPath.resolve(context)
+          val updatedFolderPath = watchKeyToFolderMap[currentKey]
+          if (updatedFolderPath != null) {
+            // TODO: detect creation of new directories.
+            // TODO: support deletions.
+            // TODO: remove eventIndex.
+            for ((eventIndex, event) in currentKey.pollEvents().withIndex()) {
+              val filePath = updatedFolderPath / (event.context() as Path)  // Relative to watched root path.
               if (predicate(filePath)) {
-                logger.info { "Emitting $eventIndex $ANSI_YELLOW$filePath$ANSI_RESET for event ${event.kind()}" }
+                logger.info { "Emitting $eventIndex kind=${event.kind()} $ANSI_YELLOW$filePath$ANSI_RESET for event ${event.kind()}" }
                 emit(WatchResult(this@watchedEventFlow, filePath, true))
               }
-            } else {
-              logger.warn { "Could not find registered key for $key" }
             }
-            }
+          } else {
+            logger.warn { "Could not find registered key for $key" }
+          }
           currentKey.reset()
         }
       }

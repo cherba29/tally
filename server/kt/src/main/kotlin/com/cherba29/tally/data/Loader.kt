@@ -41,7 +41,7 @@ class Loader(
         processedBudget.reProcess()
         processedOn = startTime.elapsedNow()
       }
-      logger.info { "info: Rebuilt budget in ${reprocessTime.inWholeMilliseconds}ms" }
+      logger.info { "Rebuilt budget in ${reprocessTime.inWholeMilliseconds}ms" }
       return processedBudget.dataPayload
     }
     return null
