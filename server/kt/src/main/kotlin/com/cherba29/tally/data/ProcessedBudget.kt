@@ -48,7 +48,7 @@ class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
               unwantedFiles.add(filePath)
             }
           } catch (e: Exception) {
-            logger.error { "error: Failed to add $filePath, $e" }
+            logger.error(e) { "error: Failed to add $filePath" }
             continue
           }
         }
