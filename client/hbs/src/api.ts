@@ -51,7 +51,6 @@ export class BackendClient {
                 name
                 description
                 path
-                type
                 openedOn
                 closedOn
                 number
