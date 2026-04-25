@@ -21,6 +21,9 @@ kotlin {
 }
 
 dependencies {
+    implementation(libs.clikt.core)
+    implementation(libs.clikt.jvm)
+    implementation(libs.clikt.markdown)
     implementation(libs.jackson.dataformat.yaml)
     implementation(libs.jackson.module.kotlin)
     implementation(libs.jackson.databind)
