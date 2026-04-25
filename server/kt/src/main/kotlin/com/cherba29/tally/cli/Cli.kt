@@ -1,5 +1,6 @@
 package com.cherba29.tally.cli
 
+import com.cherba29.tally.cli.cmds.Report
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.core.subcommands
@@ -13,10 +14,4 @@ class Cli : CliktCommand() {
   }
 }
 
-class Execute : CliktCommand() {
-  override fun run() {
-    echo("executing")
-  }
-}
-
-fun main(args: Array<String>) = Cli().subcommands(Execute()).main(args)
+fun main(args: Array<String>) = Cli().subcommands(Report()).main(args)
