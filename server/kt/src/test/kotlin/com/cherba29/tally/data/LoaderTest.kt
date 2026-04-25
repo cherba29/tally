@@ -109,7 +109,7 @@ class LoaderTest : DescribeSpec({
         }
       }
 
-      it("ignoring error") {
+      it("ignoring add file error") {
         val timeSource = TestTimeSource()
         val channel = Channel<WatchResult>(Channel.BUFFERED)
         val rootPath = Paths.get("/tmp")
@@ -141,7 +141,7 @@ class LoaderTest : DescribeSpec({
           channel.trySend(WatchResult(rootPath, relativePath, true)).isSuccess shouldBe true
           testScheduler.advanceTimeBy(1000)
 
-          loader.loadedOn shouldBe 100.seconds  // Should not change since reprocess fails.
+          loader.loadedOn shouldBe 100.seconds  // Should not change since add file fails.
 
           val result2 = loader.budget()
           result2.statements.size shouldBe 1
@@ -151,6 +151,52 @@ class LoaderTest : DescribeSpec({
 
           verify { processedBudget.addFile(rootPath, relativePath) }
           verify(exactly = 1) { processedBudget.reProcess() }  // Second call was not made due to error.
+        }
+      }
+
+      it("ignoring reprocess error") {
+        val timeSource = TestTimeSource()
+        val channel = Channel<WatchResult>(Channel.BUFFERED)
+        val rootPath = Paths.get("/tmp")
+        val relativePath = Paths.get("file.yaml")
+        channel.trySend(WatchResult(rootPath, relativePath, false)).isSuccess shouldBe true
+        val processedBudget = mockk<ProcessedBudget> {
+          var count = 1
+          every { addFile(any<Path>(), any()) } answers { }
+          every { reProcess() } answers {
+            if (count > 1) throw IllegalArgumentException("error")
+          }
+          every { dataPayload } answers {
+            DataPayload(mockk<Budget>(),mapOf(
+              NodeId("testAccount${count++}") to mapOf()
+            ), Map3())
+          }
+        }
+        timeSource += 50.seconds
+        Loader(channel.receiveAsFlow(), this, timeSource, processedBudget).use { loader ->
+          channel.trySend(WatchResult(rootPath, null, true)).isSuccess shouldBe true
+          timeSource += 100.seconds
+
+          val result1 = loader.budget()
+          result1.statements.size shouldBe 1
+          result1.statements[NodeId("testAccount1")] shouldNotBe null
+          loader.loadedOn shouldBe 100.seconds
+
+          timeSource += 100.seconds
+          channel.trySend(WatchResult(rootPath, relativePath, true)).isSuccess shouldBe true
+          testScheduler.advanceTimeBy(1000)
+
+          loader.loadedOn shouldBe 100.seconds  // Should not change since reprocess fails.
+
+          val result2 = loader.budget()
+          result2.statements.size shouldBe 1
+          result2.statements[NodeId("testAccount1")] shouldNotBe null
+          result2.statements[NodeId("testAccount2")] shouldBe null
+          channel.close() shouldBe true
+
+          verify(exactly = 2) { processedBudget.addFile(rootPath, relativePath) }
+          verify(exactly = 2) { processedBudget.reProcess() }
+          verify(exactly = 1) { processedBudget.dataPayload }  // Second call was not made due to error.
         }
       }
     }

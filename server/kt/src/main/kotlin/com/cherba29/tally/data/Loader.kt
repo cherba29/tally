@@ -38,7 +38,12 @@ class Loader(
     }
     if (watchResult.reprocess) {
       val reprocessTime = timeSource.measureTime {
-        processedBudget.reProcess()
+        try {
+          processedBudget.reProcess()
+        } catch (e: Exception) {
+          logger.error { "Failed to reprocess $watchResult. $e" }
+          return null
+        }
         processedOn = startTime.elapsedNow()
       }
       logger.info { "Rebuilt budget in ${reprocessTime.inWholeMilliseconds}ms" }

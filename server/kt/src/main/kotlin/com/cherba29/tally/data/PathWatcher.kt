@@ -18,10 +18,12 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
+import java.io.IOException
 import kotlin.time.Duration.Companion.milliseconds
 
 data class WatchResult(
@@ -32,7 +34,11 @@ data class WatchResult(
 
 fun Path.watchedEventFlow(predicate: (Path)->Boolean): Flow<WatchResult> {
   val watcher: WatchService = FileSystems.getDefault().newWatchService()
-  val watchedPath = this.toRealPath()  // walk below does not work for relative paths.
+  val watchedPath = try {
+    this.toRealPath()  // walk below does not work for relative paths.
+  } catch (_: IOException) {
+    return flowOf()  // Return empty flow if path does not exist.
+  }
   val watchKeyToFolderMap = mutableMapOf<WatchKey, Path>()
 
   logger.info { "Registering all paths under $watchedPath" }
