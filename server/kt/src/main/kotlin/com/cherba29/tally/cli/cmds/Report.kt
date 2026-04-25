@@ -9,11 +9,13 @@ import com.github.ajalt.clikt.parameters.options.required
 class Report : CliktCommand() {
   override fun help(context: Context) = "Full report"
 
+  val tallyPath by option(envvar = "TALLY_PATH").required()
   val account by argument(help = "Account name")
   val startMonth by option("--start-month", help="Inclusive start month, eg Apr2026").required()
   val endMonth by option("--end-month", help="Inclusive end month, eg May2026").required()
 
   override fun run() {
-    echo("Executing report for $account from $startMonth to $endMonth")
+    echo("Executing report for $account from $startMonth to $endMonth for $tallyPath")
+
   }
 }
