@@ -22,7 +22,7 @@ import kotlin.io.path.extension
 import kotlin.io.path.pathString
 
 class Generate : CliktCommand() {
-  override fun help(context: Context) = "Full report"
+  override fun help(context: Context) = "Generate balances record based on transfers."
 
   val tallyPath by option(envvar = "TALLY_PATH").path(mustExist = true).required()
 
