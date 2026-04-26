@@ -1,6 +1,9 @@
 package com.cherba29.tally.cli
 
+import com.cherba29.tally.cli.cmds.Generate
 import com.cherba29.tally.cli.cmds.Report
+import com.cherba29.tally.cli.cmds.Transactions
+import com.cherba29.tally.cli.cmds.Unaccounted
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.core.subcommands
@@ -14,4 +17,9 @@ class Cli : CliktCommand() {
   }
 }
 
-fun main(args: Array<String>) = Cli().subcommands(Report()).main(args)
+fun main(args: Array<String>) = Cli().subcommands(
+  Generate(),
+  Report(),
+  Transactions(),
+  Unaccounted()
+).main(args)
