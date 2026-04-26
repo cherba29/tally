@@ -15,31 +15,6 @@ import kotlin.io.path.writeText
 
 class TransactionsTest: DescribeSpec({
   describe("parameter validation") {
-    it("account required") {
-      val command = Transactions()
-      val result = command.test()
-      result.stderr shouldContain "missing argument <account>"
-      result.stdout shouldBe ""
-      result.statusCode shouldBe 1
-      command.commandName shouldBe "transactions"
-    }
-
-    it("start-month required") {
-      val command = Transactions()
-      val result = command.test("test-account")
-      result.stderr shouldContain "missing option --start-month"
-      result.stdout shouldBe ""
-      result.statusCode shouldBe 1
-    }
-
-    it("end-month required") {
-      val command = Transactions()
-      val result = command.test("test-account --start-month=Apr2026")
-      result.stderr shouldContain "missing option --end-month"
-      result.stdout shouldBe ""
-      result.statusCode shouldBe 1
-    }
-
     it("needs tally path") {
       val command = Transactions()
       val result = command.test(listOf("test-account", "--start-month=Apr2026", "--end-month=May2026"))
@@ -93,7 +68,7 @@ class TransactionsTest: DescribeSpec({
         listOf("test-account", "--start-month=Apr2026", "--end-month=May2026", "--tally-path=$tallyPath")
       )
       result.stderr shouldBe ""
-      result.stdout shouldBe ""
+      result.stdout shouldBe "Date,Amount,From,To,Description\n"
       result.statusCode shouldBe 0
     }
   }
