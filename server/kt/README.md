@@ -6,7 +6,8 @@ Here are some useful links to get you started:
 
 - [Ktor Documentation](https://ktor.io/docs/home.html)
 - [Ktor GitHub page](https://github.com/ktorio/ktor)
-- The [Ktor Slack chat](https://app.slack.com/client/T09229ZC6/C0A974TJ9). You'll need to [request an invite](https://surveys.jetbrains.com/s3/kotlin-slack-sign-up) to join.
+- The [Ktor Slack chat](https://app.slack.com/client/T09229ZC6/C0A974TJ9). 
+  You'll need to [request an invite](https://surveys.jetbrains.com/s3/kotlin-slack-sign-up) to join.
 
 ## Features
 
@@ -166,3 +167,14 @@ query table(
   "startMonth": "Mar2025"
 }
 ```
+
+## CLI
+
+### Report
+
+```
+./gradlew runTally --args="report External --start-month=Jan2025 --end-month=May2026 --tally-path=../../../data"
+```
+
+the `--tally-path` option can be set as environment variable `TALLY_PATH` 
+in which case no need to provide it on command line.

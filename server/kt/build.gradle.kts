@@ -100,6 +100,13 @@ tasks.withType<Test>().configureEach {
 //    })
 }
 
+tasks.register<JavaExec>("runTally") {
+    group = "application"
+    description = "Runs the tally cli"
+    classpath = sourceSets.main.get().runtimeClasspath
+    mainClass.set("com.cherba29.tally.cli.CliKt")
+}
+
 graphql {
     schema {
         packages = listOf("com.cherba29.tally")
