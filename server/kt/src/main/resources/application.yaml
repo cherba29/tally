@@ -17,5 +17,8 @@ ktor:
     # maxChunkSize: 42
 
 tally:
+  data:
   # https://ktor.io/docs/server-configuration-file.html#environment-variables
-  path: '$TALLY_FILES:123'
+    path: '$TALLY_FILES:123'
+  client:
+    path: '$TALLY_CLIENT_BUNDLE'

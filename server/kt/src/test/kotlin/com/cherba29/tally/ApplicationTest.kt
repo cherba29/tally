@@ -21,6 +21,7 @@ import io.ktor.server.config.mergeWith
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import java.nio.file.Path
+import kotlin.io.path.createDirectory
 import kotlin.io.path.createFile
 import kotlin.io.path.div
 import kotlin.io.path.pathString
@@ -32,7 +33,10 @@ fun ApplicationTestBuilder.configureTestClient(tallyPath: Path?) {
   }
   environment {
     if (tallyPath != null) {
-      config = config.mergeWith(MapApplicationConfig("tally.path" to tallyPath.pathString))
+      config = config.mergeWith(MapApplicationConfig(
+        "tally.data.path" to tallyPath.resolve("data").pathString,
+        "tally.client.path" to tallyPath.resolve("client").pathString,
+      ))
     }
   }
 }
@@ -40,7 +44,8 @@ fun ApplicationTestBuilder.configureTestClient(tallyPath: Path?) {
 class ApplicationTest : DescribeSpec({
   coroutineTestScope = true
   val tallyPath = tempdir("tally-", keepOnFailure = false).toPath()
-  (tallyPath / "file2.yaml").createFile().writeText(
+  ((tallyPath / "client").createDirectory() / "index.html").createFile().writeText("Hello World!")
+  ((tallyPath / "data").createDirectory() / "file2.yaml").createFile().writeText(
     """
         name: test-account
         owner: [someone]
@@ -57,7 +62,7 @@ class ApplicationTest : DescribeSpec({
         configureTestClient(tallyPath)
         val response = client.get("/")
         response shouldHaveStatus HttpStatusCode.OK
-        response.bodyAsText() shouldBe "Hello gql World!"
+        response.bodyAsText() shouldBe "Hello World!"
       }
     }
     it("server should return Bad Request for invalid GET requests") {

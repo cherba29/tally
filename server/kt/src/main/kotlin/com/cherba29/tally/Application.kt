@@ -24,6 +24,8 @@ import io.ktor.serialization.jackson.JacksonWebsocketContentConverter
 import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.application.call
+import io.ktor.server.http.content.singlePageApplication
+import io.ktor.server.http.content.staticFiles
 import io.ktor.server.netty.EngineMain
 import io.ktor.server.plugins.origin
 import io.ktor.server.plugins.statuspages.StatusPages
@@ -32,6 +34,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.server.websocket.WebSockets
 import io.ktor.server.websocket.pingPeriod
+import java.io.File
 import java.nio.file.Paths
 import kotlin.io.path.exists
 import kotlin.io.path.extension
@@ -55,7 +58,8 @@ class HelloWorldQuery : Query {
   fun hello(): String = "Hello GraphQL!"
 }
 
-private const val TALLY_PATH_ENV_SETTING = "tally.path"
+private const val TALLY_PATH_ENV_SETTING = "tally.data.path"
+private const val TALLY_CLIENT_BUNDLE_PATH = "tally.client.path"
 
 fun Application.graphQLModule() {
   val tallyFiles = Paths.get(requireNotNull(
@@ -81,17 +85,17 @@ fun Application.graphQLModule() {
     defaultGraphQLStatusPages()
   }
   // TODO: re-enable after testing is done.
-    install(CORS) {
-      anyHost()
+  install(CORS) {
+    anyHost()
 
-      allowMethod(HttpMethod.Options)
-      allowMethod(HttpMethod.Put)
-      allowMethod(HttpMethod.Delete)
-      allowMethod(HttpMethod.Get)
+    allowMethod(HttpMethod.Options)
+    allowMethod(HttpMethod.Put)
+    allowMethod(HttpMethod.Delete)
+    allowMethod(HttpMethod.Get)
 
-      allowHeader(HttpHeaders.Authorization)
-      allowHeader(HttpHeaders.ContentType)
-    }
+    allowHeader(HttpHeaders.Authorization)
+    allowHeader(HttpHeaders.ContentType)
+  }
 
   install(GraphQL) {
     schema {
@@ -106,10 +110,15 @@ fun Application.graphQLModule() {
       schemaObject = TallySchema()
     }
   }
+
+  val tallyBundlePath = requireNotNull(
+    environment.config.propertyOrNull(TALLY_CLIENT_BUNDLE_PATH)?.getString()
+  ) {
+    "Application config does not set $TALLY_CLIENT_BUNDLE_PATH property."
+  }
+
   routing {
-    get("/") {
-      call.respondText("Hello gql World!")
-    }
+    staticFiles("/", File(tallyBundlePath))
     graphQLGetRoute()
     graphQLPostRoute()
     graphQLSubscriptionsRoute()
