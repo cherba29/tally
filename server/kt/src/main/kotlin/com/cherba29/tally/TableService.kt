@@ -7,6 +7,7 @@ import com.cherba29.tally.schema.buildGqlTable
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlin.time.measureTimedValue
 import kotlinx.coroutines.runBlocking
 
 class TableService(val loader: Loader) : Query {
@@ -14,12 +15,16 @@ class TableService(val loader: Loader) : Query {
   @Suppress("unused")
   fun table(owner: String?, startMonth: Month, endMonth: Month): GqlTable {
     logger.info { "table owner=$owner startMonth=$startMonth endMonth=$endMonth" }
-    return try {
-      buildGqlTable(runBlocking { loader.budget() }, owner, startMonth, endMonth)
-    } catch (e: Exception) {
-      logger.error(e) { "Error while processing table query owner=$owner, startMont=$startMonth, endMonth=$endMonth" }
-      throw e
+    val (result, timeTaken) = measureTimedValue {
+      try {
+        buildGqlTable(runBlocking { loader.budget() }, owner, startMonth, endMonth)
+      } catch (e: Exception) {
+        logger.error(e) { "Error while processing table query owner=$owner, startMont=$startMonth, endMonth=$endMonth" }
+        throw e
+      }
     }
+    logger.info { "Computed table in ${timeTaken.inWholeMilliseconds}ms" }
+    return result
   }
 
   companion object {

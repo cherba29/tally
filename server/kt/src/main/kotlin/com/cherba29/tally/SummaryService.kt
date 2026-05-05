@@ -7,6 +7,8 @@ import com.cherba29.tally.schema.buildSummaryData
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlin.time.measureTime
+import kotlin.time.measureTimedValue
 import kotlinx.coroutines.runBlocking
 
 class SummaryService(val loader: Loader) : Query {
@@ -14,15 +16,19 @@ class SummaryService(val loader: Loader) : Query {
   @Suppress("unused")
   fun summary(owner: String, accountType: String, startMonth: Month? = null, endMonth: Month): GqlSummaryData {
     logger.info { "summary owner=$owner, accountType=$accountType, startMonth=$startMonth, endMonth=$endMonth" }
-    return try {
-      buildSummaryData(runBlocking { loader.budget() }, owner, accountType, startMonth, endMonth)
-    } catch (e: Exception) {
-      logger.error(e) {
-        "Error while processing summary query owner=$owner, accountType=$accountType " +
-            "startMont=$startMonth, endMonth=$endMonth"
+    val (result, timeTaken) = measureTimedValue {
+      try {
+        buildSummaryData(runBlocking { loader.budget() }, owner, accountType, startMonth, endMonth)
+      } catch (e: Exception) {
+        logger.error(e) {
+          "Error while processing summary query owner=$owner, accountType=$accountType " +
+              "startMont=$startMonth, endMonth=$endMonth"
+        }
+        throw e
       }
-      throw e
     }
+    logger.info { "Summary in ${timeTaken.inWholeMilliseconds}ms" }
+    return result
   }
 
   companion object {

@@ -8,6 +8,7 @@ import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query
 import graphql.schema.DataFetchingEnvironment
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlin.time.measureTimedValue
 import kotlinx.coroutines.runBlocking
 
 class StatementService(val loader: Loader) : Query {
@@ -15,12 +16,16 @@ class StatementService(val loader: Loader) : Query {
   @Suppress("unused")
   fun statement(owner:String, account: String, month: Month, dfe: DataFetchingEnvironment): GqlStatement {
     logger.info { "statement owner=$owner, account=$account, month=$month" }
-    return try {
-      buildStatement(runBlocking { loader.budget() }, owner, account, month)
-    } catch (e: Exception) {
-      logger.error(e) { "Error while processing table query owner=$owner, account=$account month=$month" }
-      throw e
+    val (result, timeTaken) = measureTimedValue {
+      try {
+        buildStatement(runBlocking { loader.budget() }, owner, account, month)
+      } catch (e: Exception) {
+        logger.error(e) { "Error while processing table query owner=$owner, account=$account month=$month" }
+        throw e
+      }
     }
+    logger.info { "statement in ${timeTaken.inWholeMilliseconds}ms" }
+    return result
   }
 
   companion object {
