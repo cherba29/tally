@@ -27,7 +27,6 @@ data class BalanceYamlData(
   val date: LocalDate?,
   val camt: Double?,
   val pamt: Double?,
-  // TODO: wire it in.
   val desc: String?,
 )
 
@@ -82,7 +81,7 @@ private fun BalanceYamlData.toBalance(): Balance {
   if (date == null) {
     throw IllegalArgumentException("Balance $this does not have date set.")
   }
-  return Balance(amount, date, balanceType)
+  return Balance(amount, date, balanceType, desc ?: "")
 }
 
 // TODO: Preprocess but do not put it into budget builder yet, so warnings are only produced files that change.

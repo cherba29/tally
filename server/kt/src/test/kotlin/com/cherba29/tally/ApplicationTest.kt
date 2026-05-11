@@ -167,6 +167,7 @@ class ApplicationTest : DescribeSpec({
         type GqlBalance {
           amount: Int!
           date: Date!
+          desc: String!
           type: String!
         }
 

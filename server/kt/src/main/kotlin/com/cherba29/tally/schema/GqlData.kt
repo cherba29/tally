@@ -31,7 +31,8 @@ data class GqlAccount(
 data class GqlBalance(
   val amount: Int,
   val date: LocalDate,
-  val type: String
+  val type: String,
+  val desc: String,
 )
 
 data class GqlStatement(

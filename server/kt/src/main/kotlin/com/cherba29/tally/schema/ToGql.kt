@@ -31,7 +31,8 @@ fun Balance.Type.toGql() = id
 fun Balance.toGql(): GqlBalance = GqlBalance(
   amount = amount,
   date = date,
-  type = type.toGql()
+  type = type.toGql(),
+  desc = description,
 )
 
 fun Transaction.toGql(): GqlTransaction = GqlTransaction(

@@ -2,8 +2,15 @@ package com.cherba29.tally.core
 
 import kotlinx.datetime.LocalDate
 
-// TODO: add desc field.
-data class Balance(val amount: Int, val date: LocalDate, val type: Type) : Comparable<Balance> {
+/**
+ * Represents confirmed or projected balance at a specific date.
+ */
+data class Balance(
+  val amount: Int,
+  val date: LocalDate,
+  val type: Type,
+  val description: String = "",
+) : Comparable<Balance> {
   enum class Type(val id: String) {
     UNKNOWN("UNKNOWN"),
     CONFIRMED("CONFIRMED"),

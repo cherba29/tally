@@ -84,6 +84,9 @@ fun Balance.toObjectNode(root: ObjectNode) {
   root.put("amount", amount)
   root.put("date", date.toString())
   root.put("type", type.toString())
+  if (description.isNotEmpty()) {
+    root.put("desc", description)
+  }
 }
 
 fun Transaction.toObjectNode(root: ObjectNode) {
