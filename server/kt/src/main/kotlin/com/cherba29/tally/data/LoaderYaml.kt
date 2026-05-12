@@ -119,7 +119,10 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
     userName = data.username,
     password = data.pswd,
   )
-  budgetBuilder.setAccount(account)
+  for (owner in data.owner) {
+    val fullPath = listOf(owner) + account.nodeId.path + listOf(account.nodeId.name)
+    budgetBuilder.setAccount(fullPath, account)
+  }
   if (data.balances != null) {
     for (balanceData in data.balances) {
       if (balanceData.grp == null) {
@@ -138,7 +141,10 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
           "For ${account.nodeId} account $balance and month $month are $balanceMonthDiff months apart (2 max)."
         )
       }
-      budgetBuilder.setBalance(account.nodeId, month, balance)
+      for (owner in data.owner) {
+        val fullPath = listOf(owner) + account.nodeId.path + listOf(account.nodeId.name)
+        budgetBuilder.setBalance(fullPath, month, balance)
+      }
     }
   }
   if (data.transfersTo != null) {
@@ -185,14 +191,18 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
           )
         }
 
-        budgetBuilder.addTransfer(
-          fromAccount = account.nodeId,
-          fromMonth = transferMonth,
-          toAccount = accountName,
-          toMonth = transferMonth,
-          balance = balance,
-          description = transferData.desc,
-        )
+        for (owner in data.owner) {
+          val fullPath = listOf(owner) + account.nodeId.path + listOf(account.nodeId.name)
+
+          budgetBuilder.addTransfer(
+            fromAccountPath = fullPath,
+            fromMonth = transferMonth,
+            toAccountName = accountName,
+            toMonth = transferMonth,
+            balance = balance,
+            description = transferData.desc,
+          )
+        }
       }
     }
   }

@@ -81,6 +81,7 @@ class QueryTableTest : DescribeSpec({
     }
 
     it("single open account without path") {
+      val accountPath = listOf("john", "external", "test-account")
       val account = Account(
         NodeId(name = "test-account", path = listOf("external"), owners = setOf("john")),
         openedOn = JAN / 2026
@@ -94,9 +95,9 @@ class QueryTableTest : DescribeSpec({
       summaries.set("john", "/external", "Mar2026", summary)
       val payload = DataPayload(
         budget = budget {
-          setAccount(account)
+          setAccount(accountPath, account)
           setBalance(
-            account.nodeId, MAR / 2026, Balance(
+            accountPath, MAR / 2026, Balance(
               amount = 100,
               date = LocalDate(2026, 3, 1),
               type = Balance.Type.CONFIRMED
@@ -241,6 +242,7 @@ class QueryTableTest : DescribeSpec({
     }
 
     it("single open account with path") {
+      val accountPath = listOf("john", "internal", "test-account")
       val account = Account(
         NodeId(name = "test-account", path = listOf("internal"), owners = setOf("john")),
         openedOn = JAN / 2026
@@ -264,9 +266,9 @@ class QueryTableTest : DescribeSpec({
       summaries.set("john", "/", "Mar2026", summary)
       val payload = DataPayload(
         budget = budget {
-          setAccount(account)
+          setAccount(accountPath, account)
           setBalance(
-            account.nodeId, MAR / 2026, Balance(
+            accountPath, MAR / 2026, Balance(
               amount = 100,
               date = LocalDate(2026, 3, 1),
               type = Balance.Type.CONFIRMED

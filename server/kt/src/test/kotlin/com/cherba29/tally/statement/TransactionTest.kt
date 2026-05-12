@@ -21,6 +21,7 @@ import java.lang.IllegalStateException
 class TransactionTest : DescribeSpec({
   describe("Build") {
     it("bad account name on transfer") {
+      val path1 = listOf("john", "external", "test-account1")
       val node1 = NodeId(
         name = "test-account1",
         path = listOf("external"),
@@ -30,10 +31,10 @@ class TransactionTest : DescribeSpec({
       val exception =
         shouldThrow<IllegalArgumentException> {
           budget {
-            setAccount(account1)
+            setAccount(path1, account1)
             addTransfer(
-              fromAccount = node1,
-              toAccount = "test-account2",
+              fromAccountPath = path1,
+              toAccountName = "test-account2",
               toMonth = DEC / 2019,
               fromMonth = DEC / 2019,
               balance = Balance.projected(2000, "2019-12-05"),
@@ -41,7 +42,7 @@ class TransactionTest : DescribeSpec({
             )
           }
         }
-      exception.message shouldBe "Unknown account test-account2"
+      exception.message shouldBe "Unknown account test-account2, known accounts [john/external/test-account1]"
     }
   }
 })

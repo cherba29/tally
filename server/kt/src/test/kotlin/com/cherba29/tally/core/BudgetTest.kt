@@ -33,36 +33,36 @@ class BudgetTest : DescribeSpec({
       openedOn = NOV / 2019,
     )
     val budget = budget {
-      setAccount(account1)
-      setAccount(account2)
-      setAccount(account3)
+      setAccount(listOf("test-account1"), account1)
+      setAccount(listOf("test-account2"), account2)
+      setAccount(listOf("test-account3"), account3)
       setBalance(
-        NodeId("test-account1"),
+        listOf("test-account1"),
         NOV / 2019,
         Balance(100, LocalDate(2019, 11, 1), Balance.Type.PROJECTED)
       )
       setBalance(
-        NodeId("test-account1"),
+        listOf("test-account1"),
         DEC / 2019,
         Balance(200, LocalDate(2019, 12, 1), Balance.Type.PROJECTED)
       )
       setBalance(
-        NodeId("test-account2"),
+        listOf("test-account2"),
         NOV / 2019,
         Balance(200, LocalDate(2019, 11, 3), Balance.Type.CONFIRMED)
       )
       addTransfer(
-        toAccount = "test-account1",
+        toAccountName = "test-account1",
         toMonth = NOV / 2019,
-        fromAccount = NodeId("test-account2"),
+        fromAccountPath = listOf("test-account2"),
         fromMonth = NOV / 2019,
         balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
         description = null
       )
       addTransfer(
-        toAccount = "test-account3",
+        toAccountName = "test-account3",
         toMonth = NOV / 2019,
-        fromAccount = NodeId("test-account2"),
+        fromAccountPath = listOf("test-account2"),
         fromMonth = NOV / 2019,
         balance = Balance(70, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
         description = null
@@ -78,105 +78,111 @@ class BudgetTest : DescribeSpec({
 
   it("build ambiguous account") {
     val node1 = NodeId("test-account1", owners = setOf("bob"))
+    val path1 = listOf("bob", "test-account1")
     val account1 = Account(nodeId = node1, openedOn = NOV / 2019)
     val node2 = NodeId("test-account1", owners = setOf("alice"))
+    val path2 = listOf("alice", "test-account1")
     val account2 = Account(nodeId = node2, openedOn = NOV / 2019)
     val exception = shouldThrow<IllegalArgumentException> {
       budget {
-        setAccount(account1)
-        setAccount(account2)
+        setAccount(path1, account1)
+        setAccount(path2, account2)
         setBalance(
-          node1,
+          path1,
           NOV / 2019,
           Balance(100, LocalDate(2019, 11, 1), Balance.Type.PROJECTED)
         )
         setBalance(
-          node1,
+          path1,
           DEC / 2019,
           Balance(200, LocalDate(2019, 12, 1), Balance.Type.PROJECTED)
         )
         setBalance(
-          node2,
+          path2,
           NOV / 2019,
           Balance(200, LocalDate(2019, 11, 3), Balance.Type.CONFIRMED)
         )
         addTransfer(
-          toAccount = "test-account1",
+          toAccountName = "test-account1",
           toMonth = NOV / 2019,
-          fromAccount = node2,
+          fromAccountPath = path2,
           fromMonth = NOV / 2019,
           balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
           description = null
         )
       }
     }
-    exception.message shouldBe "Ambiguous transfer from /test-account1 to test-account1, found multiple candidate " +
-        "accounts [name=test-account1 path=[] owners=[bob], name=test-account1 path=[] owners=[alice]]"
+    exception.message shouldBe "Ambiguous transfer from alice/test-account1 to test-account1, " +
+        "found multiple candidate accounts bob/test-account1, alice/test-account1"
   }
 
   it("build budget - duplicate balance") {
     val builder = BudgetBuilder()
+    val path1 = listOf("bob", "internal", "test-account1")
     val account1 = Account(
       nodeId = NodeId("test-account1", path=listOf("internal")),
       openedOn = NOV / 2019,
     )
-    builder.setAccount(account1)
+    builder.setAccount(path1, account1)
     builder.setBalance(
-      nodeId = account1.nodeId,
+      path1,
       NOV / 2019,
       Balance(10000, LocalDate(2019, 11, 1), Balance.Type.PROJECTED)
     )
     val exception = shouldThrow<IllegalArgumentException> {
       builder.setBalance(
-        nodeId = account1.nodeId,
+        path1,
         NOV / 2019,
         Balance(20000, LocalDate(2020, 3, 1), Balance.Type.PROJECTED)
       )
     }
-    exception.message shouldBe "Balance for '/internal/test-account1' 'Nov2019' is already set to" +
+    exception.message shouldBe "Balance for 'bob/internal/test-account1' 'Nov2019' is already set to" +
         " Balance { amount: 200.00, date: 2020-03-01, type: PROJECTED }"
   }
 
   it("build budget - bad to account") {
+    val path2 = listOf("bob", "test-account2")
     val account2 = Account(
       nodeId = NodeId("test-account2"),
       openedOn = NOV / 2019,
     )
     val exception = shouldThrow<IllegalArgumentException> {
       budget {
-        setAccount(account2)
+        setAccount(path2, account2)
         addTransfer(
-          toAccount = "test-account1",
+          toAccountName = "test-account1",
           toMonth = NOV / 2019,
-          fromAccount = account2.nodeId,
+          fromAccountPath = path2,
           fromMonth = NOV / 2019,
           balance = Balance(50, LocalDate(2019, 12, 2), Balance.Type.CONFIRMED),
           description = null,
         )
       }
     }
-    exception.message shouldBe "Unknown account test-account1"
+    exception.message shouldBe "Unknown account test-account1, known accounts [bob/test-account2]"
   }
 
   it("build budget - bad from account") {
+    val path1 = listOf("bob", "test-account1")
     val account1 = Account(
       nodeId = NodeId("test-account1"),
       openedOn = NOV / 2019,
     )
+    val path2 = listOf("bob", "external", "test-account2")
     val exception = shouldThrow<IllegalArgumentException> {
       budget {
-        setAccount(account1)
+        setAccount(path1,account1)
         addTransfer(
-          toAccount = "test-account1",
+          toAccountName = "test-account1",
           toMonth = NOV / 2019,
-          fromAccount = NodeId("test-account2", path=listOf("external")),
+          fromAccountPath = path2,
           fromMonth = NOV / 2019,
           balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
           description = null,
         )
       }
     }
-    exception.message shouldBe "Unknown account /external/test-account2"
+    exception.message shouldBe "Unknown account bob/external/test-account2"
   }
 
   describe("findActive accounts") {
@@ -187,36 +193,38 @@ class BudgetTest : DescribeSpec({
     }
 
     it("open account") {
+      val path1 = listOf("bob", "internal", "test-account1")
       val account1 = Account(
         nodeId = NodeId("test-account1", path=listOf("internal")),
         openedOn = APR / 2026
       )
       val budget = budget {
-        setAccount(account1)
+        setAccount(path1, account1)
       }
       budget.accounts shouldBe mapOf(account1.nodeId to account1)
     }
 
     it("multiple accounts") {
+      val path1 = listOf("bob", "test-account1")
       val account1 = Account(
         nodeId = NodeId("test-account1"),
         openedOn = APR / 2026
       )
-
+      val path2 = listOf("bob", "test-account2")
       val account2 = Account(
         nodeId = NodeId("test-account2"),
         openedOn = NOV / 2019,
       )
-
+      val path3 = listOf("bob", "test-account3")
       val account3 = Account(
         nodeId = NodeId("test-account3"),
         openedOn = JAN / 2020,
         closedOn = FEB / 2020,
       )
       val budget = budget {
-        setAccount(account1)
-        setAccount(account2)
-        setAccount(account3)
+        setAccount(path1, account1)
+        setAccount(path2, account2)
+        setAccount(path3, account3)
       }
       budget.accounts.size shouldBe 3
       budget.accounts.values shouldBe listOf(account1, account2, account3)
