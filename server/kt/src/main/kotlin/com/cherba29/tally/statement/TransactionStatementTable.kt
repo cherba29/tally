@@ -1,6 +1,6 @@
 package com.cherba29.tally.statement
 
-import com.cherba29.tally.core.Budget
+import com.cherba29.tally.data.Budget
 
 fun buildTransactionStatementTable(budget: Budget, owner: String?): List<TransactionStatement> {
   val statementTable = mutableListOf<TransactionStatement>()

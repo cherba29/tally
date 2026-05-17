@@ -3,20 +3,11 @@ package com.cherba29.tally.statement
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.DEC
-import com.cherba29.tally.core.MonthName.FEB
-import com.cherba29.tally.core.MonthName.JAN
-import com.cherba29.tally.core.MonthName.NOV
 import com.cherba29.tally.core.NodeId
-import com.cherba29.tally.core.budget
-import com.cherba29.tally.data.yaml.toObjectNode
-import com.diffplug.selfie.coroutines.expectSelfie
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
-import io.kotest.assertions.assertSoftly
+import com.cherba29.tally.data.budget
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import java.lang.IllegalStateException
 
 class TransactionTest : DescribeSpec({
   describe("Build") {

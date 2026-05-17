@@ -1,9 +1,8 @@
 package com.cherba29.tally.data
 
-import com.cherba29.tally.core.Budget
+import com.cherba29.tally.data.Budget
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.NodeId
-import com.cherba29.tally.core.budget
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import com.cherba29.tally.statement.buildSummaryStatementTable

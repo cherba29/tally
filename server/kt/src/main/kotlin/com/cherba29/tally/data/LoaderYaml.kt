@@ -2,7 +2,6 @@ package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.BudgetBuilder
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.data.yaml.CustomProblemHandler

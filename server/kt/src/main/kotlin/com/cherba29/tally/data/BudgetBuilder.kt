@@ -1,5 +1,12 @@
-package com.cherba29.tally.core
+package com.cherba29.tally.data
 
+import com.cherba29.tally.core.Account
+import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.Group
+import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.MonthRange
+import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.core.Transfer
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class BudgetBuilder(
@@ -27,11 +34,11 @@ class BudgetBuilder(
     groupTreeBuilder.addPath(fullPath)
     pathToAccount[fullPath] = account
     accounts[account.nodeId] = account
-    minMonth = if (minMonth != null) Month.min(minMonth!!, account.openedOn) else account.openedOn
-    maxMonth = if (maxMonth != null) Month.max(maxMonth!!, account.openedOn) else account.openedOn
+    minMonth = if (minMonth != null) Month.Companion.min(minMonth!!, account.openedOn) else account.openedOn
+    maxMonth = if (maxMonth != null) Month.Companion.max(maxMonth!!, account.openedOn) else account.openedOn
     if (account.closedOn != null) {
-      minMonth = if (minMonth != null) Month.min(minMonth!!, account.closedOn) else account.closedOn
-      maxMonth = if (maxMonth != null) Month.max(maxMonth!!, account.closedOn) else account.closedOn
+      minMonth = if (minMonth != null) Month.Companion.min(minMonth!!, account.closedOn) else account.closedOn
+      maxMonth = if (maxMonth != null) Month.Companion.max(maxMonth!!, account.closedOn) else account.closedOn
     }
     return this
   }
@@ -43,8 +50,8 @@ class BudgetBuilder(
         "Balance for '${accountPath.joinToString("/")}' '$month' is already set to $balance")
     }
 
-    minMonth = if (minMonth != null) Month.min(minMonth!!, month) else month
-    maxMonth = if (maxMonth != null) Month.max(maxMonth!!, month) else month
+    minMonth = if (minMonth != null) Month.Companion.min(minMonth!!, month) else month
+    maxMonth = if (maxMonth != null) Month.Companion.max(maxMonth!!, month) else month
     return this
   }
 
@@ -66,8 +73,8 @@ class BudgetBuilder(
       description,
     )
     transfers.add(transferData)
-    minMonth = Month.min(minMonth ?: toMonth, toMonth, fromMonth)
-    maxMonth = Month.max(maxMonth ?: toMonth, toMonth, fromMonth)
+    minMonth = Month.Companion.min(minMonth ?: toMonth, toMonth, fromMonth)
+    maxMonth = Month.Companion.max(maxMonth ?: toMonth, toMonth, fromMonth)
   }
 
   private fun buildTransfers(tree: Group): MutableMap<Group.Leaf, MutableMap<Month, MutableList<Transfer>>> {
@@ -128,7 +135,7 @@ class BudgetBuilder(
   }
 
   fun build(): Budget {
-    val months = if (minMonth != null && maxMonth != null) (minMonth!!..maxMonth!!) else MonthRange.EMPTY
+    val months = if (minMonth != null && maxMonth != null) (minMonth!!..maxMonth!!) else MonthRange.Companion.EMPTY
     val tree = groupTreeBuilder.build()
     val leafToAccount = pathToAccount.mapKeys {
       tree[it.key] as? Group.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")

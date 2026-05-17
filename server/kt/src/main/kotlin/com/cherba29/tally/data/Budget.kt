@@ -1,4 +1,12 @@
-package com.cherba29.tally.core
+package com.cherba29.tally.data
+
+import com.cherba29.tally.core.Account
+import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.Group
+import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.MonthRange
+import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.core.Transfer
 
 /**
  * Data representing all accounts, their transactions and totals per month.

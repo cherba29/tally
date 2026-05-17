@@ -1,7 +1,7 @@
 package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.Budget
+import com.cherba29.tally.data.Budget
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.utils.Map3
