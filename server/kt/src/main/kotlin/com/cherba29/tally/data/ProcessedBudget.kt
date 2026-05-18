@@ -1,6 +1,5 @@
 package com.cherba29.tally.data
 
-import com.cherba29.tally.data.Budget
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.statement.SummaryStatement
@@ -16,13 +15,6 @@ import kotlin.time.TimeSource
 import kotlin.time.measureTime
 import kotlin.time.measureTimedValue
 
-data class DataPayload(
-  val budget: Budget,
-  val statements: Map<NodeId, Map<Month, TransactionStatement>>,
-  // owner -> account name -> month -> summary.
-  val summaries: Map3<SummaryStatement>,
-)
-
 class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
   private val parsedAccountData = mutableMapOf<String, YamlData>()
   var budget: Budget? = null
@@ -30,11 +22,7 @@ class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
     mutableMapOf()
   var summaryNameMonthMap = Map3<SummaryStatement>()
 
-  val dataPayload: DataPayload get() = DataPayload(
-    budget = budget!!,
-    statements = accountToMonthToTransactionStatement,
-    summaries = summaryNameMonthMap,
-  )
+  val dataPayload: Budget get() = budget!!
 
   fun reProcess() {
     val elapsedBudgetTime = timeSource.measureTime {
@@ -94,6 +82,8 @@ class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
         elapsedBudgetTime + elapsedTransactionTime + elapsedBuildSummaryStatements
       }"
     }
+    budget!!.statements = accountToMonthToTransactionStatement
+    budget!!.summaries = summaryNameMonthMap
   }
 
   fun addFile(rootPath: Path, relativeFilePath: Path) {

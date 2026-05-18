@@ -52,7 +52,7 @@ class Generate : CliktCommand() {
     val loader = Loader(tallyPath.watchedEventFlow {
       it.extension == "yaml" && !ignorePathRegex.containsMatchIn(it.pathString)
     })
-    val budget = runBlocking { loader.budget() }.budget
+    val budget = runBlocking { loader.budget() }
     val acct = budget.accounts.keys.find { it.name == account } ?: throw UsageError("Account $account not found")
     val accountBalances: Map<Month, Balance> = budget.balances[acct] ?: mapOf()
     val accountTransfers: Map<Month, List<Transfer>> = budget.transfers[acct] ?: mapOf()

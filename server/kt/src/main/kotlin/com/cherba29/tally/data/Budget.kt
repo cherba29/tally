@@ -7,6 +7,9 @@ import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.Transfer
+import com.cherba29.tally.statement.SummaryStatement
+import com.cherba29.tally.statement.TransactionStatement
+import com.cherba29.tally.utils.Map3
 
 /**
  * Data representing all accounts, their transactions and totals per month.
@@ -23,5 +26,9 @@ data class Budget(
   // Account id -> month -> balance map.
   val balances: Map<NodeId, Map<Month, Balance>>,
   // Account id -> month -> transfers map.
-  val transfers: Map<NodeId, Map<Month, List<Transfer>>>
+  val transfers: Map<NodeId, Map<Month, List<Transfer>>>,
+
+  var statements: Map<NodeId, Map<Month, TransactionStatement>>,
+  // owner -> account name -> month -> summary.
+  var summaries: Map3<SummaryStatement>,
 )

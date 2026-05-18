@@ -1,10 +1,8 @@
 package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.data.Budget
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.NodeId
-import com.cherba29.tally.utils.Map3
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.engine.coroutines.testScheduler
 import io.kotest.engine.spec.tempdir
@@ -51,7 +49,7 @@ class LoaderTest : DescribeSpec({
         tranStatement.monthRange shouldBe MAR / 2019..MAR / 2019
         tranStatement.nodeId.name shouldBe "test-account"
 
-        result.budget.balances[nodeId]?.get(MAR / 2019) shouldBe Balance(
+        result.balances[nodeId]?.get(MAR / 2019) shouldBe Balance(
           10000, LocalDate(2019, 3, 1),
           Balance.Type.CONFIRMED
         )
@@ -71,9 +69,12 @@ class LoaderTest : DescribeSpec({
           every { addFile(any<Path>(), any()) } answers { }
           every { reProcess() } answers { }
           every { dataPayload } answers {
-            DataPayload(mockk<Budget>(),mapOf(
-              NodeId("testAccount${count++}") to mapOf()
-            ), Map3())
+            mockk<Budget> {
+              every { statements } returns mapOf(NodeId("testAccount${count++}") to mapOf())
+            }
+//            DataPayload(mockk<Budget>(),mapOf(
+//              NodeId("testAccount${count++}") to mapOf()
+//            ), Map3())
           }
         }
         val timeSource = TestTimeSource()
@@ -122,9 +123,9 @@ class LoaderTest : DescribeSpec({
           }
           every { reProcess() } answers { }
           every { dataPayload } answers {
-            DataPayload(mockk<Budget>(),mapOf(
-              NodeId("testAccount${count++}") to mapOf()
-            ), Map3())
+            mockk<Budget> {
+              every { statements } returns mapOf(NodeId("testAccount${count++}") to mapOf())
+            }
           }
         }
         timeSource += 50.seconds
@@ -167,9 +168,9 @@ class LoaderTest : DescribeSpec({
             if (count > 1) throw IllegalArgumentException("error")
           }
           every { dataPayload } answers {
-            DataPayload(mockk<Budget>(),mapOf(
-              NodeId("testAccount${count++}") to mapOf()
-            ), Map3())
+            mockk<Budget> {
+              every { statements } returns mapOf(NodeId("testAccount${count++}") to mapOf())
+            }
           }
         }
         timeSource += 50.seconds

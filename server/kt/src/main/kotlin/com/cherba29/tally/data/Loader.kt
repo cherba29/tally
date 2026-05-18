@@ -24,10 +24,10 @@ class Loader(
 
   private val state = LastSetFlowState(pathUpdates.map(this::process), watchScope)
 
-  suspend fun budget(): DataPayload = state.last()
+  suspend fun budget(): Budget = state.last()
   override fun close() = state.close()
 
-  private fun process(watchResult: WatchResult): DataPayload? {
+  private fun process(watchResult: WatchResult): Budget? {
     if (watchResult.relativePath != null) {
       try {
         processedBudget.addFile(watchResult.rootPath, watchResult.relativePath)

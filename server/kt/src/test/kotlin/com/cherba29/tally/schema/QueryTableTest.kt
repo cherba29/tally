@@ -6,7 +6,6 @@ import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.data.budget
-import com.cherba29.tally.data.DataPayload
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import com.cherba29.tally.utils.Map3
@@ -18,11 +17,7 @@ import kotlinx.datetime.LocalDate
 class QueryTableTest : DescribeSpec({
   describe("buildGqlTable") {
     it("no owner") {
-      val payload = DataPayload(
-        budget = budget {},
-        statements = mapOf(),
-        summaries = Map3()
-      )
+      val payload = budget {}
       val exception = shouldThrow<IllegalArgumentException> {
         buildGqlTable(
           payload = payload,
@@ -35,11 +30,7 @@ class QueryTableTest : DescribeSpec({
     }
 
     it("empty") {
-      val payload = DataPayload(
-        budget =  budget {},
-        statements = mapOf(),
-        summaries = Map3()
-      )
+      val payload = budget {}
       val exception = shouldThrow<IllegalArgumentException> {
         buildGqlTable(
           payload = payload,
@@ -63,11 +54,9 @@ class QueryTableTest : DescribeSpec({
       )
       val summaries = Map3<SummaryStatement>()
       summaries.set("john", "/", "Mar2026", summary)
-      val payload = DataPayload(
-        budget =  budget {},
-        statements = mapOf(),
-        summaries
-      )
+      val payload = budget {}
+      payload.summaries = summaries
+
       val table = buildGqlTable(
         payload = payload,
         owner = "john",
@@ -93,8 +82,7 @@ class QueryTableTest : DescribeSpec({
       val summaries = Map3<SummaryStatement>()
       summaries.set("john", "/", "Mar2026", summary)
       summaries.set("john", "/external", "Mar2026", summary)
-      val payload = DataPayload(
-        budget = budget {
+      val payload = budget {
           setAccount(accountPath, account)
           setBalance(
             accountPath, MAR / 2026, Balance(
@@ -102,15 +90,15 @@ class QueryTableTest : DescribeSpec({
               date = LocalDate(2026, 3, 1),
               type = Balance.Type.CONFIRMED
           ))
-        },
-        statements = mapOf(account.nodeId to mapOf(MAR / 2026 to TransactionStatement(
+        }
+      payload.statements = mapOf(account.nodeId to mapOf(MAR / 2026 to TransactionStatement(
           account.nodeId,
           MAR / 2026 .. MAR / 2026,
           isClosed = false,
           startBalance = Balance(100, LocalDate(2026, 3, 1), Balance.Type.CONFIRMED)
-        ))),
-        summaries
-      )
+        )))
+      payload.summaries = summaries
+
       val table = buildGqlTable(
         payload = payload,
         owner = "john",
@@ -264,8 +252,7 @@ class QueryTableTest : DescribeSpec({
       val summaries = Map3<SummaryStatement>()
       summaries.set("john", "/internal", "Mar2026", summary)
       summaries.set("john", "/", "Mar2026", summary)
-      val payload = DataPayload(
-        budget = budget {
+      val payload =  budget {
           setAccount(accountPath, account)
           setBalance(
             accountPath, MAR / 2026, Balance(
@@ -273,10 +260,10 @@ class QueryTableTest : DescribeSpec({
               date = LocalDate(2026, 3, 1),
               type = Balance.Type.CONFIRMED
             ))
-        },
-        statements = mapOf(account.nodeId to mapOf(MAR / 2026 to transactionStatement)),
-        summaries
-      )
+        }
+      payload.statements = mapOf(account.nodeId to mapOf(MAR / 2026 to transactionStatement))
+      payload.summaries = summaries
+
       val table = buildGqlTable(
         payload = payload,
         owner = "john",

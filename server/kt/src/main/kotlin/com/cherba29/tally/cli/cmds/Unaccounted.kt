@@ -55,20 +55,20 @@ class Unaccounted : CliktCommand() {
     val loader = Loader(tallyPath.watchedEventFlow {
       it.extension == "yaml" && !ignorePathRegex.containsMatchIn(it.pathString)
     })
-    val budget = runBlocking { loader.budget() }.budget
+    val budget = runBlocking { loader.budget() }
     val statementTable: List<TransactionStatement> = buildTransactionStatementTable(budget, owner)
 
     val unaccountedEntries = mutableListOf<UnaccountedEntry>()
     for (transactionStatement in statementTable) {
-      val stmtAccount: NodeId = transactionStatement.nodeId;
+      val stmtAccount: NodeId = transactionStatement.nodeId
       if (transactionStatement.isClosed) {
-        continue;
+        continue
       }
       if (owner != null && owner !in stmtAccount.owners) {
-        continue;
+        continue
       }
       if (account != null && stmtAccount.name != account) {
-        continue;
+        continue
       }
       if (startMonth != null && transactionStatement.monthRange.last < startMonth!!) {
         continue
@@ -95,15 +95,15 @@ class Unaccounted : CliktCommand() {
       } else b.statement.transactions.size - abs((a.statement.unaccounted ?: 0) / 100)
     }
     for (entry in unaccountedEntries.slice(0..< min(unaccountedEntries.size, limit))) {
-      val unnacountedValue = if (entry.statement.unaccounted != 0) {
+      val unaccountedValue = if (entry.statement.unaccounted != 0) {
         entry.statement.unaccounted!!.asAmount().padStart(10)
       } else {
         "---"
       }
       val numTransfers = entry.statement.transactions.size
       echo(
-        "${entry.statement.monthRange.first} $unnacountedValue ${entry.account.name} $numTransfers transfers"
-      );
+        "${entry.statement.monthRange.first} $unaccountedValue ${entry.account.name} $numTransfers transfers"
+      )
     }
   }
 

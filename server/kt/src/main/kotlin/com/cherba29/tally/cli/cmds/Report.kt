@@ -36,7 +36,7 @@ class Report : CliktCommand() {
       it.extension == "yaml" && !ignorePathRegex.containsMatchIn(it.pathString)
     })
     val payload = runBlocking { loader.budget() }
-    val accounts = payload.budget.accounts
+    val accounts = payload.accounts
     val statementTable = payload.statements
     echo(HEADER_ROW.joinToString(","))
     for (monthStatements in statementTable.values) {

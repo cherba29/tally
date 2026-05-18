@@ -3,9 +3,8 @@ package com.cherba29.tally.schema
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.NodeId
-import com.cherba29.tally.data.DataPayload
+import com.cherba29.tally.data.Budget
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlin.time.Clock
 
 class NotFoundException(message: String) : RuntimeException(message)
 
@@ -76,9 +75,9 @@ private fun sequenceStatements(owner: String, accounts: List<NodeId>): List<RowE
   return entries
 }
 
-fun buildGqlTable(payload: DataPayload, owner: String?, startMonth: Month, endMonth: Month): GqlTable {
-  val months = payload.budget.months.filter { m -> m <= endMonth && startMonth <= m }.sortedDescending()
-  val activeAccounts = payload.budget.accounts.keys
+fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: Month): GqlTable {
+  val months = payload.months.filter { m -> m <= endMonth && startMonth <= m }.sortedDescending()
+  val activeAccounts = payload.accounts.keys
   val owners = activeAccounts.map { account -> account.owners }.flatten().distinct().sorted()
   val forOwner = if (owner == null || owner.isEmpty()) {
     owners.firstOrNull { !it.isEmpty() }
@@ -103,7 +102,7 @@ fun buildGqlTable(payload: DataPayload, owner: String?, startMonth: Month, endMo
       }
       if (cells.any { c -> !c.isClosed }) {
         val nodeId = summaryMonthMap.values.first().nodeId
-        val account = payload.budget.accounts.getOrElse(nodeId) {
+        val account = payload.accounts.getOrElse(nodeId) {
           Account(nodeId, openedOn = Month(2010, 0))
         }
         rows.add(
@@ -121,7 +120,7 @@ fun buildGqlTable(payload: DataPayload, owner: String?, startMonth: Month, endMo
     } else {
       val cells = mutableListOf<GqlTableCell>()
       val nodeId = entry.nodeId!!
-      val account = payload.budget.accounts.getOrElse(nodeId) {
+      val account = payload.accounts.getOrElse(nodeId) {
         Account(nodeId, openedOn = Month(2010, 0))
       }
       var isClosed = true

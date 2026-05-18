@@ -1,17 +1,16 @@
 package com.cherba29.tally.schema
 
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.data.DataPayload
+import com.cherba29.tally.data.Budget
 import com.cherba29.tally.statement.CombinedStatement
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import com.cherba29.tally.statement.combineSummaryStatements
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlin.time.Clock
 import kotlin.time.measureTimedValue
 
 // startMonth is optional when max range is selected.
-fun buildSummaryData(payload: DataPayload, owner: String, accountType:String, startMonth: Month?, endMonth: Month): GqlSummaryData {
+fun buildSummaryData(payload: Budget, owner: String, accountType:String, startMonth: Month?, endMonth: Month): GqlSummaryData {
   val summaryName =
     if (accountType.startsWith("/")) accountType else owner + " " + (if (accountType === owner) "SUMMARY" else accountType)
   val (result, timeTaken) = measureTimedValue {

@@ -7,6 +7,7 @@ import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.Transfer
+import com.cherba29.tally.utils.Map3
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class BudgetBuilder(
@@ -155,7 +156,9 @@ class BudgetBuilder(
       transfers.mapKeys {
         pathToAccount[it.key.path]?.nodeId
           ?: throw java.lang.IllegalStateException("Could not find path ${it.key.path}")
-      }
+      },
+      mutableMapOf(),
+      Map3(),
     )
   }
 

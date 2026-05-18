@@ -50,7 +50,7 @@ class Transactions : CliktCommand() {
     val loader = Loader(tallyPath.watchedEventFlow {
       it.extension == "yaml" && !ignorePathRegex.containsMatchIn(it.pathString)
     })
-    val budget = runBlocking { loader.budget() }.budget
+    val budget = runBlocking { loader.budget() }
     val statementTable: List<TransactionStatement> = buildTransactionStatementTable(budget, owner)
     val entries = mutableMapOf<String, MutableList<Transaction>>()
     for (transactionStatement in statementTable) {
