@@ -7,9 +7,6 @@ import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.data.budget
 import com.cherba29.tally.data.yaml.toObjectNode
-import com.cherba29.tally.statement.SummaryStatement
-import com.cherba29.tally.statement.TransactionStatement
-import com.cherba29.tally.utils.Map3
 import com.diffplug.selfie.coroutines.expectSelfie
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
@@ -32,7 +29,12 @@ class QueryTableTest : DescribeSpec({
 
   describe("buildGqlTable") {
     it("no owner") {
-      val payload = budget {}
+      val payload = budget {
+        setAccount(listOf("john", "internal", "test-account"), Account(
+          NodeId("test-account"),
+          openedOn = MAR / 2026,
+        ))
+      }
       val exception = shouldThrow<IllegalArgumentException> {
         buildGqlTable(
           payload = payload,
@@ -45,7 +47,12 @@ class QueryTableTest : DescribeSpec({
     }
 
     it("empty") {
-      val payload = budget {}
+      val payload = budget {
+        setAccount(listOf("john", "internal", "test-account"), Account(
+          NodeId("test-account", owners = setOf("john")),
+          openedOn = MAR / 2026,
+        ))
+      }
       val exception = shouldThrow<IllegalArgumentException> {
         buildGqlTable(
           payload = payload,
@@ -59,27 +66,43 @@ class QueryTableTest : DescribeSpec({
     }
 
     it("empty - no open accounts") {
-      val account = Account(
-        NodeId(name = "test-account", path = listOf("external"), owners = setOf("john")),
+      val accountPath1 = listOf("john", "external", "test-account1")
+      val account1 = Account(
+        NodeId(name = "test-account1", path = listOf("external"), owners = setOf("john")),
         openedOn = MAR / 2026,
+        closedOn = MAR / 2026
       )
-      val summary = SummaryStatement(
-        account.nodeId,
-        MAR / 2026 .. MAR / 2026
+      val accountPath2 = listOf("john", "external", "test-account2")
+      val account2 = Account(
+        NodeId(name = "test-account2", path = listOf("external"), owners = setOf("john")),
+        openedOn = MAR / 2026,
+        closedOn = MAR / 2026
       )
-      val summaries = Map3<SummaryStatement>()
-      summaries.set("john", "/", "Mar2026", summary)
-      val payload = budget {}
-      payload.summaries = summaries
+      val payload = budget {
+        setAccount(accountPath1, account1)
+        setAccount(accountPath2, account2)
+        addTransfer(
+          fromAccountPath = accountPath1,
+          fromMonth = MAR / 2026,
+          toAccountName = "test-account2",
+          toMonth = MAR / 2026,
+          balance = Balance(
+            amount = 100,
+            date = LocalDate(2026, 3, 1),
+            type = Balance.Type.CONFIRMED
+          ),
+          description = "test transfer"
+        )
+      }
 
       val table = buildGqlTable(
         payload = payload,
         owner = "john",
-        startMonth = MAR / 2026,
-        endMonth = MAR / 2026
+        startMonth = JAN / 2026,
+        endMonth = JAN / 2026
       )
       table.months shouldBe listOf()
-      table.owners shouldBe listOf()
+      table.owners shouldBe listOf("john")
       table.currentOwner shouldBe "john"
       table.rows shouldBe listOf()
     }
@@ -90,13 +113,6 @@ class QueryTableTest : DescribeSpec({
         NodeId(name = "test-account", path = listOf("external"), owners = setOf("john")),
         openedOn = JAN / 2026
       )
-      val summary = SummaryStatement(
-        account.nodeId,
-        MAR / 2026 .. MAR / 2026
-      )
-      val summaries = Map3<SummaryStatement>()
-      summaries.set("john", "/", "Mar2026", summary)
-      summaries.set("john", "/external", "Mar2026", summary)
       val payload = budget {
           setAccount(accountPath, account)
           setBalance(
@@ -106,13 +122,6 @@ class QueryTableTest : DescribeSpec({
               type = Balance.Type.CONFIRMED
           ))
         }
-      payload.statements = mapOf(account.nodeId to mapOf(MAR / 2026 to TransactionStatement(
-          account.nodeId,
-          MAR / 2026 .. MAR / 2026,
-          isClosed = false,
-          startBalance = Balance(100, LocalDate(2026, 3, 1), Balance.Type.CONFIRMED)
-        )))
-      payload.summaries = summaries
 
       val table = buildGqlTable(
         payload = payload,
@@ -129,23 +138,6 @@ class QueryTableTest : DescribeSpec({
         NodeId(name = "test-account", path = listOf("internal"), owners = setOf("john")),
         openedOn = JAN / 2026
       )
-      val summary = SummaryStatement(
-        account.nodeId,
-        MAR / 2026 .. MAR / 2026
-      )
-      val transactionStatement = TransactionStatement(
-        account.nodeId,
-        MAR / 2026 .. MAR / 2026,
-        isClosed = false,
-        startBalance = Balance(
-          amount = 100,
-          date = LocalDate(2026, 3, 1),
-          type = Balance.Type.CONFIRMED
-        )
-      )
-      val summaries = Map3<SummaryStatement>()
-      summaries.set("john", "/internal", "Mar2026", summary)
-      summaries.set("john", "/", "Mar2026", summary)
       val payload =  budget {
           setAccount(accountPath, account)
           setBalance(
@@ -155,8 +147,6 @@ class QueryTableTest : DescribeSpec({
               type = Balance.Type.CONFIRMED
             ))
         }
-      payload.statements = mapOf(account.nodeId to mapOf(MAR / 2026 to transactionStatement))
-      payload.summaries = summaries
 
       val table = buildGqlTable(
         payload = payload,

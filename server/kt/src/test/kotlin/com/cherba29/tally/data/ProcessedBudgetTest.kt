@@ -17,8 +17,6 @@ class ProcessedBudgetTest : DescribeSpec({
     it("empty") {
       val processedBudget = ProcessedBudget()
       processedBudget.budget shouldBe null
-      processedBudget.summaryNameMonthMap.isEmpty shouldBe true
-      processedBudget.accountToMonthToTransactionStatement.isEmpty() shouldBe true
     }
 
     it("reprocess empty throws") {
@@ -44,11 +42,11 @@ class ProcessedBudgetTest : DescribeSpec({
       )
       processedBudget.reProcess()
       processedBudget.budget shouldNotBe null
-      processedBudget.summaryNameMonthMap.isEmpty shouldBe true
-      processedBudget.accountToMonthToTransactionStatement.size shouldBe 1
+      processedBudget.budget!!.summaries.isEmpty shouldBe true
+      processedBudget.budget!!.statements.size shouldBe 1
 
       val nodeId = NodeId("test-account", setOf("john"), listOf("external"))
-      val transactionStatement = processedBudget.accountToMonthToTransactionStatement[nodeId]?.get(MAR / 2026)!!
+      val transactionStatement = processedBudget.budget!!.statements[nodeId]?.get(MAR / 2026)!!
       transactionStatement.nodeId.name shouldBe "test-account"
       transactionStatement.monthRange shouldBe MAR / 2026 .. MAR / 2026
       transactionStatement.nodeId.owners shouldBe listOf("john")

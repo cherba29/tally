@@ -10,12 +10,10 @@
     title: john
     account:
       __type: GqlAccount
-      name: test-account
-      path:
-      - internal
+      name: /
       external: false
-      summary: false
-      openedOn: Jan2026
+      summary: true
+      openedOn: Jan2010
       owners:
       - john
     indent: 0
@@ -38,12 +36,10 @@
     title: internal
     account:
       __type: GqlAccount
-      name: test-account
-      path:
-      - internal
+      name: /internal
       external: false
-      summary: false
-      openedOn: Jan2026
+      summary: true
+      openedOn: Jan2010
       owners:
       - john
     indent: 1
@@ -84,8 +80,8 @@
       isClosed: false
       addSub: 0
       isProjected: false
-      isCovered: false
-      isProjectedCovered: false
+      isCovered: true
+      isProjectedCovered: true
       hasProjectedTransfer: false
       percentChange: 0.0
       annualizedPercentChange: 0.0
@@ -103,12 +99,10 @@
     title: john
     account:
       __type: GqlAccount
-      name: test-account
-      path:
-      - external
-      external: true
-      summary: false
-      openedOn: Jan2026
+      name: /
+      external: false
+      summary: true
+      openedOn: Jan2010
       owners:
       - john
     indent: 0
@@ -131,12 +125,10 @@
     title: external
     account:
       __type: GqlAccount
-      name: test-account
-      path:
-      - external
-      external: true
-      summary: false
-      openedOn: Jan2026
+      name: /external
+      external: false
+      summary: true
+      openedOn: Jan2010
       owners:
       - john
     indent: 1
@@ -177,8 +169,8 @@
       isClosed: false
       addSub: 0
       isProjected: false
-      isCovered: false
-      isProjectedCovered: false
+      isCovered: true
+      isProjectedCovered: true
       hasProjectedTransfer: false
       percentChange: 0.0
       annualizedPercentChange: 0.0

@@ -28,7 +28,7 @@ data class Budget(
   // Account id -> month -> transfers map.
   val transfers: Map<NodeId, Map<Month, List<Transfer>>>,
 
-  var statements: Map<NodeId, Map<Month, TransactionStatement>>,
+  val statements: Map<NodeId, Map<Month, TransactionStatement>>,
   // owner -> account name -> month -> summary.
-  var summaries: Map3<SummaryStatement>,
+  val summaries: Map3<SummaryStatement>,
 )

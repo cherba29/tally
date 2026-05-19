@@ -6,7 +6,6 @@ import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.data.watchedEventFlow
 import com.cherba29.tally.statement.TransactionStatement
-import com.cherba29.tally.statement.buildTransactionStatementTable
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -56,32 +55,33 @@ class Unaccounted : CliktCommand() {
       it.extension == "yaml" && !ignorePathRegex.containsMatchIn(it.pathString)
     })
     val budget = runBlocking { loader.budget() }
-    val statementTable: List<TransactionStatement> = buildTransactionStatementTable(budget, owner)
 
     val unaccountedEntries = mutableListOf<UnaccountedEntry>()
-    for (transactionStatement in statementTable) {
-      val stmtAccount: NodeId = transactionStatement.nodeId
-      if (transactionStatement.isClosed) {
-        continue
-      }
-      if (owner != null && owner !in stmtAccount.owners) {
-        continue
-      }
-      if (account != null && stmtAccount.name != account) {
-        continue
-      }
-      if (startMonth != null && transactionStatement.monthRange.last < startMonth!!) {
-        continue
-      }
-      if (endMonth != null && endMonth!! < transactionStatement.monthRange.first) {
-        continue
-      }
-      val unaccounted = transactionStatement.unaccounted
-      if (
-        unaccounted != 0 &&
-        (includeProjected || transactionStatement.endBalance?.type == Balance.Type.CONFIRMED)
-      ) {
-        unaccountedEntries += UnaccountedEntry(stmtAccount, transactionStatement)
+    for ((nodeId, monthTransactionStatements) in budget.statements) {
+      for (transactionStatement in monthTransactionStatements.values) {
+        val stmtAccount: NodeId = nodeId
+        if (transactionStatement.isClosed) {
+          continue
+        }
+        if (owner != null && owner !in stmtAccount.owners) {
+          continue
+        }
+        if (account != null && stmtAccount.name != account) {
+          continue
+        }
+        if (startMonth != null && transactionStatement.monthRange.last < startMonth!!) {
+          continue
+        }
+        if (endMonth != null && endMonth!! < transactionStatement.monthRange.first) {
+          continue
+        }
+        val unaccounted = transactionStatement.unaccounted
+        if (
+          unaccounted != 0 &&
+          (includeProjected || transactionStatement.endBalance?.type == Balance.Type.CONFIRMED)
+        ) {
+          unaccountedEntries += UnaccountedEntry(stmtAccount, transactionStatement)
+        }
       }
     }
     unaccountedEntries.sortWith { a, b ->

@@ -32,7 +32,12 @@ class TransactionStatementTableTest : DescribeSpec({
   describe("Build") {
     it("no months") {
       val exception = shouldThrow<IllegalArgumentException> {
-        buildTransactionStatementTable(budget {}, owner = null)
+        buildTransactionStatementTable(
+          DEC / 2019..NOV / 2019, owner = null,
+          accounts = mapOf(),
+          balances = mapOf(),
+          transfers = mapOf()
+        )
       }
       exception.message shouldBe "Budget must have at least one month."
     }
@@ -47,7 +52,13 @@ class TransactionStatementTableTest : DescribeSpec({
       val budget = budget {
         setAccount(accountPath, account)
       }
-      val table = buildTransactionStatementTable(budget, owner = null)
+      val table = buildTransactionStatementTable(
+        budget.months,
+        budget.accounts,
+        budget.balances,
+        budget.transfers,
+        owner = null
+      )
       table.size shouldBe 1
       val stmt = table.first()
       assertSoftly {
@@ -135,7 +146,13 @@ class TransactionStatementTableTest : DescribeSpec({
           description = "Second transfer",
         )
       }
-      val table = buildTransactionStatementTable(budget, owner = null)
+      val table = buildTransactionStatementTable(
+        budget.months,
+        budget.accounts,
+        budget.balances,
+        budget.transfers,
+        owner = null
+      )
       table.size shouldBe 6
       expectSelfie(table.toSnapshot()).toMatchDisk()
     }
@@ -178,7 +195,13 @@ class TransactionStatementTableTest : DescribeSpec({
           description = "Second transfer",
         )
       }
-      val table = buildTransactionStatementTable(budget, owner = null)
+      val table = buildTransactionStatementTable(
+        budget.months,
+        budget.accounts,
+        budget.balances,
+        budget.transfers,
+        owner = null
+      )
       table.size shouldBe 6
       expectSelfie(table.toSnapshot()).toMatchDisk()
     }
@@ -205,7 +228,13 @@ class TransactionStatementTableTest : DescribeSpec({
           description = "First transfer",
         )
       }
-      val table = buildTransactionStatementTable(budget, owner = null)
+      val table = buildTransactionStatementTable(
+        budget.months,
+        budget.accounts,
+        budget.balances,
+        budget.transfers,
+        owner = null
+      )
       table.size shouldBe 3
       expectSelfie(table.toSnapshot()).toMatchDisk()
     }
@@ -218,20 +247,21 @@ class TransactionStatementTableTest : DescribeSpec({
         owners = setOf("john"),
       )
       val account1 = Account(node1, openedOn = DEC / 2021)
-      val budget = budget {
-        setAccount(path1, account1)
-        setBalance(path1, DEC / 2019, Balance.confirmed(1000, "2019-12-01"))
-        addTransfer(
-          fromAccountPath = path1,
-          toAccountName = node1.name,
-          toMonth = DEC / 2019,
-          fromMonth = DEC / 2019,
-          balance = Balance.projected(2000, "2019-11-25"),
-          description = "First transfer",
-        )
-      }
       val exception =
-        shouldThrow<IllegalStateException> { buildTransactionStatementTable(budget, owner = null) }
+        shouldThrow<IllegalStateException> {
+          budget {
+            setAccount(path1, account1)
+            setBalance(path1, DEC / 2019, Balance.confirmed(1000, "2019-12-01"))
+            addTransfer(
+              fromAccountPath = path1,
+              toAccountName = node1.name,
+              toMonth = DEC / 2019,
+              fromMonth = DEC / 2019,
+              balance = Balance.projected(2000, "2019-11-25"),
+              description = "First transfer",
+            )
+          }
+        }
       exception.message shouldBe "Balance Dec2019 Balance { amount: 10.00, date: 2019-12-01, type: CONFIRMED } " +
           "for account /external/test-account1 starts after transaction test-account1 --> " +
           "test-account1/Balance { amount: 20.00, date: 2019-11-25, type: PROJECTED } " +
@@ -263,7 +293,13 @@ class TransactionStatementTableTest : DescribeSpec({
           description = "First transfer",
         )
       }
-      val table = buildTransactionStatementTable(budget, owner = null)
+      val table = buildTransactionStatementTable(
+        budget.months,
+        budget.accounts,
+        budget.balances,
+        budget.transfers,
+        owner = null
+      )
       table.size shouldBe 2  // Two transaction statements for the account
       table[0].monthRange shouldBe DEC / 2019 .. DEC / 2019
       table[0].isClosed shouldBe true
@@ -319,7 +355,13 @@ class TransactionStatementTableTest : DescribeSpec({
           description = "Second transfer",
         )
       }
-      val table = buildTransactionStatementTable(budget, owner = null)
+      val table = buildTransactionStatementTable(
+        budget.months,
+        budget.accounts,
+        budget.balances,
+        budget.transfers,
+        owner = null
+      )
       table.size shouldBe 3  // 3 accounts
       table[0].transactions.size shouldBe 2  // 2 transactions for account1
       assertSoftly {

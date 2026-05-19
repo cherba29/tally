@@ -15,11 +15,8 @@ import kotlinx.datetime.LocalDate
 
 class BudgetTest : DescribeSpec({
   it("build empty budget") {
-    val budget = budget {}
-    budget.accounts.size shouldBe 0
-    budget.balances.size shouldBe 0
-    budget.months.size shouldBe 0
-    budget.transfers.size shouldBe 0
+    val error = shouldThrow<IllegalArgumentException> { budget {} }
+    error.message shouldBe "Budget must have at least one month."
   }
 
   it("build simple") {
@@ -52,7 +49,7 @@ class BudgetTest : DescribeSpec({
       setBalance(
         listOf("test-account2"),
         NOV / 2019,
-        Balance(200, LocalDate(2019, 11, 3), Balance.Type.CONFIRMED)
+        Balance(200, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED)
       )
       addTransfer(
         toAccountName = "test-account1",
@@ -189,12 +186,6 @@ class BudgetTest : DescribeSpec({
   }
 
   describe("findActive accounts") {
-    it("no accounts") {
-      val budget = budget {}
-
-      budget.accounts.size shouldBe 0
-    }
-
     it("open account") {
       val path1 = listOf("bob", "internal", "test-account1")
       val account1 = Account(

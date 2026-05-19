@@ -18,12 +18,14 @@ import kotlinx.datetime.LocalDate
 
 class LoadYamlTest : DescribeSpec({
   describe("loadYaml") {
-    it("empty") {
+    it("empty - requires account name and month") {
       val relativeFilePath = Paths.get("path/file.yaml")
-      val budget = budget {
-        loadYamlFile(this, parseYamlContent("number: 123", relativeFilePath), relativeFilePath)
+      val error = shouldThrow<IllegalArgumentException> {
+        budget {
+          loadYamlFile(this, parseYamlContent("number: 123\nopened_on: Dec2019", relativeFilePath), relativeFilePath)
+        }
       }
-      budget.accounts.size shouldBe 0
+      error.message shouldBe "Budget must have at least one month."
     }
 
     it("fails when account has no owners") {

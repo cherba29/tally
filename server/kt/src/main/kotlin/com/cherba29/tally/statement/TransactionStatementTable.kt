@@ -1,23 +1,34 @@
 package com.cherba29.tally.statement
 
-import com.cherba29.tally.data.Budget
+import com.cherba29.tally.core.Account
+import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.MonthRange
+import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.core.Transfer
 
-fun buildTransactionStatementTable(budget: Budget, owner: String?): List<TransactionStatement> {
+fun buildTransactionStatementTable(
+  months: MonthRange,
+  accounts: Map<NodeId, Account>,
+  balances: Map<NodeId, Map<Month, Balance>>,
+  transfers: Map<NodeId, Map<Month, List<Transfer>>>,
+  owner: String?
+): List<TransactionStatement> {
   val statementTable = mutableListOf<TransactionStatement>()
 
   // Working backwards.
-  val months = budget.months.sortedDescending()
+  val months = months.sortedDescending()
   if (months.isEmpty()) {
     throw IllegalArgumentException("Budget must have at least one month.")
   }
 
-  for ((nodeId, account) in budget.accounts) {
+  for ((nodeId, account) in accounts) {
     if (owner != null && owner !in nodeId.owners) {
       continue
     }
     val accountStatements = mutableListOf<TransactionStatement>()
-    val monthlyTransfers = budget.transfers[nodeId] ?: mapOf()
-    val monthlyBalances = budget.balances[nodeId] ?: mapOf()
+    val monthlyTransfers = transfers[nodeId] ?: mapOf()
+    val monthlyBalances = balances[nodeId] ?: mapOf()
 
     // Make statement outside range so that its attributes relating to previous can be used.
     val nextMonth = months.first().next()

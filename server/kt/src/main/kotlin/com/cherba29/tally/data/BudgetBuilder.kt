@@ -7,8 +7,16 @@ import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.Transfer
+import com.cherba29.tally.statement.SummaryStatement
+import com.cherba29.tally.statement.TransactionStatement
+import com.cherba29.tally.statement.buildSummaryStatementTable
+import com.cherba29.tally.statement.buildTransactionStatementTable
 import com.cherba29.tally.utils.Map3
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlin.collections.set
+import kotlin.time.TimeSource
+import kotlin.time.measureTime
+import kotlin.time.measureTimedValue
 
 class BudgetBuilder(
   private var minMonth: Month? = null,
@@ -17,7 +25,8 @@ class BudgetBuilder(
   private val accounts: MutableMap<NodeId, Account> = mutableMapOf(),
   // Account name -> month -> balance map.
   private val balances: MutableMap<List<String>, MutableMap<Month, Balance>> = mutableMapOf(),
-  private val transfers: MutableList<TransferData> = mutableListOf()
+  private val transfers: MutableList<TransferData> = mutableListOf(),
+  private val timeSource: TimeSource = TimeSource.Monotonic,
 ) {
   data class TransferData(
     val toAccountName: String,  // Full path is unknown at time of record.
@@ -144,21 +153,63 @@ class BudgetBuilder(
     val leafToBalances = balances.mapKeys {
       tree[it.key] as? Group.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
     }
-    val transfers = buildTransfers(tree)
+    val (transfers, elapsedBudgetTime) = timeSource.measureTimedValue { buildTransfers(tree) }
+    val accountToMonthToTransactionStatement: MutableMap<NodeId, MutableMap<Month, TransactionStatement>> =
+      mutableMapOf()
+    var summaryNameMonthMap = Map3<SummaryStatement>()
+
+
+    val nodeIdToBalance = balances.mapKeys {
+      pathToAccount[it.key]?.nodeId ?: throw java.lang.IllegalStateException("Could not find path ${it.key}")
+    }
+
+    val nodeIdToTransfer = transfers.mapKeys {
+      pathToAccount[it.key.path]?.nodeId
+        ?: throw java.lang.IllegalStateException("Could not find path ${it.key.path}")
+    }
+
+    val (transactionStatementTable, elapsedTransactionTime) = timeSource.measureTimedValue {
+      // TODO: this might throw due to so invariant being violated. Need to recover to previous state.
+      val transactionStatementTable = buildTransactionStatementTable(
+        months, accounts,
+        nodeIdToBalance, nodeIdToTransfer,  owner = null)
+      for (stmt in transactionStatementTable) {
+        var monthToStatement = accountToMonthToTransactionStatement[stmt.nodeId]
+        if (monthToStatement == null) {
+          monthToStatement = mutableMapOf()
+          accountToMonthToTransactionStatement[stmt.nodeId] = monthToStatement
+        }
+        monthToStatement[stmt.monthRange.first] = stmt
+      }
+      transactionStatementTable
+    }
+    logger.info {
+      "Done building ${transactionStatementTable.size} transaction statements in ${elapsedTransactionTime}ms"
+    }
+
+    val elapsedBuildSummaryStatements = timeSource.measureTime {
+      summaryNameMonthMap = buildSummaryStatementTable(transactionStatementTable, selectedOwner = null)
+    }
+    val numSummaryStatements = summaryNameMonthMap.size
+    logger.info {
+      "Done building $numSummaryStatements summary statements in $elapsedBuildSummaryStatements"
+    }
+    // TODO: Show all timing info in one log line.
+    logger.info {
+      "Done reprocessing ${leafToAccount.size} file(s) ${transactionStatementTable.size} tran statements and $numSummaryStatements summaries in ${
+        elapsedBudgetTime + elapsedTransactionTime + elapsedBuildSummaryStatements
+      }"
+    }
+
     return Budget(
       months,
       tree,
       leafToAccount,
       accounts,
-      balances.mapKeys {
-        pathToAccount[it.key]?.nodeId ?: throw java.lang.IllegalStateException("Could not find path ${it.key}")
-      },
-      transfers.mapKeys {
-        pathToAccount[it.key.path]?.nodeId
-          ?: throw java.lang.IllegalStateException("Could not find path ${it.key.path}")
-      },
-      mutableMapOf(),
-      Map3(),
+      nodeIdToBalance,
+      nodeIdToTransfer,
+      accountToMonthToTransactionStatement,
+      summaryNameMonthMap,
     )
   }
 

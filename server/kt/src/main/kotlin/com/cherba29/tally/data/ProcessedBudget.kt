@@ -18,9 +18,6 @@ import kotlin.time.measureTimedValue
 class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
   private val parsedAccountData = mutableMapOf<String, YamlData>()
   var budget: Budget? = null
-  val accountToMonthToTransactionStatement: MutableMap<NodeId, MutableMap<Month, TransactionStatement>> =
-    mutableMapOf()
-  var summaryNameMonthMap = Map3<SummaryStatement>()
 
   val dataPayload: Budget get() = budget!!
 
@@ -48,42 +45,6 @@ class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
     logger.info {
       "Done building budget for ${budget?.accounts?.size} accounts in $elapsedBudgetTime"
     }
-
-    accountToMonthToTransactionStatement.clear()
-    summaryNameMonthMap.clear()
-
-    val (transactionStatementTable, elapsedTransactionTime) = timeSource.measureTimedValue {
-      // TODO: this might throw due to so invariant being violated. Need to recover to previous state.
-      val transactionStatementTable = buildTransactionStatementTable(budget!!, owner = null)
-      for (stmt in transactionStatementTable) {
-        var monthToStatement = accountToMonthToTransactionStatement[stmt.nodeId]
-        if (monthToStatement == null) {
-          monthToStatement = mutableMapOf()
-          accountToMonthToTransactionStatement[stmt.nodeId] = monthToStatement
-        }
-        monthToStatement[stmt.monthRange.first] = stmt
-      }
-      transactionStatementTable
-    }
-    logger.info {
-      "Done building ${transactionStatementTable.size} transaction statements in ${elapsedTransactionTime}ms"
-    }
-
-    val elapsedBuildSummaryStatements = timeSource.measureTime {
-      summaryNameMonthMap = buildSummaryStatementTable(transactionStatementTable, selectedOwner = null)
-    }
-    val numSummaryStatements = summaryNameMonthMap.size
-    logger.info {
-      "Done building $numSummaryStatements summary statements in $elapsedBuildSummaryStatements"
-    }
-    // TODO: Show all timing info in one log line.
-    logger.info {
-      "Done reprocessing ${parsedAccountData.size} file(s) ${transactionStatementTable.size} tran statements and $numSummaryStatements summaries in ${
-        elapsedBudgetTime + elapsedTransactionTime + elapsedBuildSummaryStatements
-      }"
-    }
-    budget!!.statements = accountToMonthToTransactionStatement
-    budget!!.summaries = summaryNameMonthMap
   }
 
   fun addFile(rootPath: Path, relativeFilePath: Path) {

@@ -113,4 +113,15 @@ class BalanceTest : DescribeSpec({
       balance.toString() shouldBe "Balance { amount: 100.00, date: 2020-02-03, type: CONFIRMED }"
     }
   }
+
+  describe("constructors") {
+    it("confirmed") {
+      val balance = Balance.confirmed(10000, "2020-02-03")
+      balance.toString() shouldBe "Balance { amount: 100.00, date: 2020-02-03, type: CONFIRMED }"
+    }
+    it("projected") {
+      val balance = Balance.projected(10000, "2020-02-03")
+      balance.toString() shouldBe "Balance { amount: 100.00, date: 2020-02-03, type: PROJECTED }"
+    }
+  }
 })
