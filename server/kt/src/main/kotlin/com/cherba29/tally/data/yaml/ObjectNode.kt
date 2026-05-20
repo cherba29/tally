@@ -3,6 +3,10 @@ package com.cherba29.tally.data.yaml
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.schema.GqlAccount
+import com.cherba29.tally.schema.GqlTable
+import com.cherba29.tally.schema.GqlTableCell
+import com.cherba29.tally.schema.GqlTableRow
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.statement.TransactionStatement
@@ -108,4 +112,97 @@ fun TransactionStatement.toObjectNode(root: ObjectNode) {
     val transactionsNode = root.putArray("transactions")
     transactions.forEach { it.toObjectNode(transactionsNode.addObject()) }
   }
+}
+
+fun GqlTable.toObjectNode(root: ObjectNode) {
+  root.put("__type", this.javaClass.simpleName)
+  root.put("currentOwner", currentOwner)
+  if (owners.isNotEmpty()) {
+    val ownersNode = root.putArray("owners")
+    owners.forEach { ownersNode.add(it) }
+  }
+  if (months.isNotEmpty()) {
+    val monthsNode = root.putArray("months")
+    months.forEach { monthsNode.add(it.toString()) }
+  }
+  if (rows.isNotEmpty()) {
+    val rowsNode = root.putArray("rows")
+    rows.forEach { it.toObjectNode(rowsNode.addObject()) }
+  }
+}
+
+fun GqlTableRow.toObjectNode(root: ObjectNode) {
+  root.put("__type", this.javaClass.simpleName)
+  root.put("title", title)
+  account.toObjectNode(root.putObject("account"))
+  root.put("indent", indent)
+  root.put("isSpace", isSpace)
+  root.put("isTotal", isTotal)
+  root.put("isNormal", isNormal)
+  if (cells.isNotEmpty()) {
+    val cellsNode = root.putArray("cells")
+    cells.forEach { it.toObjectNode(cellsNode.addObject()) }
+  }
+}
+
+fun GqlAccount.toObjectNode(root: ObjectNode) {
+  root.put("__type", this.javaClass.simpleName)
+  root.put("name", name)
+  if (description.isNotEmpty()) {
+    root.put("description", description)
+  }
+  if (path.isNotEmpty()) {
+    val pathNode = root.putArray("path")
+    path.forEach { pathNode.add(it) }
+  }
+  root.put("external", external)
+  root.put("summary", summary)
+  if (number != null) {
+    root.put("number", number)
+  }
+  if (openedOn != null) {
+    root.put("openedOn", openedOn.toString())
+  }
+  if (closedOn != null) {
+    root.put("closedOn", closedOn.toString())
+  }
+  if (owners.isNotEmpty()) {
+    val ownersNode = root.putArray("owners")
+    owners.forEach { ownersNode.add(it) }
+  }
+  if (url.isNotEmpty()) {
+    root.put("url", url)
+  }
+  if (address.isNotEmpty()) {
+    root.put("address", address)
+  }
+  if (userName.isNotEmpty()) {
+    root.put("userName", userName)
+  }
+  if (password.isNotEmpty()) {
+    root.put("password", password)
+  }
+  if (phone.isNotEmpty()) {
+    root.put("phone", phone)
+  }
+}
+
+fun GqlTableCell.toObjectNode(root: ObjectNode) {
+  root.put("__type", this.javaClass.simpleName)
+  root.put("month", month.toString())
+  root.put("isClosed", isClosed)
+  root.put("addSub", addSub)
+  if (balance != null) {
+    root.put("balance", balance)
+  }
+  root.put("isProjected", isProjected)
+  root.put("isCovered", isCovered)
+  root.put("isProjectedCovered", isProjectedCovered)
+  root.put("hasProjectedTransfer", hasProjectedTransfer)
+  root.put("percentChange", percentChange)
+  root.put("annualizedPercentChange", annualizedPercentChange)
+  if (unaccounted != null) {
+    root.put("unaccounted", unaccounted)
+  }
+  root.put("balanced", balanced)
 }
