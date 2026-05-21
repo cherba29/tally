@@ -23,6 +23,8 @@ data class Budget(
   val leafToAccount: Map<Group.Leaf, Account>,
   // Account id to account map.
   val accounts: Map<NodeId, Account>,
+
+  // TODO: remove balances and transfers since statements has similar information.
   // Account id -> month -> balance map.
   val balances: Map<NodeId, Map<Month, Balance>>,
   // Account id -> month -> transfers map.

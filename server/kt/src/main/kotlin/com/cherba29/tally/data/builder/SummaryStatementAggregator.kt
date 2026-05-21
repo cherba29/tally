@@ -1,6 +1,8 @@
-package com.cherba29.tally.statement
+package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.statement.Statement
+import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.utils.Map3
 
 // TODO: add tests for this class.

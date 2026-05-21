@@ -1,7 +1,8 @@
-package com.cherba29.tally.statement
+package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.MonthName.MAY
 import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.statement.Statement
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
@@ -21,7 +22,7 @@ class SummaryStatementAggregatorTest : DescribeSpec({
         owner = "john",
         statement = Statement(
           nodeId = NodeId("test-account"),
-          monthRange = MAY / 2026 .. MAY / 2026,
+          monthRange = MAY / 2026..MAY / 2026,
         )
       )
       aggregator.summaryStatements.isEmpty shouldBe false
