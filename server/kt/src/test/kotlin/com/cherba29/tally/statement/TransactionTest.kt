@@ -4,7 +4,7 @@ import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.DEC
 import com.cherba29.tally.core.NodeId
-import com.cherba29.tally.data.budget
+import com.cherba29.tally.data.builder.budget
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe

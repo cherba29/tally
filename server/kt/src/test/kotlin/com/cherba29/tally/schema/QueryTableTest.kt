@@ -5,7 +5,7 @@ import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.NodeId
-import com.cherba29.tally.data.budget
+import com.cherba29.tally.data.builder.budget
 import com.cherba29.tally.data.yaml.toObjectNode
 import com.diffplug.selfie.coroutines.expectSelfie
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator

@@ -4,6 +4,7 @@ import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.data.builder.BudgetBuilder
 import com.cherba29.tally.data.yaml.CustomProblemHandler
 import com.cherba29.tally.data.yaml.LocalDateDeserializer
 import com.cherba29.tally.data.yaml.MonthDeserializer
