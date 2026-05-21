@@ -23,7 +23,7 @@ import kotlin.collections.forEach
 import kotlinx.datetime.LocalDate
 
 
-class BudgetTest : DescribeSpec({
+class BudgetBuilderTest : DescribeSpec({
   it("build empty budget") {
     val error = shouldThrow<IllegalArgumentException> { budget {} }
     error.message shouldBe "Budget must have at least one month."
