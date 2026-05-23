@@ -59,8 +59,11 @@ class Generate : CliktCommand() {
 
     // Find minimum/maximum month used by this account.
     val accountMonths = accountBalances.keys + accountTransfers.keys
+    if (accountMonths.isEmpty()) {
+      throw UsageError("Account '$account' has no records for any month.")
+    }
     val minMonth = accountMonths.min()
-    val maxMonth = accountMonths.max()
+    val maxMonth = accountMonths.max().next()
     val firstMonth = if (startMonth < minMonth) minMonth.previous() else startMonth
     if (firstMonth > maxMonth) {
       throw UsageError("The account $account has no balances or transactions after $maxMonth.")
@@ -153,7 +156,6 @@ class Generate : CliktCommand() {
       minDateNextMonthTransfer: LocalDate?,
       balanceType: Balance.Type
     ): Balance? {
-      //if (transfers.size === 0) { return undefined; }
       // The balance date is set to max transfer date,
       // but make sure it is not lower than next month start by default.
       val nextDate = startBalance.date + DatePeriod(months = 1)
