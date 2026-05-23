@@ -3,6 +3,7 @@ package com.cherba29.tally.statement
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.core.plus
 
 class SummaryStatement(nodeId: NodeId, monthRange: MonthRange) : Statement(nodeId, monthRange) {
   val statements: MutableList<Statement> = mutableListOf()
@@ -20,8 +21,8 @@ class SummaryStatement(nodeId: NodeId, monthRange: MonthRange) : Statement(nodeI
       // Does not contribute to the summary.
       return
     }
-    startBalance = Balance.add(startBalance, statement.startBalance)
-    endBalance = Balance.add(endBalance, statement.endBalance)
+    startBalance += statement.startBalance
+    endBalance += statement.endBalance
     addInFlow(statement.inFlows)
     addOutFlow(statement.outFlows)
     totalTransfers += statement.totalTransfers

@@ -159,16 +159,12 @@ class Generate : CliktCommand() {
       // The balance date is set to max transfer date,
       // but make sure it is not lower than next month start by default.
       val nextDate = startBalance.date + DatePeriod(months = 1)
-      var balance: Balance? = Balance(startBalance.amount, nextDate, balanceType)
+      var balance = Balance(startBalance.amount, nextDate, balanceType)
       for (transfer in transfers) {
-        balance = if (transfer.toAccount.nodeId.name == accountName) {
-          Balance.add(balance, transfer.balance)
-        } else {
-          Balance.subtract(balance, transfer.balance)
-        }
+        balance += if (transfer.toAccount.nodeId.name == accountName) transfer.balance else -transfer.balance
       }
       // Make sure next balance start does not exceed its minimum transfer date.
-      if (minDateNextMonthTransfer != null && balance!!.date > minDateNextMonthTransfer) {
+      if (minDateNextMonthTransfer != null && balance.date > minDateNextMonthTransfer) {
         return Balance(balance.amount, minDateNextMonthTransfer, balance.type)
       }
       return balance

@@ -15,6 +15,21 @@ data class Balance(val amount: Int, val date: LocalDate, val type: Type) : Compa
     }
   }
 
+  private fun max(date1: LocalDate, date2: LocalDate) = if (date1 < date2) date2 else date1
+  operator fun plus(other: Balance) = Balance(
+    amount + other.amount,
+    max(date,other.date),
+    Type.combineTypes(type, other.type)
+  )
+
+  operator fun minus(other: Balance) = Balance(
+    amount - other.amount,
+    max(date,other.date),
+    Type.combineTypes(type, other.type)
+  )
+
+  operator fun unaryMinus() = Balance(-amount, date, type)
+
   override fun compareTo(other: Balance): Int {
     val dateDiff = date.compareTo(other.date)
     if (dateDiff != 0) {
@@ -41,24 +56,6 @@ data class Balance(val amount: Int, val date: LocalDate, val type: Type) : Compa
       return Balance(amount, LocalDate.parse(date), Type.PROJECTED)
     }
 
-    fun negated(balance: Balance): Balance {
-      return Balance(-balance.amount, balance.date, balance.type)
-    }
-
-    fun add(balance1: Balance?, balance2: Balance?): Balance? {
-      if (balance1 == null) return balance2
-      if (balance2 == null)  return balance1
-      val maxDate = if (balance1.date < balance2.date) balance2.date else balance1.date
-      return Balance(
-        balance1.amount + balance2.amount, maxDate, Type.combineTypes(balance1.type, balance2.type)
-      )
-    }
-
-    fun subtract(balance1: Balance?, balance2: Balance?): Balance? {
-      if (balance2 == null) return balance1
-      return add(balance1, Balance(-balance2.amount, balance2.date, balance2.type))
-    }
-
     fun pickMinDate(first: Balance?, second: Balance?): Balance? {
       if (first == null) return second
       if (second == null) return first
@@ -71,4 +68,16 @@ data class Balance(val amount: Int, val date: LocalDate, val type: Type) : Compa
       return if (first.date > second.date) first else second
     }
   }
+}
+
+operator fun Balance?.plus(other: Balance?): Balance? {
+  if (this == null) return other
+  if (other == null) return this
+  return this + other
+}
+
+operator fun Balance?.minus(other: Balance?): Balance? {
+  if (this == null) return if (other == null) null else -other
+  if (other == null) return this
+  return this - other
 }

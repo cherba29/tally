@@ -73,7 +73,7 @@ class TransactionStatement(nodeId: NodeId, monthRange: MonthRange, isClosed: Boo
           otherAccount = t.fromAccount.nodeId
           transactionType = attributeTransfer(otherAccount, nodeId, balance.amount)
         } else if (t.fromAccount.nodeId.name === nodeId.name) {
-          balance = Balance.negated(t.balance)
+          balance = -t.balance
           otherAccount = t.toAccount.nodeId
           transactionType = attributeTransfer(nodeId, otherAccount, balance.amount)
         } else {
