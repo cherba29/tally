@@ -27,7 +27,7 @@ class SummaryStatementAggregatorTest : DescribeSpec({
       )
       aggregator.summaryStatements.isEmpty shouldBe false
       aggregator.summaryStatements.size shouldBe 1
-      val stmt = aggregator.summaryStatements["john", "", "May2026"]!!
+      val stmt = aggregator.summaryStatements["john", "", MAY/2026]!!
       stmt.nodeId.name shouldBe ""
       stmt.monthRange shouldBe MAY / 2026 .. MAY / 2026
       stmt.nodeId.owners shouldBe listOf("john")
@@ -52,7 +52,7 @@ class SummaryStatementAggregatorTest : DescribeSpec({
 
       aggregator.summaryStatements.isEmpty shouldBe false
       aggregator.summaryStatements.size shouldBe 2
-      val stmt = aggregator.summaryStatements["john", "/internal", "May2026"]!!
+      val stmt = aggregator.summaryStatements["john", "/internal", MAY / 2026]!!
       stmt.nodeId.name shouldBe "/internal"
       stmt.monthRange shouldBe MAY / 2026 .. MAY / 2026
       stmt.nodeId.owners shouldBe listOf("john")
@@ -62,7 +62,7 @@ class SummaryStatementAggregatorTest : DescribeSpec({
       subStatement.monthRange shouldBe MAY / 2026 .. MAY / 2026
       subStatement.nodeId.owners shouldBe listOf()
 
-      val topStmt = aggregator.summaryStatements["john", "/", "May2026"]!!
+      val topStmt = aggregator.summaryStatements["john", "/", MAY / 2026]!!
       topStmt.nodeId.name shouldBe "/"
       topStmt.monthRange shouldBe MAY / 2026 .. MAY / 2026
       topStmt.nodeId.owners shouldBe listOf("john")

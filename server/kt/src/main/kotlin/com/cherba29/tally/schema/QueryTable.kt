@@ -98,7 +98,7 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
           "Did not find summary statement at '${entry.pathId}' for owner '$forOwner' in payload summaries"
         )
       val cells: List<GqlTableCell> = months.mapNotNull { month ->
-        summaryMonthMap[month.toString()]?.toGqlTableCell()
+        summaryMonthMap[month]?.toGqlTableCell()
       }
       if (cells.any { c -> !c.isClosed }) {
         val nodeId = summaryMonthMap.values.first().nodeId

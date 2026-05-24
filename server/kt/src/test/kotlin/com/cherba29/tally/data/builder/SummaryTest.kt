@@ -1,6 +1,7 @@
 package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthName.MAY
@@ -38,14 +39,14 @@ class SummaryTest : DescribeSpec({
         false,
         startBalance
       )
-      val statements: Map3<SummaryStatement> = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
+      val statements: Map3<String, String, Month, SummaryStatement> = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
       withClue("should contain: $statements") {
         statements.isEmpty shouldBe false
         statements.size shouldBe 2
         statements.keys.keys shouldBe setOf("john")
         statements.keys["john"] shouldBe setOf("/external", "/")
       }
-      val stmt1 = statements["john", "/external", "Mar2021"]
+      val stmt1 = statements["john", "/external", MAR/ 2021]
       stmt1?.nodeId shouldBe NodeId(
         name = "/external",
         path = listOf(),
@@ -63,7 +64,7 @@ class SummaryTest : DescribeSpec({
         stmt1?.totalTransfers shouldBe 0
       }
 
-      val stmt2 = statements["john", "/", "Mar2021"]
+      val stmt2 = statements["john", "/", MAR / 2021]
       stmt2?.nodeId shouldBe NodeId(
         name = "/",
         path = listOf(),
@@ -94,13 +95,13 @@ class SummaryTest : DescribeSpec({
         startBalance = null
       )
       tranStmt.startBalance = Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
-      val statements: Map3<SummaryStatement> = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
+      val statements = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
       statements.isEmpty shouldBe false
       statements.size shouldBe 2
       statements.keys.keys shouldBe setOf("john")
       statements.keys["john"] shouldBe setOf("/external", "/")
 
-      val stmt = statements["john", "/", "Mar2021"]!!
+      val stmt = statements["john", "/", MAR / 2021]!!
       stmt.nodeId shouldBe NodeId(
         name = "/",
         path = listOf(),
@@ -112,7 +113,7 @@ class SummaryTest : DescribeSpec({
       stmt.income shouldBe 0
       stmt.monthRange shouldBe MAR / 2021 .. MAR / 2021
       stmt.outFlows shouldBe 0
-      stmt.statements shouldBe listOf(statements["john", "/external", "Mar2021"]!!)
+      stmt.statements shouldBe listOf(statements["john", "/external", MAR / 2021]!!)
       stmt.totalPayments shouldBe 0
       stmt.totalTransfers shouldBe 0
     }
@@ -135,13 +136,13 @@ class SummaryTest : DescribeSpec({
         LocalDate(2023, 12, 2),
         Balance.Type.CONFIRMED
       )
-      val statements: Map3<SummaryStatement> = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = "john")
+      val statements = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = "john")
       statements.isEmpty shouldBe false
       statements.size shouldBe 2
       statements.keys.keys shouldBe setOf("john")
       statements.keys["john"] shouldBe setOf("/external", "/")
 
-      val stmt1 = statements["john", "/external", "Mar2021"]!!
+      val stmt1 = statements["john", "/external", MAR/ 2021]!!
       stmt1.nodeId shouldBe NodeId(
         name = "/external",
         path = listOf(),
@@ -157,7 +158,7 @@ class SummaryTest : DescribeSpec({
       stmt1.totalPayments shouldBe 0
       stmt1.totalTransfers shouldBe 0
 
-      val stmt2 = statements["john", "/", "Mar2021"]!!
+      val stmt2 = statements["john", "/", MAR / 2021]!!
       stmt2.nodeId shouldBe NodeId(
         name = "/",
         path = listOf(),
@@ -229,14 +230,14 @@ class SummaryTest : DescribeSpec({
         Balance.Type.CONFIRMED
       )
 
-      val statements: Map3<SummaryStatement> = buildSummaryStatementTable(
+      val statements = buildSummaryStatementTable(
         listOf(tranStmt1, tranStmt2, tranStmt3), selectedOwner = "john")
       statements.isEmpty shouldBe false
       statements.size shouldBe 2
       statements.keys.keys shouldBe setOf("john")
       statements.keys["john"] shouldBe setOf("/external", "/")
 
-      val stmt1 = statements["john", "/external", "Mar2021"]!!
+      val stmt1 = statements["john", "/external", MAR / 2021]!!
       stmt1.nodeId shouldBe NodeId(
         name = "/external",
         path = listOf(),
@@ -252,7 +253,7 @@ class SummaryTest : DescribeSpec({
       stmt1.totalPayments shouldBe 0
       stmt1.totalTransfers shouldBe 0
 
-      val stmt2 = statements["john", "/", "Mar2021"]!!
+      val stmt2 = statements["john", "/", MAR / 2021]!!
       stmt2.nodeId shouldBe NodeId(
         name = "/",
         path = listOf(),

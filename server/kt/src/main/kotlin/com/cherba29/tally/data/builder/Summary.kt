@@ -13,7 +13,7 @@ import kotlin.collections.iterator
 fun buildSummaryStatementTable(
   statements: List<TransactionStatement>,
   selectedOwner: String?
-): Map3<SummaryStatement> {
+): Map3<String, String, Month, SummaryStatement> {
   val statementsAggregator = SummaryStatementAggregator()
   for (statement in statements) {
     for (owner in statement.nodeId.owners) {

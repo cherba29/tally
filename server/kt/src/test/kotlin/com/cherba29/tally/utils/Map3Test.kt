@@ -6,34 +6,34 @@ import io.kotest.matchers.shouldBe
 class Map3Test : DescribeSpec({
   describe("Map3") {
     it("get and set") {
-      val map = Map3<Int>()
+      val map = Map3<String, String, String, Int>()
       map.set("key1", "key2", "key3", 1)
       map["key1", "key2", "key3"] shouldBe 1
       map.size shouldBe 1
     }
     it("get default") {
-      val map = Map3<Int>()
+      val map = Map3<String, String, String, Int>()
       map.set("key1", "key2", "key3", 1)
       map.getDefault("key1", "key2", "key3") { 3 } shouldBe 1
       map.size shouldBe 1
     }
 
     it("clear") {
-      val map = Map3<Int>()
+      val map = Map3<String, String, String, Int>()
       map.set("key1", "key2", "key3", 1)
       map.clear()
       map.size shouldBe 0
     }
 
     it("isEmpty") {
-      val map = Map3<Int>()
+      val map = Map3<String, String, String, Int>()
       map.isEmpty shouldBe true
       map.set("key1", "key2", "key3", 1)
       map.isEmpty shouldBe false
     }
 
     it("get2") {
-      val map = Map3<Int>()
+      val map = Map3<String, String, String, Int>()
       map.set("key1", "key2", "key3", 1)
       val map2 = map["key1", "key2"]
       map2?.size shouldBe 1
@@ -41,7 +41,7 @@ class Map3Test : DescribeSpec({
     }
 
     it("iterator") {
-      val map = Map3<Int>()
+      val map = Map3<String, String, String, Int>()
       map.set("key1", "key2", "key3", 1)
       map.set("key4", "key5", "key6", 2)
       val result = map.toList()
@@ -52,9 +52,9 @@ class Map3Test : DescribeSpec({
     }
 
     it("merge") {
-      val map1 = Map3<Int>()
+      val map1 = Map3<String, String, String, Int>()
       map1.set("key1", "key2", "key3", 1)
-      val map2 = Map3<Int>()
+      val map2 = Map3<String, String, String, Int>()
       map2.set("key4", "key5", "key6", 2)
       map1.merge(map2)
       map1.size shouldBe 2

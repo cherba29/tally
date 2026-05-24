@@ -1,6 +1,7 @@
 package com.cherba29.tally.schema
 
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.data.builder.CombinedStatement
 import com.cherba29.tally.statement.SummaryStatement

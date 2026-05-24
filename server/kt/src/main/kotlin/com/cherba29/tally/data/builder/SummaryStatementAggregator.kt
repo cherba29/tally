@@ -1,5 +1,6 @@
 package com.cherba29.tally.data.builder
 
+import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
@@ -8,14 +9,14 @@ import com.cherba29.tally.utils.Map3
 // TODO: add tests for this class.
 class SummaryStatementAggregator {
   // Map of owner -> 'summary name' -> month -> 'summary statement'.
-  val summaryStatements = Map3<SummaryStatement>()
+  val summaryStatements = Map3<String, String, Month, SummaryStatement>()
   private val summaryNodes: MutableMap<String, NodeId> = mutableMapOf()
 
   fun addStatement(summaryName: String, owner: String, statement: Statement) {
     val summaryNodeId = getNodeId(summaryName, owner, statement.nodeId.path)
 
     val accountMonthSummaryStatement = summaryStatements.getDefault(
-      owner, summaryNodeId.name, statement.monthRange.first.toString()
+      owner, summaryNodeId.name, statement.monthRange.first
     ) {
       SummaryStatement(summaryNodeId, statement.monthRange)
     }
