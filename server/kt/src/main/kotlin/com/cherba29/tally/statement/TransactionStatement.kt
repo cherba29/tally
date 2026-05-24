@@ -27,6 +27,12 @@ class TransactionStatement(nodeId: NodeId, monthRange: MonthRange, isClosed: Boo
   // True if this statement is covered by any projected transactions in next statement.
   var isProjectedCovered = false
 
+  override fun toString(): String {
+    return super.toString() + " coversPrevious=$coversPrevious coversProjectPrevious=$coversProjectedPrevious" +
+        " hasProjectedTransfer=$hasProjectedTransfer isCovered=$isCovered isProjectedCovered=$isProjectedCovered" +
+        " transactions=$transactions"
+  }
+
   companion object {
     fun fromTransfers(
       nodeId: NodeId,

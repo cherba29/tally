@@ -207,8 +207,6 @@ class BudgetBuilder(
       tree,
       leafToAccount,
       accounts,
-      nodeIdToBalance,
-      nodeIdToTransfer,
       accountToMonthToTransactionStatement,
       summaryNameMonthMap,
     )

@@ -8,6 +8,7 @@ import com.cherba29.tally.core.MonthName.FEB
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.NOV
 import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.core.Transfer
 import com.cherba29.tally.data.yaml.toObjectNode
 import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.statement.TransactionStatement
@@ -81,9 +82,11 @@ class BudgetBuilderTest : DescribeSpec({
     budget.accounts.size shouldBe 3
     budget.accounts[NodeId("test-account1")] shouldBe account1
     budget.accounts[NodeId("test-account2")] shouldBe account2
-    budget.balances.size shouldBe 2
+    budget.statements.size shouldBe 3
+    budget.statements.values.sumOf { it.values.count { s -> s.startBalance != null } } shouldBe 3
+    budget.statements.values.sumOf { it.values.sumOf { s -> s.transactions.size } } shouldBe 4
     budget.months shouldBe NOV / 2019 .. DEC / 2019
-    budget.transfers.size shouldBe 3
+    budget.summaries.size shouldBe 0
   }
 
   it("build ambiguous account") {
@@ -272,8 +275,8 @@ class BudgetBuilderTest : DescribeSpec({
         val table = BudgetBuilder().buildTransactionStatementTable(
           budget.months,
           budget.accounts,
-          budget.balances,
-          budget.transfers,
+          balances = mapOf(),
+          transfers = mapOf(),
           owner = null
         )
         table.size shouldBe 1
@@ -324,14 +327,12 @@ class BudgetBuilderTest : DescribeSpec({
       }
 
       it("two accounts with common owner and transfers") {
-        val path1 = listOf("john", "external", "test-account1")
         val node1 = NodeId(
           name = "test-account1",
           path = listOf("external"),
           owners = setOf("john")
         )
         val account1 = Account(node1, openedOn = DEC / 2019)
-        val path2 = listOf("john", "external", "test-account2")
         val node2 = NodeId(
           name = "test-account2",
           path = listOf("external"),
@@ -339,35 +340,42 @@ class BudgetBuilderTest : DescribeSpec({
         )
 
         val account2 = Account(node2, openedOn = DEC / 2019)
-        val budget = budget {
-          setAccount(path1, account1)
-          setBalance(path1, DEC / 2019, Balance.confirmed(10, "2019-12-01"))
-          setBalance(path1, JAN / 2020, Balance.confirmed(20, "2020-01-01"))
-          setBalance(path1, FEB / 2020, Balance.projected(30, "2020-02-01"))
-          setAccount(path2, account2)
-          addTransfer(
-            fromAccountPath = path1,
-            toAccountName = node2.name,
-            toMonth = DEC / 2019,
-            fromMonth = DEC / 2019,
-            balance = Balance.projected(2000, "2019-12-05"),
-            description = "First transfer",
+        val accounts = mapOf(
+          node1 to account1,
+          node2 to account2
+        )
+        val balances = mapOf(
+          node1 to mapOf(
+            DEC / 2019 to Balance.confirmed(10, "2019-12-01"),
+            JAN / 2020 to Balance.confirmed(20, "2020-01-01"),
+            FEB / 2020 to Balance.projected(30, "2020-02-01")
           )
-
-          addTransfer(
-            fromAccountPath = path1,
-            toAccountName = node2.name,
-            toMonth = DEC / 2019,
-            fromMonth = DEC / 2019,
-            balance = Balance.projected(1000, "2019-12-05"),
-            description = "Second transfer",
-          )
-        }
+        )
+        val firstTransfer1to2 = Transfer(
+          fromAccount = account1,
+          toAccount = account2,
+          fromMonth = DEC / 2019,
+          toMonth = DEC / 2019,
+          description = "First transfer",
+          balance = Balance.projected(2000, "2019-12-05")
+        )
+        val secondTransfer1to2 = Transfer(
+          fromAccount = account1,
+          toAccount = account2,
+          fromMonth = DEC / 2019,
+          toMonth = DEC / 2019,
+          description = "Second transfer",
+          balance = Balance.projected(1000, "2019-12-05")
+        )
+        val transfers = mapOf(
+          node1 to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
+          node2 to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
+        )
         val table = BudgetBuilder().buildTransactionStatementTable(
-          budget.months,
-          budget.accounts,
-          budget.balances,
-          budget.transfers,
+          DEC / 2019 .. FEB / 2020,
+          accounts,
+          balances,
+          transfers,
           owner = null
         )
         table.size shouldBe 6
@@ -375,84 +383,57 @@ class BudgetBuilderTest : DescribeSpec({
       }
 
       it("two accounts with external transfer") {
-        val path1 = listOf("john", "external", "test-account1")
         val node1 = NodeId(
           name = "test-account1",
           path = listOf("external"),
         )
         val account1 = Account(node1, openedOn = DEC / 2019)
-        val path2 = listOf("john", "external", "test-account2")
         val node2 = NodeId(
           name = "test-account2",
           path = listOf("external"),
           owners = setOf("john"),
         )
         val account2 = Account(node2, openedOn = DEC / 2019)
-        val budget = budget {
-          setAccount(path1, account1)
-          setBalance(path1, DEC / 2019, Balance.confirmed(10, "2019-12-01"))
-          setBalance(path1, JAN / 2020, Balance.confirmed(20, "2020-01-01"))
-          setBalance(path1, FEB / 2020, Balance.projected(30, "2020-02-01"))
-          setAccount(path2, account2)
-          addTransfer(
-            fromAccountPath = path1,
-            toAccountName = node2.name,
-            toMonth = DEC / 2019,
-            fromMonth = DEC / 2019,
-            balance = Balance.projected(2000, "2019-12-05"),
-            description = "First transfer",
+        val accounts = mapOf(
+          node1 to account1,
+          node2 to account2
+        )
+        val balances = mapOf(
+          node1 to mapOf(
+            DEC / 2019 to Balance.confirmed(10, "2019-12-01"),
+            JAN / 2020 to Balance.confirmed(20, "2020-01-01"),
+            FEB / 2020 to Balance.projected(30, "2020-02-01")
           )
+        )
+        val firstTransfer1to2 = Transfer(
+          fromAccount = account1,
+          toAccount = account2,
+          fromMonth = DEC / 2019,
+          toMonth = DEC / 2019,
+          description = "First transfer",
+          balance = Balance.projected(2000, "2019-12-05")
+        )
+        val secondTransfer1to2 = Transfer(
+          fromAccount = account1,
+          toAccount = account2,
+          fromMonth = DEC / 2019,
+          toMonth = DEC / 2019,
+          description = "Second transfer",
+          balance = Balance.projected(1000, "2019-12-05")
+        )
 
-          addTransfer(
-            fromAccountPath = path1,
-            toAccountName = node2.name,
-            toMonth = DEC / 2019,
-            fromMonth = DEC / 2019,
-            balance = Balance.projected(1000, "2019-12-05"),
-            description = "Second transfer",
-          )
-        }
+        val transfers = mapOf(
+          node1 to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
+          node2 to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
+        )
         val table = BudgetBuilder().buildTransactionStatementTable(
-          budget.months,
-          budget.accounts,
-          budget.balances,
-          budget.transfers,
+          DEC / 2019 .. FEB / 2020,
+          accounts,
+          balances,
+          transfers,
           owner = null
         )
         table.size shouldBe 6
-        expectSelfie(table.toSnapshot()).toMatchDisk()
-      }
-
-      it("single account with transfers") {
-        val path1 = listOf("john", "external", "test-account1")
-        val node1 = NodeId(
-          name = "test-account1",
-          path = listOf("external"),
-          owners = setOf("john"),
-        )
-        val account1 = Account(node1, openedOn = DEC / 2019)
-        val budget = budget {
-          setAccount(path1, account1)
-          setBalance(path1, DEC / 2019, Balance.confirmed(10, "2019-12-01"))
-          setBalance(path1, JAN / 2020, Balance.confirmed(20, "2020-01-01"))
-          setBalance(path1, FEB / 2020, Balance.projected(30, "2020-02-01"))
-          addTransfer(
-            fromAccountPath = path1,
-            toAccountName = node1.name,
-            toMonth = DEC / 2019,
-            fromMonth = DEC / 2019,
-            balance = Balance.projected(2000, "2019-12-05"),
-            description = "First transfer",
-          )
-        }
-        val table = BudgetBuilder().buildTransactionStatementTable(
-          budget.months,
-          budget.accounts,
-          budget.balances,
-          budget.transfers,
-          owner = null
-        )
-        table.size shouldBe 3
         expectSelfie(table.toSnapshot()).toMatchDisk()
       }
 
@@ -486,7 +467,6 @@ class BudgetBuilderTest : DescribeSpec({
       }
 
       it("transfer to closed account") {
-        val path1 = listOf("john", "external", "test-account1")
         val node1 = NodeId(
           name = "test-account1",
           path = listOf("external"),
@@ -498,88 +478,123 @@ class BudgetBuilderTest : DescribeSpec({
           openedOn = NOV / 2019,
           closedOn = NOV / 2019  // closed before TransactionStatement month
         )
-        val budget = budget {
-          setAccount(path1, account1)
-          setBalance(path1, DEC / 2019, Balance.confirmed(10, "2019-12-01"))
-          addTransfer(
-            fromAccountPath = path1,
-            toAccountName = node1.name,
-            toMonth = DEC / 2019,
-            fromMonth = DEC / 2019,
-            balance = Balance.projected(2000, "2019-12-05"),
-            description = "First transfer",
+        val node2 = NodeId(
+          name = "external",
+          path = listOf("external"),
+          owners = setOf("john"),
+        )
+
+        val account2 = Account(
+          node2,
+          openedOn = NOV / 2019,
+        )
+        val accounts = mapOf(
+          node1 to account1,
+          node2 to account2,
+        )
+        val balances = mapOf(
+          node1 to mapOf(
+            DEC / 2019 to Balance.confirmed(10, "2019-12-01"),
           )
-        }
+        )
+        val transfers = mapOf(
+          node1 to mapOf(
+            DEC / 2019 to listOf(
+              Transfer(
+                fromAccount = account1,
+                toAccount = account2,
+                fromMonth = DEC / 2019,
+                toMonth = DEC / 2019,
+                description = "First transfer",
+                balance = Balance.projected(2000, "2019-12-05")
+              ),
+            )
+          )
+        )
+
         val table = BudgetBuilder().buildTransactionStatementTable(
-          budget.months,
-          budget.accounts,
-          budget.balances,
-          budget.transfers,
+          NOV / 2019 .. DEC / 2019,
+          accounts,
+          balances,
+          transfers,
           owner = null
         )
-        table.size shouldBe 2  // Two transaction statements for the account
+        table.size shouldBe 4  // Two transaction statements for the account
         table[0].monthRange shouldBe DEC / 2019 .. DEC / 2019
         table[0].isClosed shouldBe true
+        table[0].nodeId shouldBe node1
         table[1].monthRange shouldBe NOV / 2019 .. NOV / 2019
         table[1].isClosed shouldBe false
+        table[1].nodeId shouldBe NodeId("test-account1", setOf("john"), listOf("external"))
+        table[2].monthRange shouldBe DEC / 2019 .. DEC / 2019
+        table[2].isClosed shouldBe false
+        table[2].nodeId shouldBe node2
+        table[3].monthRange shouldBe NOV / 2019 .. NOV / 2019
+        table[3].isClosed shouldBe false
+        table[3].nodeId shouldBe NodeId("external", owners = setOf("john"), listOf("external"))
       }
 
       it("get transaction type") {
-        val path1 = listOf("john", "internal", "checking", "test-account1")
         val node1 = NodeId(
           name = "test-account1",
           path = listOf("internal", "checking"),
           owners = setOf("john"),
         )
         val account1 = Account(node1, openedOn = DEC / 2019)
-        val path2 = listOf("john", "internal", "credit", "test-account2")
         val node2 = NodeId(
           name = "test-account2",
           path = listOf("internal", "credit"),
           owners = setOf("john"),
         )
         val account2 = Account(node2, openedOn = DEC / 2019)
-        val path3 = listOf("john", "external", "expense", "test-account3")
         val node3 = NodeId(
           name = "test-account3",
           path = listOf("external", "expense"),
-          owners = setOf(),
+          owners = setOf("john"),
+        )
+        val account3 = Account(node3, openedOn = DEC / 2019)
+
+        val accounts = mapOf(
+          node1 to account1,
+          node2 to account2,
+          node3 to account3
+        )
+        val balances = mapOf(
+          node1 to mapOf(DEC / 2019 to Balance.confirmed(10, "2019-12-01")),
+          node2 to mapOf(DEC / 2019 to Balance.confirmed(10, "2019-12-01")),
+          node3 to mapOf(DEC / 2019 to Balance.confirmed(10, "2019-12-01")),
+        )
+        val transfer1to2 =Transfer(
+          fromAccount = account1,
+          toAccount = account2,
+          fromMonth = DEC / 2019,
+          toMonth = DEC / 2019,
+          description = "First transfer",
+          balance = Balance.projected(2000, "2019-12-05")
+        )
+        val transfer1to3 = Transfer(
+          fromAccount = account1,
+          toAccount = account3,
+          fromMonth = DEC / 2019,
+          toMonth = DEC / 2019,
+          description = "Second transfer",
+          balance = Balance.projected(1000, "2019-12-05")
+        )
+        val transfers = mapOf(
+          node1 to mapOf(DEC / 2019 to listOf(transfer1to2, transfer1to3)),
+          node2 to mapOf(DEC / 2019 to listOf(transfer1to2)),
+          node3 to mapOf(DEC / 2019 to listOf(transfer1to3)),
         )
 
-        val account3 = Account(node3, openedOn = DEC / 2019)
-        val budget = budget {
-          setAccount(path1, account1)
-          setAccount(path2, account2)
-          setAccount(path3, account3)
-          setBalance(path1, DEC / 2019, Balance.confirmed(10, "2019-12-01"))
-          setBalance(path2, DEC / 2019, Balance.confirmed(10, "2019-12-01"))
-          setBalance(path3, DEC / 2019, Balance.confirmed(10, "2019-12-01"))
-          addTransfer(
-            fromAccountPath = path1,
-            toAccountName = node2.name,
-            toMonth = DEC / 2019,
-            fromMonth = DEC / 2019,
-            balance = Balance.projected(2000, "2019-12-05"),
-            description = "First transfer",
-          )
-
-          addTransfer(
-            fromAccountPath = path1,
-            toAccountName = node3.name,
-            toMonth = DEC / 2019,
-            fromMonth = DEC / 2019,
-            balance = Balance.projected(1000, "2019-12-05"),
-            description = "Second transfer",
-          )
-        }
         val table = BudgetBuilder().buildTransactionStatementTable(
-          budget.months,
-          budget.accounts,
-          budget.balances,
-          budget.transfers,
+          DEC / 2019 .. DEC / 2019,
+          accounts,
+          balances,
+          transfers,
           owner = null
         )
         table.size shouldBe 3  // 3 accounts
+        table[0].nodeId shouldBe account1.nodeId
         table[0].transactions.size shouldBe 2  // 2 transactions for account1
         assertSoftly {
           table[0].transactions[0].balance.amount shouldBe -2000.0
@@ -587,8 +602,10 @@ class BudgetBuilderTest : DescribeSpec({
           table[0].transactions[0].type shouldBe Transaction.Type.TRANSFER
           table[0].transactions[1].type shouldBe Transaction.Type.EXPENSE
         }
+        table[1].nodeId shouldBe account2.nodeId
         table[1].transactions.size shouldBe 1  // 1 transaction for account2
         table[1].transactions[0].type shouldBe Transaction.Type.TRANSFER
+        table[2].nodeId shouldBe account3.nodeId
         table[2].transactions.size shouldBe 1  // 1 transaction for account3
         table[2].transactions[0].type shouldBe Transaction.Type.INCOME
       }

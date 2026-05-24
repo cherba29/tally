@@ -49,7 +49,8 @@ class LoaderTest : DescribeSpec({
         tranStatement.monthRange shouldBe MAR / 2019..MAR / 2019
         tranStatement.nodeId.name shouldBe "test-account"
 
-        result.balances[nodeId]?.get(MAR / 2019) shouldBe Balance(
+        val stmt = result.statements[nodeId]?.get(MAR / 2019)!!
+        stmt.startBalance shouldBe Balance(
           10000, LocalDate(2019, 3, 1),
           Balance.Type.CONFIRMED
         )
@@ -72,9 +73,6 @@ class LoaderTest : DescribeSpec({
             mockk<Budget> {
               every { statements } returns mapOf(NodeId("testAccount${count++}") to mapOf())
             }
-//            DataPayload(mockk<Budget>(),mapOf(
-//              NodeId("testAccount${count++}") to mapOf()
-//            ), Map3())
           }
         }
         val timeSource = TestTimeSource()

@@ -1,15 +1,14 @@
 package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthName.FEB
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthName.NOV
 import com.cherba29.tally.core.NodeId
-import com.cherba29.tally.core.Transfer
 import com.cherba29.tally.data.builder.BudgetBuilder
 import com.cherba29.tally.data.builder.budget
+import com.cherba29.tally.statement.Transaction
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -84,9 +83,12 @@ class LoadYamlTest : DescribeSpec({
       account.openedOn shouldBe NOV / 2019
       account.closedOn shouldBe MAR / 2020
 
-      budget.balances.size shouldBe 0
+      budget.statements.size shouldBe 1
+      val monthlyStatements = budget.statements[account.nodeId]!!
+      monthlyStatements.size shouldBe 5
+      monthlyStatements.values.count { it.startBalance != null } shouldBe 0
       budget.months.size shouldBe 5
-      budget.transfers.size shouldBe 0
+      budget.summaries.size shouldBe 0
     }
 
     it("account with balances") {
@@ -106,14 +108,14 @@ class LoadYamlTest : DescribeSpec({
         loadYamlFile(this, parsedContent, relativeFilePath)
       }
       budget.accounts.size shouldBe 1
-      budget.balances.size shouldBe 1
+      budget.statements.size shouldBe 1
       budget.months.size shouldBe 2
-      budget.transfers.size shouldBe 0
+      budget.statements.values.sumOf { it.values.sumOf { s -> s.transactions.size } } shouldBe 0
 
-      val balances = budget.balances[NodeId("test-account", setOf("someone"), listOf("external"))]!!
-      balances.size shouldBe 2
-      balances[JAN / 2020] shouldBe Balance(0, LocalDate.parse("2020-01-01"), Balance.Type.CONFIRMED)
-      balances[FEB / 2020] shouldBe Balance(1000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
+      val monthlyStatements = budget.statements[NodeId("test-account", setOf("someone"), listOf("external"))]!!
+      monthlyStatements.size shouldBe 2
+      monthlyStatements[JAN / 2020]?.startBalance shouldBe Balance(0, LocalDate.parse("2020-01-01"), Balance.Type.CONFIRMED)
+      monthlyStatements[FEB / 2020]?.startBalance shouldBe Balance(1000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     }
 
     it("fails without balance month") {
@@ -247,54 +249,70 @@ class LoadYamlTest : DescribeSpec({
         loadYamlFile(this, parsedContent, relativeFilePath)
         loadYamlFile(this, parsedExternalContent, relativeFilePath)
       }
-      budget.accounts.size shouldBe 2
-      val testAccount = budget.accounts[NodeId("test-account", setOf("someone"), listOf("external"))]!!
-      val externalAccount = budget.accounts[NodeId("external", setOf("someone"), listOf("external"))]!!
-      budget.balances.size shouldBe 1
       budget.months.size shouldBe 2
-      budget.transfers.size shouldBe 2
+      budget.accounts.size shouldBe 2
+      budget.statements.size shouldBe 2
+      budget.summaries.size shouldBe 4
 
-      val testAccountTransfers = budget.transfers[testAccount.nodeId]!!
-      testAccountTransfers.size shouldBe 1
-      val testAccountMonthTransfers = testAccountTransfers[JAN / 2020]
-      testAccountMonthTransfers shouldBe setOf(
-        Transfer(
-          fromAccount = testAccount,
-          toAccount = externalAccount,
-          fromMonth = Month.fromString("Jan2020"),
-          toMonth = Month.fromString("Jan2020"),
-          balance = Balance(3750, LocalDate.parse("2020-01-17"), Balance.Type.PROJECTED),
+      val node1 = NodeId("test-account", setOf("someone"), listOf("external"))
+      val node2 = NodeId("external", setOf("someone"), listOf("external"))
+      val externalAccount = budget.accounts[node2]!!
+      val testAccountMonthlyStatements = budget.statements[node1]!!
+
+      testAccountMonthlyStatements.size shouldBe 2
+      testAccountMonthlyStatements.values.count { it.startBalance != null } shouldBe 2
+
+      val testAccountStatement = testAccountMonthlyStatements[JAN / 2020]!!
+      testAccountStatement.transactions shouldBe setOf(
+        Transaction(
+          nodeId = node2,
+          balance = Balance(-3750, LocalDate.parse("2020-01-17"), Balance.Type.PROJECTED),
           description = null,
+          type = Transaction.Type.EXPENSE,
+          balanceFromStart = -1502
         ),
-        Transfer(
-          fromAccount = testAccount,
-          toAccount = externalAccount,
-          fromMonth = Month.fromString("Jan2020"),
-          toMonth = Month.fromString("Jan2020"),
-          balance = Balance(-2248, LocalDate.parse("2020-01-15"), Balance.Type.CONFIRMED),
+        Transaction(
+          nodeId = node2,
+          balance = Balance(2248, LocalDate.parse("2020-01-15"), Balance.Type.CONFIRMED),
           description = null,
+          type = Transaction.Type.INCOME,
+          balanceFromStart = 2248
         ),
       )
-      val externalAccountTransfers = budget.transfers[externalAccount.nodeId]!!
-      externalAccountTransfers.size shouldBe 1
-      val externalAccountMonthTransfers = externalAccountTransfers[JAN / 2020]
-      externalAccountMonthTransfers shouldBe setOf(
-        Transfer(
-          fromAccount = testAccount,
-          toAccount = externalAccount,
-          fromMonth = Month.fromString("Jan2020"),
-          toMonth = Month.fromString("Jan2020"),
+      val externalAccountMonthlyStatements = budget.statements[externalAccount.nodeId]!!
+      externalAccountMonthlyStatements.size shouldBe 2
+      val externalAccountStatement = externalAccountMonthlyStatements[JAN / 2020]!!
+      externalAccountStatement.transactions shouldBe setOf(
+        Transaction(
+          nodeId = node1,
           balance = Balance(3750, LocalDate.parse("2020-01-17"), Balance.Type.PROJECTED),
           description = null,
+          type = Transaction.Type.INCOME,
+          balanceFromStart = null,
         ),
-        Transfer(
-          fromAccount = testAccount,
-          toAccount = externalAccount,
-          fromMonth = Month.fromString("Jan2020"),
-          toMonth = Month.fromString("Jan2020"),
+        Transaction(
+          nodeId = node1,
           balance = Balance(-2248, LocalDate.parse("2020-01-15"), Balance.Type.CONFIRMED),
           description = null,
+          type = Transaction.Type.EXPENSE,
+          balanceFromStart = null,
         ),
+//        Transfer(
+//          fromAccount = testAccount,
+//          toAccount = externalAccount,
+//          fromMonth = Month.fromString("Jan2020"),
+//          toMonth = Month.fromString("Jan2020"),
+//          balance = Balance(3750, LocalDate.parse("2020-01-17"), Balance.Type.PROJECTED),
+//          description = null,
+//        ),
+//        Transfer(
+//          fromAccount = testAccount,
+//          toAccount = externalAccount,
+//          fromMonth = Month.fromString("Jan2020"),
+//          toMonth = Month.fromString("Jan2020"),
+//          balance = Balance(-2248, LocalDate.parse("2020-01-15"), Balance.Type.CONFIRMED),
+//          description = null,
+//        ),
       )
     }
 

@@ -23,13 +23,7 @@ data class Budget(
   val leafToAccount: Map<Group.Leaf, Account>,
   // Account id to account map.
   val accounts: Map<NodeId, Account>,
-
-  // TODO: remove balances and transfers since statements has similar information.
-  // Account id -> month -> balance map.
-  val balances: Map<NodeId, Map<Month, Balance>>,
-  // Account id -> month -> transfers map.
-  val transfers: Map<NodeId, Map<Month, List<Transfer>>>,
-
+  /** Lookup map from account to its statement for given month */
   val statements: Map<NodeId, Map<Month, TransactionStatement>>,
   // owner -> account name -> month -> summary.
   val summaries: Map3<SummaryStatement>,
