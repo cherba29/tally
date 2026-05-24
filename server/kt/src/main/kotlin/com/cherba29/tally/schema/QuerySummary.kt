@@ -5,7 +5,7 @@ import com.cherba29.tally.data.Budget
 import com.cherba29.tally.statement.CombinedStatement
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
-import com.cherba29.tally.statement.combineSummaryStatements
+import com.cherba29.tally.data.builder.combineSummaryStatements
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.time.measureTimedValue
 
@@ -27,6 +27,7 @@ fun buildSummaryData(payload: Budget, owner: String, accountType:String, startMo
         "Summary $accountType for $owner for months [$startMonth, $endMonth] not found."
       )
     }
+    // TODO: use already compute budget summaries.
     val summary =
       if (summaryStatements.size == 1) summaryStatements.first() else combineSummaryStatements(summaryStatements)
     GqlSummaryData(

@@ -10,7 +10,6 @@ import com.cherba29.tally.core.Transfer
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
-import com.cherba29.tally.statement.buildSummaryStatementTable
 import com.cherba29.tally.utils.Map3
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.collections.iterator

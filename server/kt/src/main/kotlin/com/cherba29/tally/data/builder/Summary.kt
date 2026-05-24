@@ -1,10 +1,13 @@
-package com.cherba29.tally.statement
+package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.enlargeTo
-import com.cherba29.tally.data.builder.SummaryStatementAggregator
+import com.cherba29.tally.statement.CombinedStatement
+import com.cherba29.tally.statement.Statement
+import com.cherba29.tally.statement.SummaryStatement
+import com.cherba29.tally.statement.TransactionStatement
 import com.cherba29.tally.utils.Map3
 import kotlin.collections.iterator
 

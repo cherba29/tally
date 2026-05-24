@@ -1,10 +1,12 @@
-package com.cherba29.tally.statement
+package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthName.MAY
 import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.statement.SummaryStatement
+import com.cherba29.tally.statement.TransactionStatement
 import com.cherba29.tally.utils.Map3
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
@@ -32,7 +34,7 @@ class SummaryTest : DescribeSpec({
       )
       val tranStmt = TransactionStatement(
         node1,
-        MAR / 2021 .. MAR / 2021,
+        MAR / 2021..MAR / 2021,
         false,
         startBalance
       )
