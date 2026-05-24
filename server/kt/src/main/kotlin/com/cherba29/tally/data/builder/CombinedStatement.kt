@@ -1,9 +1,10 @@
-package com.cherba29.tally.statement
+package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.statement.Statement
 
 class CombinedStatement(nodeId: NodeId, monthRange: MonthRange) : Statement(nodeId, monthRange) {
   companion object {

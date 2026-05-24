@@ -4,7 +4,6 @@ import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.enlargeTo
-import com.cherba29.tally.statement.CombinedStatement
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement

@@ -1,9 +1,10 @@
-package com.cherba29.tally.statement
+package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate
@@ -39,7 +40,7 @@ class CombinedStatementTest : DescribeSpec({
       val startMonth = JAN / 2026
       val statement = TransactionStatement(
         nodeId,
-         startMonth .. startMonth,
+        startMonth..startMonth,
         isClosed = false,
         startBalance = Balance(
           100,
