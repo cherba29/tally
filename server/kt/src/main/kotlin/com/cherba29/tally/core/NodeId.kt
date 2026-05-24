@@ -11,6 +11,8 @@ data class NodeId(
   // TODO: this is too specific. Need better notion of external.
   val isExternal: Boolean = path.firstOrNull() == "external"
   val isSummary: Boolean = name.startsWith("/")
+  val parentPath: List<String> get() = path.slice(0..path.size - 2)
+
 
   fun hasCommonOwner(other: NodeId): Boolean = owners.intersect(other.owners).isNotEmpty()
 

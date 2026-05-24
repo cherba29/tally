@@ -16,10 +16,9 @@ fun buildSummaryStatementTable(
 ): Map3<String, String, Month, SummaryStatement> {
   val statementsAggregator = SummaryStatementAggregator()
   for (statement in statements) {
+    if (statement.isEmpty()) continue
     for (owner in statement.nodeId.owners) {
-      if (selectedOwner != null && owner != selectedOwner || statement.isEmpty()) {
-        continue
-      }
+      if (selectedOwner != null && owner != selectedOwner) continue
       if (statement.nodeId.path.isNotEmpty()) {
         val summaryName = "/" + statement.nodeId.path.joinToString("/")
         statementsAggregator.addStatement(summaryName, owner, statement)

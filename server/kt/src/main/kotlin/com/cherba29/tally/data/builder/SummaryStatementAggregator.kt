@@ -10,27 +10,20 @@ import com.cherba29.tally.utils.Map3
 class SummaryStatementAggregator {
   // Map of owner -> 'summary name' -> month -> 'summary statement'.
   val summaryStatements = Map3<String, String, Month, SummaryStatement>()
+  // Map of owner+name -> summary node
   private val summaryNodes: MutableMap<String, NodeId> = mutableMapOf()
 
+  // Adds statement to its immediate parent summary statement.
+  // Once all statements are added one has to call propagateUpThePath2
+  // to create summary statements of these summaries up the tree.
   fun addStatement(summaryName: String, owner: String, statement: Statement) {
-    val summaryNodeId = getNodeId(summaryName, owner, statement.nodeId.path)
-
-    val accountMonthSummaryStatement = summaryStatements.getDefault(
-      owner, summaryNodeId.name, statement.monthRange.first
-    ) {
-      SummaryStatement(summaryNodeId, statement.monthRange)
+    val parentSummaryNodeId = summaryNodes.getOrPut("$owner - $summaryName") {
+      NodeId(summaryName, setOf(owner), statement.nodeId.parentPath)
     }
-    accountMonthSummaryStatement.addStatement(statement)
-  }
-
-  private fun getNodeId(name: String, owner: String, path: List<String>): NodeId {
-    val key = "$owner - $name"
-    var nodeId = summaryNodes[key]
-    if (nodeId == null) {
-      nodeId = NodeId(name, setOf(owner), path.slice(0..path.size - 2))
-      summaryNodes[key] = nodeId
-    }
-    return nodeId
+    summaryStatements.getDefault(
+      owner, parentSummaryNodeId.name, statement.monthRange.first
+    ) { SummaryStatement(parentSummaryNodeId, statement.monthRange) }
+      .addStatement(statement)
   }
 
   // Make sure totals are computed for parent summary accounts up the path to the root.
@@ -40,20 +33,15 @@ class SummaryStatementAggregator {
     val owners: MutableSet<String> = mutableSetOf()
     for (nodeId in summaryNodes.values) {
       for (owner in nodeId.owners) {
+        if (!nodeId.isSummary) throw IllegalStateException("Unexpected non-summary node $nodeId")
         owners.add(owner)
-        if (!nodeId.isSummary) continue
         val path = nodeId.path
         var entry = "/" + owner + nodeId.name
         for (sub in path.size downTo 0) {
           val subPath = path.slice(0..sub - 1)
           val subPathId = "/" + owner + "/" + subPath.joinToString("/")
-          var subTreeEntry = tree[subPathId]
-          if (subTreeEntry == null) {
-            subTreeEntry = mutableSetOf()
-            tree[subPathId] = subTreeEntry
-          }
           if (subPathId != entry) {  // Make sure root does not reference itself.
-            subTreeEntry.add(entry)
+            tree.getOrPut(subPathId) { mutableSetOf()}.add(entry)
           }
           entry = subPathId
         }
