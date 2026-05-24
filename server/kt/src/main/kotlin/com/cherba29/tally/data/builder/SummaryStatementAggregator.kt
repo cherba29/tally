@@ -66,7 +66,7 @@ class SummaryStatementAggregator {
         val summaryId = "/" + fullPath.subList(2, fullPath.size).joinToString("/")
         // skip this is root node it does not need to be added to anything.
         if (summaryId == "/") continue
-        val monthlyStatements = summaryStatements.get2(owner, summaryId)
+        val monthlyStatements = summaryStatements[owner, summaryId]
           ?: throw IllegalStateException(
             "$node has no monthly statements, [$owner, $summaryId] key not found."
           )  // Should never happen.

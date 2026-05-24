@@ -35,9 +35,9 @@ class Map3Test : DescribeSpec({
     it("get2") {
       val map = Map3<Int>()
       map.set("key1", "key2", "key3", 1)
-      val map2 = map.get2("key1", "key2")
+      val map2 = map["key1", "key2"]
       map2?.size shouldBe 1
-      map.get2("key1", "key2")?.get("key3") shouldBe 1
+      map["key1", "key2"]?.get("key3") shouldBe 1
     }
 
     it("iterator") {

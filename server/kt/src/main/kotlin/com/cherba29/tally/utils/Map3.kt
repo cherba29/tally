@@ -7,7 +7,7 @@ class Map3<ValueType> : Iterable<Entry3<ValueType>> {
 
   operator fun get(key1: String, key2: String, key3: String): ValueType? = store[key1]?.get(key2)?.get(key3)
 
-  fun get2(key1: String, key2: String): MutableMap<String, ValueType>? = store[key1]?.get(key2)
+  operator fun get(key1: String, key2: String): MutableMap<String, ValueType>? = store[key1]?.get(key2)
 
   fun getDefault(key1: String, key2: String, key3: String, defaultFactory: () -> ValueType): ValueType {
     var value = get(key1, key2, key3)

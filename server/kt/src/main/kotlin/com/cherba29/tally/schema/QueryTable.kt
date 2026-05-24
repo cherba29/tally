@@ -93,7 +93,7 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
 
   for (entry in ordering) {
     if (entry.isTotal) {
-      val summaryMonthMap = payload.summaries.get2(forOwner, entry.pathId)
+      val summaryMonthMap = payload.summaries[forOwner, entry.pathId]
         ?: throw java.lang.IllegalArgumentException(
           "Did not find summary statement at '${entry.pathId}' for owner '$forOwner' in payload summaries"
         )

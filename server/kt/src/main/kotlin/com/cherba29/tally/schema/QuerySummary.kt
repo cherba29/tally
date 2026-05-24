@@ -10,21 +10,27 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.time.measureTimedValue
 
 // startMonth is optional when max range is selected.
-fun buildSummaryData(payload: Budget, owner: String, accountType:String, startMonth: Month?, endMonth: Month): GqlSummaryData {
-  val summaryName =
-    if (accountType.startsWith("/")) accountType else owner + " " + (if (accountType === owner) "SUMMARY" else accountType)
+fun buildSummaryData(
+  payload: Budget,
+  owner: String,
+  summaryName: String,
+  startMonth: Month?,
+  endMonth: Month
+): GqlSummaryData {
+  if (!summaryName.startsWith("/")) {
+    throw IllegalArgumentException("Summary name should start with /")
+  }
   val (result, timeTaken) = measureTimedValue {
-    // TODO: replace with indexing operator.
-    val monthSummaries = payload.summaries.get2(owner, summaryName)
+    val monthSummaries = payload.summaries[owner, summaryName]
     if (monthSummaries == null) {
-      throw NotFoundException("Summary $accountType for $owner not found.")
+      throw NotFoundException("Summary $summaryName for $owner not found.")
     }
     val summaryStatements = monthSummaries.values.filter { stmt ->
       if (startMonth != null) stmt.monthRange.first in startMonth..endMonth else stmt.monthRange.last <= endMonth
     }
     if (summaryStatements.isEmpty()) {
       throw NotFoundException(
-        "Summary $accountType for $owner for months [$startMonth, $endMonth] not found."
+        "Summary $summaryName for $owner for months [$startMonth, $endMonth] not found."
       )
     }
     // TODO: use already compute budget summaries.
