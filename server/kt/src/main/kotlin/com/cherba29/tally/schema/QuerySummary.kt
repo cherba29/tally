@@ -1,7 +1,6 @@
 package com.cherba29.tally.schema
 
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.data.builder.CombinedStatement
 import com.cherba29.tally.statement.SummaryStatement
@@ -19,7 +18,7 @@ fun buildSummaryData(
   endMonth: Month
 ): GqlSummaryData {
   val (result, timeTaken) = measureTimedValue {
-    val monthSummaries = payload.summaries[owner, summaryName]
+    val monthSummaries = payload.summaries[listOf(owner) + summaryName.split("/")]
     if (monthSummaries == null) {
       throw NotFoundException("Summary $summaryName for $owner not found.")
     }

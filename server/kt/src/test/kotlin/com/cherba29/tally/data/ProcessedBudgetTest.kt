@@ -42,7 +42,7 @@ class ProcessedBudgetTest : DescribeSpec({
       )
       processedBudget.reProcess()
       processedBudget.budget shouldNotBe null
-      processedBudget.budget!!.summaries.isEmpty shouldBe true
+      processedBudget.budget!!.summaries.isEmpty() shouldBe true
       processedBudget.budget!!.statements.size shouldBe 1
 
       val nodeId = NodeId("test-account", isSummary = false, setOf("john"), listOf("external"))

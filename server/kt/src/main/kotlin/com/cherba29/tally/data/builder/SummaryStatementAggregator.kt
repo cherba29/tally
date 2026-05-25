@@ -5,12 +5,11 @@ import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
-import com.cherba29.tally.utils.Map3
 import kotlin.collections.plus
 
 class SummaryStatementAggregator {
   // Map of owner -> 'summary name' -> month -> 'summary statement'.
-  val summaryStatements = Map3<String, String, Month, SummaryStatement>()
+  val summaryStatements = mutableMapOf<List<String>, MutableMap<Month, SummaryStatement>>()
   // Map of owner+name -> summary node
   private val summaryNodes: MutableMap<List<String>, NodeId> = mutableMapOf()
   private val groupTreeBuilder = Group.Companion.Builder()
@@ -19,14 +18,16 @@ class SummaryStatementAggregator {
   // Once all statements are added one has to call propagateUpThePath2
   // to create summary statements of these summaries up the tree.
   fun addStatement(summaryPath: List<String>, owner: String, statement: Statement) {
-    groupTreeBuilder.addPath(listOf(owner) + statement.nodeId.path)
+    val fullPath = listOf(owner) + statement.nodeId.path
+    groupTreeBuilder.addPath(fullPath)
     val parentSummaryNodeId = summaryNodes.getOrPut(listOf(owner) + summaryPath) {
       NodeId(summaryPath.joinToString("/"), isSummary=true, setOf(owner), statement.nodeId.parentPath)
     }
-    summaryStatements.getDefault(
-      owner, parentSummaryNodeId.name, statement.monthRange.first
-    ) { SummaryStatement(parentSummaryNodeId, statement.monthRange) }
-      .addStatement(statement)
+    summaryStatements.getOrPut(fullPath) {
+      mutableMapOf()
+    }.getOrPut(statement.monthRange.first) {
+      SummaryStatement(parentSummaryNodeId, statement.monthRange)
+    }.addStatement(statement)
   }
 
   // Make sure totals are computed for parent summary accounts up the path to the root.
@@ -40,10 +41,9 @@ class SummaryStatementAggregator {
         // skip this is root node it does not need to be added to anything.
         if (fullPath.size < 2) continue
 
-        val summaryId = fullPath.subList(1, fullPath.size).joinToString("/")
-        val monthlyStatements = summaryStatements[ownerRoot.name, summaryId]
+        val monthlyStatements = summaryStatements[fullPath]
           ?: throw IllegalStateException(
-            "$node has no monthly statements, [${ownerRoot.name}, $summaryId] key not found."
+            "$node has no monthly statements, [$fullPath] key not found."
           )  // Should never happen.
 
         val parentSummaryPath = fullPath.subList(1, fullPath.lastIndex)

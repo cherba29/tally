@@ -7,13 +7,12 @@ import com.cherba29.tally.core.enlargeTo
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
-import com.cherba29.tally.utils.Map3
 import kotlin.collections.iterator
 
 fun buildSummaryStatementTable(
   statements: List<TransactionStatement>,
   selectedOwner: String?
-): Map3<String, String, Month, SummaryStatement> {
+): Map<List<String>, Map<Month, SummaryStatement>> {
   val statementsAggregator = SummaryStatementAggregator()
   for (statement in statements) {
     if (statement.isEmpty()) continue

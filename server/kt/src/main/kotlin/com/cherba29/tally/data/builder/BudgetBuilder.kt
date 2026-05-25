@@ -156,7 +156,7 @@ class BudgetBuilder(
     val (transfers, elapsedBudgetTime) = timeSource.measureTimedValue { buildTransfers(tree) }
     val accountToMonthToTransactionStatement: MutableMap<NodeId, MutableMap<Month, TransactionStatement>> =
       mutableMapOf()
-    var summaryNameMonthMap = Map3<String, String, Month, SummaryStatement>()
+    var summaryNameMonthMap = mapOf<List<String>, Map<Month, SummaryStatement>>()
 
 
     val nodeIdToBalance = balances.mapKeys {

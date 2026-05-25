@@ -11,24 +11,24 @@ class SummaryStatementAggregatorTest : DescribeSpec({
   describe("Creation") {
     it("basic") {
       val aggregator = SummaryStatementAggregator()
-      aggregator.summaryStatements.isEmpty shouldBe true
+      aggregator.summaryStatements.isEmpty() shouldBe true
     }
   }
   describe("statements") {
     it("add single") {
       val aggregator = SummaryStatementAggregator()
       aggregator.addStatement(
-        listOf(),
+        listOf("internal"),
         owner = "john",
         statement = Statement(
-          nodeId = NodeId("test-account", isSummary = false),
+          nodeId = NodeId("test-account", isSummary = false, setOf("john"), listOf("internal")),
           monthRange = MAY / 2026..MAY / 2026,
         )
       )
-      aggregator.summaryStatements.isEmpty shouldBe false
+      aggregator.summaryStatements.isEmpty() shouldBe false
       aggregator.summaryStatements.size shouldBe 1
-      val stmt = aggregator.summaryStatements["john", "", MAY/2026]!!
-      stmt.nodeId.name shouldBe ""
+      val stmt = aggregator.summaryStatements[listOf("john", "internal")]!![MAY/2026]!!
+      stmt.nodeId.name shouldBe "internal"
       stmt.nodeId.isExternal shouldBe false
       stmt.nodeId.isSummary shouldBe true
       stmt.monthRange shouldBe MAY / 2026 .. MAY / 2026
@@ -37,7 +37,7 @@ class SummaryStatementAggregatorTest : DescribeSpec({
       val subStatement = stmt.statements.first()
       subStatement.nodeId.name shouldBe "test-account"
       subStatement.monthRange shouldBe MAY / 2026 .. MAY / 2026
-      subStatement.nodeId.owners shouldBe listOf()
+      subStatement.nodeId.owners shouldBe listOf("john")
     }
 
     it("add single and propagate up") {
@@ -52,9 +52,10 @@ class SummaryStatementAggregatorTest : DescribeSpec({
       )
       aggregator.propagateUpThePath2()
 
-      aggregator.summaryStatements.isEmpty shouldBe false
+      aggregator.summaryStatements.isEmpty() shouldBe false
       aggregator.summaryStatements.size shouldBe 2
-      val stmt = aggregator.summaryStatements["john", "internal", MAY / 2026]!!
+      aggregator.summaryStatements.keys shouldBe setOf(listOf("john", "internal"), listOf("john", ""))
+      val stmt = aggregator.summaryStatements[listOf("john", "internal")]!![MAY / 2026]!!
       stmt.nodeId.name shouldBe "internal"
       stmt.nodeId.isExternal shouldBe false
       stmt.nodeId.isSummary shouldBe true
@@ -66,7 +67,7 @@ class SummaryStatementAggregatorTest : DescribeSpec({
       subStatement.monthRange shouldBe MAY / 2026 .. MAY / 2026
       subStatement.nodeId.owners shouldBe listOf()
 
-      val topStmt = aggregator.summaryStatements["john", "", MAY / 2026]!!
+      val topStmt = aggregator.summaryStatements[listOf("john", "")]!![MAY / 2026]!!
       topStmt.nodeId.name shouldBe ""
       topStmt.monthRange shouldBe MAY / 2026 .. MAY / 2026
       topStmt.nodeId.owners shouldBe listOf("john")
@@ -99,10 +100,11 @@ class SummaryStatementAggregatorTest : DescribeSpec({
     )
     aggregator.propagateUpThePath2()
 
-    aggregator.summaryStatements.isEmpty shouldBe false
+    aggregator.summaryStatements.isEmpty() shouldBe false
     aggregator.summaryStatements.size shouldBe 3
-    aggregator.summaryStatements.keys shouldBe mapOf("john" to setOf("internal", "external", ""))
-    val stmtInternal = aggregator.summaryStatements["john", "internal", MAY / 2026]!!
+    aggregator.summaryStatements.keys shouldBe setOf(
+      listOf("john", "internal"), listOf("john", "external"), listOf("john", ""))
+    val stmtInternal = aggregator.summaryStatements[listOf("john", "internal")]!![MAY / 2026]!!
     stmtInternal.nodeId.name shouldBe "internal"
     stmtInternal.nodeId.isExternal shouldBe false
     stmtInternal.nodeId.isSummary shouldBe true
@@ -114,7 +116,7 @@ class SummaryStatementAggregatorTest : DescribeSpec({
     subStmtInternal.monthRange shouldBe MAY / 2026 .. MAY / 2026
     subStmtInternal.nodeId.owners shouldBe listOf()
 
-    val stmtExternal = aggregator.summaryStatements["john", "external", MAY / 2026]!!
+    val stmtExternal = aggregator.summaryStatements[listOf("john", "external")]!![MAY / 2026]!!
     stmtExternal.nodeId.name shouldBe "external"
     stmtExternal.nodeId.isExternal shouldBe true
     stmtExternal.nodeId.isSummary shouldBe true
@@ -126,7 +128,7 @@ class SummaryStatementAggregatorTest : DescribeSpec({
     subStmtExternal.monthRange shouldBe MAY / 2026 .. MAY / 2026
     subStmtExternal.nodeId.owners shouldBe listOf()
 
-    val topStmt = aggregator.summaryStatements["john", "", MAY / 2026]!!
+    val topStmt = aggregator.summaryStatements[listOf("john", "")]!![MAY / 2026]!!
     topStmt.nodeId.isSummary shouldBe true
     topStmt.nodeId.isExternal shouldBe false
     topStmt.nodeId.name shouldBe ""

@@ -7,7 +7,6 @@ import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
-import com.cherba29.tally.utils.Map3
 
 /**
  * Data representing all accounts, their transactions and totals per month.
@@ -24,5 +23,5 @@ data class Budget(
   /** Lookup map from account to its statement for given month */
   val statements: Map<NodeId, Map<Month, TransactionStatement>>,
   // owner -> account name -> month -> summary.
-  val summaries: Map3<String, String, Month, SummaryStatement>,
+  val summaries: Map<List<String>, Map<Month, SummaryStatement>>,
 )

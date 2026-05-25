@@ -1,14 +1,12 @@
 package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthName.MAY
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
-import com.cherba29.tally.utils.Map3
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.DescribeSpec
@@ -39,46 +37,45 @@ class SummaryTest : DescribeSpec({
         false,
         startBalance
       )
-      val statements: Map3<String, String, Month, SummaryStatement> = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
+      val statements = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
       withClue("should contain: $statements") {
-        statements.isEmpty shouldBe false
+        statements.isEmpty() shouldBe false
         statements.size shouldBe 2
-        statements.keys.keys shouldBe setOf("john")
-        statements.keys["john"] shouldBe setOf("external", "")
+        statements.keys shouldBe setOf(listOf("john", "external"), listOf("john", ""))
       }
-      val stmt1 = statements["john", "external", MAR/ 2021]
-      stmt1?.nodeId shouldBe NodeId(
+      val stmt1 = statements[listOf("john", "external")]!![MAR/ 2021]!!
+      stmt1.nodeId shouldBe NodeId(
         name = "external", isSummary = true,
-        path = listOf(),
+        path = listOf(""),
         owners = setOf("john")
       )
       withClue("statement: $stmt1") {
-        stmt1?.startBalance shouldBe startBalance
-        stmt1?.endBalance shouldBe null
-        stmt1?.inFlows shouldBe 0
-        stmt1?.income shouldBe 0
-        stmt1?.monthRange shouldBe MAR / 2021 .. MAR / 2021
-        stmt1?.outFlows shouldBe 0
-        stmt1?.statements shouldBe listOf(tranStmt)
-        stmt1?.totalPayments shouldBe 0
-        stmt1?.totalTransfers shouldBe 0
+        stmt1.startBalance shouldBe startBalance
+        stmt1.endBalance shouldBe null
+        stmt1.inFlows shouldBe 0
+        stmt1.income shouldBe 0
+        stmt1.monthRange shouldBe MAR / 2021 .. MAR / 2021
+        stmt1.outFlows shouldBe 0
+        stmt1.statements shouldBe listOf(tranStmt)
+        stmt1.totalPayments shouldBe 0
+        stmt1.totalTransfers shouldBe 0
       }
 
-      val stmt2 = statements["john", "", MAR / 2021]
-      stmt2?.nodeId shouldBe NodeId(
+      val stmt2 = statements[listOf("john", "")]!![MAR / 2021]!!
+      stmt2.nodeId shouldBe NodeId(
         name = "", isSummary = true,
-        path = listOf(),
+        path = listOf(""),
         owners = setOf("john")
       )
-      stmt2?.startBalance shouldBe startBalance
-      stmt2?.endBalance shouldBe null
-      stmt2?.inFlows shouldBe 0
-      stmt2?.income shouldBe 0
-      stmt2?.monthRange shouldBe MAR / 2021 .. MAR / 2021
-      stmt2?.outFlows shouldBe 0
-      stmt2?.statements shouldBe listOf(stmt1)
-      stmt2?.totalPayments shouldBe 0
-      stmt2?.totalTransfers shouldBe 0
+      stmt2.startBalance shouldBe startBalance
+      stmt2.endBalance shouldBe null
+      stmt2.inFlows shouldBe 0
+      stmt2.income shouldBe 0
+      stmt2.monthRange shouldBe MAR / 2021 .. MAR / 2021
+      stmt2.outFlows shouldBe 0
+      stmt2.statements shouldBe listOf(stmt1)
+      stmt2.totalPayments shouldBe 0
+      stmt2.totalTransfers shouldBe 0
     }
 
     it("single external account - no SUMMARY") {
@@ -96,15 +93,14 @@ class SummaryTest : DescribeSpec({
       )
       tranStmt.startBalance = Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       val statements = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
-      statements.isEmpty shouldBe false
+      statements.isEmpty() shouldBe false
       statements.size shouldBe 2
-      statements.keys.keys shouldBe setOf("john")
-      statements.keys["john"] shouldBe setOf("external", "")
+      statements.keys shouldBe setOf(listOf("john", "external"), listOf("john", ""))
 
-      val stmt = statements["john", "", MAR / 2021]!!
+      val stmt = statements[listOf("john", "")]!![MAR / 2021]!!
       stmt.nodeId shouldBe NodeId(
         name = "", isSummary = true,
-        path = listOf(),
+        path = listOf(""),
         owners = setOf("john"),
       )
       stmt.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
@@ -113,7 +109,7 @@ class SummaryTest : DescribeSpec({
       stmt.income shouldBe 0
       stmt.monthRange shouldBe MAR / 2021 .. MAR / 2021
       stmt.outFlows shouldBe 0
-      stmt.statements shouldBe listOf(statements["john", "external", MAR / 2021]!!)
+      stmt.statements shouldBe listOf(statements[listOf("john", "external")]!![MAR / 2021]!!)
       stmt.totalPayments shouldBe 0
       stmt.totalTransfers shouldBe 0
     }
@@ -137,15 +133,14 @@ class SummaryTest : DescribeSpec({
         Balance.Type.CONFIRMED
       )
       val statements = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = "john")
-      statements.isEmpty shouldBe false
+      statements.isEmpty() shouldBe false
       statements.size shouldBe 2
-      statements.keys.keys shouldBe setOf("john")
-      statements.keys["john"] shouldBe setOf("external", "")
+      statements.keys shouldBe setOf(listOf("john", "external"), listOf("john", ""))
 
-      val stmt1 = statements["john", "external", MAR/ 2021]!!
+      val stmt1 = statements[listOf("john", "external")]!![MAR/ 2021]!!
       stmt1.nodeId shouldBe NodeId(
         name = "external", isSummary = true,
-        path = listOf(),
+        path = listOf(""),
         owners = setOf("john")
       )
       stmt1.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
@@ -158,10 +153,10 @@ class SummaryTest : DescribeSpec({
       stmt1.totalPayments shouldBe 0
       stmt1.totalTransfers shouldBe 0
 
-      val stmt2 = statements["john", "", MAR / 2021]!!
+      val stmt2 = statements[listOf("john", "")]!![MAR / 2021]!!
       stmt2.nodeId shouldBe NodeId(
         name = "", isSummary = true,
-        path = listOf(),
+        path = listOf(""),
         owners = setOf("john"),
       )
       stmt2.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
@@ -232,15 +227,14 @@ class SummaryTest : DescribeSpec({
 
       val statements = buildSummaryStatementTable(
         listOf(tranStmt1, tranStmt2, tranStmt3), selectedOwner = "john")
-      statements.isEmpty shouldBe false
+      statements.isEmpty() shouldBe false
       statements.size shouldBe 2
-      statements.keys.keys shouldBe setOf("john")
-      statements.keys["john"] shouldBe setOf("external", "")
+      statements.keys shouldBe setOf(listOf("john", "external"), listOf("john", ""))
 
-      val stmt1 = statements["john", "external", MAR / 2021]!!
+      val stmt1 = statements[listOf("john", "external")]!![MAR / 2021]!!
       stmt1.nodeId shouldBe NodeId(
         name = "external", isSummary = true,
-        path = listOf(),
+        path = listOf(""),
         owners = setOf("john")
       )
       stmt1.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
@@ -253,10 +247,10 @@ class SummaryTest : DescribeSpec({
       stmt1.totalPayments shouldBe 0
       stmt1.totalTransfers shouldBe 0
 
-      val stmt2 = statements["john", "", MAR / 2021]!!
+      val stmt2 = statements[listOf("john", "")]!![MAR / 2021]!!
       stmt2.nodeId shouldBe NodeId(
         name = "", isSummary = true,
-        path = listOf(),
+        path = listOf(""),
         owners = setOf("john"),
       )
       stmt2.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)

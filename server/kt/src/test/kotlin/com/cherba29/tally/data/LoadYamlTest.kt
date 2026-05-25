@@ -252,10 +252,10 @@ class LoadYamlTest : DescribeSpec({
       budget.months.size shouldBe 2
       budget.accounts.size shouldBe 2
       budget.statements.size shouldBe 2
-      budget.summaries.size shouldBe 4
-      budget.summaries.keys shouldBe mapOf("someone" to setOf("external", ""))
-      budget.summaries["someone", "external"]?.keys shouldBe setOf(FEB / 2020, JAN / 2020)
-      budget.summaries["someone", ""]?.keys shouldBe setOf(FEB / 2020, JAN / 2020)
+      budget.summaries.size shouldBe 2
+      budget.summaries.keys shouldBe setOf(listOf("someone", "external"), listOf("someone", ""))
+      budget.summaries[listOf("someone", "external")]?.keys shouldBe setOf(FEB / 2020, JAN / 2020)
+      budget.summaries[listOf("someone", "")]?.keys shouldBe setOf(FEB / 2020, JAN / 2020)
 
       val node1 = NodeId("test-account", isSummary = false, setOf("someone"), listOf("external"))
       val node2 = NodeId("external", isSummary = false, setOf("someone"), listOf("external"))

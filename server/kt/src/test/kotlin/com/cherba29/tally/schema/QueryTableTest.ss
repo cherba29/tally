@@ -11,6 +11,8 @@
     account:
       __type: GqlAccount
       name: ""
+      path:
+      - ""
       external: false
       summary: true
       openedOn: Jan2010
@@ -37,6 +39,8 @@
     account:
       __type: GqlAccount
       name: internal
+      path:
+      - ""
       external: false
       summary: true
       openedOn: Jan2010
@@ -100,6 +104,8 @@
     account:
       __type: GqlAccount
       name: ""
+      path:
+      - ""
       external: false
       summary: true
       openedOn: Jan2010
@@ -126,6 +132,8 @@
     account:
       __type: GqlAccount
       name: external
+      path:
+      - ""
       external: true
       summary: true
       openedOn: Jan2010
