@@ -18,7 +18,7 @@ class SummaryStatementAggregatorTest : DescribeSpec({
     it("add single") {
       val aggregator = SummaryStatementAggregator()
       aggregator.addStatement(
-        summaryName = "",
+        summaryName = "/",
         owner = "john",
         statement = Statement(
           nodeId = NodeId("test-account"),
@@ -27,8 +27,8 @@ class SummaryStatementAggregatorTest : DescribeSpec({
       )
       aggregator.summaryStatements.isEmpty shouldBe false
       aggregator.summaryStatements.size shouldBe 1
-      val stmt = aggregator.summaryStatements["john", "", MAY/2026]!!
-      stmt.nodeId.name shouldBe ""
+      val stmt = aggregator.summaryStatements["john", "/", MAY/2026]!!
+      stmt.nodeId.name shouldBe "/"
       stmt.monthRange shouldBe MAY / 2026 .. MAY / 2026
       stmt.nodeId.owners shouldBe listOf("john")
       stmt.statements.size shouldBe 1
