@@ -10,9 +10,9 @@
     title: john
     account:
       __type: GqlAccount
-      name: /
+      name: ""
       external: false
-      summary: true
+      summary: false
       openedOn: Jan2010
       owners:
       - john
@@ -36,9 +36,9 @@
     title: internal
     account:
       __type: GqlAccount
-      name: /internal
+      name: internal
       external: false
-      summary: true
+      summary: false
       openedOn: Jan2010
       owners:
       - john
@@ -99,9 +99,9 @@
     title: john
     account:
       __type: GqlAccount
-      name: /
+      name: ""
       external: false
-      summary: true
+      summary: false
       openedOn: Jan2010
       owners:
       - john
@@ -125,9 +125,9 @@
     title: external
     account:
       __type: GqlAccount
-      name: /external
+      name: external
       external: false
-      summary: true
+      summary: false
       openedOn: Jan2010
       owners:
       - john

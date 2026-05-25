@@ -61,7 +61,7 @@ class QueryTableTest : DescribeSpec({
           endMonth = MAR / 2026
         )
       }
-      exception.message shouldBe "Did not find summary statement at '/' " +
+      exception.message shouldBe "Did not find summary statement at '' " +
           "for owner 'john' in payload summaries"
     }
 

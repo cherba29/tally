@@ -20,8 +20,7 @@ fun buildSummaryStatementTable(
     for (owner in statement.nodeId.owners) {
       if (selectedOwner != null && owner != selectedOwner) continue
       if (statement.nodeId.path.isNotEmpty()) {
-        val summaryName = "/" + statement.nodeId.path.joinToString("/")
-        statementsAggregator.addStatement(summaryName, owner, statement)
+        statementsAggregator.addStatement(statement.nodeId.path, owner, statement)
       }
     }
   }

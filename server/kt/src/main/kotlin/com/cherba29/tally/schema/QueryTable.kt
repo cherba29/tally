@@ -17,18 +17,18 @@ data class RowEntry(
 )
 
 // Build a tree based on paths.
-private fun buildAccountPathTree(accounts: List<NodeId>): Map<String, Set<String>> {
-  val tree = mutableMapOf<String, MutableSet<String>>()
+private fun buildAccountPathTree(accounts: List<NodeId>): Map<List<String>, Set<List<String>>> {
+  val tree = mutableMapOf<List<String>, MutableSet<List<String>>>()
   for (account in accounts) {
     if (account.path.isEmpty()) {
       logger.warn { "${account.name} has no path skipping" }
       continue
     }
     val path = account.path
-    var entry = account.toString()
+    var entry = path + listOf(account.name)
     for (sub in path.size downTo 0) {
       val subPath = path.slice(0..sub-1)
-      val subPathId = "/" + subPath.joinToString("/")
+      val subPathId = subPath
       var subTreeEntry = tree[subPathId]
       if (subTreeEntry == null) {
         subTreeEntry = mutableSetOf()
@@ -47,32 +47,43 @@ private fun sequenceStatements(owner: String, accounts: List<NodeId>): List<RowE
   val nameToAccount = accounts.associateBy { it.name }
   // Iterate over tree in sorted depth-first fashion to sequence rows representing the tree.
   val entries = mutableListOf<RowEntry>()
-  var nodesToProcess = mutableListOf("/")
+  var nodesToProcess = mutableListOf(listOf<String>())
   while (nodesToProcess.isNotEmpty()) {
     val subTreeId = nodesToProcess.removeFirst()
-    // TODO: use nodeId.path and list structure instead of splitting.
-    val subPath = subTreeId.split("/").filter { it.isNotEmpty() }
     val children = tree[subTreeId]
     val account = if (children != null) null
-                  else if (subPath.isEmpty()) null
-                  else nameToAccount[subPath[subPath.lastIndex]]
+                  else if (subTreeId.isEmpty()) null
+                  else nameToAccount[subTreeId[subTreeId.lastIndex]]
     entries.add(
       RowEntry(
-        title = if (subPath.isNotEmpty()) subPath[subPath.lastIndex] else owner,
-        pathId = subTreeId,
+        title = if (subTreeId.isNotEmpty()) subTreeId[subTreeId.lastIndex] else owner,
+        pathId = subTreeId.joinToString("/"),
         nodeId = account,
         isTotal = children?.isNotEmpty() ?: (account == null),
-        depth = subPath.size
+        depth = subTreeId.size
       )
     )
     if (children != null) {
       // Add in front as we want to process children next, in dept-first fashion.
-      val childrenList = children.sorted().toMutableList()
+      val childrenList = children.sortedWith(lexicographicalComparator).toMutableList()
       childrenList.addAll(nodesToProcess)
       nodesToProcess = childrenList
     }
   }
   return entries
+}
+
+private val lexicographicalComparator = Comparator<List<String>> { list1, list2 ->
+  val size1 = list1.size
+  val size2 = list2.size
+  val minSize = minOf(size1, size2)
+
+  for (i in 0 until minSize) {
+    val cmp = list1[i].compareTo(list2[i])
+    if (cmp != 0) return@Comparator cmp
+  }
+  // If all compared elements are equal, the shorter list comes first
+  size1.compareTo(size2)
 }
 
 fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: Month): GqlTable {

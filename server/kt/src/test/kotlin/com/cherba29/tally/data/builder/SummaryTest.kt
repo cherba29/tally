@@ -44,11 +44,11 @@ class SummaryTest : DescribeSpec({
         statements.isEmpty shouldBe false
         statements.size shouldBe 2
         statements.keys.keys shouldBe setOf("john")
-        statements.keys["john"] shouldBe setOf("/external", "/")
+        statements.keys["john"] shouldBe setOf("external", "")
       }
-      val stmt1 = statements["john", "/external", MAR/ 2021]
+      val stmt1 = statements["john", "external", MAR/ 2021]
       stmt1?.nodeId shouldBe NodeId(
-        name = "/external",
+        name = "external",
         path = listOf(),
         owners = setOf("john")
       )
@@ -64,9 +64,9 @@ class SummaryTest : DescribeSpec({
         stmt1?.totalTransfers shouldBe 0
       }
 
-      val stmt2 = statements["john", "/", MAR / 2021]
+      val stmt2 = statements["john", "", MAR / 2021]
       stmt2?.nodeId shouldBe NodeId(
-        name = "/",
+        name = "",
         path = listOf(),
         owners = setOf("john")
       )
@@ -99,11 +99,11 @@ class SummaryTest : DescribeSpec({
       statements.isEmpty shouldBe false
       statements.size shouldBe 2
       statements.keys.keys shouldBe setOf("john")
-      statements.keys["john"] shouldBe setOf("/external", "/")
+      statements.keys["john"] shouldBe setOf("external", "")
 
-      val stmt = statements["john", "/", MAR / 2021]!!
+      val stmt = statements["john", "", MAR / 2021]!!
       stmt.nodeId shouldBe NodeId(
-        name = "/",
+        name = "",
         path = listOf(),
         owners = setOf("john"),
       )
@@ -113,7 +113,7 @@ class SummaryTest : DescribeSpec({
       stmt.income shouldBe 0
       stmt.monthRange shouldBe MAR / 2021 .. MAR / 2021
       stmt.outFlows shouldBe 0
-      stmt.statements shouldBe listOf(statements["john", "/external", MAR / 2021]!!)
+      stmt.statements shouldBe listOf(statements["john", "external", MAR / 2021]!!)
       stmt.totalPayments shouldBe 0
       stmt.totalTransfers shouldBe 0
     }
@@ -140,11 +140,11 @@ class SummaryTest : DescribeSpec({
       statements.isEmpty shouldBe false
       statements.size shouldBe 2
       statements.keys.keys shouldBe setOf("john")
-      statements.keys["john"] shouldBe setOf("/external", "/")
+      statements.keys["john"] shouldBe setOf("external", "")
 
-      val stmt1 = statements["john", "/external", MAR/ 2021]!!
+      val stmt1 = statements["john", "external", MAR/ 2021]!!
       stmt1.nodeId shouldBe NodeId(
-        name = "/external",
+        name = "external",
         path = listOf(),
         owners = setOf("john")
       )
@@ -158,9 +158,9 @@ class SummaryTest : DescribeSpec({
       stmt1.totalPayments shouldBe 0
       stmt1.totalTransfers shouldBe 0
 
-      val stmt2 = statements["john", "/", MAR / 2021]!!
+      val stmt2 = statements["john", "", MAR / 2021]!!
       stmt2.nodeId shouldBe NodeId(
-        name = "/",
+        name = "",
         path = listOf(),
         owners = setOf("john"),
       )
@@ -235,11 +235,11 @@ class SummaryTest : DescribeSpec({
       statements.isEmpty shouldBe false
       statements.size shouldBe 2
       statements.keys.keys shouldBe setOf("john")
-      statements.keys["john"] shouldBe setOf("/external", "/")
+      statements.keys["john"] shouldBe setOf("external", "")
 
-      val stmt1 = statements["john", "/external", MAR / 2021]!!
+      val stmt1 = statements["john", "external", MAR / 2021]!!
       stmt1.nodeId shouldBe NodeId(
-        name = "/external",
+        name = "external",
         path = listOf(),
         owners = setOf("john")
       )
@@ -253,9 +253,9 @@ class SummaryTest : DescribeSpec({
       stmt1.totalPayments shouldBe 0
       stmt1.totalTransfers shouldBe 0
 
-      val stmt2 = statements["john", "/", MAR / 2021]!!
+      val stmt2 = statements["john", "", MAR / 2021]!!
       stmt2.nodeId shouldBe NodeId(
-        name = "/",
+        name = "",
         path = listOf(),
         owners = setOf("john"),
       )

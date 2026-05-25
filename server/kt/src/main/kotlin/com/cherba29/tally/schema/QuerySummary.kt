@@ -18,9 +18,6 @@ fun buildSummaryData(
   startMonth: Month?,
   endMonth: Month
 ): GqlSummaryData {
-  if (!summaryName.startsWith("/")) {
-    throw IllegalArgumentException("Summary name should start with /")
-  }
   val (result, timeTaken) = measureTimedValue {
     val monthSummaries = payload.summaries[owner, summaryName]
     if (monthSummaries == null) {

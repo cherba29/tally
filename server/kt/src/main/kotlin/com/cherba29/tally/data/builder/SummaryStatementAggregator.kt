@@ -12,19 +12,16 @@ class SummaryStatementAggregator {
   // Map of owner -> 'summary name' -> month -> 'summary statement'.
   val summaryStatements = Map3<String, String, Month, SummaryStatement>()
   // Map of owner+name -> summary node
-  private val summaryNodes: MutableMap<String, NodeId> = mutableMapOf()
+  private val summaryNodes: MutableMap<List<String>, NodeId> = mutableMapOf()
   private val groupTreeBuilder = Group.Companion.Builder()
 
   // Adds statement to its immediate parent summary statement.
   // Once all statements are added one has to call propagateUpThePath2
   // to create summary statements of these summaries up the tree.
-  fun addStatement(summaryName: String, owner: String, statement: Statement) {
-    require(summaryName.startsWith("/")) {
-      "Summary must start with '/' got $summaryName"
-    }
+  fun addStatement(summaryPath: List<String>, owner: String, statement: Statement) {
     groupTreeBuilder.addPath(listOf(owner) + statement.nodeId.path)
-    val parentSummaryNodeId = summaryNodes.getOrPut("$owner - $summaryName") {
-      NodeId(summaryName, setOf(owner), statement.nodeId.parentPath)
+    val parentSummaryNodeId = summaryNodes.getOrPut(listOf(owner) + summaryPath) {
+      NodeId(summaryPath.joinToString("/"), setOf(owner), statement.nodeId.parentPath)
     }
     summaryStatements.getDefault(
       owner, parentSummaryNodeId.name, statement.monthRange.first
@@ -43,15 +40,15 @@ class SummaryStatementAggregator {
         // skip this is root node it does not need to be added to anything.
         if (fullPath.size < 2) continue
 
-        val summaryId = "/" + fullPath.subList(1, fullPath.size).joinToString("/")
+        val summaryId = fullPath.subList(1, fullPath.size).joinToString("/")
         val monthlyStatements = summaryStatements[ownerRoot.name, summaryId]
           ?: throw IllegalStateException(
             "$node has no monthly statements, [${ownerRoot.name}, $summaryId] key not found."
           )  // Should never happen.
 
-        val parentSummaryId = '/' + fullPath.subList(1, fullPath.lastIndex).joinToString("/")
+        val parentSummaryPath = fullPath.subList(1, fullPath.lastIndex)
         for (monthlyStatement in monthlyStatements.values) {
-          addStatement(parentSummaryId, ownerRoot.name, monthlyStatement)
+          addStatement(parentSummaryPath, ownerRoot.name, monthlyStatement)
         }
       }
     }

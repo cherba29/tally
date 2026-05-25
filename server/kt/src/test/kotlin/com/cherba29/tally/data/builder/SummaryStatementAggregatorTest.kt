@@ -18,7 +18,7 @@ class SummaryStatementAggregatorTest : DescribeSpec({
     it("add single") {
       val aggregator = SummaryStatementAggregator()
       aggregator.addStatement(
-        summaryName = "/",
+        listOf(),
         owner = "john",
         statement = Statement(
           nodeId = NodeId("test-account"),
@@ -27,8 +27,8 @@ class SummaryStatementAggregatorTest : DescribeSpec({
       )
       aggregator.summaryStatements.isEmpty shouldBe false
       aggregator.summaryStatements.size shouldBe 1
-      val stmt = aggregator.summaryStatements["john", "/", MAY/2026]!!
-      stmt.nodeId.name shouldBe "/"
+      val stmt = aggregator.summaryStatements["john", "", MAY/2026]!!
+      stmt.nodeId.name shouldBe ""
       stmt.monthRange shouldBe MAY / 2026 .. MAY / 2026
       stmt.nodeId.owners shouldBe listOf("john")
       stmt.statements.size shouldBe 1
@@ -41,7 +41,7 @@ class SummaryStatementAggregatorTest : DescribeSpec({
     it("add single and propagate up") {
       val aggregator = SummaryStatementAggregator()
       aggregator.addStatement(
-        summaryName = "/internal",
+        listOf("internal"),
         owner = "john",
         statement = Statement(
           nodeId = NodeId("/test-account", path = listOf("internal")),
@@ -52,8 +52,8 @@ class SummaryStatementAggregatorTest : DescribeSpec({
 
       aggregator.summaryStatements.isEmpty shouldBe false
       aggregator.summaryStatements.size shouldBe 2
-      val stmt = aggregator.summaryStatements["john", "/internal", MAY / 2026]!!
-      stmt.nodeId.name shouldBe "/internal"
+      val stmt = aggregator.summaryStatements["john", "internal", MAY / 2026]!!
+      stmt.nodeId.name shouldBe "internal"
       stmt.monthRange shouldBe MAY / 2026 .. MAY / 2026
       stmt.nodeId.owners shouldBe listOf("john")
       stmt.statements.size shouldBe 1
@@ -62,14 +62,14 @@ class SummaryStatementAggregatorTest : DescribeSpec({
       subStatement.monthRange shouldBe MAY / 2026 .. MAY / 2026
       subStatement.nodeId.owners shouldBe listOf()
 
-      val topStmt = aggregator.summaryStatements["john", "/", MAY / 2026]!!
-      topStmt.nodeId.name shouldBe "/"
+      val topStmt = aggregator.summaryStatements["john", "", MAY / 2026]!!
+      topStmt.nodeId.name shouldBe ""
       topStmt.monthRange shouldBe MAY / 2026 .. MAY / 2026
       topStmt.nodeId.owners shouldBe listOf("john")
       topStmt.statements.size shouldBe 1
 
       val topSubStatement = topStmt.statements.first()
-      topSubStatement.nodeId.name shouldBe "/internal"
+      topSubStatement.nodeId.name shouldBe "internal"
       topSubStatement.monthRange shouldBe MAY / 2026 .. MAY / 2026
       topSubStatement.nodeId.owners shouldBe listOf("john")
     }
