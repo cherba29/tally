@@ -279,4 +279,57 @@ class GroupTest : DescribeSpec({
       tree.children[0].children[0].children[0].path shouldBe listOf("branch1", "external", "child1")
     }
   }
+
+  describe("traverse up") {
+    it("empty") {
+      val tree = root {}
+      tree.traverseBottomUp().toList() shouldBe listOf(tree)
+    }
+
+    it("just leafs") {
+      val tree = root {
+        leaf("external")
+        leaf("internal")
+      }
+      tree.traverseBottomUp().toList() shouldBe listOf(
+        tree.children[0],
+        tree.children[1],
+        tree
+      )
+    }
+
+    it("branched") {
+      val tree = root {
+        branch("external") {
+          leaf("child1")
+        }
+        branch("internal") {
+          leaf("child2")
+        }
+      }
+      tree.traverseBottomUp().toList() shouldBe listOf(
+        tree.children[0].children[0],
+        tree.children[0],
+        tree.children[1].children[0],
+        tree.children[1],
+        tree
+      )
+    }
+
+    it("nested") {
+      val tree = root {
+        branch("branch1") {
+          branch("external") {
+            leaf("child1")
+          }
+        }
+      }
+      tree.traverseBottomUp().toList() shouldBe listOf(
+        tree.children[0].children[0].children[0],
+        tree.children[0].children[0],
+        tree.children[0],
+        tree
+      )
+    }
+  }
 })

@@ -1,5 +1,7 @@
 package com.cherba29.tally.core
 
+import kotlin.sequences.sequence
+
 interface GroupInterface<T> {
   val name: String
   val parent: T?
@@ -91,6 +93,13 @@ sealed class Group(): GroupInterface<Group> {
   override val top: Group get () = if (parent?.parent == null) this else parent!!.top
 
   override val path: List<String> get() = if (parent == null || name.isEmpty()) listOf() else parent!!.path + name
+
+  fun traverseBottomUp(): Sequence<Group> = sequence {
+    for (child in children) {
+      yieldAll(child.traverseBottomUp())
+    }
+    yield(this@Group)
+  }
 
   companion object {
     class Builder {
