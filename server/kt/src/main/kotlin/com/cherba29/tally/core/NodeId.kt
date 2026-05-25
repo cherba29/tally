@@ -3,14 +3,14 @@ package com.cherba29.tally.core
 // Captures tree structure of accounts into summaries and summaries of summaries.
 data class NodeId(
   val name: String,
+  val isSummary: Boolean,
   // List of node owner ids.
   val owners: Set<String> = setOf(),
   // Path of this node in the tree.
   val path: List<String> = listOf(),
 ) {
   // TODO: this is too specific. Need better notion of external.
-  val isExternal: Boolean = path.firstOrNull() == "external"
-  val isSummary: Boolean = name.startsWith("/")
+  val isExternal: Boolean = "external" in path || name == "external"
   val parentPath: List<String> get() = path.slice(0..path.size - 2)
 
 

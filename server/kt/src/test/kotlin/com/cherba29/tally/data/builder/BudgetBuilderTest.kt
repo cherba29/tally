@@ -32,15 +32,15 @@ class BudgetBuilderTest : DescribeSpec({
 
   it("build simple") {
     val account1 = Account(
-      nodeId = NodeId("test-account1"),
+      nodeId = NodeId("test-account1", isSummary = false),
       openedOn = NOV / 2019,
     )
     val account2 = Account(
-      nodeId = NodeId("test-account2"),
+      nodeId = NodeId("test-account2", isSummary = false),
       openedOn = NOV / 2019,
     )
     val account3 = Account(
-      nodeId = NodeId("test-account3"),
+      nodeId = NodeId("test-account3", isSummary = false),
       openedOn = NOV / 2019,
     )
     val budget = budget {
@@ -80,8 +80,8 @@ class BudgetBuilderTest : DescribeSpec({
       )
     }
     budget.accounts.size shouldBe 3
-    budget.accounts[NodeId("test-account1")] shouldBe account1
-    budget.accounts[NodeId("test-account2")] shouldBe account2
+    budget.accounts[NodeId("test-account1", isSummary = false)] shouldBe account1
+    budget.accounts[NodeId("test-account2", isSummary = false)] shouldBe account2
     budget.statements.size shouldBe 3
     budget.statements.values.sumOf { it.values.count { s -> s.startBalance != null } } shouldBe 3
     budget.statements.values.sumOf { it.values.sumOf { s -> s.transactions.size } } shouldBe 4
@@ -90,10 +90,10 @@ class BudgetBuilderTest : DescribeSpec({
   }
 
   it("build ambiguous account") {
-    val node1 = NodeId("test-account1", owners = setOf("bob"))
+    val node1 = NodeId("test-account1", isSummary = false, owners = setOf("bob"))
     val path1 = listOf("bob", "test-account1")
     val account1 = Account(nodeId = node1, openedOn = NOV / 2019)
-    val node2 = NodeId("test-account1", owners = setOf("alice"))
+    val node2 = NodeId("test-account1", isSummary = false, owners = setOf("alice"))
     val path2 = listOf("alice", "test-account1")
     val account2 = Account(nodeId = node2, openedOn = NOV / 2019)
     val exception = shouldThrow<IllegalArgumentException> {
@@ -133,7 +133,7 @@ class BudgetBuilderTest : DescribeSpec({
     val builder = BudgetBuilder()
     val path1 = listOf("bob", "internal", "test-account1")
     val account1 = Account(
-      nodeId = NodeId("test-account1", path=listOf("internal")),
+      nodeId = NodeId("test-account1", isSummary = false, path=listOf("internal")),
       openedOn = NOV / 2019,
     )
     builder.setAccount(path1, account1)
@@ -156,7 +156,7 @@ class BudgetBuilderTest : DescribeSpec({
   it("build budget - bad to account") {
     val path2 = listOf("bob", "test-account2")
     val account2 = Account(
-      nodeId = NodeId("test-account2"),
+      nodeId = NodeId("test-account2", isSummary = false),
       openedOn = NOV / 2019,
     )
     val exception = shouldThrow<IllegalArgumentException> {
@@ -178,7 +178,7 @@ class BudgetBuilderTest : DescribeSpec({
   it("build budget - bad from account") {
     val path1 = listOf("bob", "test-account1")
     val account1 = Account(
-      nodeId = NodeId("test-account1"),
+      nodeId = NodeId("test-account1", isSummary = false),
       openedOn = NOV / 2019,
     )
     val path2 = listOf("bob", "external", "test-account2")
@@ -202,7 +202,7 @@ class BudgetBuilderTest : DescribeSpec({
     it("open account") {
       val path1 = listOf("bob", "internal", "test-account1")
       val account1 = Account(
-        nodeId = NodeId("test-account1", path=listOf("internal")),
+        nodeId = NodeId("test-account1", isSummary = false, path=listOf("internal")),
         openedOn = APR / 2026
       )
       val budget = budget {
@@ -214,17 +214,17 @@ class BudgetBuilderTest : DescribeSpec({
     it("multiple accounts") {
       val path1 = listOf("bob", "test-account1")
       val account1 = Account(
-        nodeId = NodeId("test-account1"),
+        nodeId = NodeId("test-account1", isSummary = false),
         openedOn = APR / 2026
       )
       val path2 = listOf("bob", "test-account2")
       val account2 = Account(
-        nodeId = NodeId("test-account2"),
+        nodeId = NodeId("test-account2", isSummary = false),
         openedOn = NOV / 2019,
       )
       val path3 = listOf("bob", "test-account3")
       val account3 = Account(
-        nodeId = NodeId("test-account3"),
+        nodeId = NodeId("test-account3", isSummary = false),
         openedOn = JAN / 2020,
         closedOn = FEB / 2020,
       )
@@ -265,7 +265,7 @@ class BudgetBuilderTest : DescribeSpec({
       it("single account no transfers") {
         val accountPath = listOf("john", "external", "test-account")
         val nodeId = NodeId(
-          name = "test-account",
+          name = "test-account", isSummary = false,
           path = listOf("external"),
         )
         val account = Account(nodeId, openedOn = DEC / 2019)
@@ -304,7 +304,7 @@ class BudgetBuilderTest : DescribeSpec({
       it("bad account name on transfer") {
         val path1 = listOf("john", "external", "test-account1")
         val node1 = NodeId(
-          name = "test-account1",
+          name = "test-account1", isSummary = false,
           path = listOf("external"),
           owners = setOf("john")
         )
@@ -328,13 +328,13 @@ class BudgetBuilderTest : DescribeSpec({
 
       it("two accounts with common owner and transfers") {
         val node1 = NodeId(
-          name = "test-account1",
+          name = "test-account1", isSummary = false,
           path = listOf("external"),
           owners = setOf("john")
         )
         val account1 = Account(node1, openedOn = DEC / 2019)
         val node2 = NodeId(
-          name = "test-account2",
+          name = "test-account2", isSummary = false,
           path = listOf("external"),
           owners = setOf("john")
         )
@@ -384,12 +384,12 @@ class BudgetBuilderTest : DescribeSpec({
 
       it("two accounts with external transfer") {
         val node1 = NodeId(
-          name = "test-account1",
+          name = "test-account1", isSummary = false,
           path = listOf("external"),
         )
         val account1 = Account(node1, openedOn = DEC / 2019)
         val node2 = NodeId(
-          name = "test-account2",
+          name = "test-account2", isSummary = false,
           path = listOf("external"),
           owners = setOf("john"),
         )
@@ -440,7 +440,7 @@ class BudgetBuilderTest : DescribeSpec({
       it("transfer with date before start balance") {
         val path1 = listOf("john", "external", "test-account1")
         val node1 = NodeId(
-          name = "test-account1",
+          name = "test-account1", isSummary = false,
           path = listOf("external"),
           owners = setOf("john"),
         )
@@ -469,6 +469,7 @@ class BudgetBuilderTest : DescribeSpec({
       it("transfer to closed account") {
         val node1 = NodeId(
           name = "test-account1",
+          isSummary = false,
           path = listOf("external"),
           owners = setOf("john"),
         )
@@ -479,7 +480,7 @@ class BudgetBuilderTest : DescribeSpec({
           closedOn = NOV / 2019  // closed before TransactionStatement month
         )
         val node2 = NodeId(
-          name = "external",
+          name = "external", isSummary = false,
           path = listOf("external"),
           owners = setOf("john"),
         )
@@ -525,30 +526,30 @@ class BudgetBuilderTest : DescribeSpec({
         table[0].nodeId shouldBe node1
         table[1].monthRange shouldBe NOV / 2019 .. NOV / 2019
         table[1].isClosed shouldBe false
-        table[1].nodeId shouldBe NodeId("test-account1", setOf("john"), listOf("external"))
+        table[1].nodeId shouldBe NodeId("test-account1", isSummary = false, setOf("john"), listOf("external"))
         table[2].monthRange shouldBe DEC / 2019 .. DEC / 2019
         table[2].isClosed shouldBe false
         table[2].nodeId shouldBe node2
         table[3].monthRange shouldBe NOV / 2019 .. NOV / 2019
         table[3].isClosed shouldBe false
-        table[3].nodeId shouldBe NodeId("external", owners = setOf("john"), listOf("external"))
+        table[3].nodeId shouldBe NodeId("external", isSummary = false, owners = setOf("john"), listOf("external"))
       }
 
       it("get transaction type") {
         val node1 = NodeId(
-          name = "test-account1",
+          name = "test-account1", isSummary = false,
           path = listOf("internal", "checking"),
           owners = setOf("john"),
         )
         val account1 = Account(node1, openedOn = DEC / 2019)
         val node2 = NodeId(
-          name = "test-account2",
+          name = "test-account2", isSummary = false,
           path = listOf("internal", "credit"),
           owners = setOf("john"),
         )
         val account2 = Account(node2, openedOn = DEC / 2019)
         val node3 = NodeId(
-          name = "test-account3",
+          name = "test-account3", isSummary = false,
           path = listOf("external", "expense"),
           owners = setOf("john"),
         )

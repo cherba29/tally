@@ -12,6 +12,7 @@ class TransferTest : DescribeSpec({
       val account1 = Account(
         nodeId = NodeId(
           "test-account1",
+          isSummary = false,
           path = listOf("external"),
           owners = setOf("john")
         ),
@@ -20,6 +21,7 @@ class TransferTest : DescribeSpec({
       val account2 = Account(
         nodeId = NodeId(
           "test-account2",
+          isSummary = false,
           path = listOf("external"),
           owners = setOf("john")
         ),
@@ -49,6 +51,7 @@ class TransferTest : DescribeSpec({
       val account1 = Account(
         nodeId = NodeId(
           "test-account1",
+          isSummary = false,
           path = listOf("external"),
           owners = setOf("john")
         ),
@@ -57,6 +60,7 @@ class TransferTest : DescribeSpec({
       val account2 = Account(
         nodeId = NodeId(
           "test-account2",
+          isSummary = false,
           path = listOf("external"),
           owners = setOf("john")
         ),

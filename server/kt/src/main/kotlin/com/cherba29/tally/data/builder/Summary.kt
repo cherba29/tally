@@ -59,7 +59,7 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
       accountMonthlyStatements[stmt.monthRange.first] = stmt
     }
   }
-  val combined = SummaryStatement(NodeId(stmtName!!, owners), monthRange!!)
+  val combined = SummaryStatement(NodeId(stmtName!!, isSummary=true, owners), monthRange!!)
   for ((nodeId, monthStatementMap) in nodeMonthStatementMap) {
     // Combine all statements for a given account over all months in the range.
     val stmt = CombinedStatement.fromStatements(

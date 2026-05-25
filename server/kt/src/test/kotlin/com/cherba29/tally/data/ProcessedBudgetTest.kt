@@ -45,7 +45,7 @@ class ProcessedBudgetTest : DescribeSpec({
       processedBudget.budget!!.summaries.isEmpty shouldBe true
       processedBudget.budget!!.statements.size shouldBe 1
 
-      val nodeId = NodeId("test-account", setOf("john"), listOf("external"))
+      val nodeId = NodeId("test-account", isSummary = false, setOf("john"), listOf("external"))
       val transactionStatement = processedBudget.budget!!.statements[nodeId]?.get(MAR / 2026)!!
       transactionStatement.nodeId.name shouldBe "test-account"
       transactionStatement.monthRange shouldBe MAR / 2026 .. MAR / 2026

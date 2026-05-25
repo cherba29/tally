@@ -7,13 +7,14 @@ import io.kotest.matchers.shouldBe
 class NodeIdTest : DescribeSpec({
   describe("create") {
     it("path must be external or internal") {
-      val exception = shouldThrow<IllegalArgumentException> { NodeId("test",path = listOf("out")) }
+      val exception = shouldThrow<IllegalArgumentException> { NodeId("test", isSummary = false, path = listOf("out")) }
       exception.message shouldBe "Node should have empty, external or internal path but was [out]"
     }
 
     it("common case") {
       val nodeId = NodeId(
         name = "testAccount",
+        isSummary = false,
         path = listOf("external", "tax"),
         owners = setOf("bob", "alice")
       )
@@ -27,23 +28,24 @@ class NodeIdTest : DescribeSpec({
 
   describe("type") {
     it("isSummary false if type is not summary") {
-      val nodeId = NodeId("testAccount")
+      val nodeId = NodeId("testAccount", isSummary = false)
       nodeId.isSummary shouldBe false
     }
 
     it("isSummary when type is summary") {
-      val nodeId = NodeId("/test/summary")
+      val nodeId = NodeId("test/summary", isSummary = true)
       nodeId.isSummary shouldBe true
     }
 
     it("isExternal false by default") {
-      val nodeId = NodeId("testAccount")
+      val nodeId = NodeId("testAccount", isSummary = false)
       nodeId.isExternal shouldBe false
     }
 
     it("isExternal true when path starts with external") {
       val nodeId = NodeId(
         name = "testAccount",
+        isSummary = false,
         path = listOf("external"),
         owners = setOf("bob")
       )
@@ -53,15 +55,15 @@ class NodeIdTest : DescribeSpec({
 
   describe("owner") {
     it("has common owner is false if no common owners") {
-      val nodeId1 = NodeId(name = "testAccount", owners = setOf("bob"))
-      val nodeId2 = NodeId(name = "testAccount", owners = setOf("john"))
+      val nodeId1 = NodeId(name = "testAccount", isSummary = false, owners = setOf("bob"))
+      val nodeId2 = NodeId(name = "testAccount", isSummary = false, owners = setOf("john"))
 
       nodeId1.hasCommonOwner(nodeId2) shouldBe false
     }
 
     it("has common owner is true if common owners") {
-      val nodeId1 = NodeId(name = "testAccount", owners = setOf("bob"))
-      val nodeId2 = NodeId(name = "testAccount", owners = setOf("bob"))
+      val nodeId1 = NodeId(name = "testAccount", isSummary = false, owners = setOf("bob"))
+      val nodeId2 = NodeId(name = "testAccount", isSummary = false, owners = setOf("bob"))
 
       nodeId1.hasCommonOwner(nodeId2) shouldBe true
     }
@@ -69,16 +71,16 @@ class NodeIdTest : DescribeSpec({
 
   describe("conversion") {
     it("toString no path no owners") {
-      NodeId("test").toString() shouldBe "/test"
+      NodeId("test", isSummary = false).toString() shouldBe "/test"
     }
     it("toString with path no owners") {
-      NodeId("test", path=listOf("external")).toString() shouldBe "/external/test"
+      NodeId("test", isSummary = false, path=listOf("external")).toString() shouldBe "/external/test"
     }
     it("toString with long path no owners") {
-      NodeId("test", path=listOf("external", "tax")).toString() shouldBe "/external/tax/test"
+      NodeId("test", isSummary = false, path=listOf("external", "tax")).toString() shouldBe "/external/tax/test"
     }
     it("toString with path and owners") {
-      NodeId("test", path=listOf("external"), owners=setOf("bob")).toString() shouldBe "/external/test"
+      NodeId("test", isSummary = false, path=listOf("external"), owners=setOf("bob")).toString() shouldBe "/external/test"
     }
   }
 })

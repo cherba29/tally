@@ -31,7 +31,7 @@ class QueryTableTest : DescribeSpec({
     it("no owner") {
       val payload = budget {
         setAccount(listOf("john", "internal", "test-account"), Account(
-          NodeId("test-account"),
+          NodeId("test-account", isSummary = false),
           openedOn = MAR / 2026,
         ))
       }
@@ -49,7 +49,7 @@ class QueryTableTest : DescribeSpec({
     it("empty") {
       val payload = budget {
         setAccount(listOf("john", "internal", "test-account"), Account(
-          NodeId("test-account", owners = setOf("john")),
+          NodeId("test-account", isSummary = false, owners = setOf("john")),
           openedOn = MAR / 2026,
         ))
       }
@@ -68,13 +68,13 @@ class QueryTableTest : DescribeSpec({
     it("empty - no open accounts") {
       val accountPath1 = listOf("john", "external", "test-account1")
       val account1 = Account(
-        NodeId(name = "test-account1", path = listOf("external"), owners = setOf("john")),
+        NodeId(name = "test-account1", isSummary = false, path = listOf("external"), owners = setOf("john")),
         openedOn = MAR / 2026,
         closedOn = MAR / 2026
       )
       val accountPath2 = listOf("john", "external", "test-account2")
       val account2 = Account(
-        NodeId(name = "test-account2", path = listOf("external"), owners = setOf("john")),
+        NodeId(name = "test-account2", isSummary = false, path = listOf("external"), owners = setOf("john")),
         openedOn = MAR / 2026,
         closedOn = MAR / 2026
       )
@@ -110,7 +110,7 @@ class QueryTableTest : DescribeSpec({
     it("single open account without path") {
       val accountPath = listOf("john", "external", "test-account")
       val account = Account(
-        NodeId(name = "test-account", path = listOf("external"), owners = setOf("john")),
+        NodeId(name = "test-account", isSummary = false, path = listOf("external"), owners = setOf("john")),
         openedOn = JAN / 2026
       )
       val payload = budget {
@@ -135,7 +135,7 @@ class QueryTableTest : DescribeSpec({
     it("single open account with path") {
       val accountPath = listOf("john", "internal", "test-account")
       val account = Account(
-        NodeId(name = "test-account", path = listOf("internal"), owners = setOf("john")),
+        NodeId(name = "test-account", isSummary = false, path = listOf("internal"), owners = setOf("john")),
         openedOn = JAN / 2026
       )
       val payload =  budget {

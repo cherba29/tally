@@ -12,7 +12,7 @@
       __type: GqlAccount
       name: ""
       external: false
-      summary: false
+      summary: true
       openedOn: Jan2010
       owners:
       - john
@@ -38,7 +38,7 @@
       __type: GqlAccount
       name: internal
       external: false
-      summary: false
+      summary: true
       openedOn: Jan2010
       owners:
       - john
@@ -101,7 +101,7 @@
       __type: GqlAccount
       name: ""
       external: false
-      summary: false
+      summary: true
       openedOn: Jan2010
       owners:
       - john
@@ -126,8 +126,8 @@
     account:
       __type: GqlAccount
       name: external
-      external: false
-      summary: false
+      external: true
+      summary: true
       openedOn: Jan2010
       owners:
       - john

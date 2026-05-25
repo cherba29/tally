@@ -24,7 +24,7 @@ class SummaryTest : DescribeSpec({
 
     it("single closed account - produces summary without it") {
       val node1 = NodeId(
-        name = "test-account1",
+        name = "test-account1", isSummary = false,
         path = listOf("external"),
         owners = setOf("john"),
       )
@@ -48,7 +48,7 @@ class SummaryTest : DescribeSpec({
       }
       val stmt1 = statements["john", "external", MAR/ 2021]
       stmt1?.nodeId shouldBe NodeId(
-        name = "external",
+        name = "external", isSummary = true,
         path = listOf(),
         owners = setOf("john")
       )
@@ -66,7 +66,7 @@ class SummaryTest : DescribeSpec({
 
       val stmt2 = statements["john", "", MAR / 2021]
       stmt2?.nodeId shouldBe NodeId(
-        name = "",
+        name = "", isSummary = true,
         path = listOf(),
         owners = setOf("john")
       )
@@ -83,7 +83,7 @@ class SummaryTest : DescribeSpec({
 
     it("single external account - no SUMMARY") {
       val node1 = NodeId(
-        name = "test-account1",
+        name = "test-account1", isSummary = true,
         path = listOf("external"),
         owners = setOf("john")
       )
@@ -103,7 +103,7 @@ class SummaryTest : DescribeSpec({
 
       val stmt = statements["john", "", MAR / 2021]!!
       stmt.nodeId shouldBe NodeId(
-        name = "",
+        name = "", isSummary = true,
         path = listOf(),
         owners = setOf("john"),
       )
@@ -120,7 +120,7 @@ class SummaryTest : DescribeSpec({
 
     it("single account - no transfers") {
       val node1 = NodeId(
-        name = "test-account1",
+        name = "test-account1", isSummary = false,
         path = listOf("external"),
         owners = setOf("john")
       )
@@ -144,7 +144,7 @@ class SummaryTest : DescribeSpec({
 
       val stmt1 = statements["john", "external", MAR/ 2021]!!
       stmt1.nodeId shouldBe NodeId(
-        name = "external",
+        name = "external", isSummary = true,
         path = listOf(),
         owners = setOf("john")
       )
@@ -160,7 +160,7 @@ class SummaryTest : DescribeSpec({
 
       val stmt2 = statements["john", "", MAR / 2021]!!
       stmt2.nodeId shouldBe NodeId(
-        name = "",
+        name = "", isSummary = true,
         path = listOf(),
         owners = setOf("john"),
       )
@@ -177,7 +177,7 @@ class SummaryTest : DescribeSpec({
 
     it("multiple accounts - selected owner") {
       val node1 = NodeId(
-        name = "test-account1",
+        name = "test-account1", isSummary = false,
         path = listOf("external"),
         owners = setOf("john")
       )
@@ -195,7 +195,7 @@ class SummaryTest : DescribeSpec({
       )
       // Should skip since different owner.
       val node2 = NodeId(
-        name = "test-account1",
+        name = "test-account1", isSummary = false,
         path = listOf("external"),
         owners = setOf("bob")
       )
@@ -213,7 +213,7 @@ class SummaryTest : DescribeSpec({
       )
       // Should skip since path is empty.
       val node3 = NodeId(
-        name = "test-account1",
+        name = "test-account1", isSummary = false,
         path = listOf(),
         owners = setOf("john")
       )
@@ -239,7 +239,7 @@ class SummaryTest : DescribeSpec({
 
       val stmt1 = statements["john", "external", MAR / 2021]!!
       stmt1.nodeId shouldBe NodeId(
-        name = "external",
+        name = "external", isSummary = true,
         path = listOf(),
         owners = setOf("john")
       )
@@ -255,7 +255,7 @@ class SummaryTest : DescribeSpec({
 
       val stmt2 = statements["john", "", MAR / 2021]!!
       stmt2.nodeId shouldBe NodeId(
-        name = "",
+        name = "", isSummary = true,
         path = listOf(),
         owners = setOf("john"),
       )
@@ -280,12 +280,12 @@ class SummaryTest : DescribeSpec({
     }
     it("single") {
       val summaryStatement = SummaryStatement(
-          nodeId = NodeId("test-account1"),
+          nodeId = NodeId("test-account1", isSummary = true),
           monthRange = APR / 2026 .. MAY / 2026
 
       )
       val result = combineSummaryStatements(listOf(summaryStatement))
-      result.nodeId shouldBe NodeId("test-account1")
+      result.nodeId shouldBe NodeId("test-account1", isSummary = true)
       result.monthRange shouldBe APR / 2026..MAY / 2026
       result.totalPayments shouldBe 0
       result.totalTransfers shouldBe 0
@@ -293,12 +293,12 @@ class SummaryTest : DescribeSpec({
     }
     it("two different node statements fail") {
       val stmt1 = SummaryStatement(
-        nodeId = NodeId("test-account1"),
+        nodeId = NodeId("test-account1", isSummary = true),
         monthRange = APR / 2026 .. MAY / 2026
 
       )
       val stmt2 = SummaryStatement(
-        nodeId = NodeId("test-account2"),
+        nodeId = NodeId("test-account2", isSummary = true),
         monthRange = APR / 2026 .. MAY / 2026
 
       )
@@ -310,17 +310,17 @@ class SummaryTest : DescribeSpec({
 
     it("two node statements with different months") {
       val stmt1 = SummaryStatement(
-        nodeId = NodeId("test-account1"),
+        nodeId = NodeId("test-account1", isSummary = true),
         monthRange = APR / 2026 .. APR / 2026
 
       )
       val stmt2 = SummaryStatement(
-        nodeId = NodeId("test-account1"),
+        nodeId = NodeId("test-account1", isSummary = true),
         monthRange = MAY / 2026 .. MAY / 2026
 
       )
       val result = combineSummaryStatements(listOf(stmt1, stmt2))
-      result.nodeId shouldBe NodeId("test-account1")
+      result.nodeId shouldBe NodeId("test-account1", isSummary = true)
       result.monthRange shouldBe APR / 2026..MAY / 2026
       result.totalPayments shouldBe 0
       result.totalTransfers shouldBe 0
@@ -328,23 +328,23 @@ class SummaryTest : DescribeSpec({
     }
     it("two node statements with same months") {
       val stmt1 = SummaryStatement(
-        nodeId = NodeId("test-account1"),
+        nodeId = NodeId("test-account1", isSummary = true),
         monthRange = APR / 2026 .. APR / 2026
 
       )
       stmt1.addStatement(TransactionStatement(
-        nodeId = NodeId("test-account1"),
+        nodeId = NodeId("test-account1", isSummary = true),
         monthRange = APR / 2026 .. APR / 2026,
         isClosed = false,
         startBalance = Balance(100, LocalDate(2026, 4, 1), Balance.Type.CONFIRMED),
       ))
       val stmt2 = SummaryStatement(
-        nodeId = NodeId("test-account1"),
+        nodeId = NodeId("test-account1", isSummary = true),
         monthRange = APR / 2026 .. APR / 2026
 
       )
       stmt2.addStatement(TransactionStatement(
-        nodeId = NodeId("test-account1"),
+        nodeId = NodeId("test-account1", isSummary = true),
         monthRange = APR / 2026 .. APR / 2026,
         isClosed = false,
         startBalance = Balance(100, LocalDate(2026, 4, 1), Balance.Type.CONFIRMED),
@@ -356,27 +356,27 @@ class SummaryTest : DescribeSpec({
     }
     it("two node statements with substatements") {
       val stmt1 = SummaryStatement(
-        nodeId = NodeId("/test-account1"),
+        nodeId = NodeId("/test-account1", isSummary = true),
         monthRange = APR / 2026 .. APR / 2026
       )
       stmt1.addStatement(TransactionStatement(
-          nodeId = NodeId("test-account1"),
+          nodeId = NodeId("test-account1", isSummary = true),
           monthRange = APR / 2026 .. APR / 2026,
           isClosed = false,
           startBalance = Balance(100, LocalDate(2026, 4, 1), Balance.Type.CONFIRMED),
       ))
       val stmt2 = SummaryStatement(
-        nodeId = NodeId("/test-account1"),
+        nodeId = NodeId("/test-account1", isSummary = true),
         monthRange = MAY / 2026 .. MAY / 2026
       )
       stmt2.addStatement(TransactionStatement(
-        nodeId = NodeId("test-account1"),
+        nodeId = NodeId("test-account1", isSummary = true),
         monthRange = MAY / 2026 .. MAY / 2026,
         isClosed = false,
         startBalance = Balance(200, LocalDate(2026, 5, 1), Balance.Type.CONFIRMED),
       ))
       val result = combineSummaryStatements(listOf(stmt1, stmt2))
-      result.nodeId shouldBe NodeId("/test-account1")
+      result.nodeId shouldBe NodeId("/test-account1", isSummary = true)
       result.monthRange shouldBe APR / 2026..MAY / 2026
       result.totalPayments shouldBe 0
       result.totalTransfers shouldBe 0
@@ -384,7 +384,7 @@ class SummaryTest : DescribeSpec({
       result.change shouldBe -100
       result.statements.size shouldBe 1
       val statement = result.statements.first()
-      statement.nodeId shouldBe NodeId("test-account1")
+      statement.nodeId shouldBe NodeId("test-account1", isSummary = true)
       statement.monthRange shouldBe APR / 2026..MAY / 2026
       statement.totalPayments shouldBe 0
       statement.totalTransfers shouldBe 0

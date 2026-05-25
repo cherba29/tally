@@ -12,7 +12,7 @@ import kotlinx.datetime.LocalDate
 class CombinedStatementTest : DescribeSpec({
   describe("Build") {
     it("empty") {
-      val nodeId = NodeId(name = "test-account", path = listOf("external"))
+      val nodeId = NodeId(name = "test-account", isSummary = false, path = listOf("external"))
       val statement = CombinedStatement(
         nodeId,
         JAN / 2026 .. MAR / 2026,
@@ -23,7 +23,7 @@ class CombinedStatementTest : DescribeSpec({
     }
 
     it("from empty list of statements") {
-      val nodeId = NodeId(name = "test-account", path = listOf("external"))
+      val nodeId = NodeId(name = "test-account", isSummary = false, path = listOf("external"))
       val combined = CombinedStatement.fromStatements(
         nodeId,
         JAN / 2026 .. MAR / 2026,
@@ -36,7 +36,7 @@ class CombinedStatementTest : DescribeSpec({
     }
 
     it("from single statement") {
-      val nodeId = NodeId(name = "test-account", path = listOf("external"))
+      val nodeId = NodeId(name = "test-account", isSummary = false, path = listOf("external"))
       val startMonth = JAN / 2026
       val statement = TransactionStatement(
         nodeId,

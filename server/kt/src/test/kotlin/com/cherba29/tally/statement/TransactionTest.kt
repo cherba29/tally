@@ -14,7 +14,7 @@ class TransactionTest : DescribeSpec({
     it("bad account name on transfer") {
       val path1 = listOf("john", "external", "test-account1")
       val node1 = NodeId(
-        name = "test-account1",
+        name = "test-account1", isSummary = false,
         path = listOf("external"),
         owners = setOf("john")
       )

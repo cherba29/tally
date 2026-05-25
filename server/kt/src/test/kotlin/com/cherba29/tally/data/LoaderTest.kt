@@ -43,7 +43,7 @@ class LoaderTest : DescribeSpec({
       Loader(tallyPath.watchedEventFlow { true }).use { loader ->
         val result = loader.budget()
 
-        val nodeId = NodeId("test-account", setOf("someone"), listOf("external"))
+        val nodeId = NodeId("test-account", isSummary = false, setOf("someone"), listOf("external"))
         result.statements.size shouldBe 1
         val tranStatement = result.statements[nodeId]?.get(MAR / 2019)!!
         tranStatement.monthRange shouldBe MAR / 2019..MAR / 2019
@@ -71,7 +71,7 @@ class LoaderTest : DescribeSpec({
           every { reProcess() } answers { }
           every { dataPayload } answers {
             mockk<Budget> {
-              every { statements } returns mapOf(NodeId("testAccount${count++}") to mapOf())
+              every { statements } returns mapOf(NodeId("testAccount${count++}", isSummary = false) to mapOf())
             }
           }
         }
@@ -83,7 +83,7 @@ class LoaderTest : DescribeSpec({
 
           val result1 = loader.budget()
           result1.statements.size shouldBe 1
-          result1.statements[NodeId("testAccount1")] shouldNotBe null
+          result1.statements[NodeId("testAccount1", isSummary = false)] shouldNotBe null
           val loadedOn = loader.loadedOn
           loader.loadedOn shouldBe 0.seconds
 
@@ -100,8 +100,8 @@ class LoaderTest : DescribeSpec({
 
           val result2 = loader.budget()
           result1.statements.size shouldBe 1
-          result2.statements[NodeId("testAccount1")] shouldBe null
-          result2.statements[NodeId("testAccount2")] shouldNotBe null
+          result2.statements[NodeId("testAccount1", isSummary = false)] shouldBe null
+          result2.statements[NodeId("testAccount2", isSummary = false)] shouldNotBe null
 
           verify { processedBudget.addFile(rootPath, relativePath) }
           verify(exactly = 2) { processedBudget.reProcess() }
@@ -122,7 +122,7 @@ class LoaderTest : DescribeSpec({
           every { reProcess() } answers { }
           every { dataPayload } answers {
             mockk<Budget> {
-              every { statements } returns mapOf(NodeId("testAccount${count++}") to mapOf())
+              every { statements } returns mapOf(NodeId("testAccount${count++}", isSummary = false) to mapOf())
             }
           }
         }
@@ -133,7 +133,7 @@ class LoaderTest : DescribeSpec({
 
           val result1 = loader.budget()
           result1.statements.size shouldBe 1
-          result1.statements[NodeId("testAccount1")] shouldNotBe null
+          result1.statements[NodeId("testAccount1", isSummary = false)] shouldNotBe null
           loader.loadedOn shouldBe 100.seconds
 
           timeSource += 100.seconds
@@ -144,8 +144,8 @@ class LoaderTest : DescribeSpec({
 
           val result2 = loader.budget()
           result2.statements.size shouldBe 1
-          result2.statements[NodeId("testAccount1")] shouldNotBe null
-          result2.statements[NodeId("testAccount2")] shouldBe null
+          result2.statements[NodeId("testAccount1", isSummary = false)] shouldNotBe null
+          result2.statements[NodeId("testAccount2", isSummary = false)] shouldBe null
           channel.close() shouldBe true
 
           verify { processedBudget.addFile(rootPath, relativePath) }
@@ -167,7 +167,7 @@ class LoaderTest : DescribeSpec({
           }
           every { dataPayload } answers {
             mockk<Budget> {
-              every { statements } returns mapOf(NodeId("testAccount${count++}") to mapOf())
+              every { statements } returns mapOf(NodeId("testAccount${count++}", isSummary = false) to mapOf())
             }
           }
         }
@@ -178,7 +178,7 @@ class LoaderTest : DescribeSpec({
 
           val result1 = loader.budget()
           result1.statements.size shouldBe 1
-          result1.statements[NodeId("testAccount1")] shouldNotBe null
+          result1.statements[NodeId("testAccount1", isSummary = false)] shouldNotBe null
           loader.loadedOn shouldBe 100.seconds
 
           timeSource += 100.seconds
@@ -189,8 +189,8 @@ class LoaderTest : DescribeSpec({
 
           val result2 = loader.budget()
           result2.statements.size shouldBe 1
-          result2.statements[NodeId("testAccount1")] shouldNotBe null
-          result2.statements[NodeId("testAccount2")] shouldBe null
+          result2.statements[NodeId("testAccount1", isSummary = false)] shouldNotBe null
+          result2.statements[NodeId("testAccount2", isSummary = false)] shouldBe null
           channel.close() shouldBe true
 
           verify(exactly = 2) { processedBudget.addFile(rootPath, relativePath) }

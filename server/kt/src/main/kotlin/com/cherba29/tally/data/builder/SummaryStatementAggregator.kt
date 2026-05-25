@@ -21,7 +21,7 @@ class SummaryStatementAggregator {
   fun addStatement(summaryPath: List<String>, owner: String, statement: Statement) {
     groupTreeBuilder.addPath(listOf(owner) + statement.nodeId.path)
     val parentSummaryNodeId = summaryNodes.getOrPut(listOf(owner) + summaryPath) {
-      NodeId(summaryPath.joinToString("/"), setOf(owner), statement.nodeId.parentPath)
+      NodeId(summaryPath.joinToString("/"), isSummary=true, setOf(owner), statement.nodeId.parentPath)
     }
     summaryStatements.getDefault(
       owner, parentSummaryNodeId.name, statement.monthRange.first

@@ -69,7 +69,7 @@ class LoadYamlTest : DescribeSpec({
       }
       budget.accounts.size shouldBe 1
 
-      val account = budget.accounts[NodeId("test-account", owners = setOf("arthur"), path=listOf("external"))]!!
+      val account = budget.accounts[NodeId("test-account", isSummary = false, owners = setOf("arthur"), path=listOf("external"))]!!
       account.nodeId.name shouldBe "test-account"
       account.description shouldBe "Testing account"
       account.number shouldBe "1223344"
@@ -112,7 +112,7 @@ class LoadYamlTest : DescribeSpec({
       budget.months.size shouldBe 2
       budget.statements.values.sumOf { it.values.sumOf { s -> s.transactions.size } } shouldBe 0
 
-      val monthlyStatements = budget.statements[NodeId("test-account", setOf("someone"), listOf("external"))]!!
+      val monthlyStatements = budget.statements[NodeId("test-account", isSummary = false, setOf("someone"), listOf("external"))]!!
       monthlyStatements.size shouldBe 2
       monthlyStatements[JAN / 2020]?.startBalance shouldBe Balance(0, LocalDate.parse("2020-01-01"), Balance.Type.CONFIRMED)
       monthlyStatements[FEB / 2020]?.startBalance shouldBe Balance(1000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
@@ -253,9 +253,12 @@ class LoadYamlTest : DescribeSpec({
       budget.accounts.size shouldBe 2
       budget.statements.size shouldBe 2
       budget.summaries.size shouldBe 4
+      budget.summaries.keys shouldBe mapOf("someone" to setOf("external", ""))
+      budget.summaries["someone", "external"]?.keys shouldBe setOf(FEB / 2020, JAN / 2020)
+      budget.summaries["someone", ""]?.keys shouldBe setOf(FEB / 2020, JAN / 2020)
 
-      val node1 = NodeId("test-account", setOf("someone"), listOf("external"))
-      val node2 = NodeId("external", setOf("someone"), listOf("external"))
+      val node1 = NodeId("test-account", isSummary = false, setOf("someone"), listOf("external"))
+      val node2 = NodeId("external", isSummary = false, setOf("someone"), listOf("external"))
       val externalAccount = budget.accounts[node2]!!
       val testAccountMonthlyStatements = budget.statements[node1]!!
 
@@ -297,22 +300,6 @@ class LoadYamlTest : DescribeSpec({
           type = Transaction.Type.EXPENSE,
           balanceFromStart = null,
         ),
-//        Transfer(
-//          fromAccount = testAccount,
-//          toAccount = externalAccount,
-//          fromMonth = Month.fromString("Jan2020"),
-//          toMonth = Month.fromString("Jan2020"),
-//          balance = Balance(3750, LocalDate.parse("2020-01-17"), Balance.Type.PROJECTED),
-//          description = null,
-//        ),
-//        Transfer(
-//          fromAccount = testAccount,
-//          toAccount = externalAccount,
-//          fromMonth = Month.fromString("Jan2020"),
-//          toMonth = Month.fromString("Jan2020"),
-//          balance = Balance(-2248, LocalDate.parse("2020-01-15"), Balance.Type.CONFIRMED),
-//          description = null,
-//        ),
       )
     }
 
