@@ -98,6 +98,14 @@ class SummaryStatementAggregatorTest : DescribeSpec({
         monthRange = MAY / 2026 .. MAY / 2026,
       )
     )
+    aggregator.addStatement(
+      listOf("external"),
+      owner = "john",
+      statement = Statement(
+        nodeId = NodeId("test-account3", isSummary = false, path = listOf("external")),
+        monthRange = MAY / 2026 .. MAY / 2026,
+      )
+    )
     aggregator.propagateUpThePath2()
 
     aggregator.summaryStatements.isEmpty() shouldBe false
@@ -122,11 +130,15 @@ class SummaryStatementAggregatorTest : DescribeSpec({
     stmtExternal.nodeId.isSummary shouldBe true
     stmtExternal.monthRange shouldBe MAY / 2026 .. MAY / 2026
     stmtExternal.nodeId.owners shouldBe listOf("john")
-    stmtExternal.statements.size shouldBe 1
-    val subStmtExternal = stmtExternal.statements.first()
-    subStmtExternal.nodeId.name shouldBe "test-account2"
-    subStmtExternal.monthRange shouldBe MAY / 2026 .. MAY / 2026
-    subStmtExternal.nodeId.owners shouldBe listOf()
+    stmtExternal.statements.size shouldBe 2
+    val subStmt1External = stmtExternal.statements[0]
+    subStmt1External.nodeId.name shouldBe "test-account2"
+    subStmt1External.monthRange shouldBe MAY / 2026 .. MAY / 2026
+    subStmt1External.nodeId.owners shouldBe listOf()
+    val subStmt2External = stmtExternal.statements[1]
+    subStmt2External.nodeId.name shouldBe "test-account3"
+    subStmt2External.monthRange shouldBe MAY / 2026 .. MAY / 2026
+    subStmt2External.nodeId.owners shouldBe listOf()
 
     val topStmt = aggregator.summaryStatements[listOf("john", "")]!![MAY / 2026]!!
     topStmt.nodeId.isSummary shouldBe true
