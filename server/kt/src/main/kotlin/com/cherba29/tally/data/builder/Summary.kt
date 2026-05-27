@@ -19,7 +19,7 @@ fun buildSummaryStatementTable(
     for (owner in statement.nodeId.owners) {
       if (selectedOwner != null && owner != selectedOwner) continue
       if (statement.nodeId.path.isNotEmpty()) {
-        statementsAggregator.addStatement(statement.nodeId.path, owner, statement)
+        statementsAggregator.addStatement(owner, statement)
       }
     }
   }

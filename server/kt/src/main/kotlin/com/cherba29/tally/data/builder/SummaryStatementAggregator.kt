@@ -17,11 +17,16 @@ class SummaryStatementAggregator {
   // Adds statement to its immediate parent summary statement.
   // Once all statements are added one has to call propagateUpThePath2
   // to create summary statements of these summaries up the tree.
-  fun addStatement(summaryPath: List<String>, owner: String, statement: Statement) {
+  fun addStatement(owner: String, statement: Statement) {
     val fullPath = listOf(owner) + statement.nodeId.path
     groupTreeBuilder.addPath(fullPath)
-    val parentSummaryNodeId = summaryNodes.getOrPut(listOf(owner) + summaryPath) {
-      NodeId(summaryPath.joinToString("/"), isSummary=true, setOf(owner), statement.nodeId.parentPath)
+    val parentSummaryNodeId = summaryNodes.getOrPut(fullPath) {
+      NodeId(
+        statement.nodeId.path.joinToString("/"),
+        isSummary=true,
+        setOf(owner),
+        statement.nodeId.parentPath
+      )
     }
     summaryStatements.getOrPut(fullPath) {
       mutableMapOf()
@@ -46,9 +51,8 @@ class SummaryStatementAggregator {
             "$node has no monthly statements, [$fullPath] key not found."
           )  // Should never happen.
 
-        val parentSummaryPath = fullPath.subList(1, fullPath.lastIndex)
         for (monthlyStatement in monthlyStatements.values) {
-          addStatement(parentSummaryPath, ownerRoot.name, monthlyStatement)
+          addStatement(ownerRoot.name, monthlyStatement)
         }
       }
     }

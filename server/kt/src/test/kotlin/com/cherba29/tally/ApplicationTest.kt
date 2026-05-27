@@ -26,6 +26,8 @@ import kotlin.io.path.createFile
 import kotlin.io.path.div
 import kotlin.io.path.pathString
 import kotlin.io.path.writeText
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.DurationUnit
 
 fun ApplicationTestBuilder.configureTestClient(tallyPath: Path?) {
   application {
@@ -43,6 +45,7 @@ fun ApplicationTestBuilder.configureTestClient(tallyPath: Path?) {
 
 class ApplicationTest : DescribeSpec({
   coroutineTestScope = true
+  timeout = 15.seconds.toLong(DurationUnit.MILLISECONDS)
   val tallyPath = tempdir("tally-", keepOnFailure = false).toPath()
   ((tallyPath / "client").createDirectory() / "index.html").createFile().writeText("Hello World!")
   ((tallyPath / "data").createDirectory() / "file2.yaml").createFile().writeText(

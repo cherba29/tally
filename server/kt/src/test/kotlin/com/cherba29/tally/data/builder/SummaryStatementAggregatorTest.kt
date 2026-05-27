@@ -18,7 +18,6 @@ class SummaryStatementAggregatorTest : DescribeSpec({
     it("add single") {
       val aggregator = SummaryStatementAggregator()
       aggregator.addStatement(
-        listOf("internal"),
         owner = "john",
         statement = Statement(
           nodeId = NodeId("test-account", isSummary = false, setOf("john"), listOf("internal")),
@@ -43,7 +42,6 @@ class SummaryStatementAggregatorTest : DescribeSpec({
     it("add single and propagate up") {
       val aggregator = SummaryStatementAggregator()
       aggregator.addStatement(
-        listOf("internal"),
         owner = "john",
         statement = Statement(
           nodeId = NodeId("/test-account", isSummary = true, path = listOf("internal")),
@@ -83,7 +81,6 @@ class SummaryStatementAggregatorTest : DescribeSpec({
   it("multiple propagate up") {
     val aggregator = SummaryStatementAggregator()
     aggregator.addStatement(
-      listOf("internal"),
       owner = "john",
       statement = Statement(
         nodeId = NodeId("test-account1", isSummary = false, path = listOf("internal")),
@@ -91,7 +88,6 @@ class SummaryStatementAggregatorTest : DescribeSpec({
       )
     )
     aggregator.addStatement(
-      listOf("external"),
       owner = "john",
       statement = Statement(
         nodeId = NodeId("test-account2", isSummary = false, path = listOf("external")),
@@ -99,7 +95,6 @@ class SummaryStatementAggregatorTest : DescribeSpec({
       )
     )
     aggregator.addStatement(
-      listOf("external"),
       owner = "john",
       statement = Statement(
         nodeId = NodeId("test-account3", isSummary = false, path = listOf("external")),
