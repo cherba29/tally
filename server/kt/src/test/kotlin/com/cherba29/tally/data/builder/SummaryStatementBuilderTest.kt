@@ -7,16 +7,16 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
 
-class SummaryStatementAggregatorTest : DescribeSpec({
+class SummaryStatementBuilderTest : DescribeSpec({
   describe("Creation") {
     it("basic") {
-      val aggregator = SummaryStatementAggregator()
+      val aggregator = SummaryStatementBuilder()
       aggregator.summaryStatements.isEmpty() shouldBe true
     }
   }
   describe("statements") {
     it("add single") {
-      val aggregator = SummaryStatementAggregator()
+      val aggregator = SummaryStatementBuilder()
       aggregator.addStatement(
         owner = "john",
         statement = Statement(
@@ -40,7 +40,7 @@ class SummaryStatementAggregatorTest : DescribeSpec({
     }
 
     it("add single and propagate up") {
-      val aggregator = SummaryStatementAggregator()
+      val aggregator = SummaryStatementBuilder()
       aggregator.addStatement(
         owner = "john",
         statement = Statement(
@@ -79,7 +79,7 @@ class SummaryStatementAggregatorTest : DescribeSpec({
   }
 
   it("multiple propagate up") {
-    val aggregator = SummaryStatementAggregator()
+    val aggregator = SummaryStatementBuilder()
     aggregator.addStatement(
       owner = "john",
       statement = Statement(

@@ -13,7 +13,7 @@ fun buildSummaryStatementTable(
   statements: List<TransactionStatement>,
   selectedOwner: String?
 ): Map<List<String>, Map<Month, SummaryStatement>> {
-  val statementsAggregator = SummaryStatementAggregator()
+  val statementsAggregator = SummaryStatementBuilder()
   for (statement in statements) {
     if (statement.isEmpty()) continue
     for (owner in statement.nodeId.owners) {

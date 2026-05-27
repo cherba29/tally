@@ -7,7 +7,7 @@ import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 import kotlin.collections.plus
 
-class SummaryStatementAggregator {
+class SummaryStatementBuilder {
   // Map of owner -> 'summary name' -> month -> 'summary statement'.
   val summaryStatements = mutableMapOf<List<String>, MutableMap<Month, SummaryStatement>>()
   // Map of owner+name -> summary node
