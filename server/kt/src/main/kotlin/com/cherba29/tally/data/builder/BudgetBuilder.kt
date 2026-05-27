@@ -155,8 +155,6 @@ class BudgetBuilder(
     val (transfers, elapsedBudgetTime) = timeSource.measureTimedValue { buildTransfers(tree) }
     val accountToMonthToTransactionStatement: MutableMap<NodeId, MutableMap<Month, TransactionStatement>> =
       mutableMapOf()
-    var summaryNameMonthMap = mapOf<List<String>, Map<Month, SummaryStatement>>()
-
 
     val nodeIdToBalance = balances.mapKeys {
       pathToAccount[it.key]?.nodeId ?: throw java.lang.IllegalStateException("Could not find path ${it.key}")
@@ -186,8 +184,17 @@ class BudgetBuilder(
       "Done building ${transactionStatementTable.size} transaction statements in ${elapsedTransactionTime}ms"
     }
 
-    val elapsedBuildSummaryStatements = timeSource.measureTime {
-      summaryNameMonthMap = buildSummaryStatementTable(transactionStatementTable, selectedOwner = null)
+    val (summaryNameMonthMap, elapsedBuildSummaryStatements) = timeSource.measureTimedValue {
+      val summaryStatementBuilder = SummaryStatementBuilder()
+      for (statement in transactionStatementTable) {
+        if (statement.isEmpty()) continue
+        for (owner in statement.nodeId.owners) {
+          if (statement.nodeId.path.isNotEmpty()) {
+            summaryStatementBuilder.addStatement(owner, statement)
+          }
+        }
+      }
+      summaryStatementBuilder.build()
     }
     val numSummaryStatements = summaryNameMonthMap.size
     logger.info {

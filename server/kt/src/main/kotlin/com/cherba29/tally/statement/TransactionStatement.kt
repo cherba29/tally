@@ -33,6 +33,34 @@ class TransactionStatement(nodeId: NodeId, monthRange: MonthRange, isClosed: Boo
         " transactions=$transactions"
   }
 
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (javaClass != other?.javaClass) return false
+    if (!super.equals(other)) return false
+
+    other as TransactionStatement
+
+    if (coversPrevious != other.coversPrevious) return false
+    if (coversProjectedPrevious != other.coversProjectedPrevious) return false
+    if (hasProjectedTransfer != other.hasProjectedTransfer) return false
+    if (isCovered != other.isCovered) return false
+    if (isProjectedCovered != other.isProjectedCovered) return false
+    if (transactions != other.transactions) return false
+
+    return true
+  }
+
+  override fun hashCode(): Int {
+    var result = super.hashCode()
+    result = 31 * result + coversPrevious.hashCode()
+    result = 31 * result + coversProjectedPrevious.hashCode()
+    result = 31 * result + hasProjectedTransfer.hashCode()
+    result = 31 * result + isCovered.hashCode()
+    result = 31 * result + isProjectedCovered.hashCode()
+    result = 31 * result + transactions.hashCode()
+    return result
+  }
+
   companion object {
     fun fromTransfers(
       nodeId: NodeId,

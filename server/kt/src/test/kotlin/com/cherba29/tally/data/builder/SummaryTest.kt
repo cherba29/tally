@@ -1,5 +1,6 @@
 package com.cherba29.tally.data.builder
 
+import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.MAR
@@ -15,29 +16,33 @@ import kotlinx.datetime.LocalDate
 
 class SummaryTest : DescribeSpec({
   describe("buildSummaryStatementTable") {
-    it("empty") {
-      val statements = buildSummaryStatementTable(listOf(), selectedOwner = null).toList()
-      statements shouldBe listOf()
-    }
-
     it("single closed account - produces summary without it") {
+      val path1 = listOf("john", "external", "test-account1")
       val node1 = NodeId(
         name = "test-account1", isSummary = false,
         path = listOf("external"),
         owners = setOf("john"),
       )
+      val account1 = Account(node1, openedOn = MAR / 2021)
       val startBalance = Balance(
         100,
         LocalDate(2023, 12, 2),
         Balance.Type.CONFIRMED
       )
+      val budget = budget {
+        setAccount(path1, account1)
+        setBalance(path1, MAR / 2021,  startBalance)
+      }
       val tranStmt = TransactionStatement(
         node1,
         MAR / 2021..MAR / 2021,
         false,
         startBalance
       )
-      val statements = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
+      // There no other transactions and balance is positive.
+      tranStmt.isCovered = true
+      tranStmt.isProjectedCovered = true
+      val statements = budget.summaries
       withClue("should contain: $statements") {
         statements.isEmpty() shouldBe false
         statements.size shouldBe 2
@@ -79,20 +84,26 @@ class SummaryTest : DescribeSpec({
     }
 
     it("single external account - no SUMMARY") {
+      val path1 = listOf("john", "external", "test-account1")
       val node1 = NodeId(
         name = "test-account1", isSummary = true,
         path = listOf("external"),
         owners = setOf("john")
       )
-
+      val account1 = Account(node1, openedOn = MAR / 2021)
+      val balance1 = Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       val tranStmt = TransactionStatement(
         node1,
         MAR / 2021 .. MAR / 2021,
         false,
         startBalance = null
       )
-      tranStmt.startBalance = Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
-      val statements = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = null)
+      tranStmt.startBalance = balance1
+      val budget = budget {
+        setAccount(path1, account1)
+        setBalance(path1, MAR / 2021,  balance1)
+      }
+      val statements = budget.summaries
       statements.isEmpty() shouldBe false
       statements.size shouldBe 2
       statements.keys shouldBe setOf(listOf("john", "external"), listOf("john", ""))
@@ -115,24 +126,32 @@ class SummaryTest : DescribeSpec({
     }
 
     it("single account - no transfers") {
+      val path1 = listOf("john", "external", "test-account1")
       val node1 = NodeId(
         name = "test-account1", isSummary = false,
         path = listOf("external"),
         owners = setOf("john")
       )
-
+      val account1 = Account(node1, openedOn = MAR / 2021)
+      val balance1 = Balance(
+        100,
+        LocalDate(2023, 12, 2),
+        Balance.Type.CONFIRMED
+      )
       val tranStmt = TransactionStatement(
         node1,
         MAR / 2021 .. MAR / 2021,
         false,
         startBalance = null
       )
-      tranStmt.startBalance = Balance(
-        100,
-        LocalDate(2023, 12, 2),
-        Balance.Type.CONFIRMED
-      )
-      val statements = buildSummaryStatementTable(listOf(tranStmt), selectedOwner = "john")
+      tranStmt.isCovered = true
+      tranStmt.isProjectedCovered = true
+      tranStmt.startBalance = balance1
+      val budget = budget {
+        setAccount(path1, account1)
+        setBalance(path1, MAR / 2021, balance1)
+      }
+      val statements = budget.summaries
       statements.isEmpty() shouldBe false
       statements.size shouldBe 2
       statements.keys shouldBe setOf(listOf("john", "external"), listOf("john", ""))
@@ -171,62 +190,76 @@ class SummaryTest : DescribeSpec({
     }
 
     it("multiple accounts - selected owner") {
+      val path1 = listOf("john", "external", "test-account1")
       val node1 = NodeId(
         name = "test-account1", isSummary = false,
         path = listOf("external"),
         owners = setOf("john")
       )
-
+      val account1 = Account(node1, openedOn = MAR / 2021)
       val tranStmt1 = TransactionStatement(
         node1,
         MAR / 2021 .. MAR / 2021,
         false,
         startBalance = null
       )
-      tranStmt1.startBalance = Balance(
+      val balance1 = Balance(
         100,
         LocalDate(2023, 12, 2),
         Balance.Type.CONFIRMED
       )
+      tranStmt1.startBalance = balance1
+      tranStmt1.isCovered = true
+      tranStmt1.isProjectedCovered = true
       // Should skip since different owner.
+      val path2 = listOf("bob", "external", "test-account1")
       val node2 = NodeId(
         name = "test-account1", isSummary = false,
         path = listOf("external"),
         owners = setOf("bob")
       )
-
+      val account2 = Account(node2, openedOn = MAR / 2021)
+      val balance2 = Balance(
+        100,
+        LocalDate(2023, 12, 2),
+        Balance.Type.CONFIRMED
+      )
       val tranStmt2 = TransactionStatement(
         node2,
         MAR / 2021 .. MAR / 2021,
         false,
         startBalance = null
       )
-      tranStmt2.startBalance = Balance(
-        100,
-        LocalDate(2023, 12, 2),
-        Balance.Type.CONFIRMED
-      )
+      tranStmt2.startBalance = balance2
       // Should skip since path is empty.
+      val path3 = listOf("john", "test-account1")
       val node3 = NodeId(
         name = "test-account1", isSummary = false,
         path = listOf(),
         owners = setOf("john")
       )
-
+      val account3 = Account(node3, openedOn = MAR / 2021)
+      val balance3 = Balance(
+        100,
+        LocalDate(2023, 12, 2),
+        Balance.Type.CONFIRMED
+      )
       val tranStmt3 = TransactionStatement(
         node3,
         MAR / 2021 .. MAR / 2021,
         false,
         startBalance = null
       )
-      tranStmt3.startBalance = Balance(
-        100,
-        LocalDate(2023, 12, 2),
-        Balance.Type.CONFIRMED
-      )
-
-      val statements = buildSummaryStatementTable(
-        listOf(tranStmt1, tranStmt2, tranStmt3), selectedOwner = "john")
+      tranStmt3.startBalance = balance3
+      val budget = budget {
+        setAccount(path1, account1)
+        setAccount(path2, account2)
+        setAccount(path3, account3)
+        setBalance(path1, MAR / 2021, balance1)
+        setBalance(path2, MAR / 2021, balance2)
+        setBalance(path3, MAR / 2021, balance3)
+      }
+      val statements = budget.summaries.filter { it.key.first() == "john" }
       statements.isEmpty() shouldBe false
       statements.size shouldBe 2
       statements.keys shouldBe setOf(listOf("john", "external"), listOf("john", ""))

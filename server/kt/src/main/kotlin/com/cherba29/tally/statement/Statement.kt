@@ -88,4 +88,34 @@ open class Statement(
   override fun toString(): String {
     return "$nodeId months=$monthRange isClodes=$isClosed startBalance=$startBalance endBalance=$endBalance"
   }
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Statement) return false
+
+    return nodeId == other.nodeId
+        && monthRange == other.monthRange
+        && isClosed == other.isClosed
+        && startBalance == other.startBalance
+        && endBalance == other.endBalance
+        && inFlows == other.inFlows
+        && outFlows == other.outFlows
+        && totalPayments == other.totalPayments
+        && totalTransfers == other.totalTransfers
+        && income == other.income
+  }
+
+  override fun hashCode(): Int {
+    var result = nodeId.hashCode()
+    result = 31 * result + monthRange.hashCode()
+    result = 31 * result + isClosed.hashCode()
+    result = 31 * result + startBalance.hashCode()
+    result = 31 * result + endBalance.hashCode()
+    result = 31 * result + inFlows.hashCode()
+    result = 31 * result + outFlows.hashCode()
+    result = 31 * result + totalPayments.hashCode()
+    result = 31 * result + totalTransfers.hashCode()
+    result = 31 * result + income.hashCode()
+    return result
+  }
 }

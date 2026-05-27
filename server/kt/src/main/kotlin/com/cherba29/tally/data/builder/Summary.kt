@@ -6,25 +6,7 @@ import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.enlargeTo
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
-import com.cherba29.tally.statement.TransactionStatement
 import kotlin.collections.iterator
-
-fun buildSummaryStatementTable(
-  statements: List<TransactionStatement>,
-  selectedOwner: String?
-): Map<List<String>, Map<Month, SummaryStatement>> {
-  val statementsAggregator = SummaryStatementBuilder()
-  for (statement in statements) {
-    if (statement.isEmpty()) continue
-    for (owner in statement.nodeId.owners) {
-      if (selectedOwner != null && owner != selectedOwner) continue
-      if (statement.nodeId.path.isNotEmpty()) {
-        statementsAggregator.addStatement(owner, statement)
-      }
-    }
-  }
-  return statementsAggregator.build()
-}
 
 fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): SummaryStatement {
   if (summaryStatements.isEmpty()) {
