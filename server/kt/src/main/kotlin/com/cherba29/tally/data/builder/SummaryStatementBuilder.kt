@@ -9,7 +9,7 @@ import kotlin.collections.plus
 
 class SummaryStatementBuilder {
   // Map of owner -> 'summary name' -> month -> 'summary statement'.
-  val summaryStatements = mutableMapOf<List<String>, MutableMap<Month, SummaryStatement>>()
+  private val summaryStatements = mutableMapOf<List<String>, MutableMap<Month, SummaryStatement>>()
   // Map of owner+name -> summary node
   private val summaryNodes: MutableMap<List<String>, NodeId> = mutableMapOf()
   private val groupTreeBuilder = Group.Companion.Builder()
@@ -36,7 +36,7 @@ class SummaryStatementBuilder {
   }
 
   // Make sure totals are computed for parent summary accounts up the path to the root.
-  fun propagateUpThePath2() {
+  fun build(): Map<List<String>, MutableMap<Month, SummaryStatement>> {
     // Build a multi-root tree based on account paths for each owner.
     val tree = groupTreeBuilder.build()
     // For each owner bottom up, build up summaries.
@@ -56,5 +56,6 @@ class SummaryStatementBuilder {
         }
       }
     }
+    return summaryStatements
   }
 }

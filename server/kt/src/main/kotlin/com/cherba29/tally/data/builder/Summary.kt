@@ -23,8 +23,7 @@ fun buildSummaryStatementTable(
       }
     }
   }
-  statementsAggregator.propagateUpThePath2()
-  return statementsAggregator.summaryStatements
+  return statementsAggregator.build()
 }
 
 fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): SummaryStatement {
