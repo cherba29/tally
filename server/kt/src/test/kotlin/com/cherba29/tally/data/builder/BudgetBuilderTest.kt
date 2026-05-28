@@ -6,6 +6,7 @@ import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.DEC
 import com.cherba29.tally.core.MonthName.FEB
 import com.cherba29.tally.core.MonthName.JAN
+import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthName.NOV
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.Transfer
@@ -17,6 +18,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import java.lang.IllegalStateException
@@ -610,6 +612,288 @@ class BudgetBuilderTest : DescribeSpec({
         table[2].transactions.size shouldBe 1  // 1 transaction for account3
         table[2].transactions[0].type shouldBe Transaction.Type.INCOME
       }
+    }
+  }
+  describe("buildSummaryStatementTable") {
+    it("single closed account - produces summary without it") {
+      val path1 = listOf("john", "external", "test-account1")
+      val node1 = NodeId(
+        name = "test-account1", isSummary = false,
+        path = listOf("external"),
+        owners = setOf("john"),
+      )
+      val account1 = Account(node1, openedOn = MAR / 2021)
+      val startBalance = Balance(
+        100,
+        LocalDate(2023, 12, 2),
+        Balance.Type.CONFIRMED
+      )
+      val budget = budget {
+        setAccount(path1, account1)
+        setBalance(path1, MAR / 2021,  startBalance)
+      }
+      val tranStmt = TransactionStatement(
+        node1,
+        MAR / 2021..MAR / 2021,
+        false,
+        startBalance
+      )
+      // There no other transactions and balance is positive.
+      tranStmt.isCovered = true
+      tranStmt.isProjectedCovered = true
+      val statements = budget.summaries
+      withClue("should contain: $statements") {
+        statements.isEmpty() shouldBe false
+        statements.size shouldBe 2
+        statements.keys shouldBe setOf(listOf("john", "external"), listOf("john", ""))
+      }
+      val stmt1 = statements[listOf("john", "external")]!![MAR/ 2021]!!
+      stmt1.nodeId shouldBe NodeId(
+        name = "external", isSummary = true,
+        path = listOf(""),
+        owners = setOf("john")
+      )
+      withClue("statement: $stmt1") {
+        stmt1.startBalance shouldBe startBalance
+        stmt1.endBalance shouldBe null
+        stmt1.inFlows shouldBe 0
+        stmt1.income shouldBe 0
+        stmt1.monthRange shouldBe MAR / 2021 .. MAR / 2021
+        stmt1.outFlows shouldBe 0
+        stmt1.statements shouldBe listOf(tranStmt)
+        stmt1.totalPayments shouldBe 0
+        stmt1.totalTransfers shouldBe 0
+      }
+
+      val stmt2 = statements[listOf("john", "")]!![MAR / 2021]!!
+      stmt2.nodeId shouldBe NodeId(
+        name = "", isSummary = true,
+        path = listOf(""),
+        owners = setOf("john")
+      )
+      stmt2.startBalance shouldBe startBalance
+      stmt2.endBalance shouldBe null
+      stmt2.inFlows shouldBe 0
+      stmt2.income shouldBe 0
+      stmt2.monthRange shouldBe MAR / 2021 .. MAR / 2021
+      stmt2.outFlows shouldBe 0
+      stmt2.statements shouldBe listOf(stmt1)
+      stmt2.totalPayments shouldBe 0
+      stmt2.totalTransfers shouldBe 0
+    }
+
+    it("single external account - no SUMMARY") {
+      val path1 = listOf("john", "external", "test-account1")
+      val node1 = NodeId(
+        name = "test-account1", isSummary = true,
+        path = listOf("external"),
+        owners = setOf("john")
+      )
+      val account1 = Account(node1, openedOn = MAR / 2021)
+      val balance1 = Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
+      val tranStmt = TransactionStatement(
+        node1,
+        MAR / 2021 .. MAR / 2021,
+        false,
+        startBalance = null
+      )
+      tranStmt.startBalance = balance1
+      val budget = budget {
+        setAccount(path1, account1)
+        setBalance(path1, MAR / 2021,  balance1)
+      }
+      val statements = budget.summaries
+      statements.isEmpty() shouldBe false
+      statements.size shouldBe 2
+      statements.keys shouldBe setOf(listOf("john", "external"), listOf("john", ""))
+
+      val stmt = statements[listOf("john", "")]!![MAR / 2021]!!
+      stmt.nodeId shouldBe NodeId(
+        name = "", isSummary = true,
+        path = listOf(""),
+        owners = setOf("john"),
+      )
+      stmt.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
+      stmt.endBalance shouldBe null
+      stmt.inFlows shouldBe 0
+      stmt.income shouldBe 0
+      stmt.monthRange shouldBe MAR / 2021 .. MAR / 2021
+      stmt.outFlows shouldBe 0
+      stmt.statements shouldBe listOf(statements[listOf("john", "external")]!![MAR / 2021]!!)
+      stmt.totalPayments shouldBe 0
+      stmt.totalTransfers shouldBe 0
+    }
+
+    it("single account - no transfers") {
+      val path1 = listOf("john", "external", "test-account1")
+      val node1 = NodeId(
+        name = "test-account1", isSummary = false,
+        path = listOf("external"),
+        owners = setOf("john")
+      )
+      val account1 = Account(node1, openedOn = MAR / 2021)
+      val balance1 = Balance(
+        100,
+        LocalDate(2023, 12, 2),
+        Balance.Type.CONFIRMED
+      )
+      val tranStmt = TransactionStatement(
+        node1,
+        MAR / 2021 .. MAR / 2021,
+        false,
+        startBalance = null
+      )
+      tranStmt.isCovered = true
+      tranStmt.isProjectedCovered = true
+      tranStmt.startBalance = balance1
+      val budget = budget {
+        setAccount(path1, account1)
+        setBalance(path1, MAR / 2021, balance1)
+      }
+      val statements = budget.summaries
+      statements.isEmpty() shouldBe false
+      statements.size shouldBe 2
+      statements.keys shouldBe setOf(listOf("john", "external"), listOf("john", ""))
+
+      val stmt1 = statements[listOf("john", "external")]!![MAR/ 2021]!!
+      stmt1.nodeId shouldBe NodeId(
+        name = "external", isSummary = true,
+        path = listOf(""),
+        owners = setOf("john")
+      )
+      stmt1.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
+      stmt1.endBalance shouldBe null
+      stmt1.inFlows shouldBe 0
+      stmt1.income shouldBe 0
+      stmt1.monthRange shouldBe MAR / 2021 .. MAR / 2021
+      stmt1.outFlows shouldBe 0
+      stmt1.statements shouldBe listOf(tranStmt)
+      stmt1.totalPayments shouldBe 0
+      stmt1.totalTransfers shouldBe 0
+
+      val stmt2 = statements[listOf("john", "")]!![MAR / 2021]!!
+      stmt2.nodeId shouldBe NodeId(
+        name = "", isSummary = true,
+        path = listOf(""),
+        owners = setOf("john"),
+      )
+      stmt2.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
+      stmt2.endBalance shouldBe null
+      stmt2.inFlows shouldBe 0
+      stmt2.income shouldBe 0
+      stmt2.monthRange shouldBe MAR / 2021 .. MAR / 2021
+      stmt2.outFlows shouldBe 0
+      stmt2.statements shouldBe listOf(stmt1)
+      stmt2.totalPayments shouldBe 0
+      stmt2.totalTransfers shouldBe 0
+    }
+
+    it("multiple accounts - selected owner") {
+      val path1 = listOf("john", "external", "test-account1")
+      val node1 = NodeId(
+        name = "test-account1", isSummary = false,
+        path = listOf("external"),
+        owners = setOf("john")
+      )
+      val account1 = Account(node1, openedOn = MAR / 2021)
+      val tranStmt1 = TransactionStatement(
+        node1,
+        MAR / 2021 .. MAR / 2021,
+        false,
+        startBalance = null
+      )
+      val balance1 = Balance(
+        100,
+        LocalDate(2023, 12, 2),
+        Balance.Type.CONFIRMED
+      )
+      tranStmt1.startBalance = balance1
+      tranStmt1.isCovered = true
+      tranStmt1.isProjectedCovered = true
+      // Should skip since different owner.
+      val path2 = listOf("bob", "external", "test-account1")
+      val node2 = NodeId(
+        name = "test-account1", isSummary = false,
+        path = listOf("external"),
+        owners = setOf("bob")
+      )
+      val account2 = Account(node2, openedOn = MAR / 2021)
+      val balance2 = Balance(
+        100,
+        LocalDate(2023, 12, 2),
+        Balance.Type.CONFIRMED
+      )
+      val tranStmt2 = TransactionStatement(
+        node2,
+        MAR / 2021 .. MAR / 2021,
+        false,
+        startBalance = null
+      )
+      tranStmt2.startBalance = balance2
+      // Should skip since path is empty.
+      val path3 = listOf("john", "test-account1")
+      val node3 = NodeId(
+        name = "test-account1", isSummary = false,
+        path = listOf(),
+        owners = setOf("john")
+      )
+      val account3 = Account(node3, openedOn = MAR / 2021)
+      val balance3 = Balance(
+        100,
+        LocalDate(2023, 12, 2),
+        Balance.Type.CONFIRMED
+      )
+      val tranStmt3 = TransactionStatement(
+        node3,
+        MAR / 2021 .. MAR / 2021,
+        false,
+        startBalance = null
+      )
+      tranStmt3.startBalance = balance3
+      val budget = budget {
+        setAccount(path1, account1)
+        setAccount(path2, account2)
+        setAccount(path3, account3)
+        setBalance(path1, MAR / 2021, balance1)
+        setBalance(path2, MAR / 2021, balance2)
+        setBalance(path3, MAR / 2021, balance3)
+      }
+      val statements = budget.summaries.filter { it.key.first() == "john" }
+      statements.isEmpty() shouldBe false
+      statements.size shouldBe 2
+      statements.keys shouldBe setOf(listOf("john", "external"), listOf("john", ""))
+
+      val stmt1 = statements[listOf("john", "external")]!![MAR / 2021]!!
+      stmt1.nodeId shouldBe NodeId(
+        name = "external", isSummary = true,
+        path = listOf(""),
+        owners = setOf("john")
+      )
+      stmt1.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
+      stmt1.endBalance shouldBe null
+      stmt1.inFlows shouldBe 0
+      stmt1.income shouldBe 0
+      stmt1.monthRange shouldBe MAR / 2021 .. MAR / 2021
+      stmt1.outFlows shouldBe 0
+      stmt1.statements shouldBe listOf(tranStmt1)
+      stmt1.totalPayments shouldBe 0
+      stmt1.totalTransfers shouldBe 0
+
+      val stmt2 = statements[listOf("john", "")]!![MAR / 2021]!!
+      stmt2.nodeId shouldBe NodeId(
+        name = "", isSummary = true,
+        path = listOf(""),
+        owners = setOf("john"),
+      )
+      stmt2.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
+      stmt2.endBalance shouldBe null
+      stmt2.inFlows shouldBe 0
+      stmt2.income shouldBe 0
+      stmt2.monthRange shouldBe MAR / 2021 .. MAR / 2021
+      stmt2.outFlows shouldBe 0
+      stmt2.statements shouldBe listOf(stmt1)
+      stmt2.totalPayments shouldBe 0
+      stmt2.totalTransfers shouldBe 0
     }
   }
 })
