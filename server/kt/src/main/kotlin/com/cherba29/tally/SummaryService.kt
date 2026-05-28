@@ -18,7 +18,7 @@ class SummaryService(val loader: Loader) : Query {
     logger.info { "summary owner=$owner, accountType=$accountType, startMonth=$startMonth, endMonth=$endMonth" }
     val (result, timeTaken) = measureTimedValue {
       try {
-        buildSummaryData(runBlocking { loader.budget() }, owner, accountType, startMonth, endMonth)
+        buildSummaryData(runBlocking { loader.budget().summaries }, owner, accountType, startMonth, endMonth)
       } catch (e: Exception) {
         logger.error(e) {
           "Error while processing summary query owner=$owner, accountType=$accountType " +

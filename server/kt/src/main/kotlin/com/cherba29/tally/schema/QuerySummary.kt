@@ -11,19 +11,22 @@ import kotlin.time.measureTimedValue
 
 // startMonth is optional when max range is selected.
 fun buildSummaryData(
-  payload: Budget,
+  summaries: Map<List<String>, Map<Month, SummaryStatement>>,
   owner: String,
   summaryName: String,
   startMonth: Month?,
   endMonth: Month
 ): GqlSummaryData {
   val (result, timeTaken) = measureTimedValue {
-    val monthSummaries = payload.summaries[listOf(owner) + summaryName.split("/")]
+    val monthSummaries = summaries[listOf(owner) + summaryName.split("/")]
     if (monthSummaries == null) {
       throw NotFoundException("Summary $summaryName for $owner not found.")
     }
     val summaryStatements = monthSummaries.values.filter { stmt ->
-      if (startMonth != null) stmt.monthRange.first in startMonth..endMonth else stmt.monthRange.last <= endMonth
+      if (startMonth != null)
+        stmt.monthRange.first in startMonth..endMonth
+      else
+        stmt.monthRange.last <= endMonth
     }
     if (summaryStatements.isEmpty()) {
       throw NotFoundException(
@@ -32,7 +35,11 @@ fun buildSummaryData(
     }
     // TODO: use already compute budget summaries.
     val summary =
-      if (summaryStatements.size == 1) summaryStatements.first() else combineSummaryStatements(summaryStatements)
+      if (summaryStatements.size == 1)
+        summaryStatements.first()
+      else
+        combineSummaryStatements(summaryStatements)
+
     GqlSummaryData(
       statements = summary.statements.sortedWith { a, b ->
         if (a.nodeId.name < b.nodeId.name) -1 else 1
