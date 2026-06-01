@@ -11,7 +11,7 @@ class NotFoundException(message: String) : RuntimeException(message)
 
 data class RowEntry(
   val title: String,
-  val pathId: String,
+  val pathId: List<String>,
   val isTotal: Boolean,
   val nodeId: NodeId?,
   val depth: Int,
@@ -28,22 +28,21 @@ private fun buildAccountPathTree(nodeIds: List<NodeId>): Map<List<String>, Set<L
     val path = nodeId.path
     var entry = path + listOf(nodeId.name)
     for (sub in path.size downTo 0) {
-      val subPath = path.slice(0..sub-1)
-      val subPathId = subPath
-      var subTreeEntry = tree[subPathId]
+      val subPath = path.slice(0..<sub)
+      var subTreeEntry = tree[subPath]
       if (subTreeEntry == null) {
         subTreeEntry = mutableSetOf()
-        tree[subPathId] = subTreeEntry
+        tree[subPath] = subTreeEntry
       }
       subTreeEntry.add(entry)
-      entry = subPathId
+      entry = subPath
     }
   }
   return tree
 }
 
 /** Sequence for presentation summaries and accounts based on their names. */
-private fun sequenceStatements(owner: String, nodeIds: List<NodeId>): List<RowEntry> {
+private fun sequenceRows(owner: String, nodeIds: List<NodeId>): List<RowEntry> {
   val tree = buildAccountPathTree(nodeIds)
   val nameToNodeId = nodeIds.associateBy { it.name }
   // Iterate over tree in sorted depth-first fashion to sequence rows representing the tree.
@@ -58,7 +57,7 @@ private fun sequenceStatements(owner: String, nodeIds: List<NodeId>): List<RowEn
     entries.add(
       RowEntry(
         title = if (subTreeId.isNotEmpty()) subTreeId[subTreeId.lastIndex] else owner,
-        pathId = subTreeId.joinToString("/"),
+        pathId = subTreeId,
         nodeId = nodeId,
         isTotal = children?.isNotEmpty() ?: (nodeId == null),
         depth = subTreeId.size
@@ -66,7 +65,7 @@ private fun sequenceStatements(owner: String, nodeIds: List<NodeId>): List<RowEn
     )
     if (children != null) {
       // Add in front as we want to process children next, in dept-first fashion.
-      val childrenList = children.sortedWith(lexicographicalComparator).toMutableList()
+      val childrenList = children.sortedWith(listLexicographicalComparator).toMutableList()
       childrenList.addAll(nodesToProcess)
       nodesToProcess = childrenList
     }
@@ -74,7 +73,7 @@ private fun sequenceStatements(owner: String, nodeIds: List<NodeId>): List<RowEn
   return entries
 }
 
-private val lexicographicalComparator = Comparator<List<String>> { list1, list2 ->
+private val listLexicographicalComparator = Comparator<List<String>> { list1, list2 ->
   val size1 = list1.size
   val size2 = list2.size
   val minSize = minOf(size1, size2)
@@ -88,15 +87,15 @@ private val lexicographicalComparator = Comparator<List<String>> { list1, list2 
 }
 
 fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: Month): GqlTable {
-  val months = payload.months.reduceTo(startMonth..endMonth)?.sortedDescending()
-  if (months == null || months.isEmpty()) {
+  val requestedMonths = payload.months.reduceTo(startMonth..endMonth)?.sortedDescending()
+  if (requestedMonths.isNullOrEmpty()) {
     throw IllegalArgumentException(
       "Bad month range, budget has ${payload.months} yet ${startMonth..endMonth} was requested"
     )
   }
   val activeNodeIds = payload.accounts.keys
-  val owners = activeNodeIds.map { nodeId -> nodeId.owners }.flatten().distinct().sorted()
-  val forOwner = if (owner == null || owner.isEmpty()) {
+  val owners = activeNodeIds.flatMap { nodeId -> nodeId.owners }.distinct().sorted()
+  val forOwner = if (owner.isNullOrEmpty()) {
     owners.firstOrNull { !it.isEmpty() }
       ?: throw IllegalArgumentException("No owner is specified and one cannot be derived from accounts")
   } else {
@@ -106,15 +105,15 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
 
   val rows = mutableListOf<GqlTableRow>()
 
-  val ordering = sequenceStatements(forOwner, nodeIds)
+  val rowOrdering = sequenceRows(forOwner, nodeIds)
 
-  for (entry in ordering) {
-    if (entry.isTotal) {
-      val summaryMonthMap = payload.summaries[listOf(forOwner) + entry.pathId.split("/")]
+  for (rowEntry in rowOrdering) {
+    if (rowEntry.isTotal) {  // Summary row.
+      val summaryMonthMap = payload.summaries[listOf(forOwner) + rowEntry.pathId]
         ?: throw java.lang.IllegalArgumentException(
-          "Did not find summary statement at '${entry.pathId}' for owner '$forOwner' in payload summaries"
+          "Did not find summary statement at '${rowEntry.pathId}' for owner '$forOwner' in payload summaries"
         )
-      val cells: List<GqlTableCell> = months.mapNotNull { month ->
+      val cells: List<GqlTableCell> = requestedMonths.mapNotNull { month ->
         summaryMonthMap[month]?.toGqlTableCell()
       }
       if (cells.any { c -> !c.isClosed }) {
@@ -124,8 +123,8 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
         }
         rows.add(
           GqlTableRow(
-            title = entry.title,
-            indent = entry.depth,
+            title = rowEntry.title,
+            indent = rowEntry.depth,
             account = account.toGql(),
             isTotal = true,
             cells = cells,
@@ -134,14 +133,14 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
           )
         )
       }
-    } else {
+    } else {  // Account row.
       val cells = mutableListOf<GqlTableCell>()
-      val nodeId = entry.nodeId!!
+      val nodeId = rowEntry.nodeId!!
       val account = payload.accounts.getOrElse(nodeId) {
         Account(nodeId, openedOn = Month(2010, 0))
       }
       var isClosed = true
-      for (month in months) {
+      for (month in requestedMonths) {
         val stmt = payload.statements[nodeId]?.get(month)
           ?: throw IllegalStateException("Could not find statement for '$nodeId' for month $month")
         isClosed = isClosed && stmt.isClosed
@@ -151,8 +150,8 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
         // Don't add accounts which are closed over selected timeframe.
         rows.add(
           GqlTableRow(
-            title = entry.title,
-            indent = entry.depth,
+            title = rowEntry.title,
+            indent = rowEntry.depth,
             account = account.toGql(),
             isNormal = true,
             cells = cells,
@@ -163,7 +162,7 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
       }
     }
   }
-  return GqlTable(currentOwner = forOwner, owners, months, rows)
+  return GqlTable(currentOwner = forOwner, owners, requestedMonths, rows)
 }
 
 private val logger = KotlinLogging.logger {}
