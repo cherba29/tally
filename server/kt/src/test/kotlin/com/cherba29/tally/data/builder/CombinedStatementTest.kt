@@ -4,6 +4,7 @@ import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -13,7 +14,7 @@ class CombinedStatementTest : DescribeSpec({
   describe("Build") {
     it("empty") {
       val nodeId = NodeId(name = "test-account", isSummary = false, path = listOf("external"))
-      val statement = CombinedStatement(
+      val statement = Statement(
         nodeId,
         JAN / 2026 .. MAR / 2026,
       )
@@ -24,7 +25,7 @@ class CombinedStatementTest : DescribeSpec({
 
     it("from empty list of statements") {
       val nodeId = NodeId(name = "test-account", isSummary = false, path = listOf("external"))
-      val combined = CombinedStatement.fromStatements(
+      val combined = fromStatements(
         nodeId,
         JAN / 2026 .. MAR / 2026,
         statements = mapOf()
@@ -48,7 +49,7 @@ class CombinedStatementTest : DescribeSpec({
           type = Balance.Type.CONFIRMED
         )
       )
-      val combined = CombinedStatement.fromStatements(
+      val combined = fromStatements(
         nodeId,
         startMonth .. MAR / 2026,
         statements = mapOf(startMonth to statement)
