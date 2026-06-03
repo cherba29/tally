@@ -118,7 +118,7 @@ fun SummaryStatement.toGql(): GqlSummaryStatement = GqlSummaryStatement(
   startBalance = startBalance?.toGql()
 )
 
-fun SummaryStatement.toGqlStatement(): GqlStatement = GqlStatement(
+fun Statement.toGql(): GqlStatement = GqlStatement(
   name = nodeId.name,
   month = monthRange.first,
   isClosed = isClosed,

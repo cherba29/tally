@@ -4,24 +4,35 @@ import com.cherba29.tally.core.Month
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import com.cherba29.tally.data.builder.combineSummaryStatements
+import com.cherba29.tally.statement.Statement
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.time.measureTimedValue
 
-/** Converts summary statement as a summary data with substatements and a total. **/
+/**
+ * Converts summary statement as a summary data with substatements and a total.
+ **/
 fun SummaryStatement.toGqlSummaryData(): GqlSummaryData =  GqlSummaryData(
   statements = statements.sortedWith { a, b ->
     if (a.nodeId.name < b.nodeId.name) -1 else 1
   }.map { stmt ->
     when (stmt) {
       is TransactionStatement -> stmt.toGql()
-      is SummaryStatement -> stmt.toGqlStatement()
+      is SummaryStatement -> (stmt as Statement).toGql()
       else -> throw IllegalStateException("Unexpected statement type ${stmt.javaClass.name}")
     }
   },
   total = toGql()
 )
 
-// startMonth is optional when max range is selected.
+/**
+ * Computes summary data over range of months from provided monthly summaries.
+ * @param summaries precomputed monthly summaries.
+ * @param owner name of the owner over which accounts summaries are computed.
+ * @param summaryName path to summary, concatenated with / separator.
+ * @param startMonth is optional when max back range is selected.
+ * @param endMonth end month until which summary is computed.
+ * @return gql formatted summary data over specified perdiod.
+ */
 fun buildSummaryData(
   summaries: Map<List<String>, Map<Month, SummaryStatement>>,
   owner: String,
@@ -43,6 +54,8 @@ fun buildSummaryData(
         "Summary $summaryName for $owner for months [$startMonth, $endMonth] not found."
       )
     }
+    // Multi-month queries will produce multiple summary statements which need to be combined,
+    // but for single month we can simply return found single summary.
     val summary =
       if (summaryStatements.size == 1)
         summaryStatements.first()

@@ -151,7 +151,7 @@ class SummaryTest : DescribeSpec({
 
     it("from empty list of statements") {
       val nodeId = NodeId(name = "test-account", isSummary = false, path = listOf("external"))
-      val combined = fromStatements(
+      val combined = makeSummaryStatementFromSubstatements(
         nodeId,
         JAN / 2026 .. MAR / 2026,
         statements = mapOf()
@@ -175,7 +175,7 @@ class SummaryTest : DescribeSpec({
           type = Balance.Type.CONFIRMED
         )
       )
-      val combined = fromStatements(
+      val combined = makeSummaryStatementFromSubstatements(
         nodeId,
         startMonth .. MAR / 2026,
         statements = mapOf(startMonth to statement)

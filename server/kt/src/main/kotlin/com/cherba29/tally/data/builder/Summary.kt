@@ -9,7 +9,9 @@ import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 import kotlin.collections.iterator
 
-/** Creates parent summary statement containing all provided summary statements */
+/**
+ * Creates parent summary statement containing all provided summary statements
+ */
 fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): SummaryStatement {
   require(summaryStatements.isNotEmpty()) { "Cant combine empty list of summary statements" }
   val stmtName: String = summaryStatements.first().nodeId.name
@@ -18,6 +20,7 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
   // Map of 'nodeId' -> month -> 'summary statement'.
   val nodeMonthStatementMap = mutableMapOf<NodeId, MutableMap<Month, Statement>>()
 
+  // Map all sub-statements by month, and find max monthly range.
   for (summaryStmt in summaryStatements) {
     if (stmtName != summaryStmt.nodeId.name) {
       throw IllegalArgumentException(
@@ -35,10 +38,11 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
       }
     }
   }
+  // Combine all statements as sub-statements of new parent summary statement.
   val combined = SummaryStatement(NodeId(stmtName, isSummary=true, owners), monthRange)
   for ((nodeId, monthStatementMap) in nodeMonthStatementMap) {
     // Combine all statements for a given account over all months in the range.
-    val stmt = fromStatements(
+    val stmt = makeSummaryStatementFromSubstatements(
       nodeId,
       monthRange,
       monthStatementMap
@@ -48,17 +52,18 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
   return combined
 }
 
-fun fromStatements(
+internal fun makeSummaryStatementFromSubstatements(
   nodeId: NodeId,
   monthRange: MonthRange,
   statements: Map<Month, Statement>
 ): Statement {
   val combined = Statement(nodeId, monthRange)
   for (currentMonth in monthRange) {
-    val stmt: Statement = makeProxyStatement(
-      nodeId,
+    val stmt = statements[currentMonth]
+      ?: Statement(nodeId, currentMonth..currentMonth)
+    setStatementBalance(
       currentMonth,
-      statements[currentMonth],
+      stmt,
       statements[currentMonth.previous()],
       statements[currentMonth.next()]
     )
@@ -73,19 +78,19 @@ fun fromStatements(
   return combined
 }
 
-private fun makeProxyStatement(
-  nodeId: NodeId,
+private fun setStatementBalance(
   month: Month,
-  currStmt: Statement?,
+  currStmt: Statement,
   prevStmt: Statement?,
   nextStmt: Statement?
 ): Statement {
-  val stmt = currStmt ?: Statement(nodeId, month..month)
-  if (stmt.startBalance == null) {
-    stmt.startBalance = prevStmt?.endBalance ?: Balance(0, month.toDate(), Balance.Type.PROJECTED)
+  if (currStmt.startBalance == null) {
+    currStmt.startBalance = prevStmt?.endBalance
+      ?: Balance(0, month.toDate(), Balance.Type.PROJECTED)
   }
-  if (stmt.endBalance == null) {
-    stmt.endBalance = nextStmt?.startBalance ?: Balance(0, month.toDate(), Balance.Type.PROJECTED)
+  if (currStmt.endBalance == null) {
+    currStmt.endBalance = nextStmt?.startBalance
+      ?: Balance(0, month.toDate(), Balance.Type.PROJECTED)
   }
-  return stmt
+  return currStmt
 }
