@@ -2,8 +2,11 @@ package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.APR
+import com.cherba29.tally.core.MonthName.JAN
+import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthName.MAY
 import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.assertions.throwables.shouldThrow
@@ -131,6 +134,56 @@ class SummaryTest : DescribeSpec({
       statement.totalTransfers shouldBe 0
       statement.income shouldBe 0
       statement.change shouldBe -100
+    }
+  }
+
+  describe("fromStatements") {
+    it("empty") {
+      val nodeId = NodeId(name = "test-account", isSummary = false, path = listOf("external"))
+      val statement = Statement(
+        nodeId,
+        JAN / 2026 .. MAR / 2026,
+      )
+      statement.isClosed shouldBe false
+      statement.percentChange shouldBe null
+      statement.annualizedPercentChange shouldBe null
+    }
+
+    it("from empty list of statements") {
+      val nodeId = NodeId(name = "test-account", isSummary = false, path = listOf("external"))
+      val combined = fromStatements(
+        nodeId,
+        JAN / 2026 .. MAR / 2026,
+        statements = mapOf()
+      )
+      combined.isClosed shouldBe false
+      combined.change shouldBe 0
+      combined.percentChange shouldBe 0.0
+      combined.annualizedPercentChange shouldBe 0.0
+    }
+
+    it("from single statement") {
+      val nodeId = NodeId(name = "test-account", isSummary = false, path = listOf("external"))
+      val startMonth = JAN / 2026
+      val statement = TransactionStatement(
+        nodeId,
+        startMonth..startMonth,
+        isClosed = false,
+        startBalance = Balance(
+          100,
+          date = LocalDate(2026, 1, 1),
+          type = Balance.Type.CONFIRMED
+        )
+      )
+      val combined = fromStatements(
+        nodeId,
+        startMonth .. MAR / 2026,
+        statements = mapOf(startMonth to statement)
+      )
+      combined.isClosed shouldBe false
+      combined.change shouldBe -100
+      combined.percentChange shouldBe -100.0
+      combined.annualizedPercentChange shouldBe null
     }
   }
 })
