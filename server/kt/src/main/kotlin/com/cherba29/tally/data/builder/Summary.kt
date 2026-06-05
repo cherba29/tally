@@ -39,17 +39,15 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
     }
   }
   // Combine all statements as sub-statements of new parent summary statement.
-  val combined = SummaryStatement(NodeId(stmtName, isSummary=true, owners), monthRange)
-  for ((nodeId, monthStatementMap) in nodeMonthStatementMap) {
-    // Combine all statements for a given account over all months in the range.
-    val stmt = makeSummaryStatementFromSubstatements(
-      nodeId,
-      monthRange,
-      monthStatementMap
-    )
-    combined.addStatement(stmt)
+  return SummaryStatement.builder {
+    nodeId = NodeId(stmtName, isSummary=true, owners)
+    this.monthRange = monthRange
+    for ((nodeId, monthStatementMap) in nodeMonthStatementMap) {
+      // Combine all statements for a given account over all months in the range.
+      val stmt = makeSummaryStatementFromSubstatements(nodeId, monthRange,monthStatementMap)
+      addStatement(stmt)
+    }
   }
-  return combined
 }
 
 internal fun makeSummaryStatementFromSubstatements(

@@ -9,7 +9,7 @@ import kotlin.collections.plus
 
 class SummaryStatementBuilder {
   // Map of owner -> 'summary name' -> month -> 'summary statement'.
-  private val summaryStatements = mutableMapOf<List<String>, MutableMap<Month, SummaryStatement>>()
+  private val summaryStatements = mutableMapOf<List<String>, MutableMap<Month, SummaryStatement.Companion.Builder>>()
   // Map of owner+name -> summary node
   private val summaryNodes: MutableMap<List<String>, NodeId> = mutableMapOf()
   private val groupTreeBuilder = Group.Companion.Builder()
@@ -31,12 +31,15 @@ class SummaryStatementBuilder {
     summaryStatements.getOrPut(fullPath) {
       mutableMapOf()
     }.getOrPut(statement.monthRange.first) {
-      SummaryStatement(parentSummaryNodeId, statement.monthRange)
+      val builder = SummaryStatement.Companion.Builder()
+      builder.nodeId = parentSummaryNodeId
+      builder.monthRange = statement.monthRange
+      builder
     }.addStatement(statement)
   }
 
   // Make sure totals are computed for parent summary accounts up the path to the root.
-  fun build(): Map<List<String>, MutableMap<Month, SummaryStatement>> {
+  fun build(): Map<List<String>, Map<Month, SummaryStatement>> {
     // Build a multi-root tree based on account paths for each owner.
     val tree = groupTreeBuilder.build()
     // For each owner bottom up, build up summaries.
@@ -52,10 +55,12 @@ class SummaryStatementBuilder {
           )  // Should never happen.
 
         for (monthlyStatement in monthlyStatements.values) {
-          addStatement(ownerRoot.name, monthlyStatement)
+          addStatement(ownerRoot.name, monthlyStatement.build())
         }
       }
     }
-    return summaryStatements
+    return summaryStatements.mapValues { (_,monthToSummaryBuilder) ->
+      monthToSummaryBuilder.mapValues { (_, builder) -> builder.build() }
+    }
   }
 }

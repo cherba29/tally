@@ -71,54 +71,59 @@ class SummaryTest : DescribeSpec({
       result.statements shouldBe listOf()
     }
     it("two node statements with same months") {
-      val stmt1 = SummaryStatement(
-        nodeId = NodeId("test-account1", isSummary = true),
+      val stmt1 = SummaryStatement.Companion.builder {
+        nodeId = NodeId("test-account1", isSummary = true)
         monthRange = APR / 2026 .. APR / 2026
 
-      )
-      stmt1.addStatement(TransactionStatement(
-        nodeId = NodeId("test-account1", isSummary = true),
-        monthRange = APR / 2026 .. APR / 2026,
-        isClosed = false,
-        startBalance = Balance(100, LocalDate(2026, 4, 1), Balance.Type.CONFIRMED),
-      ))
-      val stmt2 = SummaryStatement(
-        nodeId = NodeId("test-account1", isSummary = true),
-        monthRange = APR / 2026 .. APR / 2026
-
-      )
-      stmt2.addStatement(TransactionStatement(
-        nodeId = NodeId("test-account1", isSummary = true),
-        monthRange = APR / 2026 .. APR / 2026,
-        isClosed = false,
-        startBalance = Balance(100, LocalDate(2026, 4, 1), Balance.Type.CONFIRMED),
-      ))
+        addStatement(TransactionStatement(
+          nodeId = NodeId("test-account1", isSummary = true),
+          monthRange = APR / 2026 .. APR / 2026,
+          isClosed = false,
+          startBalance = Balance(100, LocalDate(2026, 4, 1), Balance.Type.CONFIRMED),
+        ))
+      }
+      val stmt2 = SummaryStatement.Companion.builder {
+        nodeId = NodeId("test-account1", isSummary = true)
+        monthRange = APR / 2026..APR / 2026
+        addStatement(
+          TransactionStatement(
+            nodeId = NodeId("test-account1", isSummary = true),
+            monthRange = APR / 2026..APR / 2026,
+            isClosed = false,
+            startBalance = Balance(100, LocalDate(2026, 4, 1), Balance.Type.CONFIRMED),
+          )
+        )
+      }
       val exception = shouldThrow<IllegalArgumentException> {
         combineSummaryStatements(listOf(stmt1, stmt2))
       }
       exception.message shouldBe "Duplicate month statement for test-account1 for Apr2026..Apr2026"
     }
     it("two node statements with substatements") {
-      val stmt1 = SummaryStatement(
-        nodeId = NodeId("/test-account1", isSummary = true),
-        monthRange = APR / 2026 .. APR / 2026
-      )
-      stmt1.addStatement(TransactionStatement(
-          nodeId = NodeId("test-account1", isSummary = true),
-          monthRange = APR / 2026 .. APR / 2026,
-          isClosed = false,
-          startBalance = Balance(100, LocalDate(2026, 4, 1), Balance.Type.CONFIRMED),
-      ))
-      val stmt2 = SummaryStatement(
-        nodeId = NodeId("/test-account1", isSummary = true),
-        monthRange = MAY / 2026 .. MAY / 2026
-      )
-      stmt2.addStatement(TransactionStatement(
-        nodeId = NodeId("test-account1", isSummary = true),
-        monthRange = MAY / 2026 .. MAY / 2026,
-        isClosed = false,
-        startBalance = Balance(200, LocalDate(2026, 5, 1), Balance.Type.CONFIRMED),
-      ))
+      val stmt1 = SummaryStatement.Companion.builder {
+        nodeId = NodeId("/test-account1", isSummary = true)
+        monthRange = APR / 2026..APR / 2026
+        addStatement(
+          TransactionStatement(
+            nodeId = NodeId("test-account1", isSummary = true),
+            monthRange = APR / 2026..APR / 2026,
+            isClosed = false,
+            startBalance = Balance(100, LocalDate(2026, 4, 1), Balance.Type.CONFIRMED),
+          )
+        )
+      }
+      val stmt2 = SummaryStatement.Companion.builder {
+        nodeId = NodeId("/test-account1", isSummary = true)
+        monthRange = MAY / 2026..MAY / 2026
+        addStatement(
+          TransactionStatement(
+            nodeId = NodeId("test-account1", isSummary = true),
+            monthRange = MAY / 2026..MAY / 2026,
+            isClosed = false,
+            startBalance = Balance(200, LocalDate(2026, 5, 1), Balance.Type.CONFIRMED),
+          )
+        )
+      }
       val result = combineSummaryStatements(listOf(stmt1, stmt2))
       result.nodeId shouldBe NodeId("/test-account1", isSummary = true)
       result.monthRange shouldBe APR / 2026..MAY / 2026

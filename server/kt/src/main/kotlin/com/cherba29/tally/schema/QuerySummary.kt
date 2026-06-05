@@ -16,9 +16,8 @@ fun SummaryStatement.toGqlSummaryData(): GqlSummaryData =  GqlSummaryData(
     if (a.nodeId.name < b.nodeId.name) -1 else 1
   }.map { stmt ->
     when (stmt) {
-      is TransactionStatement -> stmt.toGql()
-      is SummaryStatement -> (stmt as Statement).toGql()
-      else -> throw IllegalStateException("Unexpected statement type ${stmt.javaClass.name}")
+      is SummaryStatement -> (stmt as Statement).toGql()  // Treat it as regular statement.
+      else -> stmt.toGql()
     }
   },
   total = toGql()

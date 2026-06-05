@@ -80,18 +80,18 @@ class QuerySummaryTest : DescribeSpec({
 
     it("single with transaction statement") {
       val nodeId = NodeId("summary", owners = setOf("john"), path = listOf("internal"), isSummary = true)
-      val summaryStatement = SummaryStatement(
-        nodeId = nodeId,
+      val summaryStatement = SummaryStatement.Companion.builder {
+        this.nodeId = nodeId
         monthRange = MAR / 2026..MAR / 2026
-      )
-      summaryStatement.addStatement(
-        TransactionStatement(
-          nodeId = NodeId("test-account", owners = setOf("john"), path = listOf("internal"), isSummary = true),
-          monthRange = MAR / 2026..MAR / 2026,
-          isClosed = false,
-          startBalance = null
+        addStatement(
+          TransactionStatement(
+            nodeId = NodeId("test-account", owners = setOf("john"), path = listOf("internal"), isSummary = true),
+            monthRange = MAR / 2026..MAR / 2026,
+            isClosed = false,
+            startBalance = null
+          )
         )
-      )
+      }
       val summaries = mapOf(listOf("john", "internal") to mapOf(MAR / 2026 to summaryStatement))
       val data = buildSummaryData(
         summaries,
@@ -106,8 +106,8 @@ class QuerySummaryTest : DescribeSpec({
             name = "test-account",
             month = MAR / 2026,
             isClosed = false,
-            isCovered = false,
-            isProjectedCovered = false,
+            isCovered = true,
+            isProjectedCovered = true,
             hasProjectedTransfer = false,
             startBalance = null,
             endBalance = null,
@@ -144,26 +144,26 @@ class QuerySummaryTest : DescribeSpec({
       )
     }
 
-    it("single with mutilple transaction statement") {
+    it("single with multiple transaction statement") {
       val nodeId = NodeId("summary", owners = setOf("john"), path = listOf("internal"), isSummary = true)
-      val summaryStatement = SummaryStatement(
-        nodeId = nodeId,
+      val summaryStatement = SummaryStatement.Companion.builder {
+        this.nodeId = nodeId
         monthRange = MAR / 2026..MAR / 2026
-      )
-      summaryStatement.addStatement(
-        TransactionStatement(
-          nodeId = NodeId("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = true),
-          monthRange = MAR / 2026..MAR / 2026,
-          isClosed = false,
-          startBalance = null
+        addStatement(
+          TransactionStatement(
+            nodeId = NodeId("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = true),
+            monthRange = MAR / 2026..MAR / 2026,
+            isClosed = false,
+            startBalance = null
+          )
         )
-      )
-      summaryStatement.addStatement(
-        SummaryStatement(
-          nodeId = NodeId("test-account2", owners = setOf("john"), path = listOf("internal"), isSummary = true),
-          monthRange = MAR / 2026..MAR / 2026,
+        addStatement(
+          SummaryStatement(
+            nodeId = NodeId("test-account2", owners = setOf("john"), path = listOf("internal"), isSummary = true),
+            monthRange = MAR / 2026..MAR / 2026,
+          )
         )
-      )
+      }
       val summaries = mapOf(listOf("john", "internal") to mapOf(MAR / 2026 to summaryStatement))
       val data = buildSummaryData(
         summaries,
@@ -178,8 +178,8 @@ class QuerySummaryTest : DescribeSpec({
             name = "test-account1",
             month = MAR / 2026,
             isClosed = false,
-            isCovered = false,
-            isProjectedCovered = false,
+            isCovered = true,
+            isProjectedCovered = true,
             hasProjectedTransfer = false,
             startBalance = null,
             endBalance = null,
