@@ -4,6 +4,7 @@ import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.data.builder.SummaryStatementBuilder
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.assertions.throwables.shouldThrow
@@ -80,7 +81,7 @@ class QuerySummaryTest : DescribeSpec({
 
     it("single with transaction statement") {
       val nodeId = NodeId("summary", owners = setOf("john"), path = listOf("internal"), isSummary = true)
-      val summaryStatement = SummaryStatement.Companion.builder {
+      val summaryStatement = SummaryStatementBuilder.builder {
         this.nodeId = nodeId
         monthRange = MAR / 2026..MAR / 2026
         addStatement(
@@ -146,7 +147,7 @@ class QuerySummaryTest : DescribeSpec({
 
     it("single with multiple transaction statement") {
       val nodeId = NodeId("summary", owners = setOf("john"), path = listOf("internal"), isSummary = true)
-      val summaryStatement = SummaryStatement.Companion.builder {
+      val summaryStatement = SummaryStatementBuilder.builder {
         this.nodeId = nodeId
         monthRange = MAR / 2026..MAR / 2026
         addStatement(

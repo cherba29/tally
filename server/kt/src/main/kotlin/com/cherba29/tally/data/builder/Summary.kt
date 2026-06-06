@@ -39,7 +39,7 @@ fun combineSummaryStatements(summaryStatements: List<SummaryStatement>): Summary
     }
   }
   // Combine all statements as sub-statements of new parent summary statement.
-  return SummaryStatement.builder {
+  return SummaryStatementBuilder.builder {
     nodeId = NodeId(stmtName, isSummary=true, owners)
     this.monthRange = monthRange
     for ((nodeId, monthStatementMap) in nodeMonthStatementMap) {

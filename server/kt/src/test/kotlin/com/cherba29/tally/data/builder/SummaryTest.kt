@@ -71,7 +71,7 @@ class SummaryTest : DescribeSpec({
       result.statements shouldBe listOf()
     }
     it("two node statements with same months") {
-      val stmt1 = SummaryStatement.Companion.builder {
+      val stmt1 = SummaryStatementBuilder.builder {
         nodeId = NodeId("test-account1", isSummary = true)
         monthRange = APR / 2026 .. APR / 2026
 
@@ -82,7 +82,7 @@ class SummaryTest : DescribeSpec({
           startBalance = Balance(100, LocalDate(2026, 4, 1), Balance.Type.CONFIRMED),
         ))
       }
-      val stmt2 = SummaryStatement.Companion.builder {
+      val stmt2 = SummaryStatementBuilder.builder {
         nodeId = NodeId("test-account1", isSummary = true)
         monthRange = APR / 2026..APR / 2026
         addStatement(
@@ -100,7 +100,7 @@ class SummaryTest : DescribeSpec({
       exception.message shouldBe "Duplicate month statement for test-account1 for Apr2026..Apr2026"
     }
     it("two node statements with substatements") {
-      val stmt1 = SummaryStatement.Companion.builder {
+      val stmt1 = SummaryStatementBuilder.builder {
         nodeId = NodeId("/test-account1", isSummary = true)
         monthRange = APR / 2026..APR / 2026
         addStatement(
@@ -112,7 +112,7 @@ class SummaryTest : DescribeSpec({
           )
         )
       }
-      val stmt2 = SummaryStatement.Companion.builder {
+      val stmt2 = SummaryStatementBuilder.builder {
         nodeId = NodeId("/test-account1", isSummary = true)
         monthRange = MAY / 2026..MAY / 2026
         addStatement(

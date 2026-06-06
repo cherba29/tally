@@ -1,15 +1,19 @@
 package com.cherba29.tally.data.builder
 
+import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Group
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.core.enlargeTo
+import com.cherba29.tally.core.plus
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 import kotlin.collections.plus
 
 class SummaryStatementBuilder {
   // Map of owner -> 'summary name' -> month -> 'summary statement'.
-  private val summaryStatements = mutableMapOf<List<String>, MutableMap<Month, SummaryStatement.Companion.Builder>>()
+  private val summaryStatements = mutableMapOf<List<String>, MutableMap<Month, Builder>>()
   // Map of owner+name -> summary node
   private val summaryNodes: MutableMap<List<String>, NodeId> = mutableMapOf()
   private val groupTreeBuilder = Group.Companion.Builder()
@@ -31,7 +35,7 @@ class SummaryStatementBuilder {
     summaryStatements.getOrPut(fullPath) {
       mutableMapOf()
     }.getOrPut(statement.monthRange.first) {
-      val builder = SummaryStatement.Companion.Builder()
+      val builder = Builder()
       builder.nodeId = parentSummaryNodeId
       builder.monthRange = statement.monthRange
       builder
@@ -61,6 +65,68 @@ class SummaryStatementBuilder {
     }
     return summaryStatements.mapValues { (_,monthToSummaryBuilder) ->
       monthToSummaryBuilder.mapValues { (_, builder) -> builder.build() }
+    }
+  }
+
+  class Builder {
+    var nodeId: NodeId? = null
+    var monthRange: MonthRange? = null
+    private var startBalance: Balance? = null
+    private var endBalance: Balance? = null
+    private var inFlows: Int = 0
+    private var outFlows: Int = 0
+    private var totalTransfers: Int = 0
+    private var totalPayments: Int = 0
+    private var income: Int = 0
+
+    private val statements: MutableList<Statement> = mutableListOf()
+
+    fun addStatement(statement: Statement) {
+      if (statement.isClosed) return  // Does not contribute to the summary.
+
+      monthRange = monthRange.enlargeTo(statement.monthRange)
+
+      startBalance += statement.startBalance
+      endBalance += statement.endBalance
+      if (statement.inFlows > 0) {
+        inFlows += statement.inFlows
+      } else {
+        outFlows += statement.inFlows
+      }
+      if (statement.outFlows > 0) {
+        inFlows += statement.outFlows
+      } else {
+        outFlows += statement.outFlows
+      }
+      totalTransfers += statement.totalTransfers
+      totalPayments += statement.totalPayments
+      income += statement.income
+      statements.add(statement)
+    }
+    fun build(): SummaryStatement {
+      require(nodeId != null)
+      require(monthRange != null)
+      return SummaryStatement(
+        nodeId!!,
+        monthRange!!,
+        statements.any { statement -> statement.isClosed },
+        startBalance,
+        endBalance,
+        inFlows,
+        outFlows,
+        totalTransfers,
+        totalPayments,
+        income,
+        statements
+      )
+    }
+  }
+
+  companion object {
+    fun builder(block: Builder.() -> Unit): SummaryStatement {
+      val builder = Builder()
+      block(builder)
+      return builder.build()
     }
   }
 }
