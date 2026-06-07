@@ -51,11 +51,10 @@ class Transactions : CliktCommand() {
     val budget = runBlocking { loader.budget() }
     val entries = mutableMapOf<String, MutableList<Transaction>>()
     for ((nodeId, monthTransactionStatements) in budget.statements) {
-      val stmtAccount: NodeId = nodeId
-      if (owner != null && owner !in stmtAccount.owners) {
+      if (owner != null && owner !in nodeId.owners) {
         continue
       }
-      if (account != null && stmtAccount.name != account) {
+      if (account != null && nodeId.name != account) {
         continue
       }
       for (transactionStatement in monthTransactionStatements.values) {

@@ -58,15 +58,14 @@ class Unaccounted : CliktCommand() {
 
     val unaccountedEntries = mutableListOf<UnaccountedEntry>()
     for ((nodeId, monthTransactionStatements) in budget.statements) {
+      if (owner != null && owner !in nodeId.owners) {
+        continue
+      }
+      if (account != null && nodeId.name != account) {
+        continue
+      }
       for (transactionStatement in monthTransactionStatements.values) {
-        val stmtAccount: NodeId = nodeId
         if (transactionStatement.isClosed) {
-          continue
-        }
-        if (owner != null && owner !in stmtAccount.owners) {
-          continue
-        }
-        if (account != null && stmtAccount.name != account) {
           continue
         }
         if (startMonth != null && transactionStatement.monthRange.last < startMonth!!) {
@@ -75,12 +74,11 @@ class Unaccounted : CliktCommand() {
         if (endMonth != null && endMonth!! < transactionStatement.monthRange.first) {
           continue
         }
-        val unaccounted = transactionStatement.unaccounted
         if (
-          unaccounted != 0 &&
+          transactionStatement.unaccounted != 0 &&
           (includeProjected || transactionStatement.endBalance?.type == Balance.Type.CONFIRMED)
         ) {
-          unaccountedEntries += UnaccountedEntry(stmtAccount, transactionStatement)
+          unaccountedEntries += UnaccountedEntry(nodeId, transactionStatement)
         }
       }
     }
@@ -95,7 +93,7 @@ class Unaccounted : CliktCommand() {
       } else b.statement.transactions.size - abs((a.statement.unaccounted ?: 0) / 100)
     }
     for (entry in unaccountedEntries.slice(0..< min(unaccountedEntries.size, limit))) {
-      val unaccountedValue = if (entry.statement.unaccounted != 0) {
+      val unaccountedValue = if (entry.statement.unaccounted != null && entry.statement.unaccounted != 0) {
         entry.statement.unaccounted!!.asAmount().padStart(10)
       } else {
         "---"

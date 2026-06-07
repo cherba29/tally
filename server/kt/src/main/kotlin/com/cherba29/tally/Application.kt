@@ -34,6 +34,7 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.server.websocket.WebSockets
 import io.ktor.server.websocket.pingPeriod
+import io.ktor.server.websocket.timeout
 import java.io.File
 import java.nio.file.Paths
 import kotlin.io.path.exists
@@ -78,7 +79,10 @@ fun Application.graphQLModule() {
   })
 
   install(WebSockets) {
-    pingPeriod = 1.seconds
+    // Pings the client every 10 seconds to keep alive
+    pingPeriod = 10.seconds
+    // Closes the connection if 60s pass without a pong
+    timeout = 60.seconds
     contentConverter = JacksonWebsocketContentConverter()
   }
   install(StatusPages) {
