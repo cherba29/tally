@@ -118,6 +118,22 @@ fun SummaryStatement.toGql(): GqlSummaryStatement = GqlSummaryStatement(
   startBalance = startBalance?.toGql()
 )
 
+/**
+ * Converts summary statement as a summary data with substatements and a total.
+ **/
+fun SummaryStatement.toGqlSummaryData(): GqlSummaryData =  GqlSummaryData(
+  statements = statements.sortedWith { a, b ->
+    if (a.nodeId.name < b.nodeId.name) -1 else 1
+  }.map { stmt ->
+    when (stmt) {
+      is SummaryStatement -> (stmt as Statement).toGql()  // Treat it as regular statement.
+      else -> stmt.toGql()
+    }
+  },
+  total = toGql()
+)
+
+
 fun Statement.toGql(): GqlStatement = GqlStatement(
   name = nodeId.name,
   month = monthRange.first,

@@ -19,8 +19,6 @@ class SummaryStatementBuilder {
   private val groupTreeBuilder = Group.Companion.Builder()
 
   // Adds statement to its immediate parent summary statement.
-  // Once all statements are added one has to call propagateUpThePath2
-  // to create summary statements of these summaries up the tree.
   fun addStatement(owner: String, statement: Statement) {
     val fullPath = listOf(owner) + statement.nodeId.path
     groupTreeBuilder.addPath(fullPath)
@@ -103,6 +101,7 @@ class SummaryStatementBuilder {
       income += statement.income
       statements.add(statement)
     }
+
     fun build(): SummaryStatement {
       require(nodeId != null)
       require(monthRange != null)

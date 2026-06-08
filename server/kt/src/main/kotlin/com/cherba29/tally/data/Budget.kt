@@ -24,4 +24,16 @@ data class Budget(
   val statements: Map<NodeId, Map<Month, TransactionStatement>>,
   // owner -> account name -> month -> summary.
   val summaries: Map<List<String>, Map<Month, SummaryStatement>>,
-)
+) {
+  fun getOwnerSummaries(
+    owner: String, path: List<String>, startMonth: Month?, endMonth: Month
+  ): List<SummaryStatement> {
+    val monthSummaries = summaries[listOf(owner) + path] ?: return listOf()
+    return monthSummaries.values.filter { stmt ->
+      if (startMonth != null)
+        stmt.monthRange.first in startMonth..endMonth
+      else
+        stmt.monthRange.last <= endMonth
+    }
+  }
+}

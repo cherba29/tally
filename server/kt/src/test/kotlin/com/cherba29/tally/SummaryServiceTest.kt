@@ -1,40 +1,69 @@
-package com.cherba29.tally.schema
+package com.cherba29.tally
 
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.core.root
+import com.cherba29.tally.data.Budget
+import com.cherba29.tally.data.Loader
 import com.cherba29.tally.data.builder.SummaryStatementBuilder
+import com.cherba29.tally.schema.GqlStatement
+import com.cherba29.tally.schema.GqlSummaryData
+import com.cherba29.tally.schema.GqlSummaryStatement
+import com.cherba29.tally.schema.NotFoundException
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import io.mockk.coEvery
+import io.mockk.mockk
 
-class QuerySummaryTest : DescribeSpec({
+class SummaryServiceTest : DescribeSpec({
   describe("buildSummaryData") {
     it("empty") {
+      val loader = mockk<Loader> {
+        coEvery { budget() } returns Budget(
+          months = MAR / 2026..MAR / 2026,
+          tree = root {},
+          leafToAccount = mapOf(),
+          accounts = mapOf(),
+          statements = mapOf(),
+          summaries = mapOf()
+        )
+      }
+
       val exception = shouldThrow<NotFoundException> {
-        buildSummaryData(
-          summaries = mapOf(),
+        SummaryService(loader).summary(
           owner = "john",
           startMonth = MAR / 2026,
           endMonth = MAR / 2026,
-          summaryName = "internal"
+          accountType = "internal"
         )
       }
-      exception.message shouldBe "Summary internal for john not found."
+      exception.message shouldBe "Summary internal for john for months [Mar2026, Mar2026] not found."
     }
 
     it("missing months") {
       val summaries = mapOf(listOf("john", "internal") to mapOf<Month, SummaryStatement>())
+      val loader = mockk<Loader> {
+        coEvery { budget() } returns Budget(
+          months = MAR / 2026..MAR / 2026,
+          tree = root {},
+          leafToAccount = mapOf(),
+          accounts = mapOf(),
+          statements = mapOf(),
+          summaries = summaries
+        )
+      }
+
       val exception = shouldThrow<NotFoundException> {
-        buildSummaryData(
-          summaries,
+        SummaryService(loader).summary(
           owner = "john",
           startMonth = MAR / 2026,
           endMonth = MAR / 2026,
-          summaryName = "internal"
+          accountType = "internal"
         )
       }
       exception.message shouldBe "Summary internal for john for months [Mar2026, Mar2026] not found."
@@ -50,12 +79,21 @@ class QuerySummaryTest : DescribeSpec({
           )
         )
       )
-      val data = buildSummaryData(
-        summaries,
+      val loader = mockk<Loader> {
+        coEvery { budget() } returns Budget(
+          months = MAR / 2026..MAR / 2026,
+          tree = root {},
+          leafToAccount = mapOf(),
+          accounts = mapOf(),
+          statements = mapOf(),
+          summaries = summaries
+        )
+      }
+      val data = SummaryService(loader).summary(
         owner = "john",
         startMonth = MAR / 2026,
         endMonth = MAR / 2026,
-        summaryName = "internal"
+        accountType = "internal"
       )
       data shouldBe GqlSummaryData(
         statements = listOf(),
@@ -94,12 +132,22 @@ class QuerySummaryTest : DescribeSpec({
         )
       }
       val summaries = mapOf(listOf("john", "internal") to mapOf(MAR / 2026 to summaryStatement))
-      val data = buildSummaryData(
-        summaries,
+      val loader = mockk<Loader> {
+        coEvery { budget() } returns Budget(
+          months = MAR / 2026..MAR / 2026,
+          tree = root {},
+          leafToAccount = mapOf(),
+          accounts = mapOf(),
+          statements = mapOf(),
+          summaries = summaries
+        )
+      }
+
+      val data = SummaryService(loader).summary(
         owner = "john",
         startMonth = MAR / 2026,
         endMonth = MAR / 2026,
-        summaryName = "internal"
+        accountType = "internal"
       )
       data shouldBe GqlSummaryData(
         statements = listOf(
@@ -166,12 +214,22 @@ class QuerySummaryTest : DescribeSpec({
         )
       }
       val summaries = mapOf(listOf("john", "internal") to mapOf(MAR / 2026 to summaryStatement))
-      val data = buildSummaryData(
-        summaries,
+
+      val loader = mockk<Loader> {
+        coEvery { budget() } returns Budget(
+          months = MAR / 2026..MAR / 2026,
+          tree = root {},
+          leafToAccount = mapOf(),
+          accounts = mapOf(),
+          statements = mapOf(),
+          summaries = summaries
+        )
+      }
+      val data = SummaryService(loader).summary(
         owner = "john",
         startMonth = MAR / 2026,
         endMonth = MAR / 2026,
-        summaryName = "internal"
+        accountType = "internal"
       )
       data shouldBe GqlSummaryData(
         statements = listOf(
@@ -252,12 +310,23 @@ class QuerySummaryTest : DescribeSpec({
           )
         )
       )
-      val data = buildSummaryData(
-        summaries,
+
+      val loader = mockk<Loader> {
+        coEvery { budget() } returns Budget(
+          months = MAR / 2026..MAR / 2026,
+          tree = root {},
+          leafToAccount = mapOf(),
+          accounts = mapOf(),
+          statements = mapOf(),
+          summaries = summaries
+        )
+      }
+
+      val data = SummaryService(loader).summary(
         owner = "john",
         startMonth = MAR / 2026,
         endMonth = APR / 2026,
-        summaryName = "internal"
+        accountType = "internal"
       )
       data shouldBe GqlSummaryData(
         statements = listOf(),
@@ -295,12 +364,21 @@ class QuerySummaryTest : DescribeSpec({
           )
         )
       )
-      val data = buildSummaryData(
-        summaries,
+      val loader = mockk<Loader> {
+        coEvery { budget() } returns Budget(
+          months = MAR / 2026..MAR / 2026,
+          tree = root {},
+          leafToAccount = mapOf(),
+          accounts = mapOf(),
+          statements = mapOf(),
+          summaries = summaries
+        )
+      }
+      val data = SummaryService(loader).summary(
         owner = "john",
         startMonth = null,
         endMonth = MAR / 2026,
-        summaryName = "internal"
+        accountType = "internal"
       )
       data shouldBe GqlSummaryData(
         statements = listOf(),
@@ -323,6 +401,5 @@ class QuerySummaryTest : DescribeSpec({
         )
       )
     }
-
   }
 })
