@@ -30,10 +30,12 @@ class QueryTableTest : DescribeSpec({
   describe("buildGqlTable") {
     it("no owner") {
       val payload = budget {
-        setAccount(listOf("john", "internal", "test-account"), Account(
-          NodeId("test-account", isSummary = false),
-          openedOn = MAR / 2026,
-        ))
+        setAccount(
+          listOf("john", "internal", "test-account"), Account(
+            NodeId("test-account", isSummary = false),
+            openedOn = MAR / 2026,
+          )
+        )
       }
       val exception = shouldThrow<IllegalArgumentException> {
         buildGqlTable(
@@ -48,10 +50,12 @@ class QueryTableTest : DescribeSpec({
 
     it("empty") {
       val payload = budget {
-        setAccount(listOf("john", "internal", "test-account"), Account(
-          NodeId("test-account", isSummary = false, owners = setOf("john")),
-          openedOn = MAR / 2026,
-        ))
+        setAccount(
+          listOf("john", "internal", "test-account"), Account(
+            NodeId("test-account", isSummary = false, owners = setOf("john")),
+            openedOn = MAR / 2026,
+          )
+        )
       }
       val exception = shouldThrow<IllegalArgumentException> {
         buildGqlTable(
@@ -95,16 +99,15 @@ class QueryTableTest : DescribeSpec({
         )
       }
 
-      val table = buildGqlTable(
-        payload = payload,
-        owner = "john",
-        startMonth = JAN / 2026,
-        endMonth = JAN / 2026
-      )
-      table.months shouldBe listOf()
-      table.owners shouldBe listOf("john")
-      table.currentOwner shouldBe "john"
-      table.rows shouldBe listOf()
+      val exception = shouldThrow<IllegalArgumentException> {
+        buildGqlTable(
+          payload = payload,
+          owner = "john",
+          startMonth = JAN / 2026,
+          endMonth = JAN / 2026
+        )
+      }
+      exception.message shouldBe "Bad month range, budget has Mar2026..Mar2026 yet Jan2026..Jan2026 was requested"
     }
 
     it("single open account without path") {
@@ -114,14 +117,15 @@ class QueryTableTest : DescribeSpec({
         openedOn = JAN / 2026
       )
       val payload = budget {
-          setAccount(accountPath, account)
-          setBalance(
-            accountPath, MAR / 2026, Balance(
-              amount = 100,
-              date = LocalDate(2026, 3, 1),
-              type = Balance.Type.CONFIRMED
-          ))
-        }
+        setAccount(accountPath, account)
+        setBalance(
+          accountPath, MAR / 2026, Balance(
+            amount = 100,
+            date = LocalDate(2026, 3, 1),
+            type = Balance.Type.CONFIRMED
+          )
+        )
+      }
 
       val table = buildGqlTable(
         payload = payload,
@@ -138,15 +142,16 @@ class QueryTableTest : DescribeSpec({
         NodeId(name = "test-account", isSummary = false, path = listOf("internal"), owners = setOf("john")),
         openedOn = JAN / 2026
       )
-      val payload =  budget {
-          setAccount(accountPath, account)
-          setBalance(
-            accountPath, MAR / 2026, Balance(
-              amount = 100,
-              date = LocalDate(2026, 3, 1),
-              type = Balance.Type.CONFIRMED
-            ))
-        }
+      val payload = budget {
+        setAccount(accountPath, account)
+        setBalance(
+          accountPath, MAR / 2026, Balance(
+            amount = 100,
+            date = LocalDate(2026, 3, 1),
+            type = Balance.Type.CONFIRMED
+          )
+        )
+      }
 
       val table = buildGqlTable(
         payload = payload,
