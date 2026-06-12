@@ -101,6 +101,14 @@ sealed class Group(): GroupInterface<Group> {
     yield(this@Group)
   }
 
+  fun traverseSortedDepthDown(): Sequence<Group> = sequence {
+    yield(this@Group)
+    for (child in children.sortedBy { it.name }) {
+      yieldAll(child.traverseSortedDepthDown())
+    }
+  }
+
+
   companion object {
     class Builder {
       // TODO: perhaps use more efficient structure so the list does not have to be rescanned resulting in O(n^2).
