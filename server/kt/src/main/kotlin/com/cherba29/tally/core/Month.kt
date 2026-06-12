@@ -220,3 +220,9 @@ fun MonthRange?.enlargeTo(other: MonthRange?): MonthRange? {
   if (other == null) return this
   return Month.min(first, other.first)..Month.max(last, other.last)
 }
+
+fun MonthRange?.reduceTo(other: MonthRange?): MonthRange? {
+  if (this == null) return other
+  if (other == null) return this
+  return Month.max(first, other.first)..Month.min(last, other.last)
+}
