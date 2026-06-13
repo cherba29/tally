@@ -17,75 +17,6 @@ data class RowEntry(
   val depth: Int,
 )
 
-// Build a tree based on paths.
-private fun buildAccountPathTree(nodeIds: List<NodeId>): Map<List<String>, Set<List<String>>> {
-  val tree = mutableMapOf<List<String>, MutableSet<List<String>>>()
-  for (nodeId in nodeIds) {
-    if (nodeId.path.isEmpty()) {
-      logger.warn { "${nodeId.name} has no path skipping" }
-      continue
-    }
-    val path = nodeId.path
-    var entry = path + listOf(nodeId.name)
-    for (sub in path.size downTo 0) {
-      val subPath = path.slice(0..<sub)
-      var subTreeEntry = tree[subPath]
-      if (subTreeEntry == null) {
-        subTreeEntry = mutableSetOf()
-        tree[subPath] = subTreeEntry
-      }
-      subTreeEntry.add(entry)
-      entry = subPath
-    }
-  }
-  return tree
-}
-
-/** Sequence for presentation summaries and accounts based on their names. */
-private fun sequenceRows(owner: String, nodeIds: List<NodeId>): List<RowEntry> {
-  val tree = buildAccountPathTree(nodeIds)
-  val nameToNodeId = nodeIds.associateBy { it.name }
-  // Iterate over tree in sorted depth-first fashion to sequence rows representing the tree.
-  val entries = mutableListOf<RowEntry>()
-  var nodesToProcess = mutableListOf(listOf<String>())
-  while (nodesToProcess.isNotEmpty()) {
-    val subTreeId = nodesToProcess.removeFirst()
-    val children = tree[subTreeId]
-    val nodeId = if (children != null) null
-                  else if (subTreeId.isEmpty()) null
-                  else nameToNodeId[subTreeId[subTreeId.lastIndex]]
-    entries.add(
-      RowEntry(
-        title = if (subTreeId.isNotEmpty()) subTreeId[subTreeId.lastIndex] else owner,
-        pathId = subTreeId,
-        nodeId = nodeId,
-        isTotal = children?.isNotEmpty() ?: (nodeId == null),
-        depth = subTreeId.size
-      )
-    )
-    if (children != null) {
-      // Add in front as we want to process children next, in dept-first fashion.
-      val childrenList = children.sortedWith(listLexicographicalComparator).toMutableList()
-      childrenList.addAll(nodesToProcess)
-      nodesToProcess = childrenList
-    }
-  }
-  return entries
-}
-
-private val listLexicographicalComparator = Comparator<List<String>> { list1, list2 ->
-  val size1 = list1.size
-  val size2 = list2.size
-  val minSize = minOf(size1, size2)
-
-  for (i in 0 until minSize) {
-    val cmp = list1[i].compareTo(list2[i])
-    if (cmp != 0) return@Comparator cmp
-  }
-  // If all compared elements are equal, the shorter list comes first
-  size1.compareTo(size2)
-}
-
 fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: Month): GqlTable {
   val requestedMonths = payload.months.reduceTo(startMonth..endMonth)?.sortedDescending()
   if (requestedMonths.isNullOrEmpty()) {
@@ -101,17 +32,34 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
   } else {
     owner
   }
-  val nodeIds = activeNodeIds.filter { a -> a.owners.contains(forOwner) }
+  val ownerTree = payload.tree[forOwner]
+    ?: throw java.lang.IllegalArgumentException(
+      "Owner $forOwner is not in account tree, known owners ${payload.tree.children.joinToString { it.name }}"
+    )
+  val rowOrdering = ownerTree.traverseSortedDepthDown().map { treeNode ->
+    val path = if (treeNode.path.size < 2) listOf() else treeNode.path.subList(1, treeNode.path.size)
+    RowEntry(
+      title = treeNode.name,
+      pathId = path,
+      nodeId = if (treeNode.children.isNotEmpty()) null else
+        NodeId(
+          name = treeNode.name, isSummary = treeNode.children.isNotEmpty(),
+          owners = setOf(forOwner),
+          path = if (path.isEmpty()) path else path.subList(0, path.lastIndex)
+        ),
+      isTotal = treeNode.children.isNotEmpty(),
+      depth = treeNode.path.size - 1
+    )
+  }
 
   val rows = mutableListOf<GqlTableRow>()
-
-  val rowOrdering = sequenceRows(forOwner, nodeIds)
-
   for (rowEntry in rowOrdering) {
     if (rowEntry.isTotal) {  // Summary row.
-      val summaryMonthMap = payload.summaries[listOf(forOwner) + rowEntry.pathId]
+      val summaryMonthMap = payload.summaries[listOf(forOwner) + rowEntry.pathId.ifEmpty { listOf("") }]
         ?: throw java.lang.IllegalArgumentException(
-          "Did not find summary statement at '${rowEntry.pathId}' for owner '$forOwner' in payload summaries"
+          "Did not find summary statement at '${
+            rowEntry.pathId.joinToString("/")
+          }' for owner '$forOwner' in payload summaries"
         )
       val cells: List<GqlTableCell> = requestedMonths.mapNotNull { month ->
         summaryMonthMap[month]?.toGqlTableCell()
