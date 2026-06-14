@@ -5,6 +5,8 @@ import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.reduceTo
 import com.cherba29.tally.data.Budget
+import com.cherba29.tally.statement.SummaryStatement
+import com.cherba29.tally.statement.TransactionStatement
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 class NotFoundException(message: String) : RuntimeException(message)
@@ -32,64 +34,54 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
   val rows = mutableListOf<GqlTableRow>()
   for (treeNode in ownerTree.traverseSortedDepthDown()) {
     val path = if (treeNode.path.size < 2) listOf() else treeNode.path.subList(1, treeNode.path.size)
-    if (treeNode.children.isNotEmpty()) {  // Summary row.
-      val summaryMonthMap = payload.summaries[listOf(forOwner) + path.ifEmpty { listOf("") }]
+
+    val account = if (treeNode.children.isEmpty()) {
+      payload.leafToAccount[treeNode]
         ?: throw java.lang.IllegalArgumentException(
-          "Did not find summary statement at '${
-            path.joinToString("/")
-          }' for owner '$forOwner' in payload summaries"
+          "Could not find account for ${treeNode.path.joinToString("/")}"
         )
-      val cells: List<GqlTableCell> = requestedMonths.mapNotNull { month ->
-        summaryMonthMap[month]?.toGqlTableCell()
-      }
-      if (cells.any { c -> !c.isClosed }) {
-        val nodeId = summaryMonthMap.values.first().nodeId
-        val account = payload.accounts.getOrElse(nodeId) {
-          Account(nodeId, openedOn = Month(2010, 0))
-        }
-        rows.add(
-          GqlTableRow(
-            title = treeNode.name,
-            indent = treeNode.path.size - 1,
-            account = account.toGql(),
-            isTotal = true,
-            cells = cells,
-            isSpace = false,
-            isNormal = false,
-          )
-        )
-      }
-    } else {  // Account row.
-      val cells = mutableListOf<GqlTableCell>()
-      val nodeId = NodeId(
-        name = treeNode.name, isSummary = treeNode.children.isNotEmpty(),
-        owners = setOf(forOwner),
-        path = if (path.isEmpty()) path else path.subList(0, path.lastIndex)
+    } else {
+      // Summaries don't have associated account, create a dummy.
+      // TODO: instead of dummy return null.
+      Account(
+        NodeId(path.joinToString("/"), isSummary = true, owners = setOf(forOwner),
+          path = if (path.size > 1) path.subList(0, path.size-1) else listOf("")),
+        openedOn = Month(2010, 0)
       )
-      val account = payload.accounts.getOrElse(nodeId) {
-        Account(nodeId, openedOn = Month(2010, 0))
+    }
+
+    // TODO: Move this logic into budget.
+    val monthMap = if (treeNode.children.isNotEmpty()) {  // Summary row.
+      payload.summaries[listOf(forOwner) + path.ifEmpty { listOf("") }]
+    } else {
+      payload.statements[account.nodeId]
+    } ?: throw java.lang.IllegalArgumentException(
+      "Did not find monthly statements at '${treeNode.path.joinToString("/")}'"
+    )
+
+    val cells = requestedMonths.map { month ->
+      val monthlyStatement = monthMap[month]
+      // Extension functions are not polymorphic.
+      // TODO: refactor so not to do manual polymorphism here.
+      when (monthlyStatement) {
+        is TransactionStatement -> monthlyStatement.toGqlTableCell()
+        is SummaryStatement -> monthlyStatement.toGqlTableCell()
+        else -> throw IllegalStateException("Could not find statement for '${account.nodeId}' for month $month")
       }
-      var isClosed = true
-      for (month in requestedMonths) {
-        val stmt = payload.statements[nodeId]?.get(month)
-          ?: throw IllegalStateException("Could not find statement for '$nodeId' for month $month")
-        isClosed = isClosed && stmt.isClosed
-        cells.add(stmt.toGqlTableCell())
-      }
-      if (!isClosed) {
-        // Don't add accounts which are closed over selected timeframe.
-        rows.add(
-          GqlTableRow(
-            title = treeNode.name,
-            indent = treeNode.path.size - 1,
-            account = account.toGql(),
-            isNormal = true,
-            cells = cells,
-            isSpace = false,
-            isTotal = false,
-          )
+    }
+
+    if (cells.any { c -> !c.isClosed }) {
+      rows.add(
+        GqlTableRow(
+          title = treeNode.name,
+          indent = treeNode.path.size - 1,
+          account = account.toGql(),
+          isTotal = treeNode.children.isNotEmpty(),
+          cells = cells,
+          isSpace = false,
+          isNormal = treeNode.children.isEmpty(),
         )
-      }
+      )
     }
   }
   return GqlTable(currentOwner = forOwner, owners, requestedMonths, rows)

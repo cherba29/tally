@@ -49,13 +49,12 @@ class QueryTableTest : DescribeSpec({
     }
 
     it("empty") {
+      val account = Account(
+        NodeId("test-account", isSummary = false, owners = setOf("john")),
+        openedOn = MAR / 2026,
+      )
       val payload = budget {
-        setAccount(
-          listOf("john", "internal", "test-account"), Account(
-            NodeId("test-account", isSummary = false, owners = setOf("john")),
-            openedOn = MAR / 2026,
-          )
-        )
+        setAccount(listOf("john", "internal", "test-account"), account)
       }
       val exception = shouldThrow<IllegalArgumentException> {
         buildGqlTable(
@@ -65,8 +64,7 @@ class QueryTableTest : DescribeSpec({
           endMonth = MAR / 2026
         )
       }
-      exception.message shouldBe "Did not find summary statement at '' " +
-          "for owner 'john' in payload summaries"
+      exception.message shouldBe "Did not find monthly statements at 'john'"
     }
 
     it("empty - no open accounts") {
