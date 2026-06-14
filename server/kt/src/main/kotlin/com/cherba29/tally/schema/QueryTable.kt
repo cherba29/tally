@@ -9,14 +9,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 class NotFoundException(message: String) : RuntimeException(message)
 
-data class RowEntry(
-  val title: String,
-  val pathId: List<String>,
-  val isTotal: Boolean,
-  val nodeId: NodeId?,
-  val depth: Int,
-)
-
 fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: Month): GqlTable {
   val requestedMonths = payload.months.reduceTo(startMonth..endMonth)?.sortedDescending()
   if (requestedMonths.isNullOrEmpty()) {
@@ -36,29 +28,15 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
     ?: throw java.lang.IllegalArgumentException(
       "Owner $forOwner is not in account tree, known owners ${payload.tree.children.joinToString { it.name }}"
     )
-  val rowOrdering = ownerTree.traverseSortedDepthDown().map { treeNode ->
-    val path = if (treeNode.path.size < 2) listOf() else treeNode.path.subList(1, treeNode.path.size)
-    RowEntry(
-      title = treeNode.name,
-      pathId = path,
-      nodeId = if (treeNode.children.isNotEmpty()) null else
-        NodeId(
-          name = treeNode.name, isSummary = treeNode.children.isNotEmpty(),
-          owners = setOf(forOwner),
-          path = if (path.isEmpty()) path else path.subList(0, path.lastIndex)
-        ),
-      isTotal = treeNode.children.isNotEmpty(),
-      depth = treeNode.path.size - 1
-    )
-  }
 
   val rows = mutableListOf<GqlTableRow>()
-  for (rowEntry in rowOrdering) {
-    if (rowEntry.isTotal) {  // Summary row.
-      val summaryMonthMap = payload.summaries[listOf(forOwner) + rowEntry.pathId.ifEmpty { listOf("") }]
+  for (treeNode in ownerTree.traverseSortedDepthDown()) {
+    val path = if (treeNode.path.size < 2) listOf() else treeNode.path.subList(1, treeNode.path.size)
+    if (treeNode.children.isNotEmpty()) {  // Summary row.
+      val summaryMonthMap = payload.summaries[listOf(forOwner) + path.ifEmpty { listOf("") }]
         ?: throw java.lang.IllegalArgumentException(
           "Did not find summary statement at '${
-            rowEntry.pathId.joinToString("/")
+            path.joinToString("/")
           }' for owner '$forOwner' in payload summaries"
         )
       val cells: List<GqlTableCell> = requestedMonths.mapNotNull { month ->
@@ -71,8 +49,8 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
         }
         rows.add(
           GqlTableRow(
-            title = rowEntry.title,
-            indent = rowEntry.depth,
+            title = treeNode.name,
+            indent = treeNode.path.size - 1,
             account = account.toGql(),
             isTotal = true,
             cells = cells,
@@ -83,7 +61,11 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
       }
     } else {  // Account row.
       val cells = mutableListOf<GqlTableCell>()
-      val nodeId = rowEntry.nodeId!!
+      val nodeId = NodeId(
+        name = treeNode.name, isSummary = treeNode.children.isNotEmpty(),
+        owners = setOf(forOwner),
+        path = if (path.isEmpty()) path else path.subList(0, path.lastIndex)
+      )
       val account = payload.accounts.getOrElse(nodeId) {
         Account(nodeId, openedOn = Month(2010, 0))
       }
@@ -98,8 +80,8 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
         // Don't add accounts which are closed over selected timeframe.
         rows.add(
           GqlTableRow(
-            title = rowEntry.title,
-            indent = rowEntry.depth,
+            title = treeNode.name,
+            indent = treeNode.path.size - 1,
             account = account.toGql(),
             isNormal = true,
             cells = cells,
