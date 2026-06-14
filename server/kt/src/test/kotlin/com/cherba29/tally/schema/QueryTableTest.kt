@@ -28,26 +28,6 @@ class QueryTableTest : DescribeSpec({
   }
 
   describe("buildGqlTable") {
-    it("no owner") {
-      val payload = budget {
-        setAccount(
-          listOf("john", "internal", "test-account"), Account(
-            NodeId("test-account", isSummary = false),
-            openedOn = MAR / 2026,
-          )
-        )
-      }
-      val exception = shouldThrow<IllegalArgumentException> {
-        buildGqlTable(
-          payload = payload,
-          owner = null,
-          startMonth = MAR / 2026,
-          endMonth = MAR / 2026
-        )
-      }
-      exception.message shouldBe "No owner is specified and one cannot be derived from accounts"
-    }
-
     it("empty") {
       val account = Account(
         NodeId("test-account", isSummary = false, owners = setOf("john")),

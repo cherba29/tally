@@ -17,8 +17,7 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
       "Bad month range, budget has ${payload.months} yet ${startMonth..endMonth} was requested"
     )
   }
-  val activeNodeIds = payload.accounts.keys
-  val owners = activeNodeIds.flatMap { nodeId -> nodeId.owners }.distinct().sorted()
+  val owners = payload.tree.children.map { it.name }.sorted()
   val forOwner = if (owner.isNullOrEmpty()) {
     owners.firstOrNull { !it.isEmpty() }
       ?: throw IllegalArgumentException("No owner is specified and one cannot be derived from accounts")
