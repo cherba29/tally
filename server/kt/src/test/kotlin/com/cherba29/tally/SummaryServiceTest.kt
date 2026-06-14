@@ -11,7 +11,6 @@ import com.cherba29.tally.data.builder.SummaryStatementBuilder
 import com.cherba29.tally.schema.GqlStatement
 import com.cherba29.tally.schema.GqlSummaryData
 import com.cherba29.tally.schema.GqlSummaryStatement
-import com.cherba29.tally.schema.NotFoundException
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.assertions.throwables.shouldThrow

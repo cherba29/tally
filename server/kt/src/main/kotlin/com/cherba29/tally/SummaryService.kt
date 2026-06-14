@@ -4,7 +4,6 @@ import com.cherba29.tally.core.Month
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.data.builder.combineSummaryStatements
 import com.cherba29.tally.schema.GqlSummaryData
-import com.cherba29.tally.schema.NotFoundException
 import com.cherba29.tally.schema.toGqlSummaryData
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query

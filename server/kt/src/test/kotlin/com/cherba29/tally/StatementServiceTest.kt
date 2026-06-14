@@ -11,7 +11,6 @@ import com.cherba29.tally.data.Loader
 import com.cherba29.tally.schema.GqlBalance
 import com.cherba29.tally.schema.GqlStatement
 import com.cherba29.tally.schema.GqlTransaction
-import com.cherba29.tally.schema.NotFoundException
 import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.assertions.throwables.shouldThrow

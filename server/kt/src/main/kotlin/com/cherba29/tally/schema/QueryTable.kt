@@ -9,7 +9,6 @@ import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import io.github.oshai.kotlinlogging.KotlinLogging
 
-class NotFoundException(message: String) : RuntimeException(message)
 
 fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: Month): GqlTable {
   val requestedMonths = payload.months.reduceTo(startMonth..endMonth)?.sortedDescending()

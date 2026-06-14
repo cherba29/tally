@@ -3,7 +3,6 @@ package com.cherba29.tally
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.schema.GqlStatement
-import com.cherba29.tally.schema.NotFoundException
 import com.cherba29.tally.schema.toGql
 import com.cherba29.tally.statement.TransactionStatement
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
