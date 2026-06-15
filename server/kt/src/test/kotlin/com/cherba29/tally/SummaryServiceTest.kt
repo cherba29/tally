@@ -28,6 +28,7 @@ class SummaryServiceTest : DescribeSpec({
           tree = root {},
           leafToAccount = mapOf(),
           accounts = mapOf(),
+          nodeToStatement = mapOf(),
           statements = mapOf(),
           summaries = mapOf()
         )
@@ -52,6 +53,7 @@ class SummaryServiceTest : DescribeSpec({
           tree = root {},
           leafToAccount = mapOf(),
           accounts = mapOf(),
+          nodeToStatement = mapOf(),
           statements = mapOf(),
           summaries = summaries
         )
@@ -84,6 +86,7 @@ class SummaryServiceTest : DescribeSpec({
           tree = root {},
           leafToAccount = mapOf(),
           accounts = mapOf(),
+          nodeToStatement = mapOf(),
           statements = mapOf(),
           summaries = summaries
         )
@@ -137,6 +140,7 @@ class SummaryServiceTest : DescribeSpec({
           tree = root {},
           leafToAccount = mapOf(),
           accounts = mapOf(),
+          nodeToStatement = mapOf(),
           statements = mapOf(),
           summaries = summaries
         )
@@ -220,6 +224,7 @@ class SummaryServiceTest : DescribeSpec({
           tree = root {},
           leafToAccount = mapOf(),
           accounts = mapOf(),
+          nodeToStatement = mapOf(),
           statements = mapOf(),
           summaries = summaries
         )
@@ -316,6 +321,7 @@ class SummaryServiceTest : DescribeSpec({
           tree = root {},
           leafToAccount = mapOf(),
           accounts = mapOf(),
+          nodeToStatement = mapOf(),
           statements = mapOf(),
           summaries = summaries
         )
@@ -369,6 +375,7 @@ class SummaryServiceTest : DescribeSpec({
           tree = root {},
           leafToAccount = mapOf(),
           accounts = mapOf(),
+          nodeToStatement = mapOf(),
           statements = mapOf(),
           summaries = summaries
         )

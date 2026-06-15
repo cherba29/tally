@@ -29,6 +29,7 @@ class StatementServiceTest : DescribeSpec({
           tree = root {},
           leafToAccount = mapOf(),
           accounts = mapOf(),
+          nodeToStatement = mapOf(),
           statements = mapOf(),
           summaries = mapOf()
         )
@@ -58,6 +59,7 @@ class StatementServiceTest : DescribeSpec({
           tree = root {},
           leafToAccount = mapOf(),
           accounts = mapOf(nodeId to account),
+          nodeToStatement = mapOf(),
           statements = mapOf(nodeId to mapOf(MAR / 2026 to transactionStatement)),
           summaries = mapOf()
         )
@@ -125,6 +127,7 @@ class StatementServiceTest : DescribeSpec({
           tree = root {},
           leafToAccount = mapOf(),
           accounts = mapOf(nodeId1 to account1, nodeId2 to account2),
+          nodeToStatement = mapOf(),
           statements = mapOf(
             nodeId1 to mapOf(MAR / 2026 to transactionStatement11, APR / 2026 to transactionStatement12),
             nodeId2 to mapOf(MAR / 2026 to transactionStatement21)

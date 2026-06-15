@@ -8,13 +8,12 @@ import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.Transfer
 import com.cherba29.tally.data.Budget
-import com.cherba29.tally.statement.SummaryStatement
+import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.TransactionStatement
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.collections.iterator
 import kotlin.collections.set
 import kotlin.time.TimeSource
-import kotlin.time.measureTime
 import kotlin.time.measureTimedValue
 
 class BudgetBuilder(
@@ -153,6 +152,7 @@ class BudgetBuilder(
       tree[it.key] as? Group.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
     }
     val (transfers, elapsedBudgetTime) = timeSource.measureTimedValue { buildTransfers(tree) }
+    val nodeToStatement: MutableMap<Group, MutableMap<Month, Statement>> = mutableMapOf()
     val accountToMonthToTransactionStatement: MutableMap<NodeId, MutableMap<Month, TransactionStatement>> =
       mutableMapOf()
 
@@ -171,12 +171,14 @@ class BudgetBuilder(
         months, accounts,
         nodeIdToBalance, nodeIdToTransfer,  owner = null)
       for (stmt in transactionStatementTable) {
-        var monthToStatement = accountToMonthToTransactionStatement[stmt.nodeId]
-        if (monthToStatement == null) {
-          monthToStatement = mutableMapOf()
-          accountToMonthToTransactionStatement[stmt.nodeId] = monthToStatement
-        }
+        val monthToStatement = accountToMonthToTransactionStatement.getOrPut(stmt.nodeId) { mutableMapOf() }
         monthToStatement[stmt.monthRange.first] = stmt
+        for (owner in stmt.nodeId.owners) {
+          val path = listOf(owner) + stmt.nodeId.path + listOf(stmt.nodeId.name)
+          val treeNode = tree[path]
+            ?: throw IllegalStateException("Tree node $path for owner $owner does not exists in $tree.")
+          nodeToStatement.getOrPut(treeNode) { mutableMapOf() }[stmt.monthRange.first] = stmt
+        }
       }
       transactionStatementTable
     }
@@ -196,6 +198,12 @@ class BudgetBuilder(
       }
       summaryStatementBuilder.build()
     }
+    for ((summaryPath, monthToSummary) in summaryNameMonthMap) {
+      val path = summaryPath.filter { it.isNotEmpty() }
+      val treeNode = tree[path]
+        ?: throw IllegalStateException("Tree node $path does not exists in $tree.")
+      nodeToStatement.getOrPut(treeNode) { mutableMapOf() }.putAll(monthToSummary)
+    }
     val numSummaryStatements = summaryNameMonthMap.size
     logger.info {
       "Done building $numSummaryStatements summary statements in $elapsedBuildSummaryStatements"
@@ -212,6 +220,7 @@ class BudgetBuilder(
       tree,
       leafToAccount,
       accounts,
+      nodeToStatement,
       accountToMonthToTransactionStatement,
       summaryNameMonthMap,
     )

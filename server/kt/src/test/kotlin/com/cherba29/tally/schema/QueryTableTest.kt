@@ -30,7 +30,7 @@ class QueryTableTest : DescribeSpec({
   describe("buildGqlTable") {
     it("empty") {
       val account = Account(
-        NodeId("test-account", isSummary = false, owners = setOf("john")),
+        NodeId("test-account", isSummary = false, owners = setOf("john"), path = listOf("internal")),
         openedOn = MAR / 2026,
       )
       val payload = budget {

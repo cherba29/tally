@@ -41,7 +41,7 @@ class Loader(
         try {
           processedBudget.reProcess()
         } catch (e: Exception) {
-          logger.error { "Failed to reprocess $watchResult. $e" }
+          logger.error(e) { "Failed to reprocess $watchResult." }
           return null
         }
         processedOn = startTime.elapsedNow()

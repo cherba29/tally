@@ -10,6 +10,7 @@ import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthName.NOV
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.Transfer
+import com.cherba29.tally.core.root
 import com.cherba29.tally.data.yaml.toObjectNode
 import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.statement.TransactionStatement
@@ -21,8 +22,6 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import java.lang.IllegalStateException
-import kotlin.collections.forEach
 import kotlinx.datetime.LocalDate
 
 
@@ -33,41 +32,37 @@ class BudgetBuilderTest : DescribeSpec({
   }
 
   it("build simple") {
-    val account1 = Account(
-      nodeId = NodeId("test-account1", isSummary = false),
-      openedOn = NOV / 2019,
-    )
-    val account2 = Account(
-      nodeId = NodeId("test-account2", isSummary = false),
-      openedOn = NOV / 2019,
-    )
+    val node1 = NodeId("test-account1", isSummary = false, owners = setOf("john"), path = listOf("internal"))
+    val account1 = Account(nodeId = node1, openedOn = NOV / 2019)
+    val node2 = NodeId("test-account2", isSummary = false, owners = setOf("john"), path = listOf("internal"))
+    val account2 = Account(nodeId = node2, openedOn = NOV / 2019)
     val account3 = Account(
-      nodeId = NodeId("test-account3", isSummary = false),
+      nodeId = NodeId("test-account3", isSummary = false, owners = setOf("john"), path = listOf("internal")),
       openedOn = NOV / 2019,
     )
     val budget = budget {
-      setAccount(listOf("test-account1"), account1)
-      setAccount(listOf("test-account2"), account2)
-      setAccount(listOf("test-account3"), account3)
+      setAccount(listOf("john", "internal", "test-account1"), account1)
+      setAccount(listOf("john", "internal", "test-account2"), account2)
+      setAccount(listOf("john", "internal", "test-account3"), account3)
       setBalance(
-        listOf("test-account1"),
+        listOf("john", "internal", "test-account1"),
         NOV / 2019,
         Balance(100, LocalDate(2019, 11, 1), Balance.Type.PROJECTED)
       )
       setBalance(
-        listOf("test-account1"),
+        listOf("john", "internal", "test-account1"),
         DEC / 2019,
         Balance(200, LocalDate(2019, 12, 1), Balance.Type.PROJECTED)
       )
       setBalance(
-        listOf("test-account2"),
+        listOf("john", "internal", "test-account2"),
         NOV / 2019,
         Balance(200, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED)
       )
       addTransfer(
         toAccountName = "test-account1",
         toMonth = NOV / 2019,
-        fromAccountPath = listOf("test-account2"),
+        fromAccountPath = listOf("john", "internal", "test-account2"),
         fromMonth = NOV / 2019,
         balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
         description = null
@@ -75,20 +70,31 @@ class BudgetBuilderTest : DescribeSpec({
       addTransfer(
         toAccountName = "test-account3",
         toMonth = NOV / 2019,
-        fromAccountPath = listOf("test-account2"),
+        fromAccountPath = listOf("john", "internal", "test-account2"),
         fromMonth = NOV / 2019,
         balance = Balance(70, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
         description = null
       )
     }
     budget.accounts.size shouldBe 3
-    budget.accounts[NodeId("test-account1", isSummary = false)] shouldBe account1
-    budget.accounts[NodeId("test-account2", isSummary = false)] shouldBe account2
+    budget.accounts[node1] shouldBe account1
+    budget.accounts[node2] shouldBe account2
     budget.statements.size shouldBe 3
     budget.statements.values.sumOf { it.values.count { s -> s.startBalance != null } } shouldBe 3
     budget.statements.values.sumOf { it.values.sumOf { s -> s.transactions.size } } shouldBe 4
-    budget.months shouldBe NOV / 2019 .. DEC / 2019
-    budget.summaries.size shouldBe 0
+    budget.months shouldBe NOV / 2019..DEC / 2019
+    budget.summaries.keys shouldBe setOf(listOf("john", "internal"), listOf("john", ""))
+    budget.tree shouldBe root {
+      branch("john") {
+        branch("internal") {
+          leaf("test-account1")
+          leaf("test-account2")
+          leaf("test-account3")
+        }
+      }
+    }
+    budget.nodeToStatement.size shouldBe 5
+    budget.nodeToStatement[budget.tree[listOf("john")]] shouldBe budget.summaries[listOf("john", "")]
   }
 
   it("build ambiguous account") {
@@ -135,7 +141,7 @@ class BudgetBuilderTest : DescribeSpec({
     val builder = BudgetBuilder()
     val path1 = listOf("bob", "internal", "test-account1")
     val account1 = Account(
-      nodeId = NodeId("test-account1", isSummary = false, path=listOf("internal")),
+      nodeId = NodeId("test-account1", isSummary = false, path = listOf("internal")),
       openedOn = NOV / 2019,
     )
     builder.setAccount(path1, account1)
@@ -186,7 +192,7 @@ class BudgetBuilderTest : DescribeSpec({
     val path2 = listOf("bob", "external", "test-account2")
     val exception = shouldThrow<IllegalArgumentException> {
       budget {
-        setAccount(path1,account1)
+        setAccount(path1, account1)
         addTransfer(
           toAccountName = "test-account1",
           toMonth = NOV / 2019,
@@ -204,7 +210,7 @@ class BudgetBuilderTest : DescribeSpec({
     it("open account") {
       val path1 = listOf("bob", "internal", "test-account1")
       val account1 = Account(
-        nodeId = NodeId("test-account1", isSummary = false, path=listOf("internal")),
+        nodeId = NodeId("test-account1", isSummary = false, path = listOf("internal")),
         openedOn = APR / 2026
       )
       val budget = budget {
@@ -293,7 +299,7 @@ class BudgetBuilderTest : DescribeSpec({
           stmt.income shouldBe 0.0
           stmt.isCovered shouldBe true
           stmt.isProjectedCovered shouldBe true
-          stmt.monthRange shouldBe DEC / 2019 .. DEC / 2019
+          stmt.monthRange shouldBe DEC / 2019..DEC / 2019
           stmt.outFlows shouldBe 0.0
           stmt.startBalance shouldBe null
           stmt.totalPayments shouldBe 0.0
@@ -374,7 +380,7 @@ class BudgetBuilderTest : DescribeSpec({
           node2 to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
         )
         val table = BudgetBuilder().buildTransactionStatementTable(
-          DEC / 2019 .. FEB / 2020,
+          DEC / 2019..FEB / 2020,
           accounts,
           balances,
           transfers,
@@ -429,7 +435,7 @@ class BudgetBuilderTest : DescribeSpec({
           node2 to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
         )
         val table = BudgetBuilder().buildTransactionStatementTable(
-          DEC / 2019 .. FEB / 2020,
+          DEC / 2019..FEB / 2020,
           accounts,
           balances,
           transfers,
@@ -516,23 +522,23 @@ class BudgetBuilderTest : DescribeSpec({
         )
 
         val table = BudgetBuilder().buildTransactionStatementTable(
-          NOV / 2019 .. DEC / 2019,
+          NOV / 2019..DEC / 2019,
           accounts,
           balances,
           transfers,
           owner = null
         )
         table.size shouldBe 4  // Two transaction statements for the account
-        table[0].monthRange shouldBe DEC / 2019 .. DEC / 2019
+        table[0].monthRange shouldBe DEC / 2019..DEC / 2019
         table[0].isClosed shouldBe true
         table[0].nodeId shouldBe node1
-        table[1].monthRange shouldBe NOV / 2019 .. NOV / 2019
+        table[1].monthRange shouldBe NOV / 2019..NOV / 2019
         table[1].isClosed shouldBe false
         table[1].nodeId shouldBe NodeId("test-account1", isSummary = false, setOf("john"), listOf("external"))
-        table[2].monthRange shouldBe DEC / 2019 .. DEC / 2019
+        table[2].monthRange shouldBe DEC / 2019..DEC / 2019
         table[2].isClosed shouldBe false
         table[2].nodeId shouldBe node2
-        table[3].monthRange shouldBe NOV / 2019 .. NOV / 2019
+        table[3].monthRange shouldBe NOV / 2019..NOV / 2019
         table[3].isClosed shouldBe false
         table[3].nodeId shouldBe NodeId("external", isSummary = false, owners = setOf("john"), listOf("external"))
       }
@@ -567,7 +573,7 @@ class BudgetBuilderTest : DescribeSpec({
           node2 to mapOf(DEC / 2019 to Balance.confirmed(10, "2019-12-01")),
           node3 to mapOf(DEC / 2019 to Balance.confirmed(10, "2019-12-01")),
         )
-        val transfer1to2 =Transfer(
+        val transfer1to2 = Transfer(
           fromAccount = account1,
           toAccount = account2,
           fromMonth = DEC / 2019,
@@ -590,7 +596,7 @@ class BudgetBuilderTest : DescribeSpec({
         )
 
         val table = BudgetBuilder().buildTransactionStatementTable(
-          DEC / 2019 .. DEC / 2019,
+          DEC / 2019..DEC / 2019,
           accounts,
           balances,
           transfers,
@@ -630,7 +636,7 @@ class BudgetBuilderTest : DescribeSpec({
       )
       val budget = budget {
         setAccount(path1, account1)
-        setBalance(path1, MAR / 2021,  startBalance)
+        setBalance(path1, MAR / 2021, startBalance)
       }
       val tranStmt = TransactionStatement(
         node1,
@@ -647,7 +653,7 @@ class BudgetBuilderTest : DescribeSpec({
         statements.size shouldBe 2
         statements.keys shouldBe setOf(listOf("john", "external"), listOf("john", ""))
       }
-      val stmt1 = statements[listOf("john", "external")]!![MAR/ 2021]!!
+      val stmt1 = statements[listOf("john", "external")]!![MAR / 2021]!!
       stmt1.nodeId shouldBe NodeId(
         name = "external", isSummary = true,
         path = listOf(""),
@@ -658,7 +664,7 @@ class BudgetBuilderTest : DescribeSpec({
         stmt1.endBalance shouldBe null
         stmt1.inFlows shouldBe 0
         stmt1.income shouldBe 0
-        stmt1.monthRange shouldBe MAR / 2021 .. MAR / 2021
+        stmt1.monthRange shouldBe MAR / 2021..MAR / 2021
         stmt1.outFlows shouldBe 0
         stmt1.statements shouldBe listOf(tranStmt)
         stmt1.totalPayments shouldBe 0
@@ -675,7 +681,7 @@ class BudgetBuilderTest : DescribeSpec({
       stmt2.endBalance shouldBe null
       stmt2.inFlows shouldBe 0
       stmt2.income shouldBe 0
-      stmt2.monthRange shouldBe MAR / 2021 .. MAR / 2021
+      stmt2.monthRange shouldBe MAR / 2021..MAR / 2021
       stmt2.outFlows shouldBe 0
       stmt2.statements shouldBe listOf(stmt1)
       stmt2.totalPayments shouldBe 0
@@ -693,14 +699,14 @@ class BudgetBuilderTest : DescribeSpec({
       val balance1 = Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       val tranStmt = TransactionStatement(
         node1,
-        MAR / 2021 .. MAR / 2021,
+        MAR / 2021..MAR / 2021,
         false,
         startBalance = null
       )
       tranStmt.startBalance = balance1
       val budget = budget {
         setAccount(path1, account1)
-        setBalance(path1, MAR / 2021,  balance1)
+        setBalance(path1, MAR / 2021, balance1)
       }
       val statements = budget.summaries
       statements.isEmpty() shouldBe false
@@ -717,7 +723,7 @@ class BudgetBuilderTest : DescribeSpec({
       stmt.endBalance shouldBe null
       stmt.inFlows shouldBe 0
       stmt.income shouldBe 0
-      stmt.monthRange shouldBe MAR / 2021 .. MAR / 2021
+      stmt.monthRange shouldBe MAR / 2021..MAR / 2021
       stmt.outFlows shouldBe 0
       stmt.statements shouldBe listOf(statements[listOf("john", "external")]!![MAR / 2021]!!)
       stmt.totalPayments shouldBe 0
@@ -739,7 +745,7 @@ class BudgetBuilderTest : DescribeSpec({
       )
       val tranStmt = TransactionStatement(
         node1,
-        MAR / 2021 .. MAR / 2021,
+        MAR / 2021..MAR / 2021,
         false,
         startBalance = null
       )
@@ -755,7 +761,7 @@ class BudgetBuilderTest : DescribeSpec({
       statements.size shouldBe 2
       statements.keys shouldBe setOf(listOf("john", "external"), listOf("john", ""))
 
-      val stmt1 = statements[listOf("john", "external")]!![MAR/ 2021]!!
+      val stmt1 = statements[listOf("john", "external")]!![MAR / 2021]!!
       stmt1.nodeId shouldBe NodeId(
         name = "external", isSummary = true,
         path = listOf(""),
@@ -765,7 +771,7 @@ class BudgetBuilderTest : DescribeSpec({
       stmt1.endBalance shouldBe null
       stmt1.inFlows shouldBe 0
       stmt1.income shouldBe 0
-      stmt1.monthRange shouldBe MAR / 2021 .. MAR / 2021
+      stmt1.monthRange shouldBe MAR / 2021..MAR / 2021
       stmt1.outFlows shouldBe 0
       stmt1.statements shouldBe listOf(tranStmt)
       stmt1.totalPayments shouldBe 0
@@ -781,7 +787,7 @@ class BudgetBuilderTest : DescribeSpec({
       stmt2.endBalance shouldBe null
       stmt2.inFlows shouldBe 0
       stmt2.income shouldBe 0
-      stmt2.monthRange shouldBe MAR / 2021 .. MAR / 2021
+      stmt2.monthRange shouldBe MAR / 2021..MAR / 2021
       stmt2.outFlows shouldBe 0
       stmt2.statements shouldBe listOf(stmt1)
       stmt2.totalPayments shouldBe 0
@@ -798,7 +804,7 @@ class BudgetBuilderTest : DescribeSpec({
       val account1 = Account(node1, openedOn = MAR / 2021)
       val tranStmt1 = TransactionStatement(
         node1,
-        MAR / 2021 .. MAR / 2021,
+        MAR / 2021..MAR / 2021,
         false,
         startBalance = null
       )
@@ -825,7 +831,7 @@ class BudgetBuilderTest : DescribeSpec({
       )
       val tranStmt2 = TransactionStatement(
         node2,
-        MAR / 2021 .. MAR / 2021,
+        MAR / 2021..MAR / 2021,
         false,
         startBalance = null
       )
@@ -845,7 +851,7 @@ class BudgetBuilderTest : DescribeSpec({
       )
       val tranStmt3 = TransactionStatement(
         node3,
-        MAR / 2021 .. MAR / 2021,
+        MAR / 2021..MAR / 2021,
         false,
         startBalance = null
       )
@@ -873,7 +879,7 @@ class BudgetBuilderTest : DescribeSpec({
       stmt1.endBalance shouldBe null
       stmt1.inFlows shouldBe 0
       stmt1.income shouldBe 0
-      stmt1.monthRange shouldBe MAR / 2021 .. MAR / 2021
+      stmt1.monthRange shouldBe MAR / 2021..MAR / 2021
       stmt1.outFlows shouldBe 0
       stmt1.statements shouldBe listOf(tranStmt1)
       stmt1.totalPayments shouldBe 0
@@ -889,7 +895,7 @@ class BudgetBuilderTest : DescribeSpec({
       stmt2.endBalance shouldBe null
       stmt2.inFlows shouldBe 0
       stmt2.income shouldBe 0
-      stmt2.monthRange shouldBe MAR / 2021 .. MAR / 2021
+      stmt2.monthRange shouldBe MAR / 2021..MAR / 2021
       stmt2.outFlows shouldBe 0
       stmt2.statements shouldBe listOf(stmt1)
       stmt2.totalPayments shouldBe 0
