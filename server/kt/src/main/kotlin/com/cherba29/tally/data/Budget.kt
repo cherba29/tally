@@ -32,12 +32,13 @@ data class Budget(
   fun getOwnerSummaries(
     owner: String, path: List<String>, startMonth: Month?, endMonth: Month
   ): List<SummaryStatement> {
-    val monthSummaries = summaries[listOf(owner) + path] ?: return listOf()
+    val node = tree[listOf(owner) + path] ?: return listOf()
+    val monthSummaries = nodeToStatement[node] ?: return listOf()
     return monthSummaries.values.filter { stmt ->
       if (startMonth != null)
         stmt.monthRange.first in startMonth..endMonth
       else
         stmt.monthRange.last <= endMonth
-    }
+    }.map { it as SummaryStatement }
   }
 }

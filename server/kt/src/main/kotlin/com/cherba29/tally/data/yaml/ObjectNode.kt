@@ -4,13 +4,19 @@ import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.schema.GqlAccount
+import com.cherba29.tally.schema.GqlBalance
+import com.cherba29.tally.schema.GqlStatement
+import com.cherba29.tally.schema.GqlSummaryData
+import com.cherba29.tally.schema.GqlSummaryStatement
 import com.cherba29.tally.schema.GqlTable
 import com.cherba29.tally.schema.GqlTableCell
 import com.cherba29.tally.schema.GqlTableRow
+import com.cherba29.tally.schema.GqlTransaction
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.statement.TransactionStatement
 import com.fasterxml.jackson.databind.node.ObjectNode
+import kotlin.math.absoluteValue
 
 fun NodeId.toObjectNode(root: ObjectNode) {
   root.put("__type", this.javaClass.simpleName)
@@ -79,6 +85,52 @@ fun Statement.toObjectNode(root: ObjectNode) {
   }
 }
 
+fun GqlStatement.toObjectNode(root: ObjectNode) {
+  root.put("__type", "GqlStatement")
+  root.put("name", name)
+  root.put("month", month.toString())
+  root.put("isClosed", isClosed)
+  root.put("isCovered", isCovered)
+  root.put("isProjectedCovered", isProjectedCovered)
+  root.put("hasProjectedTransfer", hasProjectedTransfer)
+  startBalance?.toObjectNode(root.putObject("startBalance"))
+  endBalance?.toObjectNode(root.putObject("endBalance"))
+  if (inFlows != 0) {
+    root.put("inFlows", inFlows)
+  }
+  if (outFlows != 0) {
+    root.put("outFlows", outFlows)
+  }
+  if (income != 0) {
+    root.put("income", income)
+  }
+  if (totalPayments != 0) {
+    root.put("totalPayments", totalPayments)
+  }
+  if (totalTransfers != 0) {
+    root.put("totalTransfers", totalTransfers)
+  }
+  if (change != 0) {
+    root.put("change", change)
+  }
+  if (addSub != 0) {
+    root.put("addSub", addSub)
+  }
+  if (percentChange.absoluteValue > 0.00001f) {
+    root.put("percentChange", percentChange)
+  }
+  if (annualizedPercentChange.absoluteValue > 0.00001f) {
+    root.put("annualizedPercentChange", annualizedPercentChange)
+  }
+  if (unaccounted != 0) {
+    root.put("unaccounted", unaccounted)
+  }
+  if (transactions.isNotEmpty()) {
+    val transactionsNode = root.putArray("transactions")
+    transactions.forEach { it.toObjectNode(transactionsNode.addObject()) }
+  }
+}
+
 fun Balance.toObjectNode(root: ObjectNode) {
   root.put("__type", this.javaClass.simpleName)
   root.put("amount", amount)
@@ -86,6 +138,16 @@ fun Balance.toObjectNode(root: ObjectNode) {
   root.put("type", type.toString())
   if (description.isNotEmpty()) {
     root.put("desc", description)
+  }
+}
+
+fun GqlBalance.toObjectNode(root: ObjectNode) {
+  root.put("__type", this.javaClass.simpleName)
+  root.put("amount", amount)
+  root.put("date", date.toString())
+  root.put("type", type)
+  if (desc.isNotEmpty()) {
+    root.put("desc", desc)
   }
 }
 
@@ -102,6 +164,16 @@ fun Transaction.toObjectNode(root: ObjectNode) {
   }
 }
 
+fun GqlTransaction.toObjectNode(root: ObjectNode) {
+  root.put("__type", this.javaClass.simpleName)
+  root.put("toAccountName", toAccountName)
+  root.put("isIncome", isIncome)
+  root.put("isExpense", isExpense)
+  balance.toObjectNode(root.putObject("balance"))
+  root.put("balanceFromStart", balanceFromStart)
+  root.put("description", description)
+}
+
 fun TransactionStatement.toObjectNode(root: ObjectNode) {
   root.put("__type", this.javaClass.simpleName)
   (this as Statement).toObjectNode(root.putObject("__base"))
@@ -115,6 +187,28 @@ fun TransactionStatement.toObjectNode(root: ObjectNode) {
     val transactionsNode = root.putArray("transactions")
     transactions.forEach { it.toObjectNode(transactionsNode.addObject()) }
   }
+}
+
+fun GqlSummaryStatement.toObjectNode(root: ObjectNode) {
+  root.put("__type", this.javaClass.simpleName)
+  root.put("name", name)
+  root.put("month", month.toString())
+  if (accounts.isNotEmpty()) {
+    val accountsNode = root.putArray("accounts")
+    accounts.forEach { accountsNode.add(it) }
+  }
+  root.put("addSub", addSub)
+  root.put("income", income)
+  root.put("change", change)
+  root.put("inFlows", inFlows)
+  root.put("outFlows", outFlows)
+  root.put("percentChange", percentChange)
+  root.put("annualizedPercentChange", annualizedPercentChange)
+  root.put("totalPayments", totalPayments)
+  root.put("totalTransfers", totalTransfers)
+  root.put("unaccounted", unaccounted)
+  endBalance?.toObjectNode(root.putObject("endBalance"))
+  startBalance?.toObjectNode(root.putObject("startBalance"))
 }
 
 fun GqlTable.toObjectNode(root: ObjectNode) {
@@ -208,4 +302,10 @@ fun GqlTableCell.toObjectNode(root: ObjectNode) {
     root.put("unaccounted", unaccounted)
   }
   root.put("balanced", balanced)
+}
+
+fun GqlSummaryData.toObjectNode(root: ObjectNode) {
+  val statementsNode = root.putArray("statements")
+  statements.forEach { it.toObjectNode(statementsNode.addObject()) }
+  total.toObjectNode(root.putObject("total"))
 }
