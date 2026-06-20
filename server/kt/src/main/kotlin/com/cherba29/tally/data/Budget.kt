@@ -26,11 +26,11 @@ data class Budget(
   val nodeToStatement: Map<Group, Map<Month,Statement>>,
   /** Lookup map from account to its statement for given month */
   val statements: Map<NodeId, Map<Month, TransactionStatement>>,
-  // owner -> account name -> month -> summary.
-  private val summaries: Map<List<String>, Map<Month, SummaryStatement>>,
 ) {
   fun getOwnerMonthlySummaries(forOwner: String, path: List<String>): Map<Month, SummaryStatement>? {
-    return summaries[listOf(forOwner) + path.ifEmpty { listOf("") }]
+    // TODO: remove need to filter isNotEmpty. Before empty signified root.
+    val node = tree[listOf(forOwner) + path.filter { it.isNotEmpty() }] ?: return null
+    return nodeToStatement[node]?.mapValues { (_, v) -> v as SummaryStatement }
   }
   fun getOwnerSummaries(
     owner: String, path: List<String>, startMonth: Month?, endMonth: Month

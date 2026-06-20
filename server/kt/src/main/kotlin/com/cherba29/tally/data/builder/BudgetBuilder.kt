@@ -199,6 +199,7 @@ class BudgetBuilder(
       summaryStatementBuilder.build()
     }
     for ((summaryPath, monthToSummary) in summaryNameMonthMap) {
+      // TODO: remove need to filter isNotEmpty. Before empty signified root.
       val path = summaryPath.filter { it.isNotEmpty() }
       val treeNode = tree[path]
         ?: throw IllegalStateException("Tree node $path does not exists in $tree.")
@@ -222,7 +223,6 @@ class BudgetBuilder(
       accounts,
       nodeToStatement,
       accountToMonthToTransactionStatement,
-      summaryNameMonthMap,
     )
   }
 

@@ -2,7 +2,6 @@ package com.cherba29.tally
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.NodeId
@@ -12,7 +11,6 @@ import com.cherba29.tally.data.Loader
 import com.cherba29.tally.data.builder.budget
 import com.cherba29.tally.data.yaml.toObjectNode
 import com.cherba29.tally.schema.GqlSummaryData
-import com.cherba29.tally.statement.SummaryStatement
 import com.diffplug.selfie.coroutines.expectSelfie
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
@@ -55,7 +53,6 @@ class SummaryServiceTest : DescribeSpec({
     }
 
     it("missing months") {
-      val summaries = mapOf(listOf("john", "internal") to mapOf<Month, SummaryStatement>())
       val loader = mockk<Loader> {
         coEvery { budget() } returns Budget(
           months = MAR / 2026..MAR / 2026,
@@ -63,8 +60,7 @@ class SummaryServiceTest : DescribeSpec({
           leafToAccount = mapOf(),
           accounts = mapOf(),
           nodeToStatement = mapOf(),
-          statements = mapOf(),
-          summaries = summaries
+          statements = mapOf()
         )
       }
 
