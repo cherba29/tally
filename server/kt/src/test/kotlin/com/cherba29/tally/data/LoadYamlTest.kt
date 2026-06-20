@@ -6,6 +6,7 @@ import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthName.NOV
 import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.core.root
 import com.cherba29.tally.data.builder.BudgetBuilder
 import com.cherba29.tally.data.builder.budget
 import com.cherba29.tally.statement.Transaction
@@ -88,7 +89,14 @@ class LoadYamlTest : DescribeSpec({
       monthlyStatements.size shouldBe 5
       monthlyStatements.values.count { it.startBalance != null } shouldBe 0
       budget.months.size shouldBe 5
-      budget.summaries.size shouldBe 0
+      budget.tree shouldBe root {
+        branch("arthur") {
+          branch("external") {
+            leaf("test-account")
+          }
+        }
+      }
+      budget.nodeToStatement.keys shouldBe setOf(budget.tree[listOf("arthur", "external", "test-account")])
     }
 
     it("account with balances") {
@@ -252,10 +260,22 @@ class LoadYamlTest : DescribeSpec({
       budget.months.size shouldBe 2
       budget.accounts.size shouldBe 2
       budget.statements.size shouldBe 2
-      budget.summaries.size shouldBe 2
-      budget.summaries.keys shouldBe setOf(listOf("someone", "external"), listOf("someone", ""))
-      budget.summaries[listOf("someone", "external")]?.keys shouldBe setOf(FEB / 2020, JAN / 2020)
-      budget.summaries[listOf("someone", "")]?.keys shouldBe setOf(FEB / 2020, JAN / 2020)
+      budget.tree shouldBe root {
+        branch("someone") {
+          branch("external") {
+            leaf("external")
+            leaf("test-account")
+          }
+        }
+      }
+      budget.nodeToStatement.size shouldBe 4
+      budget.nodeToStatement.keys shouldBe setOf(
+        budget.tree[listOf("someone", "external")],
+        budget.tree[listOf("someone")],
+        budget.tree[listOf("someone", "external", "test-account")],
+        budget.tree[listOf("someone", "external", "external")])
+      budget.getOwnerMonthlySummaries("someone", listOf("external"))?.keys shouldBe setOf(FEB / 2020, JAN / 2020)
+      budget.getOwnerMonthlySummaries("someone", listOf(""))?.keys shouldBe setOf(FEB / 2020, JAN / 2020)
 
       val node1 = NodeId("test-account", isSummary = false, setOf("someone"), listOf("external"))
       val node2 = NodeId("external", isSummary = false, setOf("someone"), listOf("external"))

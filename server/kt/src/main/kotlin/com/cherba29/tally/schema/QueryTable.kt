@@ -50,7 +50,7 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
 
     // TODO: Move this logic into budget.
     val monthMap = if (treeNode.children.isNotEmpty()) {  // Summary row.
-      payload.summaries[listOf(forOwner) + path.ifEmpty { listOf("") }]
+      payload.getOwnerMonthlySummaries(forOwner, path)
     } else {
       payload.statements[account.nodeId]
     } ?: throw java.lang.IllegalArgumentException(

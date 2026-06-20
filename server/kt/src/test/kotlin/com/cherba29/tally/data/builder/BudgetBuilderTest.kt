@@ -12,6 +12,7 @@ import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.Transfer
 import com.cherba29.tally.core.root
 import com.cherba29.tally.data.yaml.toObjectNode
+import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.statement.TransactionStatement
 import com.diffplug.selfie.coroutines.expectSelfie
@@ -83,7 +84,6 @@ class BudgetBuilderTest : DescribeSpec({
     budget.statements.values.sumOf { it.values.count { s -> s.startBalance != null } } shouldBe 3
     budget.statements.values.sumOf { it.values.sumOf { s -> s.transactions.size } } shouldBe 4
     budget.months shouldBe NOV / 2019..DEC / 2019
-    budget.summaries.keys shouldBe setOf(listOf("john", "internal"), listOf("john", ""))
     budget.tree shouldBe root {
       branch("john") {
         branch("internal") {
@@ -94,7 +94,13 @@ class BudgetBuilderTest : DescribeSpec({
       }
     }
     budget.nodeToStatement.size shouldBe 5
-    budget.nodeToStatement[budget.tree[listOf("john")]] shouldBe budget.summaries[listOf("john", "")]
+    budget.nodeToStatement.keys shouldBe setOf(
+      budget.tree[listOf("john")],
+      budget.tree[listOf("john", "internal")],
+      budget.tree[listOf("john", "internal", "test-account1")],
+      budget.tree[listOf("john", "internal", "test-account2")],
+      budget.tree[listOf("john", "internal", "test-account3")],
+    )
   }
 
   it("build ambiguous account") {
@@ -647,13 +653,25 @@ class BudgetBuilderTest : DescribeSpec({
       // There no other transactions and balance is positive.
       tranStmt.isCovered = true
       tranStmt.isProjectedCovered = true
-      val statements = budget.summaries
+      budget.tree shouldBe root {
+        branch("john") {
+          branch("external") {
+            leaf("test-account1")
+          }
+        }
+      }
+      val statements = budget.nodeToStatement
       withClue("should contain: $statements") {
         statements.isEmpty() shouldBe false
-        statements.size shouldBe 2
-        statements.keys shouldBe setOf(listOf("john", "external"), listOf("john", ""))
+        statements.size shouldBe 3
+        statements.keys shouldBe setOf(
+          budget.tree[listOf("john", "external", "test-account1")],
+          budget.tree[listOf("john", "external")],
+          budget.tree[listOf("john")],
+        )
       }
-      val stmt1 = statements[listOf("john", "external")]!![MAR / 2021]!!
+      val treeNode1 = budget.tree[listOf("john", "external")]!!
+      val stmt1 = statements[treeNode1]!![MAR / 2021]!! as SummaryStatement
       stmt1.nodeId shouldBe NodeId(
         name = "external", isSummary = true,
         path = listOf(""),
@@ -671,7 +689,8 @@ class BudgetBuilderTest : DescribeSpec({
         stmt1.totalTransfers shouldBe 0
       }
 
-      val stmt2 = statements[listOf("john", "")]!![MAR / 2021]!!
+      val treeNode2 = budget.tree["john"]!!
+      val stmt2 = statements[treeNode2]!![MAR / 2021]!! as SummaryStatement
       stmt2.nodeId shouldBe NodeId(
         name = "", isSummary = true,
         path = listOf(""),
@@ -708,24 +727,36 @@ class BudgetBuilderTest : DescribeSpec({
         setAccount(path1, account1)
         setBalance(path1, MAR / 2021, balance1)
       }
-      val statements = budget.summaries
+      budget.tree shouldBe root {
+        branch("john") {
+          branch("external") {
+            leaf("test-account1")
+          }
+        }
+      }
+      val statements = budget.nodeToStatement
       statements.isEmpty() shouldBe false
-      statements.size shouldBe 2
-      statements.keys shouldBe setOf(listOf("john", "external"), listOf("john", ""))
+      statements.keys shouldBe setOf(
+        budget.tree[listOf("john", "external", "test-account1")],
+        budget.tree[listOf("john", "external")],
+        budget.tree[listOf("john")],
+      )
 
-      val stmt = statements[listOf("john", "")]!![MAR / 2021]!!
+      val treeNode = budget.tree["john"]
+      val stmt = statements[treeNode]!![MAR / 2021]!! as SummaryStatement
       stmt.nodeId shouldBe NodeId(
         name = "", isSummary = true,
         path = listOf(""),
         owners = setOf("john"),
       )
+      val externalTreeNode = budget.tree[listOf("john", "external")]
       stmt.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       stmt.endBalance shouldBe null
       stmt.inFlows shouldBe 0
       stmt.income shouldBe 0
       stmt.monthRange shouldBe MAR / 2021..MAR / 2021
       stmt.outFlows shouldBe 0
-      stmt.statements shouldBe listOf(statements[listOf("john", "external")]!![MAR / 2021]!!)
+      stmt.statements shouldBe listOf(statements[externalTreeNode]!![MAR / 2021]!!)
       stmt.totalPayments shouldBe 0
       stmt.totalTransfers shouldBe 0
     }
@@ -756,12 +787,24 @@ class BudgetBuilderTest : DescribeSpec({
         setAccount(path1, account1)
         setBalance(path1, MAR / 2021, balance1)
       }
-      val statements = budget.summaries
+      budget.tree shouldBe root {
+        branch("john") {
+          branch("external") {
+            leaf("test-account1")
+          }
+        }
+      }
+      val statements = budget.nodeToStatement
       statements.isEmpty() shouldBe false
-      statements.size shouldBe 2
-      statements.keys shouldBe setOf(listOf("john", "external"), listOf("john", ""))
+      statements.size shouldBe 3
+      statements.keys shouldBe setOf(
+        budget.tree[listOf("john", "external", "test-account1")],
+        budget.tree[listOf("john", "external")],
+        budget.tree[listOf("john")],
+      )
 
-      val stmt1 = statements[listOf("john", "external")]!![MAR / 2021]!!
+      val externalTreeNode = budget.tree[listOf("john", "external")]
+      val stmt1 = statements[externalTreeNode]!![MAR / 2021]!! as SummaryStatement
       stmt1.nodeId shouldBe NodeId(
         name = "external", isSummary = true,
         path = listOf(""),
@@ -777,7 +820,8 @@ class BudgetBuilderTest : DescribeSpec({
       stmt1.totalPayments shouldBe 0
       stmt1.totalTransfers shouldBe 0
 
-      val stmt2 = statements[listOf("john", "")]!![MAR / 2021]!!
+      val ownerTreeNode = budget.tree["john"]
+      val stmt2 = statements[ownerTreeNode]!![MAR / 2021]!! as SummaryStatement
       stmt2.nodeId shouldBe NodeId(
         name = "", isSummary = true,
         path = listOf(""),
@@ -817,9 +861,9 @@ class BudgetBuilderTest : DescribeSpec({
       tranStmt1.isCovered = true
       tranStmt1.isProjectedCovered = true
       // Should skip since different owner.
-      val path2 = listOf("bob", "external", "test-account1")
+      val path2 = listOf("bob", "external", "test-account2")
       val node2 = NodeId(
-        name = "test-account1", isSummary = false,
+        name = "test-account2", isSummary = false,
         path = listOf("external"),
         owners = setOf("bob")
       )
@@ -837,9 +881,9 @@ class BudgetBuilderTest : DescribeSpec({
       )
       tranStmt2.startBalance = balance2
       // Should skip since path is empty.
-      val path3 = listOf("john", "test-account1")
+      val path3 = listOf("john", "test-account3")
       val node3 = NodeId(
-        name = "test-account1", isSummary = false,
+        name = "test-account3", isSummary = false,
         path = listOf(),
         owners = setOf("john")
       )
@@ -864,12 +908,26 @@ class BudgetBuilderTest : DescribeSpec({
         setBalance(path2, MAR / 2021, balance2)
         setBalance(path3, MAR / 2021, balance3)
       }
-      val statements = budget.summaries.filter { it.key.first() == "john" }
-      statements.isEmpty() shouldBe false
-      statements.size shouldBe 2
-      statements.keys shouldBe setOf(listOf("john", "external"), listOf("john", ""))
+      budget.tree shouldBe root {
+        branch("bob") {
+          branch("external") {
+            leaf("test-account2")
+          }
+        }
+        branch("john") {
+          branch("external") {
+            leaf("test-account1")
+          }
+          leaf("test-account3")
+        }
+      }
 
-      val stmt1 = statements[listOf("john", "external")]!![MAR / 2021]!!
+      val ownerTreeNode = budget.tree["john"]
+      val statements = budget.nodeToStatement[ownerTreeNode]!!
+      statements.keys shouldBe setOf(MAR / 2021)
+
+      val externalTreeNode = budget.tree[listOf("john", "external")]
+      val stmt1 = budget.nodeToStatement[externalTreeNode]!![MAR / 2021]!! as SummaryStatement
       stmt1.nodeId shouldBe NodeId(
         name = "external", isSummary = true,
         path = listOf(""),
@@ -885,7 +943,7 @@ class BudgetBuilderTest : DescribeSpec({
       stmt1.totalPayments shouldBe 0
       stmt1.totalTransfers shouldBe 0
 
-      val stmt2 = statements[listOf("john", "")]!![MAR / 2021]!!
+      val stmt2 = statements[MAR / 2021]!! as SummaryStatement
       stmt2.nodeId shouldBe NodeId(
         name = "", isSummary = true,
         path = listOf(""),

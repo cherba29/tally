@@ -2,11 +2,11 @@ package com.cherba29.tally.data
 
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.core.root
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import kotlin.io.path.createFile
 import kotlin.io.path.div
 import kotlin.io.path.relativeTo
@@ -41,9 +41,10 @@ class ProcessedBudgetTest : DescribeSpec({
         relativeFilePath = filePath.relativeTo(folder)
       )
       processedBudget.reProcess()
-      processedBudget.budget shouldNotBe null
-      processedBudget.budget!!.summaries.isEmpty() shouldBe true
-      processedBudget.budget!!.statements.size shouldBe 1
+      val budget = processedBudget.budget!!
+      budget.tree shouldBe root { branch("john") { branch("external") { leaf("test-account") }  } }
+      budget.nodeToStatement.keys shouldBe setOf(budget.tree[listOf("john", "external", "test-account")])
+      budget.statements.size shouldBe 1
 
       val nodeId = NodeId("test-account", isSummary = false, setOf("john"), listOf("external"))
       val transactionStatement = processedBudget.budget!!.statements[nodeId]?.get(MAR / 2026)!!

@@ -27,8 +27,11 @@ data class Budget(
   /** Lookup map from account to its statement for given month */
   val statements: Map<NodeId, Map<Month, TransactionStatement>>,
   // owner -> account name -> month -> summary.
-  val summaries: Map<List<String>, Map<Month, SummaryStatement>>,
+  private val summaries: Map<List<String>, Map<Month, SummaryStatement>>,
 ) {
+  fun getOwnerMonthlySummaries(forOwner: String, path: List<String>): Map<Month, SummaryStatement>? {
+    return summaries[listOf(forOwner) + path.ifEmpty { listOf("") }]
+  }
   fun getOwnerSummaries(
     owner: String, path: List<String>, startMonth: Month?, endMonth: Month
   ): List<SummaryStatement> {
