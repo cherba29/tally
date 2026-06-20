@@ -222,7 +222,6 @@ class BudgetBuilder(
       leafToAccount,
       accounts,
       nodeToStatement,
-      accountToMonthToTransactionStatement,
     )
   }
 

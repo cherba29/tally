@@ -59,8 +59,7 @@ class SummaryServiceTest : DescribeSpec({
           tree = root {},
           leafToAccount = mapOf(),
           accounts = mapOf(),
-          nodeToStatement = mapOf(),
-          statements = mapOf()
+          nodeToStatement = mapOf()
         )
       }
 
