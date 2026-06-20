@@ -2,13 +2,12 @@ package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.MAR
-import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.core.root
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.engine.coroutines.testScheduler
 import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.comparables.shouldBeLessThan
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlin.io.path.createFile
@@ -43,14 +42,12 @@ class LoaderTest : DescribeSpec({
       Loader(tallyPath.watchedEventFlow { true }).use { loader ->
         val result = loader.budget()
 
-        val nodeId = NodeId("test-account", isSummary = false, setOf("someone"), listOf("external"))
-        result.statements.size shouldBe 1
-        val tranStatement = result.statements[nodeId]?.get(MAR / 2019)!!
+        result.nodeToStatement.size shouldBe 3
+        val tranStatement = result.nodeToStatement[result.tree[listOf("someone", "external", "test-account")]]?.get(MAR / 2019)!!
         tranStatement.monthRange shouldBe MAR / 2019..MAR / 2019
         tranStatement.nodeId.name shouldBe "test-account"
 
-        val stmt = result.statements[nodeId]?.get(MAR / 2019)!!
-        stmt.startBalance shouldBe Balance(
+        tranStatement.startBalance shouldBe Balance(
           10000, LocalDate(2019, 3, 1),
           Balance.Type.CONFIRMED
         )
@@ -71,7 +68,7 @@ class LoaderTest : DescribeSpec({
           every { reProcess() } answers { }
           every { dataPayload } answers {
             mockk<Budget> {
-              every { statements } returns mapOf(NodeId("testAccount${count++}", isSummary = false) to mapOf())
+              every { tree } returns root { leaf("testAccount${count++}") }
             }
           }
         }
@@ -82,8 +79,7 @@ class LoaderTest : DescribeSpec({
           channel.trySend(WatchResult(rootPath, null, true)).isSuccess shouldBe true
 
           val result1 = loader.budget()
-          result1.statements.size shouldBe 1
-          result1.statements[NodeId("testAccount1", isSummary = false)] shouldNotBe null
+          result1.tree shouldBe root { leaf("testAccount1") }
           val loadedOn = loader.loadedOn
           loader.loadedOn shouldBe 0.seconds
 
@@ -99,9 +95,7 @@ class LoaderTest : DescribeSpec({
           loader.loadedOn shouldBe 20.seconds
 
           val result2 = loader.budget()
-          result1.statements.size shouldBe 1
-          result2.statements[NodeId("testAccount1", isSummary = false)] shouldBe null
-          result2.statements[NodeId("testAccount2", isSummary = false)] shouldNotBe null
+          result2.tree shouldBe root { leaf("testAccount2") }
 
           verify { processedBudget.addFile(rootPath, relativePath) }
           verify(exactly = 2) { processedBudget.reProcess() }
@@ -122,7 +116,7 @@ class LoaderTest : DescribeSpec({
           every { reProcess() } answers { }
           every { dataPayload } answers {
             mockk<Budget> {
-              every { statements } returns mapOf(NodeId("testAccount${count++}", isSummary = false) to mapOf())
+              every { tree } returns root { leaf("testAccount${count++}") }
             }
           }
         }
@@ -132,8 +126,7 @@ class LoaderTest : DescribeSpec({
           timeSource += 100.seconds
 
           val result1 = loader.budget()
-          result1.statements.size shouldBe 1
-          result1.statements[NodeId("testAccount1", isSummary = false)] shouldNotBe null
+          result1.tree shouldBe root { leaf("testAccount1") }
           loader.loadedOn shouldBe 100.seconds
 
           timeSource += 100.seconds
@@ -143,9 +136,7 @@ class LoaderTest : DescribeSpec({
           loader.loadedOn shouldBe 100.seconds  // Should not change since add file fails.
 
           val result2 = loader.budget()
-          result2.statements.size shouldBe 1
-          result2.statements[NodeId("testAccount1", isSummary = false)] shouldNotBe null
-          result2.statements[NodeId("testAccount2", isSummary = false)] shouldBe null
+          result2.tree shouldBe root { leaf("testAccount1") }
           channel.close() shouldBe true
 
           verify { processedBudget.addFile(rootPath, relativePath) }
@@ -167,7 +158,7 @@ class LoaderTest : DescribeSpec({
           }
           every { dataPayload } answers {
             mockk<Budget> {
-              every { statements } returns mapOf(NodeId("testAccount${count++}", isSummary = false) to mapOf())
+              every { tree } returns root { leaf("testAccount${count++}") }
             }
           }
         }
@@ -177,8 +168,7 @@ class LoaderTest : DescribeSpec({
           timeSource += 100.seconds
 
           val result1 = loader.budget()
-          result1.statements.size shouldBe 1
-          result1.statements[NodeId("testAccount1", isSummary = false)] shouldNotBe null
+          result1.tree shouldBe root { leaf("testAccount1") }
           loader.loadedOn shouldBe 100.seconds
 
           timeSource += 100.seconds
@@ -188,9 +178,7 @@ class LoaderTest : DescribeSpec({
           loader.loadedOn shouldBe 100.seconds  // Should not change since reprocess fails.
 
           val result2 = loader.budget()
-          result2.statements.size shouldBe 1
-          result2.statements[NodeId("testAccount1", isSummary = false)] shouldNotBe null
-          result2.statements[NodeId("testAccount2", isSummary = false)] shouldBe null
+          result2.tree shouldBe root { leaf("testAccount1") }
           channel.close() shouldBe true
 
           verify(exactly = 2) { processedBudget.addFile(rootPath, relativePath) }

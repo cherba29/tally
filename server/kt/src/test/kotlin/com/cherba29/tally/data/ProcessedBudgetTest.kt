@@ -1,8 +1,8 @@
 package com.cherba29.tally.data
 
 import com.cherba29.tally.core.MonthName.MAR
-import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.root
+import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.engine.spec.tempdir
@@ -44,10 +44,8 @@ class ProcessedBudgetTest : DescribeSpec({
       val budget = processedBudget.budget!!
       budget.tree shouldBe root { branch("john") { branch("external") { leaf("test-account") }  } }
       budget.nodeToStatement.keys shouldBe setOf(budget.tree[listOf("john", "external", "test-account")])
-      budget.statements.size shouldBe 1
 
-      val nodeId = NodeId("test-account", isSummary = false, setOf("john"), listOf("external"))
-      val transactionStatement = processedBudget.budget!!.statements[nodeId]?.get(MAR / 2026)!!
+      val transactionStatement = budget.nodeToStatement[budget.tree[listOf("john", "external", "test-account")]]?.get(MAR / 2026)!! as TransactionStatement
       transactionStatement.nodeId.name shouldBe "test-account"
       transactionStatement.monthRange shouldBe MAR / 2026 .. MAR / 2026
       transactionStatement.nodeId.owners shouldBe listOf("john")

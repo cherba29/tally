@@ -37,41 +37,39 @@ class Report : CliktCommand() {
     })
     val payload = runBlocking { loader.budget() }
     val accounts = payload.accounts
-    val statementTable = payload.statements
+    val monthStatements = payload.getMonthlyStatements(account) ?: mapOf()
     echo(HEADER_ROW.joinToString(","))
-    for (monthStatements in statementTable.values) {
-      for ((month, transactionStatement) in monthStatements) {
-        val stmtAccount = accounts[transactionStatement.nodeId]
-          ?: throw IllegalStateException("Account not found ${transactionStatement.nodeId}")
-        if (stmtAccount.nodeId.name != account || month < startMonth || endMonth < month) {
-          continue
-        }
-        val row = listOf(
-          stmtAccount.nodeId.name,
-          stmtAccount.nodeId.path.joinToString("/"),
-          stmtAccount.openedOn.toString(),
-          stmtAccount.closedOn?.toString() ?: "",
-          if (stmtAccount.nodeId.isExternal) "T" else "F",
-          if (!stmtAccount.isClosed(month)) "T" else "F",
-          month.year.toString(),
-          (month.month + 1).toString(),
-          transactionStatement.startBalance?.amount?.asAmount() ?: "",
-          if (transactionStatement.startBalance != null) {
-            if (transactionStatement.startBalance?.type == Balance.Type.PROJECTED) "P" else "C"
-          } else "",
-          transactionStatement.endBalance?.amount?.asAmount() ?: "",
-          if (transactionStatement.endBalance != null) {
-            if (transactionStatement.endBalance?.type == Balance.Type.PROJECTED) "P" else "C"
-          } else "",
-          transactionStatement.inFlows.asAmount(),
-          transactionStatement.outFlows.asAmount(),
-          transactionStatement.income.asAmount(),
-          transactionStatement.totalPayments.asAmount(),
-          transactionStatement.totalTransfers.asAmount(),
-          transactionStatement.unaccounted?.asAmount(),
-        )
-        echo(row.joinToString(","))
+    for ((month, transactionStatement) in monthStatements) {
+      val stmtAccount = accounts[transactionStatement.nodeId]
+        ?: throw IllegalStateException("Account not found ${transactionStatement.nodeId}")
+      if (month < startMonth || endMonth < month) {
+        continue
       }
+      val row = listOf(
+        stmtAccount.nodeId.name,
+        stmtAccount.nodeId.path.joinToString("/"),
+        stmtAccount.openedOn.toString(),
+        stmtAccount.closedOn?.toString() ?: "",
+        if (stmtAccount.nodeId.isExternal) "T" else "F",
+        if (!stmtAccount.isClosed(month)) "T" else "F",
+        month.year.toString(),
+        (month.month + 1).toString(),
+        transactionStatement.startBalance?.amount?.asAmount() ?: "",
+        if (transactionStatement.startBalance != null) {
+          if (transactionStatement.startBalance?.type == Balance.Type.PROJECTED) "P" else "C"
+        } else "",
+        transactionStatement.endBalance?.amount?.asAmount() ?: "",
+        if (transactionStatement.endBalance != null) {
+          if (transactionStatement.endBalance?.type == Balance.Type.PROJECTED) "P" else "C"
+        } else "",
+        transactionStatement.inFlows.asAmount(),
+        transactionStatement.outFlows.asAmount(),
+        transactionStatement.income.asAmount(),
+        transactionStatement.totalPayments.asAmount(),
+        transactionStatement.totalTransfers.asAmount(),
+        transactionStatement.unaccounted?.asAmount(),
+      )
+      echo(row.joinToString(","))
     }
   }
 

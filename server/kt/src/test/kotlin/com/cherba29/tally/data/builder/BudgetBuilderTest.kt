@@ -80,9 +80,9 @@ class BudgetBuilderTest : DescribeSpec({
     budget.accounts.size shouldBe 3
     budget.accounts[node1] shouldBe account1
     budget.accounts[node2] shouldBe account2
-    budget.statements.size shouldBe 3
-    budget.statements.values.sumOf { it.values.count { s -> s.startBalance != null } } shouldBe 3
-    budget.statements.values.sumOf { it.values.sumOf { s -> s.transactions.size } } shouldBe 4
+    budget.nodeToStatement.filter { it.key.children.isEmpty() }.size shouldBe 3
+    budget.nodeToStatement.values.sumOf { it.values.count { s -> (s as? TransactionStatement)?.startBalance != null } } shouldBe 3
+    budget.nodeToStatement.values.sumOf { it.values.sumOf { s -> (s as? TransactionStatement)?.transactions?.size ?: 0 } } shouldBe 4
     budget.months shouldBe NOV / 2019..DEC / 2019
     budget.tree shouldBe root {
       branch("john") {

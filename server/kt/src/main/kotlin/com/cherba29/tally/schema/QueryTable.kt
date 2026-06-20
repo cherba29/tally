@@ -52,7 +52,7 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
     val monthMap = if (treeNode.children.isNotEmpty()) {  // Summary row.
       payload.getOwnerMonthlySummaries(forOwner, path)
     } else {
-      payload.statements[account.nodeId]
+      payload.nodeToStatement[treeNode]
     } ?: throw java.lang.IllegalArgumentException(
       "Did not find monthly statements at '${treeNode.path.joinToString("/")}'"
     )

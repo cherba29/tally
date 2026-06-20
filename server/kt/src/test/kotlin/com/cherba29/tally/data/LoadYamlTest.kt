@@ -10,6 +10,7 @@ import com.cherba29.tally.core.root
 import com.cherba29.tally.data.builder.BudgetBuilder
 import com.cherba29.tally.data.builder.budget
 import com.cherba29.tally.statement.Transaction
+import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -84,8 +85,9 @@ class LoadYamlTest : DescribeSpec({
       account.openedOn shouldBe NOV / 2019
       account.closedOn shouldBe MAR / 2020
 
-      budget.statements.size shouldBe 1
-      val monthlyStatements = budget.statements[account.nodeId]!!
+      budget.tree shouldBe root { branch("arthur") { branch("external") { leaf("test-account") } } }
+      budget.nodeToStatement.size shouldBe 1
+      val monthlyStatements = budget.nodeToStatement[budget.tree[listOf("arthur", "external", "test-account")]]!!
       monthlyStatements.size shouldBe 5
       monthlyStatements.values.count { it.startBalance != null } shouldBe 0
       budget.months.size shouldBe 5
@@ -115,12 +117,13 @@ class LoadYamlTest : DescribeSpec({
       val budget = budget {
         loadYamlFile(this, parsedContent, relativeFilePath)
       }
+      budget.tree shouldBe root { branch("someone") { branch("external") { leaf("test-account") } } }
       budget.accounts.size shouldBe 1
-      budget.statements.size shouldBe 1
+      budget.nodeToStatement.size shouldBe 3
       budget.months.size shouldBe 2
-      budget.statements.values.sumOf { it.values.sumOf { s -> s.transactions.size } } shouldBe 0
+      budget.nodeToStatement.values.sumOf { it.values.sumOf { s -> (s as? TransactionStatement)?.transactions?.size ?: 0 } } shouldBe 0
 
-      val monthlyStatements = budget.statements[NodeId("test-account", isSummary = false, setOf("someone"), listOf("external"))]!!
+      val monthlyStatements = budget.nodeToStatement[budget.tree[listOf("someone", "external", "test-account")]]!!
       monthlyStatements.size shouldBe 2
       monthlyStatements[JAN / 2020]?.startBalance shouldBe Balance(0, LocalDate.parse("2020-01-01"), Balance.Type.CONFIRMED)
       monthlyStatements[FEB / 2020]?.startBalance shouldBe Balance(1000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
@@ -259,7 +262,6 @@ class LoadYamlTest : DescribeSpec({
       }
       budget.months.size shouldBe 2
       budget.accounts.size shouldBe 2
-      budget.statements.size shouldBe 2
       budget.tree shouldBe root {
         branch("someone") {
           branch("external") {
@@ -279,13 +281,12 @@ class LoadYamlTest : DescribeSpec({
 
       val node1 = NodeId("test-account", isSummary = false, setOf("someone"), listOf("external"))
       val node2 = NodeId("external", isSummary = false, setOf("someone"), listOf("external"))
-      val externalAccount = budget.accounts[node2]!!
-      val testAccountMonthlyStatements = budget.statements[node1]!!
+      val testAccountMonthlyStatements = budget.nodeToStatement[budget.tree[listOf("someone", "external", "test-account")]]!!
 
       testAccountMonthlyStatements.size shouldBe 2
       testAccountMonthlyStatements.values.count { it.startBalance != null } shouldBe 2
 
-      val testAccountStatement = testAccountMonthlyStatements[JAN / 2020]!!
+      val testAccountStatement = testAccountMonthlyStatements[JAN / 2020]!! as TransactionStatement
       testAccountStatement.transactions shouldBe setOf(
         Transaction(
           nodeId = node2,
@@ -302,9 +303,9 @@ class LoadYamlTest : DescribeSpec({
           balanceFromStart = 2248
         ),
       )
-      val externalAccountMonthlyStatements = budget.statements[externalAccount.nodeId]!!
+      val externalAccountMonthlyStatements = budget.nodeToStatement[budget.tree[listOf("someone", "external", "external")]]!!
       externalAccountMonthlyStatements.size shouldBe 2
-      val externalAccountStatement = externalAccountMonthlyStatements[JAN / 2020]!!
+      val externalAccountStatement = externalAccountMonthlyStatements[JAN / 2020]!! as TransactionStatement
       externalAccountStatement.transactions shouldBe setOf(
         Transaction(
           nodeId = node1,

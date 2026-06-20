@@ -55,8 +55,8 @@ class Generate : CliktCommand() {
     val budget = runBlocking { loader.budget() }
     val acct = budget.accounts.keys.find { it.name == account } ?: throw UsageError("Account $account not found")
 
-    val acctStmts = budget.statements[acct] ?: throw UsageError(
-      "The account $account has statements."
+    val acctStmts = budget.getMonthlyStatements(account) ?: throw UsageError(
+      "The account $account has no statements."
     )
     if (acctStmts.values.all { it.startBalance == null } &&
       acctStmts.values.sumOf { it.transactions.size } == 0) {

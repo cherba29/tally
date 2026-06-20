@@ -1,10 +1,10 @@
 package com.cherba29.tally.cli.cmds
 
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.data.watchedEventFlow
 import com.cherba29.tally.statement.Transaction
+import com.cherba29.tally.statement.TransactionStatement
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -15,7 +15,6 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.path
-import kotlin.collections.contains
 import kotlin.io.path.extension
 import kotlin.io.path.pathString
 import kotlin.math.abs
@@ -50,8 +49,9 @@ class Transactions : CliktCommand() {
     })
     val budget = runBlocking { loader.budget() }
     val entries = mutableMapOf<String, MutableList<Transaction>>()
-    for ((nodeId, monthTransactionStatements) in budget.statements) {
-      if (owner != null && owner !in nodeId.owners) {
+    for ((nodeId, monthTransactionStatements) in budget.nodeToStatement) {
+      if (nodeId.children.isNotEmpty()) continue  // Only leaf nodes get processed.
+      if (owner != null && owner != nodeId.path.first()) {
         continue
       }
       if (account != null && nodeId.name != account) {
@@ -69,7 +69,7 @@ class Transactions : CliktCommand() {
           accountEntries = mutableListOf()
           entries[transactionStatement.nodeId.name] = accountEntries
         }
-        accountEntries += transactionStatement.transactions
+        accountEntries += (transactionStatement as TransactionStatement).transactions
       }
     }
     for (accountEntries in entries.values) {

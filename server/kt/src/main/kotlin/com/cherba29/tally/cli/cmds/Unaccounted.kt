@@ -1,8 +1,8 @@
 package com.cherba29.tally.cli.cmds
 
 import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.Group
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.data.watchedEventFlow
 import com.cherba29.tally.statement.TransactionStatement
@@ -57,8 +57,9 @@ class Unaccounted : CliktCommand() {
     val budget = runBlocking { loader.budget() }
 
     val unaccountedEntries = mutableListOf<UnaccountedEntry>()
-    for ((nodeId, monthTransactionStatements) in budget.statements) {
-      if (owner != null && owner !in nodeId.owners) {
+    for ((nodeId, monthTransactionStatements) in budget.nodeToStatement) {
+      if (nodeId.children.isNotEmpty()) continue  // Only leaf nodes get processed.
+      if (owner != null && owner != nodeId.path.first()) {
         continue
       }
       if (account != null && nodeId.name != account) {
@@ -78,7 +79,7 @@ class Unaccounted : CliktCommand() {
           transactionStatement.unaccounted != 0 &&
           (includeProjected || transactionStatement.endBalance?.type == Balance.Type.CONFIRMED)
         ) {
-          unaccountedEntries += UnaccountedEntry(nodeId, transactionStatement)
+          unaccountedEntries += UnaccountedEntry(nodeId, transactionStatement as TransactionStatement)
         }
       }
     }
@@ -100,7 +101,7 @@ class Unaccounted : CliktCommand() {
       }
       val numTransfers = entry.statement.transactions.size
       echo(
-        "${entry.statement.monthRange.first} $unaccountedValue ${entry.account.name} $numTransfers transfers"
+        "${entry.statement.monthRange.first} $unaccountedValue ${entry.treeNode.name} $numTransfers transfers"
       )
     }
   }
@@ -109,7 +110,7 @@ class Unaccounted : CliktCommand() {
     private val ignorePathRegex = Regex("(^_)|(/_)")
     private fun Int.asAmount(): String = "%.2f".format(this / 100.0)
     data class UnaccountedEntry(
-      val account: NodeId,
+      val treeNode: Group,
       val statement: TransactionStatement
     )
   }
