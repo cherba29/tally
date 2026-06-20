@@ -36,7 +36,7 @@ class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
       }
     }
     logger.info {
-      "Done building budget for ${budget?.accounts?.size} accounts in $elapsedBudgetTime"
+      "Done building budget for ${budget?.leafToAccount?.size} accounts in $elapsedBudgetTime"
     }
   }
 

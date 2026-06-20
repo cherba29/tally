@@ -4,7 +4,6 @@ import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Group
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
-import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
@@ -19,8 +18,6 @@ data class Budget(
   val tree: Group,
   /** Maps leaf tree node to corresponding account. */
   val leafToAccount: Map<Group.Leaf, Account>,
-  // Account id to account map.
-  val accounts: Map<NodeId, Account>,
   // Tree node to corresponding statement.
   // Parent nodes map to SummaryStatement and leaf nodes to TransactionStatement.
   val nodeToStatement: Map<Group, Map<Month,Statement>>,

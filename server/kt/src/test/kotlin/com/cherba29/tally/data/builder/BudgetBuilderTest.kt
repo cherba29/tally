@@ -77,9 +77,9 @@ class BudgetBuilderTest : DescribeSpec({
         description = null
       )
     }
-    budget.accounts.size shouldBe 3
-    budget.accounts[node1] shouldBe account1
-    budget.accounts[node2] shouldBe account2
+    budget.leafToAccount.size shouldBe 3
+    budget.leafToAccount[budget.tree[listOf("john", "internal", "test-account1")]] shouldBe account1
+    budget.leafToAccount[budget.tree[listOf("john", "internal", "test-account2")]] shouldBe account2
     budget.nodeToStatement.filter { it.key.children.isEmpty() }.size shouldBe 3
     budget.nodeToStatement.values.sumOf { it.values.count { s -> (s as? TransactionStatement)?.startBalance != null } } shouldBe 3
     budget.nodeToStatement.values.sumOf { it.values.sumOf { s -> (s as? TransactionStatement)?.transactions?.size ?: 0 } } shouldBe 4
@@ -222,7 +222,7 @@ class BudgetBuilderTest : DescribeSpec({
       val budget = budget {
         setAccount(path1, account1)
       }
-      budget.accounts shouldBe mapOf(account1.nodeId to account1)
+      budget.leafToAccount shouldBe mapOf(budget.tree[listOf("bob", "internal", "test-account1")] to account1)
     }
 
     it("multiple accounts") {
@@ -247,8 +247,8 @@ class BudgetBuilderTest : DescribeSpec({
         setAccount(path2, account2)
         setAccount(path3, account3)
       }
-      budget.accounts.size shouldBe 3
-      budget.accounts.values shouldBe listOf(account1, account2, account3)
+      budget.leafToAccount.size shouldBe 3
+      budget.leafToAccount.values shouldBe listOf(account1, account2, account3)
     }
   }
 
@@ -288,7 +288,7 @@ class BudgetBuilderTest : DescribeSpec({
         }
         val table = BudgetBuilder().buildTransactionStatementTable(
           budget.months,
-          budget.accounts,
+          budget.leafToAccount.values.associateBy { it.nodeId },
           balances = mapOf(),
           transfers = mapOf(),
           owner = null

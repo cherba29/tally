@@ -36,12 +36,13 @@ class Report : CliktCommand() {
       it.extension == "yaml" && !ignorePathRegex.containsMatchIn(it.pathString)
     })
     val payload = runBlocking { loader.budget() }
-    val accounts = payload.accounts
+    val accounts = payload.leafToAccount
+    val stmtAccount = accounts.filter { it.key.name == account }.entries.firstOrNull()?.value
+      ?: throw IllegalStateException("Account not found $account")
+
     val monthStatements = payload.getMonthlyStatements(account) ?: mapOf()
     echo(HEADER_ROW.joinToString(","))
     for ((month, transactionStatement) in monthStatements) {
-      val stmtAccount = accounts[transactionStatement.nodeId]
-        ?: throw IllegalStateException("Account not found ${transactionStatement.nodeId}")
       if (month < startMonth || endMonth < month) {
         continue
       }

@@ -220,7 +220,6 @@ class BudgetBuilder(
       months,
       tree,
       leafToAccount,
-      accounts,
       nodeToStatement,
     )
   }

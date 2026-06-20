@@ -107,7 +107,7 @@ class GenerateTest : DescribeSpec({
       val result = command.test(
         listOf("test-account1", "--start-month=Mar2019", "--tally-path=$tallyPath")
       )
-      result.stderr shouldContain  "Error: Account test-account1 not found"
+      result.stderr shouldContain  "The account test-account1 has no statements."
       result.stdout shouldBe "Generating balances for test-account1 starting from Mar2019 for $tallyPath\n"
       result.statusCode shouldBe 1
     }

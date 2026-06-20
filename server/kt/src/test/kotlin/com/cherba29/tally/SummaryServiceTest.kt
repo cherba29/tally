@@ -58,7 +58,6 @@ class SummaryServiceTest : DescribeSpec({
           months = MAR / 2026..MAR / 2026,
           tree = root {},
           leafToAccount = mapOf(),
-          accounts = mapOf(),
           nodeToStatement = mapOf()
         )
       }
