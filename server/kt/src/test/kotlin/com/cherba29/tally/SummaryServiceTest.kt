@@ -4,7 +4,6 @@ import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.MAR
-import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.root
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.data.Loader
@@ -33,8 +32,7 @@ class SummaryServiceTest : DescribeSpec({
 
   describe("buildSummaryData") {
     it("empty") {
-      val nodeId = NodeId("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = true)
-      val account = Account(nodeId, openedOn = MAR / 2026)
+      val account = Account("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = true, openedOn = MAR / 2026)
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
           setAccount(listOf("john", "internal", "test-account1"), account)
@@ -44,12 +42,12 @@ class SummaryServiceTest : DescribeSpec({
       val exception = shouldThrow<NotFoundException> {
         SummaryService(loader).summary(
           owner = "john",
-          startMonth = MAR / 2026,
-          endMonth = MAR / 2026,
+          startMonth = APR / 2026,
+          endMonth = APR / 2026,
           accountType = "internal"
         )
       }
-      exception.message shouldBe "Summary internal for john for months [Mar2026, Mar2026] not found."
+      exception.message shouldBe "Summary 'internal' for owner 'john' for months [Apr2026, Apr2026] not found."
     }
 
     it("missing months") {
@@ -65,17 +63,16 @@ class SummaryServiceTest : DescribeSpec({
       val exception = shouldThrow<NotFoundException> {
         SummaryService(loader).summary(
           owner = "john",
-          startMonth = MAR / 2026,
-          endMonth = MAR / 2026,
+          startMonth = APR / 2026,
+          endMonth = APR / 2026,
           accountType = "internal"
         )
       }
-      exception.message shouldBe "Summary internal for john for months [Mar2026, Mar2026] not found."
+      exception.message shouldBe "Summary 'internal' for owner 'john' for months [Apr2026, Apr2026] not found."
     }
     
     it("single") {
-      val nodeId = NodeId("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = true)
-      val account = Account(nodeId, openedOn = MAR / 2026)
+      val account = Account("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = true, openedOn = MAR / 2026)
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
           setAccount(listOf("john", "internal", "test-account1"), account)
@@ -95,10 +92,8 @@ class SummaryServiceTest : DescribeSpec({
     }
 
     it("with transaction statement") {
-      val nodeId1 = NodeId("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = false)
-      val account1 = Account(nodeId1, openedOn = MAR / 2026)
-      val nodeId2 = NodeId("test-account2", owners = setOf("john"), path = listOf("internal"), isSummary = false)
-      val account2 = Account(nodeId2, openedOn = MAR / 2026)
+      val account1 = Account("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = false, openedOn = MAR / 2026)
+      val account2 = Account("test-account2", owners = setOf("john"), path = listOf("internal"), isSummary = false, openedOn = MAR / 2026)
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
           setAccount(listOf("john", "internal", "test-account1"), account1)
@@ -126,10 +121,8 @@ class SummaryServiceTest : DescribeSpec({
     }
 
     it("single with multiple transaction statement") {
-      val nodeId1 = NodeId("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = false)
-      val account1 = Account(nodeId1, openedOn = MAR / 2026)
-      val nodeId2 = NodeId("test-account2", owners = setOf("john"), path = listOf("external"), isSummary = false)
-      val account2 = Account(nodeId2, openedOn = MAR / 2026)
+      val account1 = Account("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = false, openedOn = MAR / 2026)
+      val account2 = Account("test-account2", owners = setOf("john"), path = listOf("external"), isSummary = false, openedOn = MAR / 2026)
 
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
@@ -157,10 +150,8 @@ class SummaryServiceTest : DescribeSpec({
     }
 
     it("multiple months") {
-      val nodeId1 = NodeId("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = false)
-      val account1 = Account(nodeId1, openedOn = MAR / 2026)
-      val nodeId2 = NodeId("test-account2", owners = setOf("john"), path = listOf("external"), isSummary = false)
-      val account2 = Account(nodeId2, openedOn = MAR / 2026)
+      val account1 = Account("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = false, openedOn = MAR / 2026)
+      val account2 = Account("test-account2", owners = setOf("john"), path = listOf("external"), isSummary = false, openedOn = MAR / 2026)
 
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
@@ -199,10 +190,8 @@ class SummaryServiceTest : DescribeSpec({
     }
 
     it("multiple months null start month") {
-      val nodeId1 = NodeId("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = false)
-      val account1 = Account(nodeId1, openedOn = MAR / 2026)
-      val nodeId2 = NodeId("test-account2", owners = setOf("john"), path = listOf("external"), isSummary = false)
-      val account2 = Account(nodeId2, openedOn = MAR / 2026)
+      val account1 = Account("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = false, openedOn = MAR / 2026)
+      val account2 = Account("test-account2", owners = setOf("john"), path = listOf("external"), isSummary = false, openedOn = MAR / 2026)
 
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {

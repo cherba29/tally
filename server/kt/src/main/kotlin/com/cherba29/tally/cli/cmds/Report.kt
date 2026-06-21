@@ -37,7 +37,7 @@ class Report : CliktCommand() {
     })
     val payload = runBlocking { loader.budget() }
     val accounts = payload.leafToAccount
-    val stmtAccount = accounts.filter { it.key.name == account }.entries.firstOrNull()?.value
+    val (accountNode, stmtAccount) = accounts.filter { it.key.name == account }.entries.firstOrNull()
       ?: throw IllegalStateException("Account not found $account")
 
     val monthStatements = payload.getMonthlyStatements(account) ?: mapOf()
@@ -47,11 +47,11 @@ class Report : CliktCommand() {
         continue
       }
       val row = listOf(
-        stmtAccount.nodeId.name,
-        stmtAccount.nodeId.path.joinToString("/"),
+        stmtAccount.name,
+        stmtAccount.path.joinToString("/"),
         stmtAccount.openedOn.toString(),
         stmtAccount.closedOn?.toString() ?: "",
-        if (stmtAccount.nodeId.isExternal) "T" else "F",
+        if (accountNode.isExternal) "T" else "F",
         if (!stmtAccount.isClosed(month)) "T" else "F",
         month.year.toString(),
         (month.month + 1).toString(),

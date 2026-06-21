@@ -27,10 +27,11 @@ class SummaryService(val loader: Loader) : Query {
     val (result, timeTaken) = measureTimedValue {
       try {
         val budget = runBlocking { loader.budget() }
-        val summaryStatements = budget.getOwnerSummaries(owner, accountType.split("/"), startMonth, endMonth)
+        val summaryPath = listOf(owner) + accountType.split("/").filter { it.isNotEmpty() }
+        val summaryStatements = budget.getOwnerSummaries(summaryPath, startMonth, endMonth)
         if (summaryStatements.isEmpty()) {
           throw NotFoundException(
-            "Summary $accountType for $owner for months [$startMonth, $endMonth] not found."
+            "Summary '$accountType' for owner '$owner' for months [$startMonth, $endMonth] not found."
           )
         }
         // Multi-month queries will produce multiple summary statements which need to be combined,
@@ -39,7 +40,7 @@ class SummaryService(val loader: Loader) : Query {
           if (summaryStatements.size == 1)
             summaryStatements.first()
           else
-            combineSummaryStatements(summaryStatements)
+            combineSummaryStatements(budget.tree, summaryPath, summaryStatements)
 
         summary.toGqlSummaryData()
       } catch (e: Exception) {

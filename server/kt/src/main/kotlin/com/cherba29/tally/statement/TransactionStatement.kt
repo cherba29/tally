@@ -1,12 +1,12 @@
 package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.Group
 import com.cherba29.tally.core.MonthRange
-import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.Transfer
 
 // Extension of Statement for transactions over an account.
-class TransactionStatement(nodeId: NodeId, monthRange: MonthRange, isClosed: Boolean, startBalance: Balance?) :
+class TransactionStatement(nodeId: Group, monthRange: MonthRange, isClosed: Boolean, startBalance: Balance?) :
   Statement(nodeId, monthRange, isClosed, startBalance) {
   // List of transaction in this statement.
   val transactions: MutableList<Transaction> = mutableListOf()
@@ -63,14 +63,15 @@ class TransactionStatement(nodeId: NodeId, monthRange: MonthRange, isClosed: Boo
 
   companion object {
     fun fromTransfers(
-      nodeId: NodeId,
+      tree: Group,
+      nodeId: Group.Leaf,
       monthRange: MonthRange,
       isClosed: Boolean,
       transfers: List<Transfer>?,
       startBalance: Balance?
     ): TransactionStatement {
       val statement = TransactionStatement(nodeId, monthRange, isClosed, startBalance)
-      val attributeTransfer: (NodeId, NodeId, Int) -> Transaction.Type = { fromAccount, toAccount, amount ->
+      val attributeTransfer: (Group, Group, Int) -> Transaction.Type = { fromAccount, toAccount, amount ->
         if (amount > 0) {
           statement.inFlows += amount
         } else {
@@ -91,32 +92,32 @@ class TransactionStatement(nodeId: NodeId, monthRange: MonthRange, isClosed: Boo
       if (firstTransfer != null && startBalance != null && firstTransfer.balance.date < startBalance.date) {
         throw IllegalStateException(
           "Balance ${monthRange.first} $startBalance for account $nodeId starts after " +
-              "transaction ${firstTransfer.fromAccount.nodeId.name} --> " +
-              "${firstTransfer.toAccount.nodeId.name}/${firstTransfer.balance} desc '${firstTransfer.description}'"
+              "transaction ${firstTransfer.fromAccount.last()} --> " +
+              "${firstTransfer.toAccount.last()}/${firstTransfer.balance} desc '${firstTransfer.description}'"
         )
       }
 
       for (t in descTransfers) {
         statement.hasProjectedTransfer =
           statement.hasProjectedTransfer || t.balance.type == Balance.Type.PROJECTED
-        var otherAccount: NodeId
+        var otherAccount: Group
         var balance: Balance
         var transactionType: Transaction.Type
-        if (t.toAccount.nodeId.name === nodeId.name) {
+        if (t.toAccount.last() === nodeId.name) {
           balance = t.balance
-          otherAccount = t.fromAccount.nodeId
+          otherAccount = tree[t.fromAccount] ?: throw IllegalStateException("${t.fromAccount} is not in $tree")
           transactionType = attributeTransfer(otherAccount, nodeId, balance.amount)
-        } else if (t.fromAccount.nodeId.name === nodeId.name) {
+        } else if (t.fromAccount.last() === nodeId.name) {
           balance = -t.balance
-          otherAccount = t.toAccount.nodeId
+          otherAccount = tree[t.toAccount] ?: throw IllegalStateException("${t.toAccount} is not in $tree")
           transactionType = attributeTransfer(nodeId, otherAccount, balance.amount)
         } else {
           // This should never occur since budget should have been validated by now.
           throw IllegalStateException(
-            "Setting transfer (${t.fromAccount.nodeId.name} to ${t.toAccount.nodeId.name}) for ${nodeId.name} account statement!"
+            "Setting transfer from (${t.fromAccount} to ${t.toAccount}) for '${nodeId.name}' account statement!"
           )
         }
-        if (!statement.coversPrevious && balance.amount > 0 && t.fromAccount.nodeId.hasCommonOwner(nodeId)) {
+        if (!statement.coversPrevious && balance.amount > 0 && tree[t.fromAccount]?.path?.first() == nodeId.path.first()) {
           statement.coversProjectedPrevious = true
           if (balance.type != Balance.Type.PROJECTED) {
             statement.coversPrevious = true
@@ -135,8 +136,8 @@ class TransactionStatement(nodeId: NodeId, monthRange: MonthRange, isClosed: Boo
       return statement
     }
 
-    private fun getTransactionType(fromAccount: NodeId, toAccount: NodeId, amount: Int): Transaction.Type {
-      return if (toAccount.hasCommonOwner(fromAccount) && !toAccount.isExternal && !fromAccount.isExternal) {
+    private fun getTransactionType(fromAccount: Group, toAccount: Group, amount: Int): Transaction.Type {
+      return if ((toAccount.path.first() == fromAccount.path.first()) && !toAccount.isExternal && !fromAccount.isExternal) {
         Transaction.Type.TRANSFER
       } else {
         if (amount > 0) Transaction.Type.INCOME else Transaction.Type.EXPENSE

@@ -13,7 +13,10 @@ class AccountTest : DescribeSpec({
   describe("open-closed") {
     it("isClosed - false by default") {
       val account = Account(
-        nodeId = NodeId("testAccount", isSummary = false),
+        "testAccount",
+        path = listOf(),
+        owners = setOf(),
+        isSummary = false,
         openedOn = JAN / 2021
       )
       account.isClosed(MAR / 2021) shouldBe false
@@ -21,7 +24,10 @@ class AccountTest : DescribeSpec({
 
     it("isClosed false if closedOn not set") {
       val account = Account(
-        nodeId = NodeId("testAccount", isSummary = false),
+        "testAccount",
+        path = listOf(),
+        owners = setOf(),
+        isSummary = false,
         openedOn = NOV / 2020,
       )
       account.isClosed(MAR / 2021) shouldBe false
@@ -29,7 +35,10 @@ class AccountTest : DescribeSpec({
 
     it("isClosed true if closedOn is set") {
       val account = Account(
-        nodeId = NodeId("testAccount", isSummary = false),
+        "testAccount",
+        path = listOf(),
+        owners = setOf(),
+        isSummary = false,
         openedOn = FEB / 2021,
         closedOn = APR / 2021,
       )
@@ -38,7 +47,10 @@ class AccountTest : DescribeSpec({
 
     it("isClosed true if not opened yet") {
       val account = Account(
-        nodeId = NodeId("testAccount", isSummary = false),
+        "testAccount",
+        path = listOf(),
+        owners = setOf(),
+        isSummary = false,
         openedOn = FEB / 2021,
         closedOn = APR / 2021,
       )
@@ -49,7 +61,10 @@ class AccountTest : DescribeSpec({
   describe("conversions") {
     it("toString") {
       val account = Account(
-        nodeId = NodeId(name = "testAccount", isSummary = false, owners = setOf("bob")),
+        name = "testAccount",
+        path = listOf(),
+        owners = setOf("bob"),
+        isSummary = false,
         openedOn = JAN / 2021
       )
       account.toString() shouldBe "Account testAccount /"
@@ -57,7 +72,10 @@ class AccountTest : DescribeSpec({
 
     it("toString closed") {
       val account = Account(
-        nodeId = NodeId(name = "testAccount", isSummary = false, owners = setOf("bob"), path = listOf("internal", "tax")),
+        name = "testAccount",
+        path = listOf("internal", "tax"),
+        owners = setOf("bob"),
+        isSummary = false,
         openedOn = JAN / 2021,
         closedOn = MAR / 2026
       )

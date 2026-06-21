@@ -3,7 +3,6 @@ package com.cherba29.tally.statement
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.DEC
-import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.data.builder.budget
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
@@ -13,12 +12,9 @@ class TransactionTest : DescribeSpec({
   describe("Build") {
     it("bad account name on transfer") {
       val path1 = listOf("john", "external", "test-account1")
-      val node1 = NodeId(
-        name = "test-account1", isSummary = false,
+      val account1 = Account(name = "test-account1", isSummary = false,
         path = listOf("external"),
-        owners = setOf("john")
-      )
-      val account1 = Account(node1, openedOn = DEC / 2021)
+        owners = setOf("john"), openedOn = DEC / 2021)
       val exception =
         shouldThrow<IllegalArgumentException> {
           budget {

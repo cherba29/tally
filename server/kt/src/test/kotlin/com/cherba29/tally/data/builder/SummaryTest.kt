@@ -5,7 +5,7 @@ import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthName.MAY
-import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.core.root
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
@@ -18,76 +18,87 @@ class SummaryTest : DescribeSpec({
   describe("combineSummaryStatements") {
     it("empty") {
       val exception = shouldThrow<IllegalArgumentException> {
-        combineSummaryStatements(summaryStatements = listOf())
+        combineSummaryStatements(root {}, listOf(), summaryStatements = listOf())
       }
       exception.message shouldBe "Cant combine empty list of summary statements"
     }
     it("single") {
+      val tree = root {
+        branch("john") {
+          branch("external") {
+            leaf("test-account1")
+          }
+        }
+      }
       val summaryStatement = SummaryStatement(
-          nodeId = NodeId("test-account1", isSummary = true),
-          monthRange = APR / 2026 .. MAY / 2026
+        tree[listOf("john", "external")]!!,
+        monthRange = APR / 2026..MAY / 2026
 
       )
-      val result = combineSummaryStatements(listOf(summaryStatement))
-      result.nodeId shouldBe NodeId("test-account1", isSummary = true)
+      val result = combineSummaryStatements(tree, listOf("john"),listOf(summaryStatement))
+      result.nodeId.path shouldBe listOf("john")
       result.monthRange shouldBe APR / 2026..MAY / 2026
       result.totalPayments shouldBe 0
       result.totalTransfers shouldBe 0
       result.statements shouldBe listOf()
     }
-    it("two different node statements fail") {
-      val stmt1 = SummaryStatement(
-        nodeId = NodeId("test-account1", isSummary = true),
-        monthRange = APR / 2026 .. MAY / 2026
-
-      )
-      val stmt2 = SummaryStatement(
-        nodeId = NodeId("test-account2", isSummary = true),
-        monthRange = APR / 2026 .. MAY / 2026
-
-      )
-      val exception = shouldThrow<IllegalArgumentException> {
-        combineSummaryStatements(listOf(stmt1, stmt2))
-      }
-      exception.message shouldBe "Cant combine different summary statements test-account1 and test-account2"
-    }
-
     it("two node statements with different months") {
+      val tree = root {
+        branch("john") {
+          branch("internal") {
+            leaf("test-account1")
+          }
+          branch("external") {
+            leaf("test-account2")
+          }
+        }
+      }
+
       val stmt1 = SummaryStatement(
-        nodeId = NodeId("test-account1", isSummary = true),
-        monthRange = APR / 2026 .. APR / 2026
+        tree[listOf("john", "internal")]!!,
+        monthRange = APR / 2026..APR / 2026
 
       )
       val stmt2 = SummaryStatement(
-        nodeId = NodeId("test-account1", isSummary = true),
-        monthRange = MAY / 2026 .. MAY / 2026
+        tree[listOf("john", "external")]!!,
+        monthRange = MAY / 2026..MAY / 2026
 
       )
-      val result = combineSummaryStatements(listOf(stmt1, stmt2))
-      result.nodeId shouldBe NodeId("test-account1", isSummary = true)
+      val result = combineSummaryStatements(tree, listOf("john"), listOf(stmt1, stmt2))
+      result.nodeId.path shouldBe listOf("john")
       result.monthRange shouldBe APR / 2026..MAY / 2026
       result.totalPayments shouldBe 0
       result.totalTransfers shouldBe 0
       result.statements shouldBe listOf()
     }
     it("two node statements with same months") {
-      val stmt1 = SummaryStatementBuilder.builder {
-        nodeId = NodeId("test-account1", isSummary = true)
-        monthRange = APR / 2026 .. APR / 2026
+      val tree = root {
+        branch("john") {
+          branch("internal") {
+            leaf("test-account1")
+          }
+        }
+      }
 
-        addStatement(TransactionStatement(
-          nodeId = NodeId("test-account1", isSummary = true),
-          monthRange = APR / 2026 .. APR / 2026,
-          isClosed = false,
-          startBalance = Balance(100, LocalDate(2026, 4, 1), Balance.Type.CONFIRMED),
-        ))
+      val stmt1 = SummaryStatementBuilder.builder {
+        nodeId = tree[listOf("john", "internal")]
+        monthRange = APR / 2026..APR / 2026
+
+        addStatement(
+          TransactionStatement(
+            tree[listOf("john", "internal", "test-account1")]!!,
+            monthRange = APR / 2026..APR / 2026,
+            isClosed = false,
+            startBalance = Balance(100, LocalDate(2026, 4, 1), Balance.Type.CONFIRMED),
+          )
+        )
       }
       val stmt2 = SummaryStatementBuilder.builder {
-        nodeId = NodeId("test-account1", isSummary = true)
+        nodeId = tree[listOf("john", "internal")]
         monthRange = APR / 2026..APR / 2026
         addStatement(
           TransactionStatement(
-            nodeId = NodeId("test-account1", isSummary = true),
+            tree[listOf("john", "internal", "test-account1")]!!,
             monthRange = APR / 2026..APR / 2026,
             isClosed = false,
             startBalance = Balance(100, LocalDate(2026, 4, 1), Balance.Type.CONFIRMED),
@@ -95,17 +106,25 @@ class SummaryTest : DescribeSpec({
         )
       }
       val exception = shouldThrow<IllegalArgumentException> {
-        combineSummaryStatements(listOf(stmt1, stmt2))
+        combineSummaryStatements(tree, listOf("john"), listOf(stmt1, stmt2))
       }
       exception.message shouldBe "Duplicate month statement for test-account1 for Apr2026..Apr2026"
     }
     it("two node statements with substatements") {
+      val tree = root {
+        branch("john") {
+          branch("internal") {
+            leaf("test-account1")
+          }
+        }
+      }
+
       val stmt1 = SummaryStatementBuilder.builder {
-        nodeId = NodeId("/test-account1", isSummary = true)
+        nodeId = tree[listOf("john", "internal")]
         monthRange = APR / 2026..APR / 2026
         addStatement(
           TransactionStatement(
-            nodeId = NodeId("test-account1", isSummary = true),
+            tree[listOf("john", "internal", "test-account1")]!!,
             monthRange = APR / 2026..APR / 2026,
             isClosed = false,
             startBalance = Balance(100, LocalDate(2026, 4, 1), Balance.Type.CONFIRMED),
@@ -113,19 +132,19 @@ class SummaryTest : DescribeSpec({
         )
       }
       val stmt2 = SummaryStatementBuilder.builder {
-        nodeId = NodeId("/test-account1", isSummary = true)
+        nodeId = tree[listOf("john", "internal")]
         monthRange = MAY / 2026..MAY / 2026
         addStatement(
           TransactionStatement(
-            nodeId = NodeId("test-account1", isSummary = true),
+            tree[listOf("john", "internal", "test-account1")]!!,
             monthRange = MAY / 2026..MAY / 2026,
             isClosed = false,
             startBalance = Balance(200, LocalDate(2026, 5, 1), Balance.Type.CONFIRMED),
           )
         )
       }
-      val result = combineSummaryStatements(listOf(stmt1, stmt2))
-      result.nodeId shouldBe NodeId("/test-account1", isSummary = true)
+      val result = combineSummaryStatements(tree, listOf("john"), listOf(stmt1, stmt2))
+      result.nodeId.path shouldBe listOf("john")
       result.monthRange shouldBe APR / 2026..MAY / 2026
       result.totalPayments shouldBe 0
       result.totalTransfers shouldBe 0
@@ -133,7 +152,7 @@ class SummaryTest : DescribeSpec({
       result.change shouldBe -100
       result.statements.size shouldBe 1
       val statement = result.statements.first()
-      statement.nodeId shouldBe NodeId("test-account1", isSummary = true)
+      statement.nodeId.path shouldBe listOf("john", "internal", "test-account1")
       statement.monthRange shouldBe APR / 2026..MAY / 2026
       statement.totalPayments shouldBe 0
       statement.totalTransfers shouldBe 0
@@ -144,10 +163,17 @@ class SummaryTest : DescribeSpec({
 
   describe("fromStatements") {
     it("empty") {
-      val nodeId = NodeId(name = "test-account", isSummary = false, path = listOf("external"))
+      val tree = root {
+        branch("john") {
+          branch("internal") {
+            leaf("test-account1")
+          }
+        }
+      }
+
       val statement = Statement(
-        nodeId,
-        JAN / 2026 .. MAR / 2026,
+        tree[listOf("john", "internal", "test-account1")]!!,
+        JAN / 2026..MAR / 2026,
       )
       statement.isClosed shouldBe false
       statement.percentChange shouldBe null
@@ -155,10 +181,17 @@ class SummaryTest : DescribeSpec({
     }
 
     it("from empty list of statements") {
-      val nodeId = NodeId(name = "test-account", isSummary = false, path = listOf("external"))
+      val tree = root {
+        branch("john") {
+          branch("internal") {
+            leaf("test-account1")
+          }
+        }
+      }
+
       val combined = makeSummaryStatementFromSubstatements(
-        nodeId,
-        JAN / 2026 .. MAR / 2026,
+        tree[listOf("john", "internal", "test-account1")]!!,
+        JAN / 2026..MAR / 2026,
         statements = mapOf()
       )
       combined.isClosed shouldBe false
@@ -168,10 +201,17 @@ class SummaryTest : DescribeSpec({
     }
 
     it("from single statement") {
-      val nodeId = NodeId(name = "test-account", isSummary = false, path = listOf("external"))
+      val tree = root {
+        branch("john") {
+          branch("internal") {
+            leaf("test-account1")
+          }
+        }
+      }
+
       val startMonth = JAN / 2026
       val statement = TransactionStatement(
-        nodeId,
+        tree[listOf("john", "internal", "test-account1")]!!,
         startMonth..startMonth,
         isClosed = false,
         startBalance = Balance(
@@ -181,8 +221,8 @@ class SummaryTest : DescribeSpec({
         )
       )
       val combined = makeSummaryStatementFromSubstatements(
-        nodeId,
-        startMonth .. MAR / 2026,
+        tree[listOf("john", "internal", "test-account1")]!!,
+        startMonth..MAR / 2026,
         statements = mapOf(startMonth to statement)
       )
       combined.isClosed shouldBe false

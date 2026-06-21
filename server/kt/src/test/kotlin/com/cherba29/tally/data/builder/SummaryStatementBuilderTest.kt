@@ -1,7 +1,7 @@
 package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.MonthName.MAY
-import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.core.root
 import com.cherba29.tally.statement.Statement
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -11,147 +11,157 @@ class SummaryStatementBuilderTest : DescribeSpec({
   describe("Creation") {
     it("basic") {
       val builder = SummaryStatementBuilder()
-      builder.build().isEmpty() shouldBe true
+      builder.build(root {}).isEmpty() shouldBe true
     }
   }
   describe("statements") {
     it("add single") {
+      val tree = root {
+        branch("john") {
+          branch("internal") {
+            leaf("test-account")
+          }
+        }
+      }
       val builder = SummaryStatementBuilder()
       builder.addStatement(
-        owner = "john",
         statement = Statement(
-          nodeId = NodeId("test-account", isSummary = false, setOf("john"), listOf("internal")),
+          tree[listOf("john", "internal", "test-account")]!!,
           monthRange = MAY / 2026..MAY / 2026,
         )
       )
-      val summaryStatements = builder.build()
+      val summaryStatements = builder.build(tree)
       summaryStatements.isEmpty() shouldBe false
-      summaryStatements.keys shouldBe setOf(listOf("john", "internal"), listOf("john", ""))
-      val stmt = summaryStatements[listOf("john", "internal")]!![MAY/2026]!!
-      stmt.nodeId.name shouldBe "internal"
+      summaryStatements.keys.map { it.path }.toSet() shouldBe setOf(listOf("john", "internal"), listOf("john"))
+      val treeNode = tree[listOf("john", "internal")]!!
+      val stmt = summaryStatements[treeNode]!![MAY/2026]!!
+      stmt.nodeId.path shouldBe listOf("john", "internal")
       stmt.nodeId.isExternal shouldBe false
-      stmt.nodeId.isSummary shouldBe true
+      stmt.nodeId.children.isNotEmpty() shouldBe true
       stmt.monthRange shouldBe MAY / 2026 .. MAY / 2026
-      stmt.nodeId.owners shouldBe listOf("john")
       stmt.statements.size shouldBe 1
       val subStatement = stmt.statements.first()
       subStatement.nodeId.name shouldBe "test-account"
       subStatement.monthRange shouldBe MAY / 2026 .. MAY / 2026
-      subStatement.nodeId.owners shouldBe listOf("john")
+      subStatement.nodeId.path shouldBe listOf("john", "internal", "test-account")
     }
 
     it("add single and propagate up") {
+      val tree = root {
+        branch("john") {
+          branch("internal") {
+            leaf("test-account")
+          }
+        }
+      }
+
       val aggregator = SummaryStatementBuilder()
       aggregator.addStatement(
-        owner = "john",
         statement = Statement(
-          nodeId = NodeId("/test-account", isSummary = true, path = listOf("internal")),
+          tree[listOf("john", "internal", "test-account")]!!,
           monthRange = MAY / 2026 .. MAY / 2026,
         )
       )
-      val summaryStatements = aggregator.build()
+      val summaryStatements = aggregator.build(tree)
 
       summaryStatements.isEmpty() shouldBe false
       summaryStatements.size shouldBe 2
-      summaryStatements.keys shouldBe setOf(listOf("john", "internal"), listOf("john", ""))
-      val stmt = summaryStatements[listOf("john", "internal")]!![MAY / 2026]!!
-      stmt.nodeId.name shouldBe "internal"
+      summaryStatements.keys.map { it.path }.toSet() shouldBe setOf(listOf("john", "internal"), listOf("john"))
+      val stmt = summaryStatements[tree[listOf("john", "internal")]]!![MAY / 2026]!!
       stmt.nodeId.isExternal shouldBe false
-      stmt.nodeId.isSummary shouldBe true
+      stmt.nodeId.children.isNotEmpty() shouldBe true
       stmt.monthRange shouldBe MAY / 2026 .. MAY / 2026
-      stmt.nodeId.owners shouldBe listOf("john")
+      stmt.nodeId.path shouldBe listOf("john", "internal")
       stmt.statements.size shouldBe 1
       val subStatement = stmt.statements.first()
-      subStatement.nodeId.name shouldBe "/test-account"
       subStatement.monthRange shouldBe MAY / 2026 .. MAY / 2026
-      subStatement.nodeId.owners shouldBe listOf()
+      subStatement.nodeId.path shouldBe listOf("john", "internal", "test-account")
 
-      val topStmt = summaryStatements[listOf("john", "")]!![MAY / 2026]!!
-      topStmt.nodeId.name shouldBe ""
+      val topStmt = summaryStatements[tree[listOf("john")]]!![MAY / 2026]!!
       topStmt.monthRange shouldBe MAY / 2026 .. MAY / 2026
-      topStmt.nodeId.owners shouldBe listOf("john")
+      topStmt.nodeId.path shouldBe listOf("john")
       topStmt.statements.size shouldBe 1
 
       val topSubStatement = topStmt.statements.first()
-      topSubStatement.nodeId.name shouldBe "internal"
       topSubStatement.monthRange shouldBe MAY / 2026 .. MAY / 2026
-      topSubStatement.nodeId.owners shouldBe listOf("john")
+      topSubStatement.nodeId.path shouldBe listOf("john", "internal")
     }
   }
 
   it("multiple propagate up") {
+    val tree = root {
+      branch("john") {
+        branch("internal") {
+          leaf("test-account1")
+        }
+        branch("external") {
+          leaf("test-account2")
+          leaf("test-account3")
+        }
+      }
+    }
+
     val aggregator = SummaryStatementBuilder()
     aggregator.addStatement(
-      owner = "john",
       statement = Statement(
-        nodeId = NodeId("test-account1", isSummary = false, path = listOf("internal")),
+        tree[listOf("john", "internal", "test-account1")]!!,
         monthRange = MAY / 2026 .. MAY / 2026,
       )
     )
     aggregator.addStatement(
-      owner = "john",
       statement = Statement(
-        nodeId = NodeId("test-account2", isSummary = false, path = listOf("external")),
+        tree[listOf("john", "external", "test-account2")]!!,
         monthRange = MAY / 2026 .. MAY / 2026,
       )
     )
     aggregator.addStatement(
-      owner = "john",
       statement = Statement(
-        nodeId = NodeId("test-account3", isSummary = false, path = listOf("external")),
+        tree[listOf("john", "external", "test-account3")]!!,
         monthRange = MAY / 2026 .. MAY / 2026,
       )
     )
-    val summaryStatements = aggregator.build()
+    val summaryStatements = aggregator.build(tree)
 
     summaryStatements.isEmpty() shouldBe false
     summaryStatements.size shouldBe 3
-    summaryStatements.keys shouldBe setOf(
-      listOf("john", "internal"), listOf("john", "external"), listOf("john", ""))
-    val stmtInternal = summaryStatements[listOf("john", "internal")]!![MAY / 2026]!!
-    stmtInternal.nodeId.name shouldBe "internal"
+    summaryStatements.keys.map { it.path }.toSet() shouldBe setOf(
+      listOf("john", "internal"), listOf("john", "external"), listOf("john"))
+    val stmtInternal = summaryStatements[tree[listOf("john", "internal")]]!![MAY / 2026]!!
     stmtInternal.nodeId.isExternal shouldBe false
-    stmtInternal.nodeId.isSummary shouldBe true
+    stmtInternal.nodeId.children.isNotEmpty() shouldBe true
     stmtInternal.monthRange shouldBe MAY / 2026 .. MAY / 2026
-    stmtInternal.nodeId.owners shouldBe listOf("john")
+    stmtInternal.nodeId.path shouldBe listOf("john", "internal")
     stmtInternal.statements.size shouldBe 1
     val subStmtInternal = stmtInternal.statements.first()
-    subStmtInternal.nodeId.name shouldBe "test-account1"
     subStmtInternal.monthRange shouldBe MAY / 2026 .. MAY / 2026
-    subStmtInternal.nodeId.owners shouldBe listOf()
+    subStmtInternal.nodeId.path shouldBe listOf("john", "internal", "test-account1")
 
-    val stmtExternal = summaryStatements[listOf("john", "external")]!![MAY / 2026]!!
-    stmtExternal.nodeId.name shouldBe "external"
+    val stmtExternal = summaryStatements[tree[listOf("john", "external")]]!![MAY / 2026]!!
     stmtExternal.nodeId.isExternal shouldBe true
-    stmtExternal.nodeId.isSummary shouldBe true
+    stmtExternal.nodeId.children.isNotEmpty() shouldBe true
     stmtExternal.monthRange shouldBe MAY / 2026 .. MAY / 2026
-    stmtExternal.nodeId.owners shouldBe listOf("john")
+    stmtExternal.nodeId.path shouldBe listOf("john", "external")
     stmtExternal.statements.size shouldBe 2
     val subStmt1External = stmtExternal.statements[0]
-    subStmt1External.nodeId.name shouldBe "test-account2"
     subStmt1External.monthRange shouldBe MAY / 2026 .. MAY / 2026
-    subStmt1External.nodeId.owners shouldBe listOf()
+    subStmt1External.nodeId.path shouldBe listOf("john", "external", "test-account2")
     val subStmt2External = stmtExternal.statements[1]
-    subStmt2External.nodeId.name shouldBe "test-account3"
     subStmt2External.monthRange shouldBe MAY / 2026 .. MAY / 2026
-    subStmt2External.nodeId.owners shouldBe listOf()
+    subStmt2External.nodeId.path shouldBe listOf("john", "external", "test-account3")
 
-    val topStmt = summaryStatements[listOf("john", "")]!![MAY / 2026]!!
-    topStmt.nodeId.isSummary shouldBe true
+    val topStmt = summaryStatements[tree[listOf("john")]]!![MAY / 2026]!!
+    topStmt.nodeId.children.isNotEmpty() shouldBe true
     topStmt.nodeId.isExternal shouldBe false
-    topStmt.nodeId.name shouldBe ""
     topStmt.monthRange shouldBe MAY / 2026 .. MAY / 2026
-    topStmt.nodeId.owners shouldBe listOf("john")
+    topStmt.nodeId.path shouldBe listOf("john")
     topStmt.statements.size shouldBe 2
 
     val topInternalSubStatement = topStmt.statements[0]
-    topInternalSubStatement.nodeId.name shouldBe "external"
     topInternalSubStatement.monthRange shouldBe MAY / 2026 .. MAY / 2026
-    topInternalSubStatement.nodeId.owners shouldBe listOf("john")
+    topInternalSubStatement.nodeId.path shouldBe listOf("john", "internal")
 
     val topExternalSubStatement = topStmt.statements[1]
-    topExternalSubStatement.nodeId.name shouldBe "internal"
     topExternalSubStatement.monthRange shouldBe MAY / 2026 .. MAY / 2026
-    topExternalSubStatement.nodeId.owners shouldBe listOf("john")
+    topExternalSubStatement.nodeId.path shouldBe listOf("john", "external")
   }
 })

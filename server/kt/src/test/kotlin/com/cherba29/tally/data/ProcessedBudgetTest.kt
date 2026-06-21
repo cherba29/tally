@@ -43,12 +43,16 @@ class ProcessedBudgetTest : DescribeSpec({
       processedBudget.reProcess()
       val budget = processedBudget.budget!!
       budget.tree shouldBe root { branch("john") { branch("external") { leaf("test-account") }  } }
-      budget.nodeToStatement.keys shouldBe setOf(budget.tree[listOf("john", "external", "test-account")])
+      budget.nodeToStatement.keys shouldBe setOf(
+        budget.tree[listOf("john", "external", "test-account")],
+        budget.tree[listOf("john", "external")],
+        budget.tree[listOf("john")],
+      )
 
       val transactionStatement = budget.nodeToStatement[budget.tree[listOf("john", "external", "test-account")]]?.get(MAR / 2026)!! as TransactionStatement
       transactionStatement.nodeId.name shouldBe "test-account"
       transactionStatement.monthRange shouldBe MAR / 2026 .. MAR / 2026
-      transactionStatement.nodeId.owners shouldBe listOf("john")
+      transactionStatement.nodeId.path shouldBe listOf("john", "external", "test-account")
 
       transactionStatement.transactions.isEmpty() shouldBe true
     }

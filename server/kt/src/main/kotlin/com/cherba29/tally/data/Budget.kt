@@ -36,9 +36,9 @@ data class Budget(
     return nodeToStatement[node]?.mapValues { (_, v) -> v as SummaryStatement }
   }
   fun getOwnerSummaries(
-    owner: String, path: List<String>, startMonth: Month?, endMonth: Month
+    path: List<String>, startMonth: Month?, endMonth: Month
   ): List<SummaryStatement> {
-    val node = tree[listOf(owner) + path] ?: return listOf()
+    val node = tree[path] ?: return listOf()
     val monthSummaries = nodeToStatement[node] ?: return listOf()
     return monthSummaries.values.filter { stmt ->
       if (startMonth != null)

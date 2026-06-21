@@ -2,8 +2,15 @@ package com.cherba29.tally.core
 
 // TODO: Introduce some notion of order/priority, so that those can be displayed higher up the list.
 data class Account(
-  // TODO: does nodeId need to be a property of account?
-  val nodeId: NodeId,
+  // Account name.
+  val name: String,
+  // Path to categorize this account by.
+  val path: List<String>,
+  // All owners of this account.
+  val owners: Set<String>,
+  // Summary accounts are synthetic, created for each part of the account paths.
+  val isSummary: Boolean,
+  // Human-readable description for the account for display.
   val description: String? = null,
   // Real account number associated with this account.
   val number: String? = null,
@@ -20,7 +27,10 @@ data class Account(
   val userName: String? = null,
   val password: String? = null,
 ) {
-  override fun toString(): String = "Account ${nodeId.name} /${nodeId.path.joinToString("/")}${if (closedOn == null) "" else " Closed $closedOn"}"
+  // TODO: somehow merge this with Group.
+  val isExternal: Boolean = name == "external" || "external" in path
+
+  override fun toString(): String = "Account $name /${path.joinToString("/")}${if (closedOn == null) "" else " Closed $closedOn"}"
 
   fun isClosed(month: Month): Boolean {
     return (closedOn != null) && (closedOn < month) || // After closed.

@@ -1,16 +1,17 @@
 package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.Group
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthRange
-import com.cherba29.tally.core.NodeId
+import com.cherba29.tally.core.root
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate
 
 internal class TestStatement(
-  nodeId: NodeId,
+  nodeId: Group,
   monthRange: MonthRange,
   isClosed: Boolean = false,
   startBalance: Balance? = null,
@@ -27,11 +28,12 @@ internal class TestStatement(
 class StatementTest : DescribeSpec({
   describe("Creation") {
     it("basic") {
+      val tree = root { branch("external") { leaf("test") } }
       val stmt = TestStatement(
-        NodeId(name = "test", isSummary = false),
+        tree[listOf("external", "test")]!!,
         MAR / 2021 .. MAR / 2021
       )
-      stmt.nodeId shouldBe NodeId("test", isSummary = false)
+      stmt.nodeId.path shouldBe listOf("external", "test")
       stmt.monthRange shouldBe MAR / 2021 .. MAR / 2021
       stmt.inFlows shouldBe 0.0
       stmt.income shouldBe 0.0
@@ -47,8 +49,9 @@ class StatementTest : DescribeSpec({
   }
 
   it("with inFlow outFlow no start-end balance") {
+    val tree = root { branch("external") { leaf("test") } }
     val stmt = TestStatement(
-      NodeId(name = "test", isSummary = false, path = listOf("external")),
+      tree[listOf("external", "test")]!!,
       MAR / 2021 .. MAR / 2021
     )
     stmt.addInFlow(100)
@@ -70,10 +73,11 @@ class StatementTest : DescribeSpec({
   }
 
   it("with inFlow outFlow with start-end balance") {
+    val tree = root { branch("external") { leaf("test") } }
     val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), Balance.Type.PROJECTED)
     val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
-      NodeId(name = "test", isSummary = false, path = listOf("external")),
+      tree[listOf("external", "test")]!!,
       MAR / 2021 .. MAR / 2021,
       false,
       startBalance,
@@ -99,8 +103,9 @@ class StatementTest : DescribeSpec({
   }
 
   it("with empty statement") {
+    val tree = root { branch("external") { leaf("test") } }
     val stmt = TestStatement(
-      NodeId(name = "test", isSummary = false, path = listOf("external")),
+      tree[listOf("external", "test")]!!,
       MAR / 2021 .. MAR / 2021
     )
     stmt.startBalance shouldBe null
@@ -114,8 +119,9 @@ class StatementTest : DescribeSpec({
   }
 
   it("with no start-end balance") {
+    val tree = root { branch("external") { leaf("test") } }
     val stmt = TestStatement(
-      NodeId(name = "test", isSummary = false, path = listOf("external")),
+      tree[listOf("external", "test")]!!,
       MAR / 2021 .. MAR / 2021
     )
     stmt.addInFlow(100)
@@ -129,9 +135,10 @@ class StatementTest : DescribeSpec({
   }
 
   it("with inFlow outFlow with start balance") {
+    val tree = root { branch("external") { leaf("test") } }
     val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
-      NodeId(name = "test", isSummary = false, path = listOf("external")),
+      tree[listOf("external", "test")]!!,
       MAR / 2021 .. MAR / 2021,
       false,
       startBalance
@@ -148,9 +155,10 @@ class StatementTest : DescribeSpec({
   }
 
   it("with inFlow outFlow with end balance") {
+    val tree = root { branch("external") { leaf("test") } }
     val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
-      NodeId(name = "test", isSummary = false, path = listOf("external")),
+      tree[listOf("external", "test")]!!,
       MAR / 2021 .. MAR / 2021,
       false,
       null,
@@ -168,11 +176,12 @@ class StatementTest : DescribeSpec({
   }
 
   it("percentChange") {
+    val tree = root { branch("external") { leaf("test") } }
     val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), Balance.Type.PROJECTED)
     val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
 
     val stmt = TestStatement(
-      NodeId(name = "test", isSummary = false, path = listOf("external")),
+      tree[listOf("external", "test")]!!,
       MAR / 2021 .. MAR / 2021,
       false,
       startBalance,
@@ -187,10 +196,11 @@ class StatementTest : DescribeSpec({
   }
 
   it("change") {
+    val tree = root { branch("external") { leaf("test") } }
     val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), Balance.Type.PROJECTED)
     val endBalance = Balance(1020, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
-      NodeId(name = "test", isSummary = false, path = listOf("external")),
+      tree[listOf("external", "test")]!!,
       MAR / 2021 .. MAR / 2021,
       false,
       startBalance,

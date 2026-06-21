@@ -5,7 +5,6 @@ import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Group
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
-import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.Transfer
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.statement.Statement
@@ -19,8 +18,6 @@ import kotlin.time.measureTimedValue
 class BudgetBuilder(
   private var minMonth: Month? = null,
   private var maxMonth: Month? = null,
-  // Account name to account map.
-  private val accounts: MutableMap<NodeId, Account> = mutableMapOf(),
   // Account name -> month -> balance map.
   private val balances: MutableMap<List<String>, MutableMap<Month, Balance>> = mutableMapOf(),
   private val transfers: MutableList<TransferData> = mutableListOf(),
@@ -41,7 +38,6 @@ class BudgetBuilder(
   fun setAccount(fullPath: List<String>, account: Account): BudgetBuilder {
     groupTreeBuilder.addPath(fullPath)
     pathToAccount[fullPath] = account
-    accounts[account.nodeId] = account
     minMonth = if (minMonth != null) Month.Companion.min(minMonth!!, account.openedOn) else account.openedOn
     maxMonth = if (maxMonth != null) Month.Companion.max(maxMonth!!, account.openedOn) else account.openedOn
     if (account.closedOn != null) {
@@ -117,10 +113,8 @@ class BudgetBuilder(
       }
 
       val transfer = Transfer(
-        pathToAccount[fromAccount.path]
-          ?: throw IllegalStateException("Could not find path ${fromAccount.path}"),
-        pathToAccount[toAccount.path]
-          ?: throw IllegalStateException("Could not find path ${fromAccount.path}"),
+        fromAccount.path,
+        toAccount.path,
         transferData.fromMonth,
         transferData.toMonth,
         transferData.description,
@@ -153,32 +147,19 @@ class BudgetBuilder(
     }
     val (transfers, elapsedBudgetTime) = timeSource.measureTimedValue { buildTransfers(tree) }
     val nodeToStatement: MutableMap<Group, MutableMap<Month, Statement>> = mutableMapOf()
-    val accountToMonthToTransactionStatement: MutableMap<NodeId, MutableMap<Month, TransactionStatement>> =
-      mutableMapOf()
-
-    val nodeIdToBalance = balances.mapKeys {
-      pathToAccount[it.key]?.nodeId ?: throw java.lang.IllegalStateException("Could not find path ${it.key}")
-    }
-
-    val nodeIdToTransfer = transfers.mapKeys {
-      pathToAccount[it.key.path]?.nodeId
+    val leafToTransfers = transfers.mapKeys {
+      tree[it.key.path] as? Group.Leaf
         ?: throw java.lang.IllegalStateException("Could not find path ${it.key.path}")
     }
 
     val (transactionStatementTable, elapsedTransactionTime) = timeSource.measureTimedValue {
       // TODO: this might throw due to so invariant being violated. Need to recover to previous state.
       val transactionStatementTable = buildTransactionStatementTable(
-        months, accounts,
-        nodeIdToBalance, nodeIdToTransfer,  owner = null)
+        tree,
+        months, leafToAccount,
+        leafToBalances, leafToTransfers,  owner = null)
       for (stmt in transactionStatementTable) {
-        val monthToStatement = accountToMonthToTransactionStatement.getOrPut(stmt.nodeId) { mutableMapOf() }
-        monthToStatement[stmt.monthRange.first] = stmt
-        for (owner in stmt.nodeId.owners) {
-          val path = listOf(owner) + stmt.nodeId.path + listOf(stmt.nodeId.name)
-          val treeNode = tree[path]
-            ?: throw IllegalStateException("Tree node $path for owner $owner does not exists in $tree.")
-          nodeToStatement.getOrPut(treeNode) { mutableMapOf() }[stmt.monthRange.first] = stmt
-        }
+        nodeToStatement.getOrPut(stmt.nodeId) { mutableMapOf() }[stmt.monthRange.first] = stmt
       }
       transactionStatementTable
     }
@@ -189,20 +170,11 @@ class BudgetBuilder(
     val (summaryNameMonthMap, elapsedBuildSummaryStatements) = timeSource.measureTimedValue {
       val summaryStatementBuilder = SummaryStatementBuilder()
       for (statement in transactionStatementTable) {
-        if (statement.isEmpty()) continue
-        for (owner in statement.nodeId.owners) {
-          if (statement.nodeId.path.isNotEmpty()) {
-            summaryStatementBuilder.addStatement(owner, statement)
-          }
-        }
+        summaryStatementBuilder.addStatement(statement)
       }
-      summaryStatementBuilder.build()
+      summaryStatementBuilder.build(tree)
     }
-    for ((summaryPath, monthToSummary) in summaryNameMonthMap) {
-      // TODO: remove need to filter isNotEmpty. Before empty signified root.
-      val path = summaryPath.filter { it.isNotEmpty() }
-      val treeNode = tree[path]
-        ?: throw IllegalStateException("Tree node $path does not exists in $tree.")
+    for ((treeNode, monthToSummary) in summaryNameMonthMap) {
       nodeToStatement.getOrPut(treeNode) { mutableMapOf() }.putAll(monthToSummary)
     }
     val numSummaryStatements = summaryNameMonthMap.size
@@ -225,10 +197,11 @@ class BudgetBuilder(
   }
 
   fun buildTransactionStatementTable(
+    tree: Group,
     months: MonthRange,
-    accounts: Map<NodeId, Account>,
-    balances: Map<NodeId, Map<Month, Balance>>,
-    transfers: Map<NodeId, Map<Month, List<Transfer>>>,
+    accounts: Map<Group.Leaf, Account>,
+    balances: Map<Group.Leaf, Map<Month, Balance>>,
+    transfers: Map<Group.Leaf, Map<Month, List<Transfer>>>,
     owner: String?
   ): List<TransactionStatement> {
     val statementTable = mutableListOf<TransactionStatement>()
@@ -240,7 +213,7 @@ class BudgetBuilder(
     }
 
     for ((nodeId, account) in accounts) {
-      if (owner != null && owner !in nodeId.owners) {
+      if (owner != null && owner !in nodeId.path.first()) {
         continue
       }
       val accountStatements = mutableListOf<TransactionStatement>()
@@ -250,6 +223,7 @@ class BudgetBuilder(
       // Make statement outside range so that its attributes relating to previous can be used.
       val nextMonth = months.first().next()
       var nextMonthStatement = TransactionStatement.fromTransfers(
+        tree,
         nodeId,
         nextMonth..nextMonth,
         account.isClosed(nextMonth),
@@ -258,6 +232,7 @@ class BudgetBuilder(
       )
       for (month in months) {
         val statement = TransactionStatement.fromTransfers(
+          tree,
           nodeId,
           month..month,
           account.isClosed(month),

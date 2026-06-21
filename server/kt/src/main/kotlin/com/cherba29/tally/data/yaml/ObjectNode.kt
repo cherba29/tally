@@ -33,7 +33,15 @@ fun NodeId.toObjectNode(root: ObjectNode) {
 
 fun Account.toObjectNode(root: ObjectNode) {
   root.put("__type", this.javaClass.simpleName)
-  nodeId.toObjectNode(root.putObject("nodeId"))
+  root.put("name", name)
+  if (path.isNotEmpty()) {
+    val pathNode = root.putArray("path")
+    path.forEach { pathNode.add(it) }
+  }
+  if (owners.isNotEmpty()) {
+    val ownersNode = root.putArray("owner")
+    owners.forEach { ownersNode.add(it) }
+  }
   if (description != null) {
     root.put("desc", description)
   }
@@ -64,7 +72,9 @@ fun Account.toObjectNode(root: ObjectNode) {
 
 fun Statement.toObjectNode(root: ObjectNode) {
   root.put("__type", "Statement")
-  nodeId.toObjectNode(root.putObject("nodeId"))
+  val pathNode = root.putArray("path")
+  nodeId.path.forEach { pathNode.add(it) }
+
   root.put("months", monthRange.toString())
   startBalance?.toObjectNode(root.putObject("startBalance"))
   endBalance?.toObjectNode(root.putObject("endBalance"))
@@ -153,7 +163,9 @@ fun GqlBalance.toObjectNode(root: ObjectNode) {
 
 fun Transaction.toObjectNode(root: ObjectNode) {
   root.put("__type", this.javaClass.simpleName)
-  nodeId.toObjectNode(root.putObject("nodeId"))
+  val pathNode = root.putArray("path")
+  nodeId.path.forEach { pathNode.add(it) }
+
   balance.toObjectNode(root.putObject("balance"))
   if (description != null) {
     root.put("description", description)

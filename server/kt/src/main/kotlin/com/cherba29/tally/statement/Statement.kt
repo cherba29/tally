@@ -1,14 +1,14 @@
 package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.Group
 import com.cherba29.tally.core.MonthRange
-import com.cherba29.tally.core.NodeId
 import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sign
 
 open class Statement(
-  val nodeId: NodeId,
+  val nodeId: Group,
 
   // Period of time for the statement
   val monthRange: MonthRange,

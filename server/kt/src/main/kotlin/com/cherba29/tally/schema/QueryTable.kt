@@ -2,7 +2,6 @@ package com.cherba29.tally.schema
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.reduceTo
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.statement.SummaryStatement
@@ -42,8 +41,10 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
       // Summaries don't have associated account, create a dummy.
       // TODO: instead of dummy return null.
       Account(
-        NodeId(path.joinToString("/"), isSummary = true, owners = setOf(forOwner),
-          path = if (path.size > 1) path.subList(0, path.size-1) else listOf("")),
+        path.lastOrNull() ?: "",
+        if (path.size > 1) path.subList(0, path.size-1) else listOf(""),
+        setOf(forOwner),
+        isSummary = treeNode.children.isNotEmpty(),
         openedOn = Month(2010, 0)
       )
     }
@@ -64,7 +65,7 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
       when (monthlyStatement) {
         is TransactionStatement -> monthlyStatement.toGqlTableCell()
         is SummaryStatement -> monthlyStatement.toGqlTableCell()
-        else -> throw IllegalStateException("Could not find statement for '${account.nodeId}' for month $month")
+        else -> throw IllegalStateException("Could not find statement for '${account.name}' for month $month")
       }
     }
 

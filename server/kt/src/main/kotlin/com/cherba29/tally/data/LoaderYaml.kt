@@ -3,7 +3,6 @@ package com.cherba29.tally.data
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.data.builder.BudgetBuilder
 import com.cherba29.tally.data.yaml.CustomProblemHandler
 import com.cherba29.tally.data.yaml.LocalDateDeserializer
@@ -107,7 +106,10 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
   }
 
   val account = Account(
-    nodeId = NodeId(data.name, isSummary=false, data.owner.toSet(), data.path),
+    name = data.name,
+    path = data.path,
+    owners = data.owner.toSet(),
+    isSummary = false,
     description = data.desc,
     number = data.number,
     openedOn = data.openedOn,
@@ -119,7 +121,7 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
     password = data.pswd,
   )
   for (owner in data.owner) {
-    val fullPath = listOf(owner) + account.nodeId.path + listOf(account.nodeId.name)
+    val fullPath = listOf(owner) + account.path + listOf(account.name)
     budgetBuilder.setAccount(fullPath, account)
   }
   if (data.balances != null) {
@@ -137,11 +139,11 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
       val balanceMonthDiff = abs(balance.date.year * 12 + balance.date.month.ordinal - month.year * 12 - month.month)
       if (balanceMonthDiff > 2) {
         throw IllegalArgumentException(
-          "For ${account.nodeId} account $balance and month $month are $balanceMonthDiff months apart (2 max)."
+          "For ${account.name} account $balance and month $month are $balanceMonthDiff months apart (2 max)."
         )
       }
       for (owner in data.owner) {
-        val fullPath = listOf(owner) + account.nodeId.path + listOf(account.nodeId.name)
+        val fullPath = listOf(owner) + account.path + listOf(account.name)
         budgetBuilder.setBalance(fullPath, month, balance)
       }
     }
@@ -152,12 +154,12 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
       for (transferData in transfers) {
         if (transferData.grp == null) {
           throw IllegalArgumentException(
-            "For account '${account.nodeId}' transfer to '$accountName' does not have 'grp' field."
+            "For account '${account.name}' transfer to '$accountName' does not have 'grp' field."
           )
         }
         if (transferData.date == null) {
           throw IllegalArgumentException(
-            "For account '${account.nodeId}' transfer to '${accountName}' does not have a valid 'date' field."
+            "For account '${account.name}' transfer to '${accountName}' does not have a valid 'date' field."
           )
         }
         var balance: Balance? = null
@@ -176,7 +178,7 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
         }
         if (balance == null) {
           throw IllegalArgumentException(
-            "For account '${account.nodeId}' transfer to '${accountName}' " +
+            "For account '${account.name}' transfer to '${accountName}' " +
                 "does not have 'pamt' or 'camt' field: ${transferData}."
           )
         }
@@ -185,13 +187,13 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
         val balanceMonth = Month.fromDate(balance.date)
         if (abs(balanceMonth - transferMonth) > 2) {
           throw IllegalArgumentException(
-            "For account '${account.nodeId}' transfer to '${accountName}' " +
+            "For account '${account.name}' transfer to '${accountName}' " +
                 "for $transferMonth date ${balance.date} (${balanceMonth}) are too far apart."
           )
         }
 
         for (owner in data.owner) {
-          val fullPath = listOf(owner) + account.nodeId.path + listOf(account.nodeId.name)
+          val fullPath = listOf(owner) + account.path + listOf(account.name)
 
           budgetBuilder.addTransfer(
             fromAccountPath = fullPath,

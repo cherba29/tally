@@ -2,16 +2,12 @@ package com.cherba29.tally
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.MAR
-import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.data.builder.budget
 import com.cherba29.tally.schema.GqlBalance
 import com.cherba29.tally.schema.GqlStatement
 import com.cherba29.tally.schema.GqlTransaction
-import com.cherba29.tally.statement.Transaction
-import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -22,8 +18,7 @@ import kotlinx.datetime.LocalDate
 class StatementServiceTest : DescribeSpec({
   describe("transaction statement response") {
     it("empty") {
-      val nodeId = NodeId("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = true)
-      val account = Account(nodeId, openedOn = MAR / 2026)
+      val account = Account("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = true, openedOn = MAR / 2026)
 
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
@@ -42,10 +37,7 @@ class StatementServiceTest : DescribeSpec({
     }
 
     it("single statement no transactions") {
-      val nodeId = NodeId(
-        name = "test-account", isSummary = false, owners = setOf("john"), path = listOf("internal")
-      )
-      val account = Account(nodeId = nodeId, openedOn = MAR / 2026)
+      val account = Account(name = "test-account", isSummary = false, owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
           setAccount(listOf("john", "internal", "test-account"), account)
@@ -81,45 +73,10 @@ class StatementServiceTest : DescribeSpec({
     }
 
     it("statement with transactions") {
-      val nodeId1 = NodeId(
-        name = "test-account1", isSummary = false, owners = setOf("john"), path = listOf("internal")
-      )
-      val account1 = Account(nodeId = nodeId1, openedOn = MAR / 2026)
-      val nodeId2 = NodeId(
-        name = "test-account2", isSummary = false, owners = setOf("john"), path = listOf("internal")
-      )
-      val account2 = Account(nodeId = nodeId2, openedOn = MAR / 2026)
+      val account1 = Account(name = "test-account1", isSummary = false, owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
+      val account2 = Account(name = "test-account2", isSummary = false, owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
 
-      val transactionStatement11 = TransactionStatement(
-        nodeId = nodeId1, monthRange = MAR / 2026..MAR / 2026, isClosed = false, startBalance = Balance(
-          amount = 100, date = LocalDate(2026, 3, 1), type = Balance.Type.CONFIRMED, description = "start balance"
-        )
-      )
-      transactionStatement11.transactions.add(
-        Transaction(
-          nodeId = nodeId1, balance = Balance(
-            amount = 200, date = LocalDate(2026, 3, 2), type = Balance.Type.CONFIRMED, description = "transfer1"
-          ), description = "transfer1", type = Transaction.Type.TRANSFER, balanceFromStart = -100
-        )
-      )
-      val transactionStatement12 = TransactionStatement(
-        nodeId = nodeId1, monthRange = APR / 2026..APR / 2026, isClosed = false, startBalance = null
-      )
-      val transactionStatement21 = TransactionStatement(
-        nodeId = nodeId2, monthRange = MAR / 2026..MAR / 2026, isClosed = false, startBalance = null
-      )
       val loader = mockk<Loader> {
-//        coEvery { budget() } returns Budget(
-//          months = MAR / 2026..MAR / 2026,
-//          tree = root {},
-//          leafToAccount = mapOf(),
-//          accounts = mapOf(nodeId1 to account1, nodeId2 to account2),
-//          nodeToStatement = mapOf(),
-//          statements = mapOf(
-//            nodeId1 to mapOf(MAR / 2026 to transactionStatement11, APR / 2026 to transactionStatement12),
-//            nodeId2 to mapOf(MAR / 2026 to transactionStatement21)
-//          )
-//        )
         coEvery { budget() } returns budget {
           setAccount(listOf("john", "internal", "test-account1"), account1)
           setAccount(listOf("john", "internal", "test-account2"), account2)

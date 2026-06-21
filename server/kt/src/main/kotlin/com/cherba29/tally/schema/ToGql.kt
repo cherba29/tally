@@ -9,15 +9,15 @@ import com.cherba29.tally.statement.TransactionStatement
 import kotlin.math.roundToInt
 
 fun Account.toGql(): GqlAccount = GqlAccount(
-  name = nodeId.name,
+  name = if (isSummary) (path + listOf(name)).filter { it.isNotEmpty() }.joinToString("/") else name,
   description = description ?: "",
-  path = nodeId.path,
-  external = nodeId.isExternal,
-  summary = nodeId.isSummary,
+  path = path,
+  external = isExternal,
+  summary = isSummary,
   number = number,
   openedOn = openedOn,
   closedOn = closedOn,
-  owners = nodeId.owners.sorted(),
+  owners = owners.sorted(),
   url = url ?: "",
   address = address ?: "",
   userName = userName ?: "",

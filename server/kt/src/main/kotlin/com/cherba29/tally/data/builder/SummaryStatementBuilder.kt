@@ -4,60 +4,45 @@ import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Group
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
-import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.core.enlargeTo
 import com.cherba29.tally.core.plus
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
-import kotlin.collections.plus
 
 class SummaryStatementBuilder {
   // Map of owner -> 'summary name' -> month -> 'summary statement'.
-  private val summaryStatements = mutableMapOf<List<String>, MutableMap<Month, Builder>>()
-  // Map of owner+name -> summary node
-  private val summaryNodes: MutableMap<List<String>, NodeId> = mutableMapOf()
-  private val groupTreeBuilder = Group.Companion.Builder()
+  private val summaryStatements = mutableMapOf<Group, MutableMap<Month, Builder>>()
 
   // Adds statement to its immediate parent summary statement.
-  fun addStatement(owner: String, statement: Statement) {
-    val fullPath = listOf(owner) + statement.nodeId.path
-    groupTreeBuilder.addPath(fullPath)
-    val parentSummaryNodeId = summaryNodes.getOrPut(fullPath) {
-      NodeId(
-        statement.nodeId.path.joinToString("/"),
-        isSummary=true,
-        setOf(owner),
-        statement.nodeId.parentPath
-      )
-    }
-    summaryStatements.getOrPut(fullPath) {
+  fun addStatement(statement: Statement) {
+    val parent = statement.nodeId.parent!!
+    summaryStatements.getOrPut(parent) {
       mutableMapOf()
     }.getOrPut(statement.monthRange.first) {
       val builder = Builder()
-      builder.nodeId = parentSummaryNodeId
+      builder.nodeId = parent
       builder.monthRange = statement.monthRange
       builder
     }.addStatement(statement)
   }
 
   // Make sure totals are computed for parent summary accounts up the path to the root.
-  fun build(): Map<List<String>, Map<Month, SummaryStatement>> {
-    // Build a multi-root tree based on account paths for each owner.
-    val tree = groupTreeBuilder.build()
+  fun build(tree: Group): Map<Group, Map<Month, SummaryStatement>> {
     // For each owner bottom up, build up summaries.
     for (ownerRoot in tree.children) {
       for (node in ownerRoot.traverseBottomUp()) {
+        if (node.children.isEmpty()) continue  // These were already processed with addStatement.
         val fullPath = node.path
         // skip this is root node it does not need to be added to anything.
         if (fullPath.size < 2) continue
 
-        val monthlyStatements = summaryStatements[fullPath]
+        val monthlyStatements = summaryStatements[node]
           ?: throw IllegalStateException(
-            "$node has no monthly statements, [$fullPath] key not found."
+            "$fullPath has no monthly statements. Available ${summaryStatements.keys}"
           )  // Should never happen.
 
         for (monthlyStatement in monthlyStatements.values) {
-          addStatement(ownerRoot.name, monthlyStatement.build())
+          addStatement(monthlyStatement.build())
         }
       }
     }
@@ -67,7 +52,7 @@ class SummaryStatementBuilder {
   }
 
   class Builder {
-    var nodeId: NodeId? = null
+    var nodeId: Group? = null
     var monthRange: MonthRange? = null
     private var startBalance: Balance? = null
     private var endBalance: Balance? = null
@@ -103,7 +88,7 @@ class SummaryStatementBuilder {
     }
 
     fun build(): SummaryStatement {
-      require(nodeId != null)
+      require(nodeId != null) { "build failed: nodeId is not set"}
       require(monthRange != null)
       return SummaryStatement(
         nodeId!!,
