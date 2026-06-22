@@ -2,7 +2,6 @@ package com.cherba29.tally.data.yaml
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.NodeId
 import com.cherba29.tally.schema.GqlAccount
 import com.cherba29.tally.schema.GqlBalance
 import com.cherba29.tally.schema.GqlStatement
@@ -17,19 +16,6 @@ import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.statement.TransactionStatement
 import com.fasterxml.jackson.databind.node.ObjectNode
 import kotlin.math.absoluteValue
-
-fun NodeId.toObjectNode(root: ObjectNode) {
-  root.put("__type", this.javaClass.simpleName)
-  root.put("name", name)
-  if (path.isNotEmpty()) {
-    val pathNode = root.putArray("path")
-    path.forEach { pathNode.add(it) }
-  }
-  if (owners.isNotEmpty()) {
-    val ownersNode = root.putArray("owner")
-    owners.forEach { ownersNode.add(it) }
-  }
-}
 
 fun Account.toObjectNode(root: ObjectNode) {
   root.put("__type", this.javaClass.simpleName)
