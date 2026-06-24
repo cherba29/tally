@@ -7,6 +7,7 @@ import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
+import kotlin.collections.get
 
 /**
  * Data representing all accounts, their transactions and totals per month.
@@ -20,20 +21,21 @@ data class Budget(
   val leafToAccount: Map<Group.Leaf, Account>,
   // Tree node to corresponding statement.
   // Parent nodes map to SummaryStatement and leaf nodes to TransactionStatement.
-  val nodeToStatement: Map<Group, Map<Month,Statement>>,
+  val nodeToStatement: Map<Group, Map<Month, Statement>>,
 ) {
   fun getAccountNode(accountName: String) = leafToAccount.entries.find { it.value.name == accountName }?.key
-
-  fun getOwnerSummaries(
-    path: List<String>, startMonth: Month?, endMonth: Month
-  ): List<SummaryStatement> {
-    val node = tree[path] ?: return listOf()
-    val monthSummaries = nodeToStatement[node] ?: return listOf()
-    return monthSummaries.values.filter { stmt ->
-      if (startMonth != null)
-        stmt.monthRange.first in startMonth..endMonth
-      else
-        stmt.monthRange.last <= endMonth
-    }.map { it as SummaryStatement }
-  }
+  fun getAccount(treeNode: Group) = if (treeNode.children.isEmpty()) {
+      leafToAccount[treeNode]
+    } else {
+      // Summaries don't have associated account, create a dummy.
+      // TODO: instead of dummy return null.
+      val path = if (treeNode.path.size < 2) listOf() else treeNode.path.subList(1, treeNode.path.size)
+      Account(
+        path.lastOrNull() ?: "",
+        if (path.size > 1) path.subList(0, path.size-1) else listOf(""),
+        setOf(treeNode.path.first()),
+        isSummary = treeNode.children.isNotEmpty(),
+        openedOn = Month(2010, 0)
+      )
+    }
 }

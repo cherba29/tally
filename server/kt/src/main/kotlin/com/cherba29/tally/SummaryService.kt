@@ -1,10 +1,12 @@
 package com.cherba29.tally
 
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.rangeTo
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.data.builder.combineSummaryStatements
 import com.cherba29.tally.schema.GqlSummaryData
 import com.cherba29.tally.schema.toGqlSummaryData
+import com.cherba29.tally.statement.SummaryStatement
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -28,7 +30,10 @@ class SummaryService(val loader: Loader) : Query {
       try {
         val budget = runBlocking { loader.budget() }
         val summaryPath = listOf(owner) + accountType.split("/").filter { it.isNotEmpty() }
-        val summaryStatements = budget.getOwnerSummaries(summaryPath, startMonth, endMonth)
+        val summaryNode = budget.tree[summaryPath]
+          ?: throw NotFoundException("Summary '$accountType' for owner '$owner' not found.")
+        val monthRange = startMonth..endMonth
+        val summaryStatements = budget.nodeToStatement[summaryNode]!!.filter { it.key in monthRange }.values.map { it as SummaryStatement }
         if (summaryStatements.isEmpty()) {
           throw NotFoundException(
             "Summary '$accountType' for owner '$owner' for months [$startMonth, $endMonth] not found."

@@ -68,7 +68,7 @@ class SummaryServiceTest : DescribeSpec({
           accountType = "internal"
         )
       }
-      exception.message shouldBe "Summary 'internal' for owner 'john' for months [Apr2026, Apr2026] not found."
+      exception.message shouldBe "Summary 'internal' for owner 'john' not found."
     }
     
     it("single") {

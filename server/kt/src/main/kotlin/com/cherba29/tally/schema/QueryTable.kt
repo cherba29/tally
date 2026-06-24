@@ -1,6 +1,5 @@
 package com.cherba29.tally.schema
 
-import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.reduceTo
 import com.cherba29.tally.data.Budget
@@ -30,25 +29,10 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
 
   val rows = mutableListOf<GqlTableRow>()
   for (treeNode in ownerTree.traverseSortedDepthDown()) {
-    val path = if (treeNode.path.size < 2) listOf() else treeNode.path.subList(1, treeNode.path.size)
-
-    val account = if (treeNode.children.isEmpty()) {
-      payload.leafToAccount[treeNode]
-        ?: throw java.lang.IllegalArgumentException(
-          "Could not find account for ${treeNode.path.joinToString("/")}"
-        )
-    } else {
-      // Summaries don't have associated account, create a dummy.
-      // TODO: instead of dummy return null.
-      Account(
-        path.lastOrNull() ?: "",
-        if (path.size > 1) path.subList(0, path.size-1) else listOf(""),
-        setOf(forOwner),
-        isSummary = treeNode.children.isNotEmpty(),
-        openedOn = Month(2010, 0)
+    val account = payload.getAccount(treeNode)
+      ?: throw java.lang.IllegalArgumentException(
+        "Could not find account for ${treeNode.path.joinToString("/")}"
       )
-    }
-
     val monthMap = payload.nodeToStatement[treeNode]
       ?: throw java.lang.IllegalArgumentException(
         "Did not find monthly statements at '${treeNode.path.joinToString("/")}'"
@@ -61,7 +45,7 @@ fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: 
       when (monthlyStatement) {
         is TransactionStatement -> monthlyStatement.toGqlTableCell()
         is SummaryStatement -> monthlyStatement.toGqlTableCell()
-        else -> throw IllegalStateException("Could not find statement for '${account.name}' for month $month")
+        else -> throw IllegalStateException("Could not find statement for '${treeNode.path}' for month $month")
       }
     }
 
