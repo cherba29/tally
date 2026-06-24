@@ -24,10 +24,6 @@ data class Budget(
 ) {
   fun getAccountNode(accountName: String) = leafToAccount.entries.find { it.value.name == accountName }?.key
 
-  fun getMonthlyStatements(accountName: String): Map<Month, TransactionStatement>? {
-    val accountNode = tree.traverseBottomUp().find { it.name == accountName }
-    return nodeToStatement[accountNode]?.mapValues { it.value as TransactionStatement }
-  }
   fun getOwnerSummaries(
     path: List<String>, startMonth: Month?, endMonth: Month
   ): List<SummaryStatement> {
