@@ -66,6 +66,9 @@ data class Month(val year: Int, val month: Int) : Comparable<Month> {
     fun fromDate(date: LocalDate): Month = Month(date.year, date.month.number - 1)
     fun min(vararg args: Month): Month = args.min()
     fun max(vararg args: Month): Month = args.max()
+    // Don't use absolute Int MIN / MAX values to ovoid overflow.
+    val MIN_VALUE = Month(Int.MIN_VALUE / 16, 0)
+    val MAX_VALUE = Month(Int.MAX_VALUE / 16, 11)
   }
 }
 
@@ -226,3 +229,6 @@ fun MonthRange?.reduceTo(other: MonthRange?): MonthRange? {
   if (other == null) return this
   return Month.max(first, other.first)..Month.min(last, other.last)
 }
+
+operator fun Month?.rangeTo(other: Month?) =
+  MonthRange( this ?: Month.MIN_VALUE,other ?: Month.MAX_VALUE)

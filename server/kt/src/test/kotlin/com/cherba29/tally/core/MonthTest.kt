@@ -5,6 +5,8 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.ints.shouldBeLessThan
+import io.kotest.matchers.ranges.shouldBeIn
+import io.kotest.matchers.ranges.shouldNotBeIn
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.datetime.LocalDate
@@ -408,6 +410,23 @@ class MonthTest : DescribeSpec({
       range shouldNotBe FEB / 2026 .. APR / 2026
       range shouldNotBe MonthRange.EMPTY
       MonthRange.EMPTY shouldNotBe range
+    }
+
+    it("left open") {
+      val range = null .. APR / 2026
+      MAR / 2026 shouldBeIn range
+      APR / 2026 shouldBeIn range
+      MAY / 2026 shouldNotBeIn range
+      JAN / 0 shouldBeIn range
+    }
+
+    it("right open") {
+      val range = MAR / 2026 .. null
+      MAR / 2026 shouldBeIn range
+      APR / 2026 shouldBeIn range
+      FEB / 2026 shouldNotBeIn range
+      JAN / 0 shouldNotBeIn range
+      DEC / 1_000_000 shouldBeIn range
     }
 
     it("toString") {
