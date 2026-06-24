@@ -19,8 +19,10 @@ class StatementService(val loader: Loader) : Query {
     val (result, timeTaken) = measureTimedValue {
       try {
         val payload = runBlocking { loader.budget() }
-        val statement: TransactionStatement = payload.getStatement(account, month)
-          ?: throw NotFoundException("Did not find statement for $owner $account $month")
+        val accountNode = payload.getAccountNode(account)
+          ?: throw NotFoundException("Did not find account '$account' for owner '$owner'")
+        val statement: TransactionStatement = payload.nodeToStatement[accountNode]?.get(month) as? TransactionStatement
+          ?: throw NotFoundException("Did not find statement for month '$month' for owner '$owner' in account '$account'")
         statement.toGql()
       } catch (e: Exception) {
         logger.error(e) { "Error while processing table query owner=$owner, account=$account month=$month" }

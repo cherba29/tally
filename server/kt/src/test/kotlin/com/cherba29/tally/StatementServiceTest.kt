@@ -2,6 +2,7 @@ package com.cherba29.tally
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.data.builder.budget
@@ -33,7 +34,26 @@ class StatementServiceTest : DescribeSpec({
           month = MAR / 2026,
         )
       }
-      exception.message shouldBe "Did not find statement for john test-account Mar2026"
+      exception.message shouldBe "Did not find account 'test-account' for owner 'john'"
+    }
+
+    it("no given month") {
+      val account = Account("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = true, openedOn = MAR / 2026)
+
+      val loader = mockk<Loader> {
+        coEvery { budget() } returns budget {
+          setAccount(listOf("john", "internal", "test-account1"), account)
+        }
+      }
+
+      val exception = shouldThrow<NotFoundException> {
+        StatementService(loader).statement(
+          owner = "john",
+          account = "test-account1",
+          month = APR / 2026,
+        )
+      }
+      exception.message shouldBe "Did not find statement for month 'Apr2026' for owner 'john' in account 'test-account1'"
     }
 
     it("single statement no transactions") {

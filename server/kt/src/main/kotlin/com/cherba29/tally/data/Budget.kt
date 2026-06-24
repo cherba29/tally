@@ -22,13 +22,11 @@ data class Budget(
   // Parent nodes map to SummaryStatement and leaf nodes to TransactionStatement.
   val nodeToStatement: Map<Group, Map<Month,Statement>>,
 ) {
+  fun getAccountNode(accountName: String) = leafToAccount.entries.find { it.value.name == accountName }?.key
+
   fun getMonthlyStatements(accountName: String): Map<Month, TransactionStatement>? {
     val accountNode = tree.traverseBottomUp().find { it.name == accountName }
     return nodeToStatement[accountNode]?.mapValues { it.value as TransactionStatement }
-  }
-  fun getStatement(accountName: String, month: Month): TransactionStatement? {
-    val accountNode = tree.traverseBottomUp().find { it.name == accountName }
-    return nodeToStatement[accountNode]?.get(month) as? TransactionStatement
   }
   fun getOwnerSummaries(
     path: List<String>, startMonth: Month?, endMonth: Month
