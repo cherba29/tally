@@ -30,11 +30,6 @@ data class Budget(
     val accountNode = tree.traverseBottomUp().find { it.name == accountName }
     return nodeToStatement[accountNode]?.get(month) as? TransactionStatement
   }
-  fun getOwnerMonthlySummaries(forOwner: String, path: List<String>): Map<Month, SummaryStatement>? {
-    // TODO: remove need to filter isNotEmpty. Before empty signified root.
-    val node = tree[listOf(forOwner) + path.filter { it.isNotEmpty() }] ?: return null
-    return nodeToStatement[node]?.mapValues { (_, v) -> v as SummaryStatement }
-  }
   fun getOwnerSummaries(
     path: List<String>, startMonth: Month?, endMonth: Month
   ): List<SummaryStatement> {

@@ -278,9 +278,10 @@ class LoadYamlTest : DescribeSpec({
         budget.tree[listOf("someone", "external")],
         budget.tree[listOf("someone")],
         budget.tree[listOf("someone", "external", "test-account")],
-        budget.tree[listOf("someone", "external", "external")])
-      budget.getOwnerMonthlySummaries("someone", listOf("external"))?.keys shouldBe setOf(FEB / 2020, JAN / 2020)
-      budget.getOwnerMonthlySummaries("someone", listOf(""))?.keys shouldBe setOf(FEB / 2020, JAN / 2020)
+        budget.tree[listOf("someone", "external", "external")],
+      )
+      budget.nodeToStatement[budget.tree[listOf("someone", "external")]]?.keys shouldBe setOf(FEB / 2020, JAN / 2020)
+      budget.nodeToStatement[budget.tree[listOf("someone")]]?.keys shouldBe setOf(FEB / 2020, JAN / 2020)
 
       val testAccountMonthlyStatements = budget.nodeToStatement[budget.tree[listOf("someone", "external", "test-account")]]!!
 
