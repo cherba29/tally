@@ -8,11 +8,8 @@ import com.cherba29.tally.core.root
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.data.builder.budget
-import com.cherba29.tally.data.yaml.toObjectNode
-import com.cherba29.tally.schema.GqlSummaryData
+import com.cherba29.tally.testing.toSnapshot
 import com.diffplug.selfie.coroutines.expectSelfie
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -20,16 +17,6 @@ import io.mockk.coEvery
 import io.mockk.mockk
 
 class SummaryServiceTest : DescribeSpec({
-  fun GqlSummaryData.toSnapshot(): String {
-    val mapper = YAMLMapper.builder()
-      .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
-      .enable(YAMLGenerator.Feature.MINIMIZE_QUOTES)
-      .build()
-    val arrayNode = mapper.createArrayNode()
-    toObjectNode(arrayNode.addObject())
-    return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(arrayNode)
-  }
-
   describe("buildSummaryData") {
     it("empty") {
       val account = Account("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = true, openedOn = MAR / 2026)

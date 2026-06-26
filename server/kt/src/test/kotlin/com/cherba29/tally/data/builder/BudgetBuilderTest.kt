@@ -11,13 +11,11 @@ import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthName.NOV
 import com.cherba29.tally.core.Transfer
 import com.cherba29.tally.core.root
-import com.cherba29.tally.data.yaml.toObjectNode
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.statement.TransactionStatement
+import com.cherba29.tally.testing.toSnapshot
 import com.diffplug.selfie.coroutines.expectSelfie
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
 import io.kotest.assertions.assertSoftly
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
@@ -240,16 +238,6 @@ class BudgetBuilderTest : DescribeSpec({
   }
 
   describe("transaction statement table") {
-    fun List<TransactionStatement>.toSnapshot(): String {
-      val mapper = YAMLMapper.builder()
-        .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
-        .enable(YAMLGenerator.Feature.MINIMIZE_QUOTES)
-        .build()
-      val arrayNode = mapper.createArrayNode()
-      forEach { it.toObjectNode(arrayNode.addObject()) }
-      return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(arrayNode)
-    }
-
     describe("Build") {
       it("no months") {
         val exception = shouldThrow<IllegalArgumentException> {

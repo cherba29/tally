@@ -5,10 +5,8 @@ import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.data.builder.budget
-import com.cherba29.tally.data.yaml.toObjectNode
+import com.cherba29.tally.testing.toSnapshot
 import com.diffplug.selfie.coroutines.expectSelfie
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
-import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -16,16 +14,6 @@ import kotlinx.datetime.LocalDate
 
 
 class QueryTableTest : DescribeSpec({
-  fun GqlTable.toSnapshot(): String {
-    val mapper = YAMLMapper.builder()
-      .disable(YAMLGenerator.Feature.WRITE_DOC_START_MARKER)
-      .enable(YAMLGenerator.Feature.MINIMIZE_QUOTES)
-      .build()
-    val arrayNode = mapper.createArrayNode()
-    toObjectNode(arrayNode.addObject())
-    return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(arrayNode)
-  }
-
   describe("buildGqlTable") {
     it("empty") {
       val account = Account(
