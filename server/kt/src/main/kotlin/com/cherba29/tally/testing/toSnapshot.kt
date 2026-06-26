@@ -1,6 +1,5 @@
 package com.cherba29.tally.testing
 
-import com.cherba29.tally.data.yaml.toObjectNode
 import com.cherba29.tally.schema.GqlSummaryData
 import com.cherba29.tally.schema.GqlTable
 import com.cherba29.tally.statement.TransactionStatement

@@ -1,4 +1,4 @@
-package com.cherba29.tally.data.yaml
+package com.cherba29.tally.testing
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
