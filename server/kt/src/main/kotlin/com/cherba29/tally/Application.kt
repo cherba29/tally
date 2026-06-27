@@ -1,7 +1,7 @@
 package com.cherba29.tally
 
 import com.cherba29.tally.data.Loader
-import com.cherba29.tally.data.watchedEventFlow
+import com.cherba29.tally.utils.watchedEventFlow
 import com.cherba29.tally.schema.CustomSchemaGeneratorHooks
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.generator.federation.directives.ContactDirective
@@ -24,13 +24,10 @@ import io.ktor.serialization.jackson.JacksonWebsocketContentConverter
 import io.ktor.server.application.ApplicationCallPipeline
 import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.application.call
-import io.ktor.server.http.content.singlePageApplication
 import io.ktor.server.http.content.staticFiles
 import io.ktor.server.netty.EngineMain
 import io.ktor.server.plugins.origin
 import io.ktor.server.plugins.statuspages.StatusPages
-import io.ktor.server.response.respondText
-import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.server.websocket.WebSockets
 import io.ktor.server.websocket.pingPeriod

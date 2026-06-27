@@ -4,7 +4,7 @@ import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.data.Loader
-import com.cherba29.tally.data.watchedEventFlow
+import com.cherba29.tally.utils.watchedEventFlow
 import com.cherba29.tally.statement.TransactionStatement
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context

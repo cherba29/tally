@@ -1,6 +1,7 @@
 package com.cherba29.tally.data
 
 import com.cherba29.tally.utils.LastSetFlowState
+import com.cherba29.tally.utils.WatchResult
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.lang.AutoCloseable
 import kotlin.time.TimeSource

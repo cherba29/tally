@@ -1,4 +1,4 @@
-package com.cherba29.tally.data
+package com.cherba29.tally.utils
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.FileSystems
