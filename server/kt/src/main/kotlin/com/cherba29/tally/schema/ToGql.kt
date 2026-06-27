@@ -35,7 +35,7 @@ fun Balance.toGql(): GqlBalance = GqlBalance(
 )
 
 fun Transaction.toGql(): GqlTransaction = GqlTransaction(
-  toAccountName = nodeId.name,
+  toAccountName = treeNode.name,
   isIncome = type == Transaction.Type.INCOME,
   isExpense = type == Transaction.Type.EXPENSE,
   balance = balance.toGql(),
@@ -49,7 +49,7 @@ private fun Double?.round2Float(): Float {
 }
 
 fun TransactionStatement.toGql(): GqlStatement = GqlStatement(
-  name = nodeId.name,
+  name = treeNode.name,
   month = monthRange.first,
   isClosed = isClosed,
   isCovered = isCovered,
@@ -101,9 +101,9 @@ fun Statement.toGqlTableCell(): GqlTableCell = GqlTableCell(
 )
 
 fun SummaryStatement.toGql(): GqlSummaryStatement = GqlSummaryStatement(
-  name = nodeId.name,
+  name = treeNode.name,
   month = monthRange.first,
-  accounts = statements.map { it.nodeId.name }.sorted(),
+  accounts = statements.map { it.treeNode.name }.sorted(),
   addSub = addSub,
   income = income,
   change = change ?: 0,
@@ -123,7 +123,7 @@ fun SummaryStatement.toGql(): GqlSummaryStatement = GqlSummaryStatement(
  **/
 fun SummaryStatement.toGqlSummaryData(): GqlSummaryData =  GqlSummaryData(
   statements = statements.sortedWith { a, b ->
-    if (a.nodeId.name < b.nodeId.name) -1 else 1
+    if (a.treeNode.name < b.treeNode.name) -1 else 1
   }.map { stmt ->
     when (stmt) {
       is SummaryStatement -> (stmt as Statement).toGql()  // Treat it as regular statement.
@@ -135,7 +135,7 @@ fun SummaryStatement.toGqlSummaryData(): GqlSummaryData =  GqlSummaryData(
 
 
 fun Statement.toGql(): GqlStatement = GqlStatement(
-  name = nodeId.name,
+  name = treeNode.name,
   month = monthRange.first,
   isClosed = isClosed,
   isCovered = true,

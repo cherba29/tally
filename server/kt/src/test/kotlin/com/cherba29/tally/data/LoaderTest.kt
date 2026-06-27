@@ -45,7 +45,7 @@ class LoaderTest : DescribeSpec({
         result.nodeToStatement.size shouldBe 3
         val tranStatement = result.nodeToStatement[result.tree[listOf("someone", "external", "test-account")]]?.get(MAR / 2019)!!
         tranStatement.monthRange shouldBe MAR / 2019..MAR / 2019
-        tranStatement.nodeId.name shouldBe "test-account"
+        tranStatement.treeNode.name shouldBe "test-account"
 
         tranStatement.startBalance shouldBe Balance(
           10000, LocalDate(2019, 3, 1),

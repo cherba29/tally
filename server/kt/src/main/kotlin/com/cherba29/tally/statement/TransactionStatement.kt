@@ -6,8 +6,8 @@ import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.Transfer
 
 // Extension of Statement for transactions over an account.
-class TransactionStatement(nodeId: TreeNode, monthRange: MonthRange, isClosed: Boolean, startBalance: Balance?) :
-  Statement(nodeId, monthRange, isClosed, startBalance) {
+class TransactionStatement(treeNode: TreeNode, monthRange: MonthRange, isClosed: Boolean, startBalance: Balance?) :
+  Statement(treeNode, monthRange, isClosed, startBalance) {
   // List of transaction in this statement.
   val transactions: MutableList<Transaction> = mutableListOf()
 
@@ -64,13 +64,13 @@ class TransactionStatement(nodeId: TreeNode, monthRange: MonthRange, isClosed: B
   companion object {
     fun fromTransfers(
       tree: TreeNode,
-      nodeId: TreeNode.Leaf,
+      leafTreeNode: TreeNode.Leaf,
       monthRange: MonthRange,
       isClosed: Boolean,
       transfers: List<Transfer>?,
       startBalance: Balance?
     ): TransactionStatement {
-      val statement = TransactionStatement(nodeId, monthRange, isClosed, startBalance)
+      val statement = TransactionStatement(leafTreeNode, monthRange, isClosed, startBalance)
       val attributeTransfer: (TreeNode, TreeNode, Int) -> Transaction.Type = { fromAccount, toAccount, amount ->
         if (amount > 0) {
           statement.inFlows += amount
@@ -91,7 +91,7 @@ class TransactionStatement(nodeId: TreeNode, monthRange: MonthRange, isClosed: B
       val firstTransfer: Transfer? = descTransfers.lastOrNull()
       if (firstTransfer != null && startBalance != null && firstTransfer.balance.date < startBalance.date) {
         throw IllegalStateException(
-          "Balance ${monthRange.first} $startBalance for account $nodeId starts after " +
+          "Balance ${monthRange.first} $startBalance for account $leafTreeNode starts after " +
               "transaction ${firstTransfer.fromAccount.last()} --> " +
               "${firstTransfer.toAccount.last()}/${firstTransfer.balance} desc '${firstTransfer.description}'"
         )
@@ -103,21 +103,21 @@ class TransactionStatement(nodeId: TreeNode, monthRange: MonthRange, isClosed: B
         var otherAccount: TreeNode
         var balance: Balance
         var transactionType: Transaction.Type
-        if (t.toAccount.last() === nodeId.name) {
+        if (t.toAccount.last() === leafTreeNode.name) {
           balance = t.balance
           otherAccount = tree[t.fromAccount] ?: throw IllegalStateException("${t.fromAccount} is not in $tree")
-          transactionType = attributeTransfer(otherAccount, nodeId, balance.amount)
-        } else if (t.fromAccount.last() === nodeId.name) {
+          transactionType = attributeTransfer(otherAccount, leafTreeNode, balance.amount)
+        } else if (t.fromAccount.last() === leafTreeNode.name) {
           balance = -t.balance
           otherAccount = tree[t.toAccount] ?: throw IllegalStateException("${t.toAccount} is not in $tree")
-          transactionType = attributeTransfer(nodeId, otherAccount, balance.amount)
+          transactionType = attributeTransfer(leafTreeNode, otherAccount, balance.amount)
         } else {
           // This should never occur since budget should have been validated by now.
           throw IllegalStateException(
-            "Setting transfer from (${t.fromAccount} to ${t.toAccount}) for '${nodeId.name}' account statement!"
+            "Setting transfer from (${t.fromAccount} to ${t.toAccount}) for '${leafTreeNode.name}' account statement!"
           )
         }
-        if (!statement.coversPrevious && balance.amount > 0 && tree[t.fromAccount]?.path?.first() == nodeId.path.first()) {
+        if (!statement.coversPrevious && balance.amount > 0 && tree[t.fromAccount]?.path?.first() == leafTreeNode.path.first()) {
           statement.coversProjectedPrevious = true
           if (balance.type != Balance.Type.PROJECTED) {
             statement.coversPrevious = true
@@ -125,7 +125,7 @@ class TransactionStatement(nodeId: TreeNode, monthRange: MonthRange, isClosed: B
         }
         statement.transactions.add(
           Transaction(
-            nodeId = otherAccount,
+            treeNode = otherAccount,
             description = t.description,
             balance = balance,
             type = transactionType,

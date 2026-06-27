@@ -11,7 +11,7 @@ import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate
 
 internal class TestStatement(
-  nodeId: TreeNode,
+  treeNode: TreeNode,
   monthRange: MonthRange,
   isClosed: Boolean = false,
   startBalance: Balance? = null,
@@ -21,7 +21,7 @@ internal class TestStatement(
   totalTransfers: Int = 0,
   totalPayments: Int = 0,
   income: Int = 0,
-) : Statement(nodeId, monthRange, isClosed, startBalance, endBalance, inFlows, outFlows, totalTransfers, totalPayments, income) {
+) : Statement(treeNode, monthRange, isClosed, startBalance, endBalance, inFlows, outFlows, totalTransfers, totalPayments, income) {
   override val isClosed: Boolean = true
 }
 
@@ -33,7 +33,7 @@ class StatementTest : DescribeSpec({
         tree[listOf("external", "test")]!!,
         MAR / 2021 .. MAR / 2021
       )
-      stmt.nodeId.path shouldBe listOf("external", "test")
+      stmt.treeNode.path shouldBe listOf("external", "test")
       stmt.monthRange shouldBe MAR / 2021 .. MAR / 2021
       stmt.inFlows shouldBe 0.0
       stmt.income shouldBe 0.0

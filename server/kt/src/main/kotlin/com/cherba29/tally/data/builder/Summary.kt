@@ -14,45 +14,45 @@ import kotlin.collections.iterator
  */
 fun combineSummaryStatements(tree: TreeNode, summaryPath: List<String>, summaryStatements: List<SummaryStatement>): SummaryStatement {
   require(summaryStatements.isNotEmpty()) { "Cant combine empty list of summary statements" }
-  val stmtName: String = summaryStatements.first().nodeId.name
+  val stmtName: String = summaryStatements.first().treeNode.name
   var monthRange: MonthRange = summaryStatements.first().monthRange
-  // Map of 'nodeId' -> month -> 'summary statement'.
+  // Map of 'treeNode' -> month -> 'summary statement'.
   val nodeMonthStatementMap = mutableMapOf<TreeNode, MutableMap<Month, Statement>>()
 
   // Map all sub-statements by month, and find max monthly range.
   for (summaryStmt in summaryStatements) {
     monthRange = monthRange.enlargeTo(summaryStmt.monthRange)!!
     for (stmt in summaryStmt.statements) {
-      val accountMonthlyStatements = nodeMonthStatementMap.getOrPut(stmt.nodeId) {
+      val accountMonthlyStatements = nodeMonthStatementMap.getOrPut(stmt.treeNode) {
         mutableMapOf()
       }
       val prevEntry = accountMonthlyStatements.putIfAbsent(stmt.monthRange.first, stmt)
       if (prevEntry != null) {
-        throw IllegalArgumentException("Duplicate month statement for ${stmt.nodeId.name} for ${stmt.monthRange}")
+        throw IllegalArgumentException("Duplicate month statement for ${stmt.treeNode.name} for ${stmt.monthRange}")
       }
     }
   }
   // Combine all statements as sub-statements of new parent summary statement.
   return SummaryStatementBuilder.builder {
-    nodeId = tree[summaryPath]!!
+    treeNode = tree[summaryPath]!!
     this.monthRange = monthRange
-    for ((nodeId, monthStatementMap) in nodeMonthStatementMap) {
+    for ((stmtTreeNode, monthStatementMap) in nodeMonthStatementMap) {
       // Combine all statements for a given account over all months in the range.
-      val stmt = makeSummaryStatementFromSubstatements(nodeId, monthRange,monthStatementMap)
+      val stmt = makeSummaryStatementFromSubstatements(stmtTreeNode, monthRange,monthStatementMap)
       addStatement(stmt)
     }
   }
 }
 
 internal fun makeSummaryStatementFromSubstatements(
-  nodeId: TreeNode,
+  treeNode: TreeNode,
   monthRange: MonthRange,
   statements: Map<Month, Statement>
 ): Statement {
-  val combined = Statement(nodeId, monthRange)
+  val combined = Statement(treeNode, monthRange)
   for (currentMonth in monthRange) {
     val stmt = statements[currentMonth]
-      ?: Statement(nodeId, currentMonth..currentMonth)
+      ?: Statement(treeNode, currentMonth..currentMonth)
     setStatementBalance(
       currentMonth,
       stmt,

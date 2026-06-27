@@ -49,12 +49,12 @@ class Transactions : CliktCommand() {
     })
     val budget = runBlocking { loader.budget() }
     val entries = mutableMapOf<String, MutableList<Transaction>>()
-    for ((nodeId, monthTransactionStatements) in budget.nodeToStatement) {
-      if (nodeId.children.isNotEmpty()) continue  // Only leaf nodes get processed.
-      if (owner != null && owner != nodeId.path.first()) {
+    for ((treeNode, monthTransactionStatements) in budget.nodeToStatement) {
+      if (treeNode.children.isNotEmpty()) continue  // Only leaf nodes get processed.
+      if (owner != null && owner != treeNode.path.first()) {
         continue
       }
-      if (account != null && nodeId.name != account) {
+      if (account != null && treeNode.name != account) {
         continue
       }
       for (transactionStatement in monthTransactionStatements.values) {
@@ -64,10 +64,10 @@ class Transactions : CliktCommand() {
         if (endMonth != null && endMonth!! < transactionStatement.monthRange.first) {
           continue
         }
-        var accountEntries = entries[transactionStatement.nodeId.name]
+        var accountEntries = entries[transactionStatement.treeNode.name]
         if (accountEntries == null) {
           accountEntries = mutableListOf()
-          entries[transactionStatement.nodeId.name] = accountEntries
+          entries[transactionStatement.treeNode.name] = accountEntries
         }
         accountEntries += (transactionStatement as TransactionStatement).transactions
       }
@@ -86,7 +86,7 @@ class Transactions : CliktCommand() {
         echo(
           "${t.balance.date},${amount.asAmount().padStart(8)}, ${
             accountName.padEnd(20)
-          },${t.nodeId.name},${t.description ?: ""}\n"
+          },${t.treeNode.name},${t.description ?: ""}\n"
         )
       }
     }

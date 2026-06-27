@@ -291,14 +291,14 @@ class LoadYamlTest : DescribeSpec({
       val testAccountStatement = testAccountMonthlyStatements[JAN / 2020]!! as TransactionStatement
       testAccountStatement.transactions shouldBe setOf(
         Transaction(
-          nodeId = budget.tree[listOf("someone", "external", "external")]!!,
+          treeNode = budget.tree[listOf("someone", "external", "external")]!!,
           balance = Balance(-3750, LocalDate.parse("2020-01-17"), Balance.Type.PROJECTED),
           description = null,
           type = Transaction.Type.EXPENSE,
           balanceFromStart = -1502
         ),
         Transaction(
-          nodeId = budget.tree[listOf("someone", "external", "external")]!!,
+          treeNode = budget.tree[listOf("someone", "external", "external")]!!,
           balance = Balance(2248, LocalDate.parse("2020-01-15"), Balance.Type.CONFIRMED),
           description = null,
           type = Transaction.Type.INCOME,
@@ -310,14 +310,14 @@ class LoadYamlTest : DescribeSpec({
       val externalAccountStatement = externalAccountMonthlyStatements[JAN / 2020]!! as TransactionStatement
       externalAccountStatement.transactions shouldBe setOf(
         Transaction(
-          nodeId = budget.tree[listOf("someone", "external", "test-account")]!!,
+          treeNode = budget.tree[listOf("someone", "external", "test-account")]!!,
           balance = Balance(3750, LocalDate.parse("2020-01-17"), Balance.Type.PROJECTED),
           description = null,
           type = Transaction.Type.INCOME,
           balanceFromStart = null,
         ),
         Transaction(
-          nodeId = budget.tree[listOf("someone", "external", "test-account")]!!,
+          treeNode = budget.tree[listOf("someone", "external", "test-account")]!!,
           balance = Balance(-2248, LocalDate.parse("2020-01-15"), Balance.Type.CONFIRMED),
           description = null,
           type = Transaction.Type.EXPENSE,

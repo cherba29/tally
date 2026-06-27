@@ -5,7 +5,7 @@ import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.MonthRange
 
 class SummaryStatement(
-  nodeId: TreeNode,
+  treeNode: TreeNode,
   monthRange: MonthRange,
   isClosed: Boolean = false,
   startBalance: Balance? = null,
@@ -17,7 +17,7 @@ class SummaryStatement(
   income: Int = 0,
   val statements: List<Statement> = listOf()
 ) : Statement(
-  nodeId, monthRange, isClosed, startBalance, endBalance, inFlows, outFlows, totalTransfers, totalPayments, income
+  treeNode, monthRange, isClosed, startBalance, endBalance, inFlows, outFlows, totalTransfers, totalPayments, income
 ) {
   override fun toString(): String = "${super.toString()}, statements=$statements"
 }

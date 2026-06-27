@@ -36,7 +36,7 @@ class SummaryTest : DescribeSpec({
 
       )
       val result = combineSummaryStatements(tree, listOf("john"),listOf(summaryStatement))
-      result.nodeId.path shouldBe listOf("john")
+      result.treeNode.path shouldBe listOf("john")
       result.monthRange shouldBe APR / 2026..MAY / 2026
       result.totalPayments shouldBe 0
       result.totalTransfers shouldBe 0
@@ -65,7 +65,7 @@ class SummaryTest : DescribeSpec({
 
       )
       val result = combineSummaryStatements(tree, listOf("john"), listOf(stmt1, stmt2))
-      result.nodeId.path shouldBe listOf("john")
+      result.treeNode.path shouldBe listOf("john")
       result.monthRange shouldBe APR / 2026..MAY / 2026
       result.totalPayments shouldBe 0
       result.totalTransfers shouldBe 0
@@ -81,7 +81,7 @@ class SummaryTest : DescribeSpec({
       }
 
       val stmt1 = SummaryStatementBuilder.builder {
-        nodeId = tree[listOf("john", "internal")]
+        treeNode = tree[listOf("john", "internal")]
         monthRange = APR / 2026..APR / 2026
 
         addStatement(
@@ -94,7 +94,7 @@ class SummaryTest : DescribeSpec({
         )
       }
       val stmt2 = SummaryStatementBuilder.builder {
-        nodeId = tree[listOf("john", "internal")]
+        treeNode = tree[listOf("john", "internal")]
         monthRange = APR / 2026..APR / 2026
         addStatement(
           TransactionStatement(
@@ -120,7 +120,7 @@ class SummaryTest : DescribeSpec({
       }
 
       val stmt1 = SummaryStatementBuilder.builder {
-        nodeId = tree[listOf("john", "internal")]
+        treeNode = tree[listOf("john", "internal")]
         monthRange = APR / 2026..APR / 2026
         addStatement(
           TransactionStatement(
@@ -132,7 +132,7 @@ class SummaryTest : DescribeSpec({
         )
       }
       val stmt2 = SummaryStatementBuilder.builder {
-        nodeId = tree[listOf("john", "internal")]
+        treeNode = tree[listOf("john", "internal")]
         monthRange = MAY / 2026..MAY / 2026
         addStatement(
           TransactionStatement(
@@ -144,7 +144,7 @@ class SummaryTest : DescribeSpec({
         )
       }
       val result = combineSummaryStatements(tree, listOf("john"), listOf(stmt1, stmt2))
-      result.nodeId.path shouldBe listOf("john")
+      result.treeNode.path shouldBe listOf("john")
       result.monthRange shouldBe APR / 2026..MAY / 2026
       result.totalPayments shouldBe 0
       result.totalTransfers shouldBe 0
@@ -152,7 +152,7 @@ class SummaryTest : DescribeSpec({
       result.change shouldBe -100
       result.statements.size shouldBe 1
       val statement = result.statements.first()
-      statement.nodeId.path shouldBe listOf("john", "internal", "test-account1")
+      statement.treeNode.path shouldBe listOf("john", "internal", "test-account1")
       statement.monthRange shouldBe APR / 2026..MAY / 2026
       statement.totalPayments shouldBe 0
       statement.totalTransfers shouldBe 0

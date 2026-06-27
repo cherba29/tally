@@ -8,7 +8,7 @@ import kotlin.math.pow
 import kotlin.math.sign
 
 open class Statement(
-  val nodeId: TreeNode,
+  val treeNode: TreeNode,
 
   // Period of time for the statement
   val monthRange: MonthRange,
@@ -86,14 +86,14 @@ open class Statement(
         inFlows == 0 && outFlows == 0 && totalPayments == 0
 
   override fun toString(): String {
-    return "$nodeId months=$monthRange isClodes=$isClosed startBalance=$startBalance endBalance=$endBalance"
+    return "$treeNode months=$monthRange isClodes=$isClosed startBalance=$startBalance endBalance=$endBalance"
   }
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is Statement) return false
 
-    return nodeId == other.nodeId
+    return treeNode == other.treeNode
         && monthRange == other.monthRange
         && isClosed == other.isClosed
         && startBalance == other.startBalance
@@ -106,7 +106,7 @@ open class Statement(
   }
 
   override fun hashCode(): Int {
-    var result = nodeId.hashCode()
+    var result = treeNode.hashCode()
     result = 31 * result + monthRange.hashCode()
     result = 31 * result + isClosed.hashCode()
     result = 31 * result + startBalance.hashCode()

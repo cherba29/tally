@@ -50,9 +50,9 @@ class ProcessedBudgetTest : DescribeSpec({
       )
 
       val transactionStatement = budget.nodeToStatement[budget.tree[listOf("john", "external", "test-account")]]?.get(MAR / 2026)!! as TransactionStatement
-      transactionStatement.nodeId.name shouldBe "test-account"
+      transactionStatement.treeNode.name shouldBe "test-account"
       transactionStatement.monthRange shouldBe MAR / 2026 .. MAR / 2026
-      transactionStatement.nodeId.path shouldBe listOf("john", "external", "test-account")
+      transactionStatement.treeNode.path shouldBe listOf("john", "external", "test-account")
 
       transactionStatement.transactions.isEmpty() shouldBe true
     }

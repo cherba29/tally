@@ -159,7 +159,7 @@ class BudgetBuilder(
         months, leafToAccount,
         leafToBalances, leafToTransfers,  owner = null)
       for (stmt in transactionStatementTable) {
-        nodeToStatement.getOrPut(stmt.nodeId) { mutableMapOf() }[stmt.monthRange.first] = stmt
+        nodeToStatement.getOrPut(stmt.treeNode) { mutableMapOf() }[stmt.monthRange.first] = stmt
       }
       transactionStatementTable
     }
@@ -197,11 +197,11 @@ class BudgetBuilder(
   }
 
   fun buildTransactionStatementTable(
-    tree: TreeNode,
+    treeRoot: TreeNode,
     months: MonthRange,
-    accounts: Map<TreeNode.Leaf, Account>,
-    balances: Map<TreeNode.Leaf, Map<Month, Balance>>,
-    transfers: Map<TreeNode.Leaf, Map<Month, List<Transfer>>>,
+    leafToAccountMap: Map<TreeNode.Leaf, Account>,
+    leafToMonthlyBalancesMap: Map<TreeNode.Leaf, Map<Month, Balance>>,
+    leafToMonthlyTransfersMap: Map<TreeNode.Leaf, Map<Month, List<Transfer>>>,
     owner: String?
   ): List<TransactionStatement> {
     val statementTable = mutableListOf<TransactionStatement>()
@@ -212,19 +212,19 @@ class BudgetBuilder(
       throw IllegalArgumentException("Budget must have at least one month.")
     }
 
-    for ((nodeId, account) in accounts) {
-      if (owner != null && owner !in nodeId.path.first()) {
+    for ((leafTreeNode, account) in leafToAccountMap) {
+      if (owner != null && owner !in leafTreeNode.path.first()) {
         continue
       }
       val accountStatements = mutableListOf<TransactionStatement>()
-      val monthlyTransfers = transfers[nodeId] ?: mapOf()
-      val monthlyBalances = balances[nodeId] ?: mapOf()
+      val monthlyTransfers = leafToMonthlyTransfersMap[leafTreeNode] ?: mapOf()
+      val monthlyBalances = leafToMonthlyBalancesMap[leafTreeNode] ?: mapOf()
 
       // Make statement outside range so that its attributes relating to previous can be used.
       val nextMonth = months.first().next()
       var nextMonthStatement = TransactionStatement.fromTransfers(
-        tree,
-        nodeId,
+        treeRoot,
+        leafTreeNode,
         nextMonth..nextMonth,
         account.isClosed(nextMonth),
         monthlyTransfers[nextMonth],
@@ -232,8 +232,8 @@ class BudgetBuilder(
       )
       for (month in months) {
         val statement = TransactionStatement.fromTransfers(
-          tree,
-          nodeId,
+          treeRoot,
+          leafTreeNode,
           month..month,
           account.isClosed(month),
           monthlyTransfers[month],
@@ -266,13 +266,13 @@ class BudgetBuilder(
 
     private fun <T> getMonthTransfers(
       transfers: MutableMap<TreeNode.Leaf, MutableMap<Month, MutableList<T>>>,
-      nodeId: TreeNode.Leaf,
+      leafTreeNode: TreeNode.Leaf,
       month: Month
     ): MutableList<T> {
-      var accountTransfers = transfers[nodeId]
+      var accountTransfers = transfers[leafTreeNode]
       if (accountTransfers == null) {
         accountTransfers = mutableMapOf()
-        transfers[nodeId] = accountTransfers
+        transfers[leafTreeNode] = accountTransfers
       }
       var monthTransfers = accountTransfers[month]
       if (monthTransfers == null) {

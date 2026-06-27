@@ -15,12 +15,12 @@ class SummaryStatementBuilder {
 
   // Adds statement to its immediate parent summary statement.
   fun addStatement(statement: Statement) {
-    val parent = statement.nodeId.parent!!
+    val parent = statement.treeNode.parent!!
     summaryStatements.getOrPut(parent) {
       mutableMapOf()
     }.getOrPut(statement.monthRange.first) {
       val builder = Builder()
-      builder.nodeId = parent
+      builder.treeNode = parent
       builder.monthRange = statement.monthRange
       builder
     }.addStatement(statement)
@@ -52,7 +52,7 @@ class SummaryStatementBuilder {
   }
 
   class Builder {
-    var nodeId: TreeNode? = null
+    var treeNode: TreeNode? = null
     var monthRange: MonthRange? = null
     private var startBalance: Balance? = null
     private var endBalance: Balance? = null
@@ -88,10 +88,10 @@ class SummaryStatementBuilder {
     }
 
     fun build(): SummaryStatement {
-      require(nodeId != null) { "build failed: nodeId is not set"}
+      require(treeNode != null) { "build failed: treeNode is not set"}
       require(monthRange != null)
       return SummaryStatement(
-        nodeId!!,
+        treeNode!!,
         monthRange!!,
         statements.any { statement -> statement.isClosed },
         startBalance,
