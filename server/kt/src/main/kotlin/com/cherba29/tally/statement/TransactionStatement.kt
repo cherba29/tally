@@ -1,12 +1,12 @@
 package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.Group
+import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.Transfer
 
 // Extension of Statement for transactions over an account.
-class TransactionStatement(nodeId: Group, monthRange: MonthRange, isClosed: Boolean, startBalance: Balance?) :
+class TransactionStatement(nodeId: TreeNode, monthRange: MonthRange, isClosed: Boolean, startBalance: Balance?) :
   Statement(nodeId, monthRange, isClosed, startBalance) {
   // List of transaction in this statement.
   val transactions: MutableList<Transaction> = mutableListOf()
@@ -63,15 +63,15 @@ class TransactionStatement(nodeId: Group, monthRange: MonthRange, isClosed: Bool
 
   companion object {
     fun fromTransfers(
-      tree: Group,
-      nodeId: Group.Leaf,
+      tree: TreeNode,
+      nodeId: TreeNode.Leaf,
       monthRange: MonthRange,
       isClosed: Boolean,
       transfers: List<Transfer>?,
       startBalance: Balance?
     ): TransactionStatement {
       val statement = TransactionStatement(nodeId, monthRange, isClosed, startBalance)
-      val attributeTransfer: (Group, Group, Int) -> Transaction.Type = { fromAccount, toAccount, amount ->
+      val attributeTransfer: (TreeNode, TreeNode, Int) -> Transaction.Type = { fromAccount, toAccount, amount ->
         if (amount > 0) {
           statement.inFlows += amount
         } else {
@@ -100,7 +100,7 @@ class TransactionStatement(nodeId: Group, monthRange: MonthRange, isClosed: Bool
       for (t in descTransfers) {
         statement.hasProjectedTransfer =
           statement.hasProjectedTransfer || t.balance.type == Balance.Type.PROJECTED
-        var otherAccount: Group
+        var otherAccount: TreeNode
         var balance: Balance
         var transactionType: Transaction.Type
         if (t.toAccount.last() === nodeId.name) {
@@ -136,7 +136,7 @@ class TransactionStatement(nodeId: Group, monthRange: MonthRange, isClosed: Bool
       return statement
     }
 
-    private fun getTransactionType(fromAccount: Group, toAccount: Group, amount: Int): Transaction.Type {
+    private fun getTransactionType(fromAccount: TreeNode, toAccount: TreeNode, amount: Int): Transaction.Type {
       return if ((toAccount.path.first() == fromAccount.path.first()) && !toAccount.isExternal && !fromAccount.isExternal) {
         Transaction.Type.TRANSFER
       } else {

@@ -1,7 +1,7 @@
 package com.cherba29.tally.cli.cmds
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.Group
+import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.data.watchedEventFlow
@@ -110,7 +110,7 @@ class Unaccounted : CliktCommand() {
     private val ignorePathRegex = Regex("(^_)|(/_)")
     private fun Int.asAmount(): String = "%.2f".format(this / 100.0)
     data class UnaccountedEntry(
-      val treeNode: Group,
+      val treeNode: TreeNode,
       val statement: TransactionStatement
     )
   }

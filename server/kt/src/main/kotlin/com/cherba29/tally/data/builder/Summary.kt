@@ -1,7 +1,7 @@
 package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.Group
+import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.enlargeTo
@@ -12,12 +12,12 @@ import kotlin.collections.iterator
 /**
  * Creates parent summary statement containing all provided summary statements
  */
-fun combineSummaryStatements(tree: Group, summaryPath: List<String>, summaryStatements: List<SummaryStatement>): SummaryStatement {
+fun combineSummaryStatements(tree: TreeNode, summaryPath: List<String>, summaryStatements: List<SummaryStatement>): SummaryStatement {
   require(summaryStatements.isNotEmpty()) { "Cant combine empty list of summary statements" }
   val stmtName: String = summaryStatements.first().nodeId.name
   var monthRange: MonthRange = summaryStatements.first().monthRange
   // Map of 'nodeId' -> month -> 'summary statement'.
-  val nodeMonthStatementMap = mutableMapOf<Group, MutableMap<Month, Statement>>()
+  val nodeMonthStatementMap = mutableMapOf<TreeNode, MutableMap<Month, Statement>>()
 
   // Map all sub-statements by month, and find max monthly range.
   for (summaryStmt in summaryStatements) {
@@ -45,7 +45,7 @@ fun combineSummaryStatements(tree: Group, summaryPath: List<String>, summaryStat
 }
 
 internal fun makeSummaryStatementFromSubstatements(
-  nodeId: Group,
+  nodeId: TreeNode,
   monthRange: MonthRange,
   statements: Map<Month, Statement>
 ): Statement {

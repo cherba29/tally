@@ -2,7 +2,7 @@ package com.cherba29.tally.core
 
 import kotlin.sequences.sequence
 
-interface GroupInterface<T> {
+interface TreeNodeInterface<T> {
   val name: String
   val parent: T?
   val children: List<T>
@@ -10,11 +10,11 @@ interface GroupInterface<T> {
   /**
    * Returns a child by name.
    */
-  operator fun get(id: String): GroupInterface<T>?
+  operator fun get(id: String): TreeNodeInterface<T>?
 
-  operator fun get(path: List<String>): GroupInterface<T>?
+  operator fun get(path: List<String>): TreeNodeInterface<T>?
 
-  val top: GroupInterface<T>
+  val top: TreeNodeInterface<T>
 
   val path: List<String>
 
@@ -25,15 +25,15 @@ interface GroupInterface<T> {
   val isExternal: Boolean
 }
 
-sealed class Group(): GroupInterface<Group> {
+sealed class TreeNode(): TreeNodeInterface<TreeNode> {
   class Root(
     override val name: String = "",
     override val isExternal: Boolean = false,
     createChildren: ParentList.() -> Unit
-  ) : Group() {
-    override val parent: Group? = null
-    override val children: List<Group> = ParentList(this).apply(createChildren)
-    override fun get(id: String): Group? = children.firstOrNull { it.name == id }
+  ) : TreeNode() {
+    override val parent: TreeNode? = null
+    override val children: List<TreeNode> = ParentList(this).apply(createChildren)
+    override fun get(id: String): TreeNode? = children.firstOrNull { it.name == id }
 
     override fun equals(other: Any?): Boolean {
       if (this === other) return true // Referential check
@@ -51,15 +51,15 @@ sealed class Group(): GroupInterface<Group> {
   class Branch(
     override val name: String,
     createChildren: ParentList.() -> Unit,
-    override val parent: Group,
+    override val parent: TreeNode,
     override val isExternal: Boolean = parent.isExternal
-  ) : Group() {
-    override val children: List<Group> = ParentList(this).apply(createChildren)
-    override fun get(id: String): Group? = children.firstOrNull { it.name == id }
+  ) : TreeNode() {
+    override val children: List<TreeNode> = ParentList(this).apply(createChildren)
+    override fun get(id: String): TreeNode? = children.firstOrNull { it.name == id }
 
     override fun equals(other: Any?): Boolean {
       if (this === other) return true // Referential check
-      if (other !is Group) return false // Type check
+      if (other !is TreeNode) return false // Type check
       return name == other.name && children == other.children
     }
 
@@ -72,11 +72,11 @@ sealed class Group(): GroupInterface<Group> {
 
   data class Leaf(
     override val name: String,
-    override val parent: Group,
+    override val parent: TreeNode,
     override val isExternal: Boolean = parent.isExternal
-  ) : Group() {
-    override val children: List<Group> = listOf()
-    override fun get(id: String): Group? = null
+  ) : TreeNode() {
+    override val children: List<TreeNode> = listOf()
+    override fun get(id: String): TreeNode? = null
     override fun toString() = name
 
     override fun equals(other: Any?): Boolean {
@@ -87,22 +87,22 @@ sealed class Group(): GroupInterface<Group> {
     override fun hashCode(): Int = name.hashCode()
   }
 
-  abstract override fun get(id: String): Group?
-  override operator fun get(path: List<String>): Group? =
+  abstract override fun get(id: String): TreeNode?
+  override operator fun get(path: List<String>): TreeNode? =
     if (path.isEmpty()) this else get(path.first())?.get(path.subList(1, path.size))
-  override val top: Group get () = if (parent?.parent == null) this else parent!!.top
+  override val top: TreeNode get () = if (parent?.parent == null) this else parent!!.top
 
   override val path: List<String> get() = if (parent == null || name.isEmpty()) listOf() else parent!!.path + name
 
-  fun traverseBottomUp(): Sequence<Group> = sequence {
+  fun traverseBottomUp(): Sequence<TreeNode> = sequence {
     for (child in children) {
       yieldAll(child.traverseBottomUp())
     }
-    yield(this@Group)
+    yield(this@TreeNode)
   }
 
-  fun traverseSortedDepthDown(): Sequence<Group> = sequence {
-    yield(this@Group)
+  fun traverseSortedDepthDown(): Sequence<TreeNode> = sequence {
+    yield(this@TreeNode)
     for (child in children.sortedBy { it.name }) {
       yieldAll(child.traverseSortedDepthDown())
     }
@@ -136,8 +136,8 @@ sealed class Group(): GroupInterface<Group> {
         it.first
       }
 
-      /** Builds a Group tree from provide paths. */
-      fun build(): Group {
+      /** Builds a TreeNode tree from provide paths. */
+      fun build(): TreeNode {
         return root {
           for ((part, isLeaf) in getChildrenOf(listOf())) {
             if (isLeaf) {
@@ -168,19 +168,19 @@ private const val EXTERNAL_NAME = "external"
 
 /** Context class for tree DSL. */
 class ParentList(
-  val parent: Group,
-  private val children: MutableList<Group> = mutableListOf()
-) : List<Group> by children {
+  val parent: TreeNode,
+  private val children: MutableList<TreeNode> = mutableListOf()
+) : List<TreeNode> by children {
 
   fun branch(name: String, createChildren: ParentList.() -> Unit) {
-    children += Group.Branch(name, createChildren, parent, name == EXTERNAL_NAME || parent.isExternal)
+    children += TreeNode.Branch(name, createChildren, parent, name == EXTERNAL_NAME || parent.isExternal)
   }
 
   fun leaf(name: String) {
-    children += Group.Leaf(name, parent, name == EXTERNAL_NAME || parent.isExternal)
+    children += TreeNode.Leaf(name, parent, name == EXTERNAL_NAME || parent.isExternal)
   }
 
-  // Since this class is member of Group, which has equals override it here as well.
+  // Since this class is member of TreeNode, which has equals override it here as well.
   override fun equals(other: Any?): Boolean {
     if (this === other) return true // Referential check
     if (other !is List<*>) return false // Type check
@@ -189,4 +189,4 @@ class ParentList(
   override fun hashCode(): Int = children.hashCode()
 }
 
-fun root(createChildren: ParentList.() -> Unit) = Group.Root(createChildren = createChildren)
+fun root(createChildren: ParentList.() -> Unit) = TreeNode.Root(createChildren = createChildren)

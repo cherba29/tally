@@ -1,7 +1,7 @@
 package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.Group
+import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.enlargeTo
@@ -11,7 +11,7 @@ import com.cherba29.tally.statement.SummaryStatement
 
 class SummaryStatementBuilder {
   // Map of owner -> 'summary name' -> month -> 'summary statement'.
-  private val summaryStatements = mutableMapOf<Group, MutableMap<Month, Builder>>()
+  private val summaryStatements = mutableMapOf<TreeNode, MutableMap<Month, Builder>>()
 
   // Adds statement to its immediate parent summary statement.
   fun addStatement(statement: Statement) {
@@ -27,7 +27,7 @@ class SummaryStatementBuilder {
   }
 
   // Make sure totals are computed for parent summary accounts up the path to the root.
-  fun build(tree: Group): Map<Group, Map<Month, SummaryStatement>> {
+  fun build(tree: TreeNode): Map<TreeNode, Map<Month, SummaryStatement>> {
     // For each owner bottom up, build up summaries.
     for (ownerRoot in tree.children) {
       for (node in ownerRoot.traverseBottomUp()) {
@@ -52,7 +52,7 @@ class SummaryStatementBuilder {
   }
 
   class Builder {
-    var nodeId: Group? = null
+    var nodeId: TreeNode? = null
     var monthRange: MonthRange? = null
     private var startBalance: Balance? = null
     private var endBalance: Balance? = null

@@ -1,10 +1,10 @@
 package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.Group
+import com.cherba29.tally.core.TreeNode
 
 data class Transaction(
-  val nodeId: Group,
+  val nodeId: TreeNode,
   val balance: Balance,
   val description: String?,
   val type: Type,

@@ -2,7 +2,7 @@ package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.Group
+import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.Transfer
@@ -32,7 +32,7 @@ class BudgetBuilder(
     val description: String?,
   )
 
-  private val groupTreeBuilder = Group.Companion.Builder()
+  private val groupTreeBuilder = TreeNode.Companion.Builder()
   private val pathToAccount = mutableMapOf<List<String>, Account>()
 
   fun setAccount(fullPath: List<String>, account: Account): BudgetBuilder {
@@ -81,8 +81,8 @@ class BudgetBuilder(
     maxMonth = Month.Companion.max(maxMonth ?: toMonth, toMonth, fromMonth)
   }
 
-  private fun buildTransfers(tree: Group): MutableMap<Group.Leaf, MutableMap<Month, MutableList<Transfer>>> {
-    val budgetTransfers: MutableMap<Group.Leaf, MutableMap<Month, MutableList<Transfer>>> = mutableMapOf()
+  private fun buildTransfers(tree: TreeNode): MutableMap<TreeNode.Leaf, MutableMap<Month, MutableList<Transfer>>> {
+    val budgetTransfers: MutableMap<TreeNode.Leaf, MutableMap<Month, MutableList<Transfer>>> = mutableMapOf()
     for (transferData in transfers) {
 
       val toAccounts = pathToAccount.keys.filter { it.last() == transferData.toAccountName }
@@ -95,10 +95,10 @@ class BudgetBuilder(
               "found multiple candidate accounts " + toAccounts.joinToString { it.joinToString("/") })
       }
 
-      val toAccount = tree[toAccounts.first()] as? Group.Leaf
+      val toAccount = tree[toAccounts.first()] as? TreeNode.Leaf
         ?: throw IllegalStateException("Unknown account path ${toAccounts.first().joinToString("/")}")
 
-      val fromAccount = tree[transferData.fromAccountPath] as? Group.Leaf ?: throw IllegalArgumentException(
+      val fromAccount = tree[transferData.fromAccountPath] as? TreeNode.Leaf ?: throw IllegalArgumentException(
         "Unknown account ${transferData.fromAccountPath.joinToString("/")}"
       )
 
@@ -140,15 +140,15 @@ class BudgetBuilder(
     val months = if (minMonth != null && maxMonth != null) (minMonth!!..maxMonth!!) else MonthRange.Companion.EMPTY
     val tree = groupTreeBuilder.build()
     val leafToAccount = pathToAccount.mapKeys {
-      tree[it.key] as? Group.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
+      tree[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
     }
     val leafToBalances = balances.mapKeys {
-      tree[it.key] as? Group.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
+      tree[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
     }
     val (transfers, elapsedBudgetTime) = timeSource.measureTimedValue { buildTransfers(tree) }
-    val nodeToStatement: MutableMap<Group, MutableMap<Month, Statement>> = mutableMapOf()
+    val nodeToStatement: MutableMap<TreeNode, MutableMap<Month, Statement>> = mutableMapOf()
     val leafToTransfers = transfers.mapKeys {
-      tree[it.key.path] as? Group.Leaf
+      tree[it.key.path] as? TreeNode.Leaf
         ?: throw java.lang.IllegalStateException("Could not find path ${it.key.path}")
     }
 
@@ -197,11 +197,11 @@ class BudgetBuilder(
   }
 
   fun buildTransactionStatementTable(
-    tree: Group,
+    tree: TreeNode,
     months: MonthRange,
-    accounts: Map<Group.Leaf, Account>,
-    balances: Map<Group.Leaf, Map<Month, Balance>>,
-    transfers: Map<Group.Leaf, Map<Month, List<Transfer>>>,
+    accounts: Map<TreeNode.Leaf, Account>,
+    balances: Map<TreeNode.Leaf, Map<Month, Balance>>,
+    transfers: Map<TreeNode.Leaf, Map<Month, List<Transfer>>>,
     owner: String?
   ): List<TransactionStatement> {
     val statementTable = mutableListOf<TransactionStatement>()
@@ -265,8 +265,8 @@ class BudgetBuilder(
     private val logger = KotlinLogging.logger {}
 
     private fun <T> getMonthTransfers(
-      transfers: MutableMap<Group.Leaf, MutableMap<Month, MutableList<T>>>,
-      nodeId: Group.Leaf,
+      transfers: MutableMap<TreeNode.Leaf, MutableMap<Month, MutableList<T>>>,
+      nodeId: TreeNode.Leaf,
       month: Month
     ): MutableList<T> {
       var accountTransfers = transfers[nodeId]

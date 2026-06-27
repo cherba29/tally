@@ -1,7 +1,7 @@
 package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.Group
+import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.root
@@ -11,7 +11,7 @@ import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate
 
 internal class TestStatement(
-  nodeId: Group,
+  nodeId: TreeNode,
   monthRange: MonthRange,
   isClosed: Boolean = false,
   startBalance: Balance? = null,

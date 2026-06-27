@@ -1,10 +1,9 @@
 package com.cherba29.tally.core
 
 import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.shouldBe
 
-class GroupTest : DescribeSpec({
+class TreeNodeTest : DescribeSpec({
   describe("Creation") {
     it("single root") {
       val tree = root {  }
@@ -26,13 +25,13 @@ class GroupTest : DescribeSpec({
 
   describe("Builder") {
     it("empty") {
-      val builder = Group.Companion.Builder()
+      val builder = TreeNode.Companion.Builder()
       val tree = builder.build()
       tree shouldBe root {}
     }
 
     it("just leafs") {
-      val builder = Group.Companion.Builder()
+      val builder = TreeNode.Companion.Builder()
       builder.addPath(listOf("child1"))
       builder.addPath(listOf("child2"))
       val tree = builder.build()
@@ -43,7 +42,7 @@ class GroupTest : DescribeSpec({
     }
 
     it("single branch") {
-      val builder = Group.Companion.Builder()
+      val builder = TreeNode.Companion.Builder()
       builder.addPath(listOf("branch1", "child1"))
       builder.addPath(listOf("branch1", "child2"))
       val tree = builder.build()
@@ -57,7 +56,7 @@ class GroupTest : DescribeSpec({
     }
 
     it("branch as subpath") {
-      val builder = Group.Companion.Builder()
+      val builder = TreeNode.Companion.Builder()
       builder.addPath(listOf("branch1", "child1"))
       builder.addPath(listOf("branch1"))
       val tree = builder.build()
@@ -70,7 +69,7 @@ class GroupTest : DescribeSpec({
     }
 
     it("branch plus leaf") {
-      val builder = Group.Companion.Builder()
+      val builder = TreeNode.Companion.Builder()
       builder.addPath(listOf("branch1", "child1"))
       builder.addPath(listOf("branch1", "child2"))
       builder.addPath(listOf("child3"))
@@ -86,7 +85,7 @@ class GroupTest : DescribeSpec({
     }
 
     it("multiple branches") {
-      val builder = Group.Companion.Builder()
+      val builder = TreeNode.Companion.Builder()
       builder.addPath(listOf("branch1", "child11"))
       builder.addPath(listOf("branch1", "child12"))
       builder.addPath(listOf("branch1", "branch11", "child113"))

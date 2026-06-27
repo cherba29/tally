@@ -1,12 +1,10 @@
 package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Account
-import com.cherba29.tally.core.Group
+import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.statement.Statement
-import com.cherba29.tally.statement.SummaryStatement
-import com.cherba29.tally.statement.TransactionStatement
 import kotlin.collections.get
 
 /**
@@ -16,15 +14,15 @@ data class Budget(
   /** Period over which the budget is defined. */
   val months: MonthRange,
   /** Hierarchical structure of accounts and summaries. */
-  val tree: Group,
+  val tree: TreeNode,
   /** Maps leaf tree node to corresponding account. */
-  val leafToAccount: Map<Group.Leaf, Account>,
+  val leafToAccount: Map<TreeNode.Leaf, Account>,
   // Tree node to corresponding statement.
   // Parent nodes map to SummaryStatement and leaf nodes to TransactionStatement.
-  val nodeToStatement: Map<Group, Map<Month, Statement>>,
+  val nodeToStatement: Map<TreeNode, Map<Month, Statement>>,
 ) {
   fun getAccountNode(accountName: String) = leafToAccount.entries.find { it.value.name == accountName }?.key
-  fun getAccount(treeNode: Group) = if (treeNode.children.isEmpty()) {
+  fun getAccount(treeNode: TreeNode) = if (treeNode.children.isEmpty()) {
       leafToAccount[treeNode]
     } else {
       // Summaries don't have associated account, create a dummy.

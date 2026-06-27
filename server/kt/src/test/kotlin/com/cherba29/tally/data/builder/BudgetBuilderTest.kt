@@ -2,7 +2,7 @@ package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.Group
+import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.DEC
 import com.cherba29.tally.core.MonthName.FEB
@@ -330,12 +330,12 @@ class BudgetBuilderTest : DescribeSpec({
         val path1 = listOf("john", "external", "test-account1")
         val path2 = listOf("john", "external", "test-account2")
         val accounts = mapOf(
-          tree[path1]!! as Group.Leaf to account1,
-          tree[path2]!! as Group.Leaf to account2,
+          tree[path1]!! as TreeNode.Leaf to account1,
+          tree[path2]!! as TreeNode.Leaf to account2,
         )
 
         val balances = mapOf(
-          tree[path1]!! as Group.Leaf to mapOf(
+          tree[path1]!! as TreeNode.Leaf to mapOf(
             DEC / 2019 to Balance.confirmed(10, "2019-12-01"),
             JAN / 2020 to Balance.confirmed(20, "2020-01-01"),
             FEB / 2020 to Balance.projected(30, "2020-02-01")
@@ -358,8 +358,8 @@ class BudgetBuilderTest : DescribeSpec({
           balance = Balance.projected(1000, "2019-12-05")
         )
         val transfers = mapOf(
-          tree[path1]!! as Group.Leaf to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
-          tree[path2]!! as Group.Leaf to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
+          tree[path1]!! as TreeNode.Leaf to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
+          tree[path2]!! as TreeNode.Leaf to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
         )
         val table = BudgetBuilder().buildTransactionStatementTable(
           tree,
@@ -391,11 +391,11 @@ class BudgetBuilderTest : DescribeSpec({
         val path1 = listOf("john", "external", "test-account1")
         val path2 = listOf("john", "external", "test-account2")
         val accounts = mapOf(
-          tree[path1]!! as Group.Leaf to account1,
-          tree[path2]!! as Group.Leaf to account2
+          tree[path1]!! as TreeNode.Leaf to account1,
+          tree[path2]!! as TreeNode.Leaf to account2
         )
         val balances = mapOf(
-          tree[path1]!! as Group.Leaf to mapOf(
+          tree[path1]!! as TreeNode.Leaf to mapOf(
             DEC / 2019 to Balance.confirmed(10, "2019-12-01"),
             JAN / 2020 to Balance.confirmed(20, "2020-01-01"),
             FEB / 2020 to Balance.projected(30, "2020-02-01")
@@ -419,8 +419,8 @@ class BudgetBuilderTest : DescribeSpec({
         )
 
         val transfers = mapOf(
-          tree[path1]!! as Group.Leaf to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
-          tree[path2]!! as Group.Leaf to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
+          tree[path1]!! as TreeNode.Leaf to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
+          tree[path2]!! as TreeNode.Leaf to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
         )
         val table = BudgetBuilder().buildTransactionStatementTable(
           tree,
@@ -487,17 +487,17 @@ class BudgetBuilderTest : DescribeSpec({
         val path1 = listOf("john", "external", "test-account1")
         val path2 = listOf("john", "external", "external")
         val accounts = mapOf(
-          tree[path1]!! as Group.Leaf to account1,
-          tree[path2]!! as Group.Leaf to account2
+          tree[path1]!! as TreeNode.Leaf to account1,
+          tree[path2]!! as TreeNode.Leaf to account2
         )
 
         val balances = mapOf(
-          tree[path1]!! as Group.Leaf to mapOf(
+          tree[path1]!! as TreeNode.Leaf to mapOf(
             DEC / 2019 to Balance.confirmed(10, "2019-12-01"),
           )
         )
         val transfers = mapOf(
-          tree[path1]!! as Group.Leaf to mapOf(
+          tree[path1]!! as TreeNode.Leaf to mapOf(
             DEC / 2019 to listOf(
               Transfer(
                 fromAccount = path1,
@@ -565,9 +565,9 @@ class BudgetBuilderTest : DescribeSpec({
         val path1 = listOf("john", "internal", "checking", "test-account1")
         val path2 = listOf("john", "internal", "credit", "test-account2")
         val path3 = listOf("john", "external", "expense", "test-account3")
-        val node1 = tree[path1]!! as Group.Leaf
-        val node2 = tree[path2]!! as Group.Leaf
-        val node3 = tree[path3]!! as Group.Leaf
+        val node1 = tree[path1]!! as TreeNode.Leaf
+        val node2 = tree[path2]!! as TreeNode.Leaf
+        val node3 = tree[path3]!! as TreeNode.Leaf
         val accounts = mapOf(node1 to account1, node2 to account2, node3 to account3)
 
         val balances = mapOf(
