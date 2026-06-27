@@ -32,7 +32,6 @@ data class Budget(
         path.lastOrNull() ?: "",
         if (path.size > 1) path.subList(0, path.size-1) else listOf(""),
         setOf(treeNode.path.first()),
-        isSummary = treeNode.children.isNotEmpty(),
         openedOn = Month(2010, 0)
       )
     }

@@ -8,8 +8,6 @@ data class Account(
   val path: List<String>,
   // All owners of this account.
   val owners: Set<String>,
-  // Summary accounts are synthetic, created for each part of the account paths.
-  val isSummary: Boolean,
   // Human-readable description for the account for display.
   val description: String? = null,
   // Real account number associated with this account.

@@ -19,7 +19,7 @@ import kotlinx.datetime.LocalDate
 class StatementServiceTest : DescribeSpec({
   describe("transaction statement response") {
     it("empty") {
-      val account = Account("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = true, openedOn = MAR / 2026)
+      val account = Account("test-account1", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
 
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
@@ -38,7 +38,7 @@ class StatementServiceTest : DescribeSpec({
     }
 
     it("no given month") {
-      val account = Account("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = true, openedOn = MAR / 2026)
+      val account = Account("test-account1", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
 
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
@@ -57,7 +57,7 @@ class StatementServiceTest : DescribeSpec({
     }
 
     it("single statement no transactions") {
-      val account = Account(name = "test-account", isSummary = false, owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
+      val account = Account(name = "test-account", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
           setAccount(listOf("john", "internal", "test-account"), account)
@@ -93,8 +93,8 @@ class StatementServiceTest : DescribeSpec({
     }
 
     it("statement with transactions") {
-      val account1 = Account(name = "test-account1", isSummary = false, owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
-      val account2 = Account(name = "test-account2", isSummary = false, owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
+      val account1 = Account(name = "test-account1", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
+      val account2 = Account(name = "test-account2", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
 
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {

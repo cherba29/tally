@@ -31,9 +31,9 @@ class BudgetBuilderTest : DescribeSpec({
   }
 
   it("build simple") {
-    val account1 = Account("test-account1", path = listOf("internal"), owners = setOf("john"), isSummary = false, openedOn = NOV / 2019)
-    val account2 = Account("test-account2", path = listOf("internal"), owners = setOf("john"), isSummary = false, openedOn = NOV / 2019)
-    val account3 = Account("test-account3", path = listOf("internal"), owners = setOf("john"), isSummary = false, openedOn = NOV / 2019)
+    val account1 = Account("test-account1", path = listOf("internal"), owners = setOf("john"), openedOn = NOV / 2019)
+    val account2 = Account("test-account2", path = listOf("internal"), owners = setOf("john"), openedOn = NOV / 2019)
+    val account3 = Account("test-account3", path = listOf("internal"), owners = setOf("john"), openedOn = NOV / 2019)
     val budget = budget {
       setAccount(listOf("john", "internal", "test-account1"), account1)
       setAccount(listOf("john", "internal", "test-account2"), account2)
@@ -98,9 +98,9 @@ class BudgetBuilderTest : DescribeSpec({
 
   it("build ambiguous account") {
     val path1 = listOf("bob", "test-account1")
-    val account1 = Account("test-account1", path = listOf(), isSummary = false, owners = setOf("bob"), openedOn = NOV / 2019)
+    val account1 = Account("test-account1", path = listOf(), owners = setOf("bob"), openedOn = NOV / 2019)
     val path2 = listOf("alice", "test-account1")
-    val account2 = Account("test-account1", path = listOf(), isSummary = false, owners = setOf("alice"), openedOn = NOV / 2019)
+    val account2 = Account("test-account1", path = listOf(), owners = setOf("alice"), openedOn = NOV / 2019)
     val exception = shouldThrow<IllegalArgumentException> {
       budget {
         setAccount(path1, account1)
@@ -137,7 +137,7 @@ class BudgetBuilderTest : DescribeSpec({
   it("build budget - duplicate balance") {
     val builder = BudgetBuilder()
     val path1 = listOf("bob", "internal", "test-account1")
-    val account1 = Account("test-account1", path = listOf("internal"), owners = setOf(), isSummary = false, openedOn = NOV / 2019)
+    val account1 = Account("test-account1", path = listOf("internal"), owners = setOf(), openedOn = NOV / 2019)
     builder.setAccount(path1, account1)
     builder.setBalance(
       path1,
@@ -157,7 +157,7 @@ class BudgetBuilderTest : DescribeSpec({
 
   it("build budget - bad to account") {
     val path2 = listOf("bob", "test-account2")
-    val account2 = Account("test-account2", path = listOf(), owners = setOf(), isSummary = false, openedOn = NOV / 2019)
+    val account2 = Account("test-account2", path = listOf(), owners = setOf(), openedOn = NOV / 2019)
     val exception = shouldThrow<IllegalArgumentException> {
       budget {
         setAccount(path2, account2)
@@ -176,10 +176,7 @@ class BudgetBuilderTest : DescribeSpec({
 
   it("build budget - bad from account") {
     val path1 = listOf("bob", "test-account1")
-    val account1 = Account(
-      "test-account1", path = listOf(), owners = setOf(), isSummary = false,
-      openedOn = NOV / 2019,
-    )
+    val account1 = Account("test-account1", path = listOf(), owners = setOf(), openedOn = NOV / 2019)
     val path2 = listOf("bob", "external", "test-account2")
     val exception = shouldThrow<IllegalArgumentException> {
       budget {
@@ -200,10 +197,7 @@ class BudgetBuilderTest : DescribeSpec({
   describe("findActive accounts") {
     it("open account") {
       val path1 = listOf("bob", "internal", "test-account1")
-      val account1 = Account(
-        "test-account1", path = listOf("internal"), owners = setOf(), isSummary = false,
-        openedOn = APR / 2026
-      )
+      val account1 = Account("test-account1", path = listOf("internal"), owners = setOf(), openedOn = APR / 2026)
       val budget = budget {
         setAccount(path1, account1)
       }
@@ -212,21 +206,11 @@ class BudgetBuilderTest : DescribeSpec({
 
     it("multiple accounts") {
       val path1 = listOf("bob", "test-account1")
-      val account1 = Account(
-        "test-account1", path = listOf(), owners = setOf(), isSummary = false,
-        openedOn = APR / 2026
-      )
+      val account1 = Account("test-account1", path = listOf(), owners = setOf(), openedOn = APR / 2026)
       val path2 = listOf("bob", "test-account2")
-      val account2 = Account(
-        "test-account2", path = listOf(), owners = setOf(), isSummary = false,
-        openedOn = NOV / 2019,
-      )
+      val account2 = Account("test-account2", path = listOf(), owners = setOf(), openedOn = NOV / 2019)
       val path3 = listOf("bob", "test-account3")
-      val account3 = Account(
-        "test-account3", path = listOf(), owners = setOf(), isSummary = false,
-        openedOn = JAN / 2020,
-        closedOn = FEB / 2020,
-      )
+      val account3 = Account("test-account3", path = listOf(), owners = setOf(), openedOn = JAN / 2020, closedOn = FEB / 2020)
       val budget = budget {
         setAccount(path1, account1)
         setAccount(path2, account2)
@@ -254,8 +238,7 @@ class BudgetBuilderTest : DescribeSpec({
 
       it("single account no transfers") {
         val accountPath = listOf("john", "external", "test-account")
-        val account = Account(name = "test-account", isSummary = false,
-          path = listOf("external"), owners = setOf(), openedOn = DEC / 2019)
+        val account = Account(name = "test-account", path = listOf("external"), owners = setOf(), openedOn = DEC / 2019)
         val budget = budget {
           setAccount(accountPath, account)
         }
@@ -291,9 +274,12 @@ class BudgetBuilderTest : DescribeSpec({
 
       it("bad account name on transfer") {
         val path1 = listOf("john", "external", "test-account1")
-        val account1 = Account(name = "test-account1", isSummary = false,
+        val account1 = Account(
+          name = "test-account1",
           path = listOf("external"),
-          owners = setOf("john"), openedOn = DEC / 2021)
+          owners = setOf("john"),
+          openedOn = DEC / 2021
+        )
         val exception =
           shouldThrow<IllegalArgumentException> {
             budget {
@@ -312,13 +298,19 @@ class BudgetBuilderTest : DescribeSpec({
       }
 
       it("two accounts with common owner and transfers") {
-        val account1 = Account(name = "test-account1", isSummary = false,
+        val account1 = Account(
+          name = "test-account1",
           path = listOf("external"),
-          owners = setOf("john"), openedOn = DEC / 2019)
+          owners = setOf("john"),
+          openedOn = DEC / 2019
+        )
 
-        val account2 = Account(name = "test-account2", isSummary = false,
+        val account2 = Account(
+          name = "test-account2",
           path = listOf("external"),
-          owners = setOf("john"), openedOn = DEC / 2019)
+          owners = setOf("john"),
+          openedOn = DEC / 2019
+        )
         val tree = root {
           branch("john") {
             branch("external") {
@@ -375,9 +367,9 @@ class BudgetBuilderTest : DescribeSpec({
       }
 
       it("two accounts with external transfer") {
-        val account1 = Account(name = "test-account1", isSummary = false,
+        val account1 = Account(name = "test-account1",
           path = listOf("external"), owners = setOf("john"), openedOn = DEC / 2019)
-        val account2 = Account(name = "test-account2", isSummary = false,
+        val account2 = Account(name = "test-account2",
           path = listOf("external"),
           owners = setOf("john"), openedOn = DEC / 2019)
         val tree = root {
@@ -437,7 +429,7 @@ class BudgetBuilderTest : DescribeSpec({
 
       it("transfer with date before start balance") {
         val path1 = listOf("john", "external", "test-account1")
-        val account1 = Account(name = "test-account1", isSummary = false,
+        val account1 = Account(name = "test-account1",
           path = listOf("external"),
           owners = setOf("john"), openedOn = DEC / 2021)
         val exception =
@@ -464,14 +456,13 @@ class BudgetBuilderTest : DescribeSpec({
       it("transfer to closed account") {
         val account1 = Account(
           name = "test-account1",
-          isSummary = false,
           path = listOf("external"),
           owners = setOf("john"),
           openedOn = NOV / 2019,
           closedOn = NOV / 2019  // closed before TransactionStatement month
         )
         val account2 = Account(
-          name = "external", isSummary = false,
+          name = "external",
           path = listOf("external"),
           owners = setOf("john"),
           openedOn = NOV / 2019,
@@ -535,13 +526,13 @@ class BudgetBuilderTest : DescribeSpec({
       }
 
       it("get transaction type") {
-        val account1 = Account(name = "test-account1", isSummary = false,
+        val account1 = Account(name = "test-account1",
           path = listOf("internal", "checking"),
           owners = setOf("john"), openedOn = DEC / 2019)
-        val account2 = Account(name = "test-account2", isSummary = false,
+        val account2 = Account(name = "test-account2",
           path = listOf("internal", "credit"),
           owners = setOf("john"), openedOn = DEC / 2019)
-        val account3 = Account(name = "test-account3", isSummary = false,
+        val account3 = Account(name = "test-account3",
           path = listOf("external", "expense"),
           owners = setOf("john"), openedOn = DEC / 2019)
 
@@ -626,7 +617,7 @@ class BudgetBuilderTest : DescribeSpec({
   describe("buildSummaryStatementTable") {
     it("single closed account - produces summary without it") {
       val path1 = listOf("john", "external", "test-account1")
-      val account1 = Account(name = "test-account1", isSummary = false,
+      val account1 = Account(name = "test-account1",
         path = listOf("external"),
         owners = setOf("john"), openedOn = MAR / 2021)
       val startBalance = Balance(
@@ -695,7 +686,7 @@ class BudgetBuilderTest : DescribeSpec({
 
     it("single external account - no SUMMARY") {
       val path1 = listOf("john", "external", "test-account1")
-      val account1 = Account(name = "test-account1", isSummary = true,
+      val account1 = Account(name = "test-account1",
         path = listOf("external"),
         owners = setOf("john"), openedOn = MAR / 2021)
       val balance1 = Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
@@ -736,7 +727,7 @@ class BudgetBuilderTest : DescribeSpec({
 
     it("single account - no transfers") {
       val path1 = listOf("john", "external", "test-account1")
-      val account1 = Account(name = "test-account1", isSummary = false,
+      val account1 = Account(name = "test-account1",
         path = listOf("external"),
         owners = setOf("john"), openedOn = MAR / 2021)
       val balance1 = Balance(
@@ -803,7 +794,7 @@ class BudgetBuilderTest : DescribeSpec({
 
     it("multiple accounts - selected owner") {
       val path1 = listOf("john", "external", "test-account1")
-      val account1 = Account(name = "test-account1", isSummary = false,
+      val account1 = Account(name = "test-account1",
         path = listOf("external"),
         owners = setOf("john"), openedOn = MAR / 2021)
 
@@ -814,7 +805,7 @@ class BudgetBuilderTest : DescribeSpec({
       )
       // Should skip since different owner.
       val path2 = listOf("bob", "external", "test-account2")
-      val account2 = Account(        name = "test-account2", isSummary = false,
+      val account2 = Account(        name = "test-account2",
         path = listOf("external"),
         owners = setOf("bob"), openedOn = MAR / 2021)
       val balance2 = Balance(
@@ -824,7 +815,7 @@ class BudgetBuilderTest : DescribeSpec({
       )
       // Should skip since path is empty.
       val path3 = listOf("john", "test-account3")
-      val account3 = Account(name = "test-account3", isSummary = false,
+      val account3 = Account(name = "test-account3",
         path = listOf(),
         owners = setOf("john"), openedOn = MAR / 2021)
       val balance3 = Balance(

@@ -19,7 +19,7 @@ import io.mockk.mockk
 class SummaryServiceTest : DescribeSpec({
   describe("buildSummaryData") {
     it("empty") {
-      val account = Account("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = true, openedOn = MAR / 2026)
+      val account = Account("test-account1", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
           setAccount(listOf("john", "internal", "test-account1"), account)
@@ -59,7 +59,7 @@ class SummaryServiceTest : DescribeSpec({
     }
     
     it("single") {
-      val account = Account("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = true, openedOn = MAR / 2026)
+      val account = Account("test-account1", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
           setAccount(listOf("john", "internal", "test-account1"), account)
@@ -79,8 +79,8 @@ class SummaryServiceTest : DescribeSpec({
     }
 
     it("with transaction statement") {
-      val account1 = Account("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = false, openedOn = MAR / 2026)
-      val account2 = Account("test-account2", owners = setOf("john"), path = listOf("internal"), isSummary = false, openedOn = MAR / 2026)
+      val account1 = Account("test-account1", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
+      val account2 = Account("test-account2", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
           setAccount(listOf("john", "internal", "test-account1"), account1)
@@ -108,8 +108,8 @@ class SummaryServiceTest : DescribeSpec({
     }
 
     it("single with multiple transaction statement") {
-      val account1 = Account("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = false, openedOn = MAR / 2026)
-      val account2 = Account("test-account2", owners = setOf("john"), path = listOf("external"), isSummary = false, openedOn = MAR / 2026)
+      val account1 = Account("test-account1", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
+      val account2 = Account("test-account2", owners = setOf("john"), path = listOf("external"), openedOn = MAR / 2026)
 
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
@@ -137,8 +137,8 @@ class SummaryServiceTest : DescribeSpec({
     }
 
     it("multiple months") {
-      val account1 = Account("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = false, openedOn = MAR / 2026)
-      val account2 = Account("test-account2", owners = setOf("john"), path = listOf("external"), isSummary = false, openedOn = MAR / 2026)
+      val account1 = Account("test-account1", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
+      val account2 = Account("test-account2", owners = setOf("john"), path = listOf("external"), openedOn = MAR / 2026)
 
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
@@ -177,8 +177,8 @@ class SummaryServiceTest : DescribeSpec({
     }
 
     it("multiple months null start month") {
-      val account1 = Account("test-account1", owners = setOf("john"), path = listOf("internal"), isSummary = false, openedOn = MAR / 2026)
-      val account2 = Account("test-account2", owners = setOf("john"), path = listOf("external"), isSummary = false, openedOn = MAR / 2026)
+      val account1 = Account("test-account1", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
+      val account2 = Account("test-account2", owners = setOf("john"), path = listOf("external"), openedOn = MAR / 2026)
 
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {

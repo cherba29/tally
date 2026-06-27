@@ -19,7 +19,7 @@ class TableServiceTest : DescribeSpec({
   describe("buildGqlTable") {
     it("empty") {
       val account = Account(
-        "test-account", isSummary = false, owners = setOf("john"), path = listOf("internal"),
+        "test-account", owners = setOf("john"), path = listOf("internal"),
         openedOn = MAR / 2026,
       )
       val loader = mockk<Loader> {
@@ -35,13 +35,13 @@ class TableServiceTest : DescribeSpec({
     it("empty - no open accounts") {
       val accountPath1 = listOf("john", "external", "test-account1")
       val account1 = Account(
-        name = "test-account1", isSummary = false, path = listOf("external"), owners = setOf("john"),
+        name = "test-account1", path = listOf("external"), owners = setOf("john"),
         openedOn = MAR / 2026,
         closedOn = MAR / 2026
       )
       val accountPath2 = listOf("john", "external", "test-account2")
       val account2 = Account(
-        name = "test-account2", isSummary = false, path = listOf("external"), owners = setOf("john"),
+        name = "test-account2", path = listOf("external"), owners = setOf("john"),
         openedOn = MAR / 2026,
         closedOn = MAR / 2026
       )
@@ -72,7 +72,7 @@ class TableServiceTest : DescribeSpec({
     it("single open account without path") {
       val accountPath = listOf("john", "external", "test-account")
       val account = Account(
-        name = "test-account", isSummary = false, path = listOf("external"), owners = setOf("john"),
+        name = "test-account", path = listOf("external"), owners = setOf("john"),
         openedOn = JAN / 2026
       )
       val payload = budget {
@@ -93,7 +93,7 @@ class TableServiceTest : DescribeSpec({
     it("single open account with path") {
       val accountPath = listOf("john", "internal", "test-account")
       val account = Account(
-        name = "test-account", isSummary = false, path = listOf("internal"), owners = setOf("john"),
+        name = "test-account", path = listOf("internal"), owners = setOf("john"),
         openedOn = JAN / 2026
       )
       val payload = budget {

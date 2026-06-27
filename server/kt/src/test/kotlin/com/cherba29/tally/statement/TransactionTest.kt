@@ -12,9 +12,12 @@ class TransactionTest : DescribeSpec({
   describe("Build") {
     it("bad account name on transfer") {
       val path1 = listOf("john", "external", "test-account1")
-      val account1 = Account(name = "test-account1", isSummary = false,
+      val account1 = Account(
+        name = "test-account1",
         path = listOf("external"),
-        owners = setOf("john"), openedOn = DEC / 2021)
+        owners = setOf("john"),
+        openedOn = DEC / 2021
+      )
       val exception =
         shouldThrow<IllegalArgumentException> {
           budget {

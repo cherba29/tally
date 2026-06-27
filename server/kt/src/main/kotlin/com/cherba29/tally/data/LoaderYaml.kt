@@ -109,7 +109,6 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
     name = data.name,
     path = data.path,
     owners = data.owner.toSet(),
-    isSummary = false,
     description = data.desc,
     number = data.number,
     openedOn = data.openedOn,

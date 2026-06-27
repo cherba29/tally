@@ -8,7 +8,7 @@ import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.statement.TransactionStatement
 import kotlin.math.roundToInt
 
-fun Account.toGql(isExternal: Boolean): GqlAccount = GqlAccount(
+fun Account.toGql(isExternal: Boolean, isSummary: Boolean): GqlAccount = GqlAccount(
   name = if (isSummary) (path + listOf(name)).filter { it.isNotEmpty() }.joinToString("/") else name,
   description = description ?: "",
   path = path,
