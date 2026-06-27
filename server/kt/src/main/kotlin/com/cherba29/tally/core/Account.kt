@@ -27,9 +27,6 @@ data class Account(
   val userName: String? = null,
   val password: String? = null,
 ) {
-  // TODO: somehow merge this with TreeNode.
-  val isExternal: Boolean = name == "external" || "external" in path
-
   override fun toString(): String = "Account $name /${path.joinToString("/")}${if (closedOn == null) "" else " Closed $closedOn"}"
 
   fun isClosed(month: Month): Boolean {

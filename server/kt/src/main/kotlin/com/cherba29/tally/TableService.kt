@@ -82,7 +82,7 @@ class TableService(val loader: Loader) : Query {
             GqlTableRow(
               title = treeNode.name,
               indent = treeNode.path.size - 1,
-              account = account.toGql(),
+              account = account.toGql(treeNode.isExternal),
               isTotal = treeNode.children.isNotEmpty(),
               cells = cells,
               isSpace = false,
