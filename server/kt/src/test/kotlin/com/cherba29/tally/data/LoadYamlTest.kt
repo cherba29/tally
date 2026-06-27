@@ -19,12 +19,13 @@ import java.nio.file.Paths
 import kotlinx.datetime.LocalDate
 
 class LoadYamlTest : DescribeSpec({
+  val yamlDataParser = YamlDataParser()
   describe("loadYaml") {
     it("empty - requires account name and month") {
       val relativeFilePath = Paths.get("path/file.yaml")
       val error = shouldThrow<IllegalArgumentException> {
         budget {
-          loadYamlFile(this, parseYamlContent("number: 123\nopened_on: Dec2019", relativeFilePath), relativeFilePath)
+          loadYamlFile(this, yamlDataParser.parseContent("number: 123\nopened_on: Dec2019", relativeFilePath), relativeFilePath)
         }
       }
       error.message shouldBe "Budget must have at least one month."
@@ -36,7 +37,7 @@ class LoadYamlTest : DescribeSpec({
         budget {
           loadYamlFile(
             this,
-            parseYamlContent("name: test\ntype: external\nowner: []", relativeFilePath),
+            yamlDataParser.parseContent("name: test\ntype: external\nowner: []", relativeFilePath),
             relativeFilePath
           )
         }
@@ -62,7 +63,7 @@ class LoadYamlTest : DescribeSpec({
       transfers_to:
         external:
       """.trimIndent()
-      val parsedContent = parseYamlContent(content, relativeFilePath)
+      val parsedContent = yamlDataParser.parseContent(content, relativeFilePath)
       parsedContent.openedOn shouldNotBe null
       parsedContent.closedOn shouldNotBe null
       val budget = budget {
@@ -115,7 +116,7 @@ class LoadYamlTest : DescribeSpec({
       - { grp: Feb2020, date: 2020-02-01, pamt: 10.00 }
       - { grp: Jan2020, date: 2020-01-01, camt:  0.00 }
       """.trimIndent()
-      val parsedContent = parseYamlContent(content, relativeFilePath)
+      val parsedContent = yamlDataParser.parseContent(content, relativeFilePath)
       parsedContent shouldNotBe null
       val budget = budget {
         loadYamlFile(this, parsedContent, relativeFilePath)
@@ -143,7 +144,7 @@ class LoadYamlTest : DescribeSpec({
       balances:
       - { date: 2020-01-01, camt:  0.00 }
       """.trimIndent()
-      val parsedContent = parseYamlContent(content, relativeFilePath)
+      val parsedContent = yamlDataParser.parseContent(content, relativeFilePath)
       parsedContent shouldNotBe null
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
@@ -165,7 +166,7 @@ class LoadYamlTest : DescribeSpec({
       - { grp: Xxx2020, date: 2020-01-01, camt:  0.00 }
       """.trimIndent()
       val exception = shouldThrow<IllegalArgumentException> {
-        parseYamlContent(content, relativeFilePath)
+        yamlDataParser.parseContent(content, relativeFilePath)
       }
       exception.message shouldContain "Bad month name 'Xxx' for 'Xxx2020', valid names " +
           "[Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec]"
@@ -182,7 +183,7 @@ class LoadYamlTest : DescribeSpec({
       balances:
       - { grp: Jan2020, camt:  0.00 }
       """.trimIndent()
-      val parsedContent = parseYamlContent(content, relativeFilePath)
+      val parsedContent = yamlDataParser.parseContent(content, relativeFilePath)
       parsedContent shouldNotBe null
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
@@ -204,7 +205,7 @@ class LoadYamlTest : DescribeSpec({
       - { grp: Jan2020, date: 20200101, camt:  0.00 }
       """.trimIndent()
       val exception = shouldThrow<IllegalArgumentException> {
-        parseYamlContent(content, relativeFilePath)
+        yamlDataParser.parseContent(content, relativeFilePath)
       }
       exception.message shouldContain "Text '20200101' could not be parsed"
       exception.message shouldContain "while processing path/file.yaml"
@@ -221,7 +222,7 @@ class LoadYamlTest : DescribeSpec({
       balances:
       - { grp: Jan2020, date: 2020-01-01, xamt:  0.00 }
       """.trimIndent()
-      val parsedContent = parseYamlContent(content, relativeFilePath)
+      val parsedContent = yamlDataParser.parseContent(content, relativeFilePath)
       parsedContent shouldNotBe null
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
@@ -247,7 +248,7 @@ class LoadYamlTest : DescribeSpec({
         - { grp: Jan2020, date: 2020-01-17, pamt: 37.50 }
         - { grp: Jan2020, date: 2020-01-15, camt: -22.48 }
       """.trimIndent()
-      val parsedContent = parseYamlContent(testAccountData, relativeFilePath)
+      val parsedContent = yamlDataParser.parseContent(testAccountData, relativeFilePath)
       parsedContent shouldNotBe null
 
       val externalAccountData = """
@@ -256,7 +257,7 @@ class LoadYamlTest : DescribeSpec({
       path: [ external ]
       opened_on: Jan2020
       """.trimIndent()
-      val parsedExternalContent = parseYamlContent(externalAccountData, relativeFilePath)
+      val parsedExternalContent = yamlDataParser.parseContent(externalAccountData, relativeFilePath)
       parsedExternalContent shouldNotBe null
 
       val budget = budget {
@@ -338,7 +339,7 @@ class LoadYamlTest : DescribeSpec({
         external:
         - { date: 2020-01-17, pamt: 37.50 }
       """.trimIndent()
-      val parsedContent = parseYamlContent(testAccountData, relativeFilePath)
+      val parsedContent = yamlDataParser.parseContent(testAccountData, relativeFilePath)
       parsedContent shouldNotBe null
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
@@ -359,7 +360,7 @@ class LoadYamlTest : DescribeSpec({
         external:
         - { grp: Jan2020, pamt: 37.50 }
       """.trimIndent()
-      val parsedContent = parseYamlContent(testAccountData, relativeFilePath)
+      val parsedContent = yamlDataParser.parseContent(testAccountData, relativeFilePath)
       parsedContent shouldNotBe null
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
@@ -380,7 +381,7 @@ class LoadYamlTest : DescribeSpec({
         external:
         - { grp: Jan2020, date: 2020-04-01, pamt: 37.50 }
       """.trimIndent()
-      val parsedContent = parseYamlContent(testAccountData, relativeFilePath)
+      val parsedContent = yamlDataParser.parseContent(testAccountData, relativeFilePath)
       parsedContent shouldNotBe null
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
@@ -401,7 +402,7 @@ class LoadYamlTest : DescribeSpec({
         external:
         - { grp: Jan2020, date: 2020-01-17 }
       """.trimIndent()
-      val parsedContent = parseYamlContent(testAccountData, relativeFilePath)
+      val parsedContent = yamlDataParser.parseContent(testAccountData, relativeFilePath)
       parsedContent shouldNotBe null
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)

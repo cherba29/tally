@@ -9,6 +9,7 @@ import kotlin.time.TimeSource
 import kotlin.time.measureTime
 
 class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
+  private val yamlDataParser = YamlDataParser()
   private val parsedAccountData = mutableMapOf<String, YamlData>()
   var budget: Budget? = null
 
@@ -42,7 +43,7 @@ class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
 
   fun addFile(rootPath: Path, relativeFilePath: Path) {
     val content = rootPath.resolve(relativeFilePath).readText(Charsets.UTF_8)
-    val accountData = parseYamlContent(content, relativeFilePath)
+    val accountData = yamlDataParser.parseContent(content, relativeFilePath)
     parsedAccountData[relativeFilePath.toString()] = accountData
   }
 
