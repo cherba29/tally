@@ -488,5 +488,27 @@ class MonthTest : DescribeSpec({
         range2.reduceTo(range1) shouldBe APR / 2026 .. MAR / 2027
       }
     }
+    describe("plus") {
+      it("null does not change") {
+        val range = MAR / 2026..APR / 2026
+        range + null shouldBe MAR / 2026..APR / 2026
+      }
+      it("within rage min does not change") {
+        val range = MAR / 2026..APR / 2026
+        range + MAR / 2026 shouldBe MAR / 2026..APR / 2026
+      }
+      it("within rage max does not change") {
+        val range = MAR / 2026..APR / 2026
+        range + APR / 2026 shouldBe MAR / 2026 .. APR / 2026
+      }
+      it("increases max") {
+        val range = MAR / 2026..APR / 2026
+        range + MAY / 2026 shouldBe MAR / 2026 .. MAY / 2026
+      }
+      it("decreases min") {
+        val range = MAR / 2026..APR / 2026
+        range + FEB / 2026 shouldBe FEB / 2026 .. APR / 2026
+      }
+    }
   }
 })
