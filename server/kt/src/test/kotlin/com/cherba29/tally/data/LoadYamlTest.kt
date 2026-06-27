@@ -25,20 +25,8 @@ class LoadYamlTest : DescribeSpec({
     it("empty - requires account name and month") {
       val relativeFilePath = Paths.get("path/file.yaml")
       val accountData = YamlData(
-        name = null,
-        desc = null,
         number = "123",
-        path = null,
         openedOn = DEC / 2019,
-        closedOn = null,
-        owner = null,
-        url = null,
-        phone = null,
-        address = null,
-        username = null,
-        pswd = null,
-        balances = null,
-        transfersTo = null
       )
       val error = shouldThrow<IllegalArgumentException> {
         budget {
@@ -52,19 +40,9 @@ class LoadYamlTest : DescribeSpec({
       val relativeFilePath = Paths.get("path/file.yaml")
       val accountData = YamlData(
         name = "test",
-        desc = null,
         number = "123",
-        path = null,
         openedOn = DEC / 2019,
-        closedOn = null,
         owner = listOf(),
-        url = null,
-        phone = null,
-        address = null,
-        username = null,
-        pswd = null,
-        balances = null,
-        transfersTo = null
       )
       val exception = shouldThrow<IllegalArgumentException> {
         budget {
@@ -93,7 +71,6 @@ class LoadYamlTest : DescribeSpec({
         address = "55 Road",
         username = "john",
         pswd = "xxxyyy",
-        balances = null,
         transfersTo = mapOf("external" to listOf())
       )
 
@@ -140,34 +117,13 @@ class LoadYamlTest : DescribeSpec({
       val relativeFilePath = Paths.get("path/test.yaml")
       val accountData = YamlData(
         name = "test-account",
-        desc = null,
-        number = null,
         path = listOf("external"),
         openedOn = JAN / 2020,
-        closedOn = null,
         owner = listOf("someone"),
-        url = null,
-        phone = null,
-        address = null,
-        username = null,
-        pswd = null,
         balances = listOf(
-          BalanceYamlData(
-            grp = FEB / 2020,
-            date = LocalDate(2020, 2, 1),
-            camt = null,
-            pamt = 10.0,
-            desc = null
-          ),
-          BalanceYamlData(
-            grp = JAN / 2020,
-            date = LocalDate(2020, 1, 1),
-            camt = 0.0,
-            pamt = null,
-            desc = null
-          ),
+          BalanceYamlData(grp = FEB / 2020, date = LocalDate(2020, 2, 1), pamt = 10.0),
+          BalanceYamlData(grp = JAN / 2020, date = LocalDate(2020, 1, 1), camt = 0.0),
         ),
-        transfersTo = null
       )
       val budget = budget {
         loadYamlFile(this, accountData, relativeFilePath)
@@ -189,27 +145,12 @@ class LoadYamlTest : DescribeSpec({
       val relativeFilePath = Paths.get("path/file.yaml")
       val accountData = YamlData(
         name = "test-account",
-        desc = null,
-        number = null,
         path = listOf("external"),
         openedOn = JAN / 2020,
-        closedOn = null,
         owner = listOf("someone"),
-        url = null,
-        phone = null,
-        address = null,
-        username = null,
-        pswd = null,
         balances = listOf(
-          BalanceYamlData(
-            grp = null,
-            date = LocalDate(2020, 1, 1),
-            camt = 0.0,
-            pamt = null,
-            desc = null
-          ),
+          BalanceYamlData(date = LocalDate(2020, 1, 1), camt = 0.0),
         ),
-        transfersTo = null
       )
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(budgetBuilder, accountData, relativeFilePath)
@@ -225,27 +166,10 @@ class LoadYamlTest : DescribeSpec({
       val relativeFilePath = Paths.get("path/file.yaml")
       val accountData = YamlData(
         name = "test-account",
-        desc = null,
-        number = null,
         path = listOf("external"),
         openedOn = JAN / 2020,
-        closedOn = null,
         owner = listOf("someone"),
-        url = null,
-        phone = null,
-        address = null,
-        username = null,
-        pswd = null,
-        balances = listOf(
-          BalanceYamlData(
-            grp = JAN / 2020,
-            date = null,
-            camt = 0.0,
-            pamt = null,
-            desc = null
-          ),
-        ),
-        transfersTo = null
+        balances = listOf(BalanceYamlData(grp = JAN / 2020, camt = 0.0)),
       )
 
       val exception = shouldThrow<IllegalArgumentException> {
@@ -262,27 +186,12 @@ class LoadYamlTest : DescribeSpec({
       val relativeFilePath = Paths.get("path/file.yaml")
       val accountData = YamlData(
         name = "test-account",
-        desc = null,
-        number = null,
         path = listOf("external"),
         openedOn = JAN / 2020,
-        closedOn = null,
         owner = listOf("someone"),
-        url = null,
-        phone = null,
-        address = null,
-        username = null,
-        pswd = null,
         balances = listOf(
-          BalanceYamlData(
-            grp = JAN / 2020,
-            date = LocalDate(2020, 1, 1),
-            camt = null,
-            pamt = null,
-            desc = null
-          ),
+          BalanceYamlData(grp = JAN / 2020, date = LocalDate(2020, 1, 1)),
         ),
-        transfersTo = null
       )
 
       val exception = shouldThrow<IllegalArgumentException> {
@@ -298,52 +207,24 @@ class LoadYamlTest : DescribeSpec({
       val relativeFilePath = Paths.get("path/file.yaml")
       val testAccountData = YamlData(
         name = "test-account",
-        desc = null,
-        number = null,
         path = listOf("external"),
         openedOn = JAN / 2020,
-        closedOn = null,
         owner = listOf("someone"),
-        url = null,
-        phone = null,
-        address = null,
-        username = null,
-        pswd = null,
         balances = listOf(
-          BalanceYamlData(
-            grp = FEB / 2020,
-            date = LocalDate(2020, 2, 1),
-            camt = null,
-            pamt = 10.0,
-            desc = null
-          ),
-          BalanceYamlData(
-            grp = JAN / 2020,
-            date = LocalDate(2020, 1, 1),
-            camt = 0.0,
-            pamt = null,
-            desc = null
-          ),
+          BalanceYamlData(grp = FEB / 2020, date = LocalDate(2020, 2, 1), pamt = 10.0),
+          BalanceYamlData(grp = JAN / 2020, date = LocalDate(2020, 1, 1), camt = 0.0),
         ),
         transfersTo = mapOf(
           "external" to listOf(
             TransferYamlData(
               grp = JAN / 2020,
               date = LocalDate(2020, 1, 17),
-              camt = null,
               pamt = 37.5,
-              desc = null,
-              cat = null,
-              tags = null
             ),
             TransferYamlData(
               grp = JAN / 2020,
               date = LocalDate(2020, 1, 15),
               camt = -22.48,
-              pamt = null,
-              desc = null,
-              cat = null,
-              tags = null
             ),
           )
         )
@@ -351,19 +232,9 @@ class LoadYamlTest : DescribeSpec({
 
       val externalAccountData = YamlData(
         name = "external",
-        desc = null,
-        number = null,
         path = listOf("external"),
         openedOn = JAN / 2020,
-        closedOn = null,
         owner = listOf("someone"),
-        url = null,
-        phone = null,
-        address = null,
-        username = null,
-        pswd = null,
-        balances = null,
-        transfersTo = null
       )
 
       val budget = budget {
@@ -438,28 +309,14 @@ class LoadYamlTest : DescribeSpec({
       val relativeFilePath = Paths.get("path/test.yaml")
       val testAccountData = YamlData(
         name = "test-account",
-        desc = null,
-        number = null,
         path = listOf("external"),
         openedOn = JAN / 2020,
-        closedOn = null,
         owner = listOf("someone"),
-        url = null,
-        phone = null,
-        address = null,
-        username = null,
-        pswd = null,
-        balances = null,
         transfersTo = mapOf(
           "external" to listOf(
             TransferYamlData(
-              grp = null,
               date = LocalDate(2020, 1, 17),
-              camt = null,
               pamt = 37.5,
-              desc = null,
-              cat = null,
-              tags = null
             )
           )
         )
@@ -477,28 +334,14 @@ class LoadYamlTest : DescribeSpec({
       val relativeFilePath = Paths.get("path/test.yaml")
       val testAccountData = YamlData(
         name = "test-account",
-        desc = null,
-        number = null,
         path = listOf("external"),
         openedOn = JAN / 2020,
-        closedOn = null,
         owner = listOf("someone"),
-        url = null,
-        phone = null,
-        address = null,
-        username = null,
-        pswd = null,
-        balances = null,
         transfersTo = mapOf(
           "external" to listOf(
             TransferYamlData(
               grp = JAN / 2020,
-              date = null,
-              camt = null,
               pamt = 37.5,
-              desc = null,
-              cat = null,
-              tags = null
             )
           )
         )
@@ -516,28 +359,15 @@ class LoadYamlTest : DescribeSpec({
       val relativeFilePath = Paths.get("path/test.yaml")
       val testAccountData = YamlData(
         name = "test-account",
-        desc = null,
-        number = null,
         path = listOf("external"),
         openedOn = JAN / 2020,
-        closedOn = null,
         owner = listOf("someone"),
-        url = null,
-        phone = null,
-        address = null,
-        username = null,
-        pswd = null,
-        balances = null,
         transfersTo = mapOf(
           "external" to listOf(
             TransferYamlData(
               grp = JAN / 2020,
               date = LocalDate(2020, 4, 1),
-              camt = null,
               pamt = 37.5,
-              desc = null,
-              cat = null,
-              tags = null
             )
           )
         )
@@ -555,28 +385,14 @@ class LoadYamlTest : DescribeSpec({
       val relativeFilePath = Paths.get("path/test.yaml")
       val testAccountData = YamlData(
         name = "test-account",
-        desc = null,
-        number = null,
         path = listOf("external"),
         openedOn = JAN / 2020,
-        closedOn = null,
         owner = listOf("someone"),
-        url = null,
-        phone = null,
-        address = null,
-        username = null,
-        pswd = null,
-        balances = null,
         transfersTo = mapOf(
           "external" to listOf(
             TransferYamlData(
               grp = JAN / 2020,
               date = LocalDate(2020, 1, 17),
-              camt = null,
-              pamt = null,
-              desc = null,
-              cat = null,
-              tags = null
             )
           )
         )

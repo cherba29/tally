@@ -7,44 +7,44 @@ import kotlinx.datetime.LocalDate
 
 @JsonIgnoreProperties(value = ["xamt"])
 data class BalanceYamlData(
-  val grp: Month?,
-  val date: LocalDate?,
-  val camt: Double?,
-  val pamt: Double?,
-  val desc: String?,
+  val grp: Month? = null,
+  val date: LocalDate? = null,
+  val camt: Double? = null,
+  val pamt: Double? = null,
+  val desc: String? = null,
 )
 
 // TODO: add checks for duplicate keys, eg: two desc fields are provided.
 data class TransferYamlData(
-  val grp: Month?,
-  val date: LocalDate?,
-  val camt: Double?,
-  val pamt: Double?,
-  val desc: String?,
+  val grp: Month? = null,
+  val date: LocalDate? = null,
+  val camt: Double? = null,
+  val pamt: Double? = null,
+  val desc: String? = null,
   // TODO: choose cat or tags and wire it in.
-  val cat: String?,
-  val tags: List<String>?,
+  val cat: String? = null,
+  val tags: List<String>? = null,
   // TODO: add option for running annual total.
   // TODO: add support for confirmation number to display it.
 )
 
 @JsonIgnoreProperties(value = [])
 data class YamlData(
-  val name: String?,
-  val desc: String?,
-  val number: String?,
-  val path: List<String>?,
+  val name: String? = null,
+  val desc: String? = null,
+  val number: String? = null,
+  val path: List<String>? = null,
   @param:JsonProperty("opened_on")
-  val openedOn: Month?,
+  val openedOn: Month? = null,
   @param:JsonProperty("closed_on")
-  val closedOn: Month?,
-  val owner: List<String>?,
-  val url: String?,
-  val phone: String?,
-  val address: String?,
-  val username: String?,
-  val pswd: String?,
-  val balances: List<BalanceYamlData>?,
+  val closedOn: Month? = null,
+  val owner: List<String>? = null,
+  val url: String? = null,
+  val phone: String? = null,
+  val address: String? = null,
+  val username: String? = null,
+  val pswd: String? = null,
+  val balances: List<BalanceYamlData>? = null,
   @param:JsonProperty("transfers_to")
-  val transfersTo: Map<String, List<TransferYamlData>?>?,
+  val transfersTo: Map<String, List<TransferYamlData>?>? = null,
 )

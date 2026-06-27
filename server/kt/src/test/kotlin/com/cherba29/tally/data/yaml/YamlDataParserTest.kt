@@ -23,22 +23,7 @@ class YamlDataParserTest : DescribeSpec({
     it("just name") {
       val relativeFilePath = Paths.get("path/file.yaml")
       val data = yamlDataParser.parseContent("name: test-account", relativeFilePath)
-      data shouldBe YamlData(
-        name = "test-account",
-        desc = null,
-        number = null,
-        path = null,
-        openedOn = null,
-        closedOn = null,
-        owner = null,
-        url = null,
-        phone = null,
-        address = null,
-        username = null,
-        pswd = null,
-        balances = null,
-        transfersTo = null
-      )
+      data shouldBe YamlData(name = "test-account")
     }
     it("all top fields") {
       val relativeFilePath = Paths.get("path/file.yaml")
@@ -72,8 +57,6 @@ class YamlDataParserTest : DescribeSpec({
         address = "123 main st",
         username = "john123",
         pswd = "pwd123",
-        balances = null,
-        transfersTo = null
       )
     }
     it("with balances") {
@@ -86,22 +69,10 @@ class YamlDataParserTest : DescribeSpec({
       """, relativeFilePath)
       data shouldBe YamlData(
         name = "test-account",
-        desc = null,
-        number = null,
-        path = null,
-        openedOn = null,
-        closedOn = null,
-        owner = null,
-        url = null,
-        phone = null,
-        address = null,
-        username = null,
-        pswd = null,
         balances = listOf(
-          BalanceYamlData(grp=JUL / 2026, date=LocalDate(2026, 7, 1), camt=2.0, pamt=null, desc=null),
-          BalanceYamlData(grp=JUN / 2026, date=LocalDate(2026, 6, 1), camt=1.0, pamt=null, desc=null)
+          BalanceYamlData(grp=JUL / 2026, date=LocalDate(2026, 7, 1), camt = 2.0),
+          BalanceYamlData(grp=JUN / 2026, date=LocalDate(2026, 6, 1), camt = 1.0)
         ),
-        transfersTo = null
       )
     }
     it("with transfers") {
@@ -114,28 +85,13 @@ class YamlDataParserTest : DescribeSpec({
       """, relativeFilePath)
       data shouldBe YamlData(
         name = "test-account",
-        desc = null,
-        number = null,
-        path = null,
-        openedOn = null,
-        closedOn = null,
-        owner = null,
-        url = null,
-        phone = null,
-        address = null,
-        username = null,
-        pswd = null,
-        balances = null,
         transfersTo = mapOf(
           "test-account2" to listOf(
             TransferYamlData(
               grp = JUN / 2026,
               date = LocalDate(2026, 6, 20),
               camt = 500.0,
-              pamt = null,
               desc = "Refund",
-              cat = null,
-              tags = null
             )
           )
         )
