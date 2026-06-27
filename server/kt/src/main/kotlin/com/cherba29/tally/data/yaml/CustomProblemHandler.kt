@@ -6,9 +6,9 @@ import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler
 
 class CustomProblemHandler : DeserializationProblemHandler() {
-  private val yamlIgnoredFields = mutableListOf<String>()
+  private val yamlIgnoredFields = mutableSetOf<String>()
 
-  val ignoredFields: List<String> get() = yamlIgnoredFields
+  val ignoredFields: List<String> get() = yamlIgnoredFields.sorted()
 
   override fun handleUnknownProperty(
     ctxt: DeserializationContext,

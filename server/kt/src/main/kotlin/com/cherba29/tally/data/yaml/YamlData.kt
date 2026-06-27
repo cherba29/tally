@@ -34,7 +34,6 @@ data class YamlData(
   val desc: String?,
   val number: String?,
   val path: List<String>?,
-  val type: String?,
   @param:JsonProperty("opened_on")
   val openedOn: Month?,
   @param:JsonProperty("closed_on")

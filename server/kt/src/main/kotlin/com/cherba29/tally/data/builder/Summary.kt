@@ -14,7 +14,6 @@ import kotlin.collections.iterator
  */
 fun combineSummaryStatements(tree: TreeNode, summaryPath: List<String>, summaryStatements: List<SummaryStatement>): SummaryStatement {
   require(summaryStatements.isNotEmpty()) { "Cant combine empty list of summary statements" }
-  val stmtName: String = summaryStatements.first().treeNode.name
   var monthRange: MonthRange = summaryStatements.first().monthRange
   // Map of 'treeNode' -> month -> 'summary statement'.
   val nodeMonthStatementMap = mutableMapOf<TreeNode, MutableMap<Month, Statement>>()
