@@ -1,6 +1,7 @@
 package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.MonthName.DEC
 import com.cherba29.tally.core.MonthName.FEB
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
@@ -13,19 +14,33 @@ import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
-import io.kotest.matchers.string.shouldContain
 import java.nio.file.Paths
 import kotlinx.datetime.LocalDate
 
 class LoadYamlTest : DescribeSpec({
-  val yamlDataParser = YamlDataParser()
   describe("loadYaml") {
     it("empty - requires account name and month") {
       val relativeFilePath = Paths.get("path/file.yaml")
+      val accountData = YamlData(
+        name = null,
+        desc = null,
+        number = "123",
+        path = null,
+        type = null,
+        openedOn = DEC / 2019,
+        closedOn = null,
+        owner = null,
+        url = null,
+        phone = null,
+        address = null,
+        username = null,
+        pswd = null,
+        balances = null,
+        transfersTo = null
+      )
       val error = shouldThrow<IllegalArgumentException> {
         budget {
-          loadYamlFile(this, yamlDataParser.parseContent("number: 123\nopened_on: Dec2019", relativeFilePath), relativeFilePath)
+          loadYamlFile(this, accountData, relativeFilePath)
         }
       }
       error.message shouldBe "Budget must have at least one month."
@@ -33,11 +48,28 @@ class LoadYamlTest : DescribeSpec({
 
     it("fails when account has no owners") {
       val relativeFilePath = Paths.get("path/file.yaml")
+      val accountData = YamlData(
+        name = "test",
+        desc = null,
+        number = "123",
+        path = null,
+        type = "external",
+        openedOn = DEC / 2019,
+        closedOn = null,
+        owner = listOf(),
+        url = null,
+        phone = null,
+        address = null,
+        username = null,
+        pswd = null,
+        balances = null,
+        transfersTo = null
+      )
       val exception = shouldThrow<IllegalArgumentException> {
         budget {
           loadYamlFile(
             this,
-            yamlDataParser.parseContent("name: test\ntype: external\nowner: []", relativeFilePath),
+            accountData,
             relativeFilePath
           )
         }
@@ -47,27 +79,26 @@ class LoadYamlTest : DescribeSpec({
 
     it("empty account") {
       val relativeFilePath = Paths.get("path/file.yaml")
-      val content = """
-      name: test-account
-      desc: "Testing account"
-      number: "1223344"
-      owner: [ arthur ]
-      opened_on: Nov2019
-      closed_on: Mar2020
-      path: [ external ]
-      url: "example.com"
-      phone: "111-222-3344"
-      address: "55 Road"
-      username: "john"
-      pswd: "xxxyyy"
-      transfers_to:
-        external:
-      """.trimIndent()
-      val parsedContent = yamlDataParser.parseContent(content, relativeFilePath)
-      parsedContent.openedOn shouldNotBe null
-      parsedContent.closedOn shouldNotBe null
+      val accountData = YamlData(
+        name = "test-account",
+        desc = "Testing account",
+        number = "1223344",
+        path = listOf("external"),
+        type = "external",
+        openedOn = NOV / 2019,
+        closedOn = MAR / 2020,
+        owner = listOf("arthur"),
+        url = "example.com",
+        phone = "111-222-3344",
+        address = "55 Road",
+        username = "john",
+        pswd = "xxxyyy",
+        balances = null,
+        transfersTo = mapOf("external" to listOf())
+      )
+
       val budget = budget {
-        loadYamlFile(this, parsedContent, relativeFilePath)
+        loadYamlFile(this, accountData, relativeFilePath)
       }
       budget.leafToAccount.size shouldBe 1
 
@@ -107,19 +138,40 @@ class LoadYamlTest : DescribeSpec({
 
     it("account with balances") {
       val relativeFilePath = Paths.get("path/test.yaml")
-      val content = """
-      name: test-account
-      owner: [ someone ]
-      path: [ external ]
-      opened_on: Jan2020
-      balances:
-      - { grp: Feb2020, date: 2020-02-01, pamt: 10.00 }
-      - { grp: Jan2020, date: 2020-01-01, camt:  0.00 }
-      """.trimIndent()
-      val parsedContent = yamlDataParser.parseContent(content, relativeFilePath)
-      parsedContent shouldNotBe null
+      val accountData = YamlData(
+        name = "test-account",
+        desc = null,
+        number = null,
+        path = listOf("external"),
+        type = "external",
+        openedOn = JAN / 2020,
+        closedOn = null,
+        owner = listOf("someone"),
+        url = null,
+        phone = null,
+        address = null,
+        username = null,
+        pswd = null,
+        balances = listOf(
+          BalanceYamlData(
+            grp = FEB / 2020,
+            date = LocalDate(2020, 2, 1),
+            camt = null,
+            pamt = 10.0,
+            desc = null
+          ),
+          BalanceYamlData(
+            grp = JAN / 2020,
+            date = LocalDate(2020, 1, 1),
+            camt = 0.0,
+            pamt = null,
+            desc = null
+          ),
+        ),
+        transfersTo = null
+      )
       val budget = budget {
-        loadYamlFile(this, parsedContent, relativeFilePath)
+        loadYamlFile(this, accountData, relativeFilePath)
       }
       budget.tree shouldBe root { branch("someone") { branch("external") { leaf("test-account") } } }
       budget.leafToAccount.size shouldBe 1
@@ -136,18 +188,33 @@ class LoadYamlTest : DescribeSpec({
     it("fails without balance month") {
       val budgetBuilder = BudgetBuilder()
       val relativeFilePath = Paths.get("path/file.yaml")
-      val content = """
-      name: test-account
-      owner: [ someone ]
-      path: [ external ]
-      opened_on: Jan2020
-      balances:
-      - { date: 2020-01-01, camt:  0.00 }
-      """.trimIndent()
-      val parsedContent = yamlDataParser.parseContent(content, relativeFilePath)
-      parsedContent shouldNotBe null
+      val accountData = YamlData(
+        name = "test-account",
+        desc = null,
+        number = null,
+        path = listOf("external"),
+        type = null,
+        openedOn = JAN / 2020,
+        closedOn = null,
+        owner = listOf("someone"),
+        url = null,
+        phone = null,
+        address = null,
+        username = null,
+        pswd = null,
+        balances = listOf(
+          BalanceYamlData(
+            grp = null,
+            date = LocalDate(2020, 1, 1),
+            camt = 0.0,
+            pamt = null,
+            desc = null
+          ),
+        ),
+        transfersTo = null
+      )
       val exception = shouldThrow<IllegalArgumentException> {
-        loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
+        loadYamlFile(budgetBuilder, accountData, relativeFilePath)
       }
       // TODO: do not test for BalanceData toString representation.
       exception.message shouldBe "Balance entry BalanceYamlData(" +
@@ -155,38 +222,37 @@ class LoadYamlTest : DescribeSpec({
           "has no grp setting. while processing path/file.yaml"
     }
 
-    it("fails with bad balance month") {
-      val relativeFilePath = Paths.get("path/file.yaml")
-      val content = """
-      name: test-account
-      owner: [ someone ]
-      path: [ external ]
-      opened_on: Jan2020
-      balances:
-      - { grp: Xxx2020, date: 2020-01-01, camt:  0.00 }
-      """.trimIndent()
-      val exception = shouldThrow<IllegalArgumentException> {
-        yamlDataParser.parseContent(content, relativeFilePath)
-      }
-      exception.message shouldContain "Bad month name 'Xxx' for 'Xxx2020', valid names " +
-          "[Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec]"
-    }
-
     it("fails without balance date") {
       val budgetBuilder = BudgetBuilder()
       val relativeFilePath = Paths.get("path/file.yaml")
-      val content = """
-      name: test-account
-      owner: [ someone ]
-      path: [ external ]
-      opened_on: Jan2020
-      balances:
-      - { grp: Jan2020, camt:  0.00 }
-      """.trimIndent()
-      val parsedContent = yamlDataParser.parseContent(content, relativeFilePath)
-      parsedContent shouldNotBe null
+      val accountData = YamlData(
+        name = "test-account",
+        desc = null,
+        number = null,
+        path = listOf("external"),
+        type = null,
+        openedOn = JAN / 2020,
+        closedOn = null,
+        owner = listOf("someone"),
+        url = null,
+        phone = null,
+        address = null,
+        username = null,
+        pswd = null,
+        balances = listOf(
+          BalanceYamlData(
+            grp = JAN / 2020,
+            date = null,
+            camt = 0.0,
+            pamt = null,
+            desc = null
+          ),
+        ),
+        transfersTo = null
+      )
+
       val exception = shouldThrow<IllegalArgumentException> {
-        loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
+        loadYamlFile(budgetBuilder, accountData, relativeFilePath)
       }
       // TODO: do not test for BalanceData toString representation.
       exception.message shouldBe "Balance BalanceYamlData(" +
@@ -194,38 +260,37 @@ class LoadYamlTest : DescribeSpec({
           " does not have date set. while processing path/file.yaml"
     }
 
-    it("fails with bad balance date") {
-      val relativeFilePath = Paths.get("path/file.yaml")
-      val content = """
-      name: test-account
-      owner: [ someone ]
-      path: [ external ]
-      opened_on: Jan2020
-      balances:
-      - { grp: Jan2020, date: 20200101, camt:  0.00 }
-      """.trimIndent()
-      val exception = shouldThrow<IllegalArgumentException> {
-        yamlDataParser.parseContent(content, relativeFilePath)
-      }
-      exception.message shouldContain "Text '20200101' could not be parsed"
-      exception.message shouldContain "while processing path/file.yaml"
-    }
-
     it("fails without balance type") {
       val budgetBuilder = BudgetBuilder()
       val relativeFilePath = Paths.get("path/file.yaml")
-      val content = """
-      name: test-account
-      owner: [ someone ]
-      path: [ external ]
-      opened_on: Jan2020
-      balances:
-      - { grp: Jan2020, date: 2020-01-01, xamt:  0.00 }
-      """.trimIndent()
-      val parsedContent = yamlDataParser.parseContent(content, relativeFilePath)
-      parsedContent shouldNotBe null
+      val accountData = YamlData(
+        name = "test-account",
+        desc = null,
+        number = null,
+        path = listOf("external"),
+        type = null,
+        openedOn = JAN / 2020,
+        closedOn = null,
+        owner = listOf("someone"),
+        url = null,
+        phone = null,
+        address = null,
+        username = null,
+        pswd = null,
+        balances = listOf(
+          BalanceYamlData(
+            grp = JAN / 2020,
+            date = LocalDate(2020, 1, 1),
+            camt = null,
+            pamt = null,
+            desc = null
+          ),
+        ),
+        transfersTo = null
+      )
+
       val exception = shouldThrow<IllegalArgumentException> {
-        loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
+        loadYamlFile(budgetBuilder, accountData, relativeFilePath)
       }
       // TODO: do not test for BalanceData toString representation.
       exception.message shouldBe "Balance BalanceYamlData(" +
@@ -235,34 +300,81 @@ class LoadYamlTest : DescribeSpec({
 
     it("with projected and confirmed transfers") {
       val relativeFilePath = Paths.get("path/file.yaml")
-      val testAccountData = """
-      name: test-account
-      owner: [ someone ]
-      path: [ external ]
-      opened_on: Jan2020
-      balances:
-      - { grp: Feb2020, date: 2020-02-01, pamt: 10.00 }
-      - { grp: Jan2020, date: 2020-01-01, camt:  0.00 }
-      transfers_to:
-        external:
-        - { grp: Jan2020, date: 2020-01-17, pamt: 37.50 }
-        - { grp: Jan2020, date: 2020-01-15, camt: -22.48 }
-      """.trimIndent()
-      val parsedContent = yamlDataParser.parseContent(testAccountData, relativeFilePath)
-      parsedContent shouldNotBe null
+      val testAccountData = YamlData(
+        name = "test-account",
+        desc = null,
+        number = null,
+        path = listOf("external"),
+        type = null,
+        openedOn = JAN / 2020,
+        closedOn = null,
+        owner = listOf("someone"),
+        url = null,
+        phone = null,
+        address = null,
+        username = null,
+        pswd = null,
+        balances = listOf(
+          BalanceYamlData(
+            grp = FEB / 2020,
+            date = LocalDate(2020, 2, 1),
+            camt = null,
+            pamt = 10.0,
+            desc = null
+          ),
+          BalanceYamlData(
+            grp = JAN / 2020,
+            date = LocalDate(2020, 1, 1),
+            camt = 0.0,
+            pamt = null,
+            desc = null
+          ),
+        ),
+        transfersTo = mapOf(
+          "external" to listOf(
+            TransferYamlData(
+              grp = JAN / 2020,
+              date = LocalDate(2020, 1, 17),
+              camt = null,
+              pamt = 37.5,
+              desc = null,
+              cat = null,
+              tags = null
+            ),
+            TransferYamlData(
+              grp = JAN / 2020,
+              date = LocalDate(2020, 1, 15),
+              camt = -22.48,
+              pamt = null,
+              desc = null,
+              cat = null,
+              tags = null
+            ),
+          )
+        )
+      )
 
-      val externalAccountData = """
-      name: external
-      owner: [ someone ]
-      path: [ external ]
-      opened_on: Jan2020
-      """.trimIndent()
-      val parsedExternalContent = yamlDataParser.parseContent(externalAccountData, relativeFilePath)
-      parsedExternalContent shouldNotBe null
+      val externalAccountData = YamlData(
+        name = "external",
+        desc = null,
+        number = null,
+        path = listOf("external"),
+        type = null,
+        openedOn = JAN / 2020,
+        closedOn = null,
+        owner = listOf("someone"),
+        url = null,
+        phone = null,
+        address = null,
+        username = null,
+        pswd = null,
+        balances = null,
+        transfersTo = null
+      )
 
       val budget = budget {
-        loadYamlFile(this, parsedContent, relativeFilePath)
-        loadYamlFile(this, parsedExternalContent, relativeFilePath)
+        loadYamlFile(this, testAccountData, relativeFilePath)
+        loadYamlFile(this, externalAccountData, relativeFilePath)
       }
       budget.months.size shouldBe 2
       budget.leafToAccount.size shouldBe 2
@@ -330,19 +442,38 @@ class LoadYamlTest : DescribeSpec({
     it("fails with transfer and no grp") {
       val budgetBuilder = BudgetBuilder()
       val relativeFilePath = Paths.get("path/test.yaml")
-      val testAccountData = """
-      name: test-account
-      owner: [ someone ]
-      path: [ external ]
-      opened_on: Jan2020
-      transfers_to:
-        external:
-        - { date: 2020-01-17, pamt: 37.50 }
-      """.trimIndent()
-      val parsedContent = yamlDataParser.parseContent(testAccountData, relativeFilePath)
-      parsedContent shouldNotBe null
+      val testAccountData = YamlData(
+        name = "test-account",
+        desc = null,
+        number = null,
+        path = listOf("external"),
+        type = "external",
+        openedOn = JAN / 2020,
+        closedOn = null,
+        owner = listOf("someone"),
+        url = null,
+        phone = null,
+        address = null,
+        username = null,
+        pswd = null,
+        balances = null,
+        transfersTo = mapOf(
+          "external" to listOf(
+            TransferYamlData(
+              grp = null,
+              date = LocalDate(2020, 1, 17),
+              camt = null,
+              pamt = 37.5,
+              desc = null,
+              cat = null,
+              tags = null
+            )
+          )
+        )
+      )
+
       val exception = shouldThrow<IllegalArgumentException> {
-        loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
+        loadYamlFile(budgetBuilder, testAccountData, relativeFilePath)
       }
       exception.message shouldBe "For account 'test-account' transfer to 'external' " +
           "does not have 'grp' field. while processing path/test.yaml"
@@ -351,19 +482,38 @@ class LoadYamlTest : DescribeSpec({
     it("fails with transfer and no date") {
       val budgetBuilder = BudgetBuilder()
       val relativeFilePath = Paths.get("path/test.yaml")
-      val testAccountData = """
-      name: test-account
-      owner: [ someone ]
-      path: [ external ]
-      opened_on: Jan2020
-      transfers_to:
-        external:
-        - { grp: Jan2020, pamt: 37.50 }
-      """.trimIndent()
-      val parsedContent = yamlDataParser.parseContent(testAccountData, relativeFilePath)
-      parsedContent shouldNotBe null
+      val testAccountData = YamlData(
+        name = "test-account",
+        desc = null,
+        number = null,
+        path = listOf("external"),
+        type = "external",
+        openedOn = JAN / 2020,
+        closedOn = null,
+        owner = listOf("someone"),
+        url = null,
+        phone = null,
+        address = null,
+        username = null,
+        pswd = null,
+        balances = null,
+        transfersTo = mapOf(
+          "external" to listOf(
+            TransferYamlData(
+              grp = JAN / 2020,
+              date = null,
+              camt = null,
+              pamt = 37.5,
+              desc = null,
+              cat = null,
+              tags = null
+            )
+          )
+        )
+      )
+
       val exception = shouldThrow<IllegalArgumentException> {
-        loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
+        loadYamlFile(budgetBuilder, testAccountData, relativeFilePath)
       }
       exception.message shouldBe "For account 'test-account' transfer to 'external' does not have a " +
           "valid 'date' field. while processing path/test.yaml"
@@ -372,19 +522,38 @@ class LoadYamlTest : DescribeSpec({
     it("fails with transfer and too far apart dates") {
       val budgetBuilder = BudgetBuilder()
       val relativeFilePath = Paths.get("path/test.yaml")
-      val testAccountData = """
-      name: test-account
-      owner: [ someone ]
-      path: [ external ]
-      opened_on: Jan2020
-      transfers_to:
-        external:
-        - { grp: Jan2020, date: 2020-04-01, pamt: 37.50 }
-      """.trimIndent()
-      val parsedContent = yamlDataParser.parseContent(testAccountData, relativeFilePath)
-      parsedContent shouldNotBe null
+      val testAccountData = YamlData(
+        name = "test-account",
+        desc = null,
+        number = null,
+        path = listOf("external"),
+        type = "external",
+        openedOn = JAN / 2020,
+        closedOn = null,
+        owner = listOf("someone"),
+        url = null,
+        phone = null,
+        address = null,
+        username = null,
+        pswd = null,
+        balances = null,
+        transfersTo = mapOf(
+          "external" to listOf(
+            TransferYamlData(
+              grp = JAN / 2020,
+              date = LocalDate(2020, 4, 1),
+              camt = null,
+              pamt = 37.5,
+              desc = null,
+              cat = null,
+              tags = null
+            )
+          )
+        )
+      )
+
       val exception = shouldThrow<IllegalArgumentException> {
-        loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
+        loadYamlFile(budgetBuilder, testAccountData, relativeFilePath)
       }
       exception.message shouldBe "For account 'test-account' transfer to 'external' for Jan2020 date " +
           "2020-04-01 (Apr2020) are too far apart. while processing path/test.yaml"
@@ -393,19 +562,38 @@ class LoadYamlTest : DescribeSpec({
     it("fails with transfer and no balance") {
       val budgetBuilder = BudgetBuilder()
       val relativeFilePath = Paths.get("path/test.yaml")
-      val testAccountData = """
-      name: test-account
-      owner: [ someone ]
-      path: [ external ]
-      opened_on: Jan2020
-      transfers_to:
-        external:
-        - { grp: Jan2020, date: 2020-01-17 }
-      """.trimIndent()
-      val parsedContent = yamlDataParser.parseContent(testAccountData, relativeFilePath)
-      parsedContent shouldNotBe null
+      val testAccountData = YamlData(
+        name = "test-account",
+        desc = null,
+        number = null,
+        path = listOf("external"),
+        type = "external",
+        openedOn = JAN / 2020,
+        closedOn = null,
+        owner = listOf("someone"),
+        url = null,
+        phone = null,
+        address = null,
+        username = null,
+        pswd = null,
+        balances = null,
+        transfersTo = mapOf(
+          "external" to listOf(
+            TransferYamlData(
+              grp = JAN / 2020,
+              date = LocalDate(2020, 1, 17),
+              camt = null,
+              pamt = null,
+              desc = null,
+              cat = null,
+              tags = null
+            )
+          )
+        )
+      )
+
       val exception = shouldThrow<IllegalArgumentException> {
-        loadYamlFile(budgetBuilder, parsedContent, relativeFilePath)
+        loadYamlFile(budgetBuilder, testAccountData, relativeFilePath)
       }
       exception.message shouldBe "For account 'test-account' transfer to 'external' does not " +
           "have 'pamt' or 'camt' field:" +
