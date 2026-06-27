@@ -18,7 +18,47 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlinx.datetime.LocalDate
 
-private fun BalanceYamlData.toBalance(): Balance {
+private fun YamlData.toAccount(): Account? {
+  if (name == null) {
+    // Ignore data which dont represent account.
+    return null
+  }
+  if (path == null) {
+    logger.warn { "Account '$name' has no path set" }
+  }
+  if (owner == null || owner.isEmpty()) {
+    throw IllegalArgumentException("Account '$name' has no owners")
+  }
+  if (desc == null) {
+    logger.warn { "$name is missing description field." }
+  }
+  if (path == null || path.isEmpty()) {
+    throw IllegalArgumentException("$name is missing path field.")
+  }
+  if (openedOn == null) {
+    throw IllegalArgumentException("$name is missing opened_on field.")
+  }
+
+  return Account(
+    name = name,
+    path = path,
+    owners = owner.toSet(),
+    description = desc,
+    number = number,
+    openedOn = openedOn,
+    closedOn = closedOn,
+    url = url,
+    phone = phone,
+    address = address,
+    userName = username,
+    password = pswd,
+  )
+}
+
+private fun BalanceYamlData.toBalance(name: String): Balance {
+  if (grp == null) {
+    throw IllegalArgumentException("Balance entry $this has no grp setting.")
+  }
   var amount: Int
   var balanceType: Balance.Type
   if (camt != null) {
@@ -33,70 +73,30 @@ private fun BalanceYamlData.toBalance(): Balance {
   if (date == null) {
     throw IllegalArgumentException("Balance $this does not have date set.")
   }
-  return Balance(amount, date, balanceType, desc ?: "")
+  val balance =  Balance(amount, date, balanceType, desc ?: "")
+  val balanceMonthDiff = abs(balance.date.year * 12 + balance.date.month.ordinal - grp.year * 12 - grp.month)
+  if (balanceMonthDiff > 2) {
+    throw IllegalArgumentException(
+      "For $name account $balance and month $grp are $balanceMonthDiff months apart (2 max)."
+    )
+  }
+  return balance
 }
 
 // TODO: Preprocess but do not put it into budget builder yet, so warnings are only produced files that change.
 fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
-  if (data.name == null) {
-    // Ignore data which dont represent account.
-    return false
-  }
-  if (data.path == null) {
-    logger.warn { "Account '${data.name}' has no path set" }
-  }
-  if (data.owner == null || data.owner.isEmpty()) {
-    throw IllegalArgumentException("Account '${data.name}' has no owners")
-  }
-  if (data.desc == null) {
-    logger.warn { "${data.name} is missing description field." }
-  }
-  if (data.path == null || data.path.isEmpty()) {
-    throw IllegalArgumentException("${data.name} is missing path field.")
-  }
-  if (data.openedOn == null) {
-    throw IllegalArgumentException("${data.name} is missing opened_on field.")
-  }
-
-  val account = Account(
-    name = data.name,
-    path = data.path,
-    owners = data.owner.toSet(),
-    description = data.desc,
-    number = data.number,
-    openedOn = data.openedOn,
-    closedOn = data.closedOn,
-    url = data.url,
-    phone = data.phone,
-    address = data.address,
-    userName = data.username,
-    password = data.pswd,
-  )
-  for (owner in data.owner) {
+  // Ignore data which dont represent account.
+  val account = data.toAccount() ?: return false
+  for (owner in account.owners) {
     val fullPath = listOf(owner) + account.path + listOf(account.name)
     budgetBuilder.setAccount(fullPath, account)
   }
   if (data.balances != null) {
     for (balanceData in data.balances) {
-      if (balanceData.grp == null) {
-        throw IllegalArgumentException("Balance entry $balanceData has no grp setting.")
-      }
-      var month: Month
-      try {
-        month = balanceData.grp
-      } catch (e: Exception) {
-        throw IllegalArgumentException("Balance $balanceData has bad grp setting: ${e.message}")
-      }
-      val balance = balanceData.toBalance()
-      val balanceMonthDiff = abs(balance.date.year * 12 + balance.date.month.ordinal - month.year * 12 - month.month)
-      if (balanceMonthDiff > 2) {
-        throw IllegalArgumentException(
-          "For ${account.name} account $balance and month $month are $balanceMonthDiff months apart (2 max)."
-        )
-      }
-      for (owner in data.owner) {
+      val balance = balanceData.toBalance(account.name)
+      for (owner in account.owners) {
         val fullPath = listOf(owner) + account.path + listOf(account.name)
-        budgetBuilder.setBalance(fullPath, month, balance)
+        budgetBuilder.setBalance(fullPath, balanceData.grp!!, balance)
       }
     }
   }
@@ -144,7 +144,7 @@ fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
           )
         }
 
-        for (owner in data.owner) {
+        for (owner in account.owners) {
           val fullPath = listOf(owner) + account.path + listOf(account.name)
 
           budgetBuilder.addTransfer(
