@@ -1,9 +1,6 @@
-package com.cherba29.tally.data
+package com.cherba29.tally.data.yaml
 
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.data.yaml.CustomProblemHandler
-import com.cherba29.tally.data.yaml.LocalDateDeserializer
-import com.cherba29.tally.data.yaml.MonthDeserializer
 import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule

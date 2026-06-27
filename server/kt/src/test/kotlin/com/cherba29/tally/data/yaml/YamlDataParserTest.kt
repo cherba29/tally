@@ -1,4 +1,4 @@
-package com.cherba29.tally.data
+package com.cherba29.tally.data.yaml
 
 import com.cherba29.tally.core.MonthName.JUL
 import com.cherba29.tally.core.MonthName.JUN

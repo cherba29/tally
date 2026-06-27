@@ -4,6 +4,8 @@ import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.data.builder.BudgetBuilder
+import com.cherba29.tally.data.yaml.BalanceYamlData
+import com.cherba29.tally.data.yaml.YamlData
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import kotlin.math.abs
@@ -75,7 +77,7 @@ private fun BalanceYamlData.toBalance(name: String): Balance {
 }
 
 // TODO: Preprocess but do not put it into budget builder yet, so warnings are only produced files that change.
-fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
+private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
   // Ignore data which dont represent account.
   val account = data.toAccount() ?: return false
   for (owner in account.owners) {
