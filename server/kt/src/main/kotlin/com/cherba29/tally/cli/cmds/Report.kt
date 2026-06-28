@@ -3,7 +3,6 @@ package com.cherba29.tally.cli.cmds
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.data.Loader
-import com.cherba29.tally.utils.watchedEventFlow
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -11,9 +10,6 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.path
-import kotlinx.coroutines.runBlocking
-import kotlin.io.path.extension
-import kotlin.io.path.pathString
 
 class Report : CliktCommand() {
   override fun help(context: Context) = "Full report"
@@ -32,10 +28,7 @@ class Report : CliktCommand() {
 
   override fun run() {
     echo("Executing report for $account from $startMonth to $endMonth for $tallyPath")
-    val loader = Loader(tallyPath.watchedEventFlow {
-      it.extension == "yaml" && !ignorePathRegex.containsMatchIn(it.pathString)
-    })
-    val payload = runBlocking { loader.budget() }
+    val payload = Loader.loadFrom(tallyPath)
     val accountNode = payload.getAccountNode(account)
       ?: throw IllegalStateException("Account not found $account")
     val stmtAccount = payload.leafToAccount[accountNode]!!
@@ -75,7 +68,6 @@ class Report : CliktCommand() {
   }
 
   companion object {
-    private val ignorePathRegex = Regex("(^_)|(/_)")
     val HEADER_ROW = listOf(
       "Account",
       "Path",

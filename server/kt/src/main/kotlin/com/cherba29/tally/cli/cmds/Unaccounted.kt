@@ -4,7 +4,6 @@ import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.data.Loader
-import com.cherba29.tally.utils.watchedEventFlow
 import com.cherba29.tally.statement.TransactionStatement
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
@@ -17,11 +16,8 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.boolean
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.path
-import kotlin.io.path.extension
-import kotlin.io.path.pathString
 import kotlin.math.abs
 import kotlin.math.min
-import kotlinx.coroutines.runBlocking
 
 class Unaccounted : CliktCommand() {
   override fun help(context: Context) = "List of periods with unaccounted balances."
@@ -51,10 +47,7 @@ class Unaccounted : CliktCommand() {
   ).int().default(20)
 
   override fun run() {
-    val loader = Loader(tallyPath.watchedEventFlow {
-      it.extension == "yaml" && !ignorePathRegex.containsMatchIn(it.pathString)
-    })
-    val budget = runBlocking { loader.budget() }
+    val budget = Loader.loadFrom(tallyPath)
 
     val unaccountedEntries = mutableListOf<UnaccountedEntry>()
     for ((treeNode, monthTransactionStatements) in budget.nodeToStatement) {

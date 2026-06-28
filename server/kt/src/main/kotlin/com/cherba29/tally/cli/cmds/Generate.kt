@@ -3,7 +3,6 @@ package com.cherba29.tally.cli.cmds
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.data.Loader
-import com.cherba29.tally.utils.watchedEventFlow
 import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.statement.TransactionStatement
 import com.github.ajalt.clikt.core.CliktCommand
@@ -15,12 +14,9 @@ import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.path
-import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
-import kotlin.io.path.extension
-import kotlin.io.path.pathString
 
 class Generate : CliktCommand() {
   override fun help(context: Context) = "Generate balances record based on transfers."
@@ -50,10 +46,7 @@ class Generate : CliktCommand() {
 
   override fun run() {
     echo("Generating balances for $account starting from $startMonth for $tallyPath")
-    val loader = Loader(tallyPath.watchedEventFlow {
-      it.extension == "yaml" && !ignorePathRegex.containsMatchIn(it.pathString)
-    })
-    val budget = runBlocking { loader.budget() }
+    val budget = Loader.loadFrom(tallyPath)
 
     val accountNode = budget.getAccountNode(account) ?: throw UsageError(
       "The account $account has no statements."
@@ -144,7 +137,6 @@ class Generate : CliktCommand() {
   }
 
   companion object {
-    private val ignorePathRegex = Regex("(^_)|(/_)")
     private fun Int.asAmount(): String = "%.2f".format(this / 100.0)
 
     private fun printBalanceLine(month: Month, balance: Balance, padAmtLength: Int): String {
