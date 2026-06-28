@@ -29,9 +29,13 @@ class Report : CliktCommand() {
   override fun run() {
     echo("Executing report for $account from $startMonth to $endMonth for $tallyPath")
     val payload = Loader.loadFrom(tallyPath)
-    val accountNode = payload.getAccountNode(account)
-      ?: throw IllegalStateException("Account not found $account")
-    val stmtAccount = payload.leafToAccount[accountNode]!!
+    val accountPath = account.split("/")
+    val accountNode = if (accountPath.size == 1) {
+      payload.getAccountNode(account)
+    } else {
+      payload.tree[accountPath]
+    } ?: throw IllegalStateException("Account not found $account known accounts\n${payload.tree.toPrettyString()}")
+    val stmtAccount = payload.getAccount(accountNode)!!
 
     val monthStatements = payload.nodeToStatement[accountNode] ?: mapOf()
     echo(HEADER_ROW.joinToString(","))

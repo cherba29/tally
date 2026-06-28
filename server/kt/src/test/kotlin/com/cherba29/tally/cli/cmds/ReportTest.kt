@@ -74,7 +74,7 @@ class ReportTest: DescribeSpec({
 
   }
   describe("runs") {
-    it("successfully") {
+    it("successfully for account") {
       val tallyPath = tempdir("tally-", keepOnFailure = false).toPath()
       (tallyPath / "file2.yaml").createFile().writeText(
         """
@@ -94,6 +94,30 @@ class ReportTest: DescribeSpec({
       )
       result.stderr shouldBe ""
       result.stdout shouldBe "Executing report for test-account from Apr2026 to May2026 for $tallyPath\n" +
+          "Account,Path,OpenedOn,ClosedOn,External,Closed,Year,Month,Start Amount,Start Projected,End Amount," +
+          "End Projected,Inflows,OutFlows,Income,Expense,Transfers,Unaccounted\n"
+      result.statusCode shouldBe 0
+    }
+    it("successfully for summary") {
+      val tallyPath = tempdir("tally-", keepOnFailure = false).toPath()
+      (tallyPath / "file2.yaml").createFile().writeText(
+        """
+        name: test-account
+        owner: [someone]
+        path: [external]
+        opened_on: Mar2019
+        balances:
+          - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
+        """.trimIndent()
+      )
+
+      val command = Report()
+
+      val result = command.test(
+        listOf("someone/external", "--start-month=Apr2026", "--end-month=May2026", "--tally-path=$tallyPath")
+      )
+      result.stderr shouldBe ""
+      result.stdout shouldBe "Executing report for someone/external from Apr2026 to May2026 for $tallyPath\n" +
           "Account,Path,OpenedOn,ClosedOn,External,Closed,Year,Month,Start Amount,Start Projected,End Amount," +
           "End Projected,Inflows,OutFlows,Income,Expense,Transfers,Unaccounted\n"
       result.statusCode shouldBe 0
