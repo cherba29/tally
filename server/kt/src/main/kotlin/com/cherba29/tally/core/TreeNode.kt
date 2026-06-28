@@ -108,6 +108,19 @@ sealed class TreeNode(): TreeNodeInterface<TreeNode> {
     }
   }
 
+  fun toPrettyString(prefix: String = "", isLast: Boolean = true): String = buildString {
+    // Print current node with its corresponding prefix markers
+    append(prefix + (if (isLast) "└── " else "├── ") + name + "\n")
+
+    // Pass the correct structural indentation to children
+    val newPrefix = prefix + if (isLast) "    " else "│   "
+
+    for (i in 0 until children.size) {
+      val isLastChild = i == children.size - 1
+      append(children[i].toPrettyString(newPrefix, isLastChild))
+    }
+  }
+
 
   companion object {
     class Builder {

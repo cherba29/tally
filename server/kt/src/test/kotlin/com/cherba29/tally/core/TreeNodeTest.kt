@@ -384,4 +384,41 @@ class TreeNodeTest : DescribeSpec({
       )
     }
   }
+
+  describe("pretty string") {
+    it("single root") {
+      val tree = root {  }
+      tree.toPrettyString() shouldBe "└── \n"
+    }
+
+    it("root with children") {
+      val tree = root {
+        leaf("child1")
+        leaf("child2")
+      }
+      tree.toPrettyString() shouldBe """
+      └── 
+          ├── child1
+          └── child2
+
+      """.trimIndent()
+    }
+
+    it("nested") {
+      val tree = root {
+        branch("branch1") {
+          branch("external") {
+            leaf("child1")
+          }
+        }
+      }
+      tree.toPrettyString() shouldBe """
+      └── 
+          └── branch1
+              └── external
+                  └── child1
+
+      """.trimIndent()
+    }
+  }
 })
