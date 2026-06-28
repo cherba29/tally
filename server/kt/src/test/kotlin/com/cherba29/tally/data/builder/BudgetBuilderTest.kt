@@ -226,7 +226,6 @@ class BudgetBuilderTest : DescribeSpec({
       it("no months") {
         val exception = shouldThrow<IllegalArgumentException> {
           BudgetBuilder().buildTransactionStatementTable(
-            treeRoot = root {},
             months = DEC / 2019..NOV / 2019, owner = null,
             leafToAccountMap = mapOf(),
             leafToMonthlyBalancesMap = mapOf(),
@@ -243,7 +242,6 @@ class BudgetBuilderTest : DescribeSpec({
           setAccount(accountPath, account)
         }
         val table = BudgetBuilder().buildTransactionStatementTable(
-          treeRoot = root {},
           months = budget.months,
           budget.leafToAccount,
           leafToMonthlyBalancesMap = mapOf(),
@@ -334,16 +332,16 @@ class BudgetBuilderTest : DescribeSpec({
           )
         )
         val firstTransfer1to2 = Transfer(
-          fromAccount = path1,
-          toAccount = path2,
+          fromAccount = tree[path1] as TreeNode.Leaf,
+          toAccount = tree[path2] as TreeNode.Leaf,
           fromMonth = DEC / 2019,
           toMonth = DEC / 2019,
           description = "First transfer",
           balance = Balance.projected(2000, "2019-12-05")
         )
         val secondTransfer1to2 = Transfer(
-          fromAccount = path1,
-          toAccount = path2,
+          fromAccount = tree[path1] as TreeNode.Leaf,
+          toAccount = tree[path2] as TreeNode.Leaf,
           fromMonth = DEC / 2019,
           toMonth = DEC / 2019,
           description = "Second transfer",
@@ -354,7 +352,6 @@ class BudgetBuilderTest : DescribeSpec({
           tree[path2]!! as TreeNode.Leaf to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
         )
         val table = BudgetBuilder().buildTransactionStatementTable(
-          tree,
           DEC / 2019..FEB / 2020,
           accounts,
           balances,
@@ -380,30 +377,30 @@ class BudgetBuilderTest : DescribeSpec({
             }
           }
         }
-        val path1 = listOf("john", "external", "test-account1")
-        val path2 = listOf("john", "external", "test-account2")
+        val node1 = tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf
+        val node2 = tree[listOf("john", "external", "test-account2")] as TreeNode.Leaf
         val accounts = mapOf(
-          tree[path1]!! as TreeNode.Leaf to account1,
-          tree[path2]!! as TreeNode.Leaf to account2
+          node1 to account1,
+          node2 to account2
         )
         val balances = mapOf(
-          tree[path1]!! as TreeNode.Leaf to mapOf(
+          node1 to mapOf(
             DEC / 2019 to Balance.confirmed(10, "2019-12-01"),
             JAN / 2020 to Balance.confirmed(20, "2020-01-01"),
             FEB / 2020 to Balance.projected(30, "2020-02-01")
           )
         )
         val firstTransfer1to2 = Transfer(
-          fromAccount = path1,
-          toAccount = path2,
+          fromAccount = node1,
+          toAccount = node2,
           fromMonth = DEC / 2019,
           toMonth = DEC / 2019,
           description = "First transfer",
           balance = Balance.projected(2000, "2019-12-05")
         )
         val secondTransfer1to2 = Transfer(
-          fromAccount = path1,
-          toAccount = path2,
+          fromAccount = node1,
+          toAccount = node2,
           fromMonth = DEC / 2019,
           toMonth = DEC / 2019,
           description = "Second transfer",
@@ -411,11 +408,10 @@ class BudgetBuilderTest : DescribeSpec({
         )
 
         val transfers = mapOf(
-          tree[path1]!! as TreeNode.Leaf to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
-          tree[path2]!! as TreeNode.Leaf to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
+          node1 to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
+          node2 to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
         )
         val table = BudgetBuilder().buildTransactionStatementTable(
-          tree,
           DEC / 2019..FEB / 2020,
           accounts,
           balances,
@@ -475,24 +471,24 @@ class BudgetBuilderTest : DescribeSpec({
             }
           }
         }
-        val path1 = listOf("john", "external", "test-account1")
-        val path2 = listOf("john", "external", "external")
+        val node1 = tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf
+        val node2 = tree[listOf("john", "external", "external")] as TreeNode.Leaf
         val accounts = mapOf(
-          tree[path1]!! as TreeNode.Leaf to account1,
-          tree[path2]!! as TreeNode.Leaf to account2
+          node1 to account1,
+          node2 to account2
         )
 
         val balances = mapOf(
-          tree[path1]!! as TreeNode.Leaf to mapOf(
+          node1 to mapOf(
             DEC / 2019 to Balance.confirmed(10, "2019-12-01"),
           )
         )
         val transfers = mapOf(
-          tree[path1]!! as TreeNode.Leaf to mapOf(
+          node1 to mapOf(
             DEC / 2019 to listOf(
               Transfer(
-                fromAccount = path1,
-                toAccount = path2,
+                fromAccount = node1,
+                toAccount = node2,
                 fromMonth = DEC / 2019,
                 toMonth = DEC / 2019,
                 description = "First transfer",
@@ -503,7 +499,6 @@ class BudgetBuilderTest : DescribeSpec({
         )
 
         val table = BudgetBuilder().buildTransactionStatementTable(
-          tree,
           NOV / 2019..DEC / 2019,
           accounts,
           balances,
@@ -513,16 +508,16 @@ class BudgetBuilderTest : DescribeSpec({
         table.size shouldBe 4  // Two transaction statements for the account
         table[0].monthRange shouldBe DEC / 2019..DEC / 2019
         table[0].isClosed shouldBe true
-        table[0].treeNode.path shouldBe path1
+        table[0].treeNode.path shouldBe node1.path
         table[1].monthRange shouldBe NOV / 2019..NOV / 2019
         table[1].isClosed shouldBe false
-        table[1].treeNode.path shouldBe path1
+        table[1].treeNode.path shouldBe node1.path
         table[2].monthRange shouldBe DEC / 2019..DEC / 2019
         table[2].isClosed shouldBe false
-        table[2].treeNode.path shouldBe path2
+        table[2].treeNode.path shouldBe node2.path
         table[3].monthRange shouldBe NOV / 2019..NOV / 2019
         table[3].isClosed shouldBe false
-        table[3].treeNode.path shouldBe path2
+        table[3].treeNode.path shouldBe node2.path
       }
 
       it("get transaction type") {
@@ -567,16 +562,16 @@ class BudgetBuilderTest : DescribeSpec({
           node3 to mapOf(DEC / 2019 to Balance.confirmed(10, "2019-12-01")),
         )
         val transfer1to2 = Transfer(
-          fromAccount = path1,
-          toAccount = path2,
+          fromAccount = node1,
+          toAccount = node2,
           fromMonth = DEC / 2019,
           toMonth = DEC / 2019,
           description = "First transfer",
           balance = Balance.projected(2000, "2019-12-05")
         )
         val transfer1to3 = Transfer(
-          fromAccount = path1,
-          toAccount = path3,
+          fromAccount = node1,
+          toAccount = node3,
           fromMonth = DEC / 2019,
           toMonth = DEC / 2019,
           description = "Second transfer",
@@ -589,7 +584,6 @@ class BudgetBuilderTest : DescribeSpec({
         )
 
         val table = BudgetBuilder().buildTransactionStatementTable(
-          tree,
           DEC / 2019..DEC / 2019,
           accounts,
           balances,

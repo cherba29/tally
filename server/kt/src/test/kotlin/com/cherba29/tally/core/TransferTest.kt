@@ -8,18 +8,26 @@ import kotlinx.datetime.LocalDate
 class TransferTest : DescribeSpec({
   describe("Creation") {
     it("basic") {
+      val tree = root {
+        branch("john") {
+          branch("external") {
+            leaf("test-account1")
+            leaf("test-account2")
+          }
+        }
+      }
       val month = Month(2020, 1)
       val balance = Balance(100, LocalDate(2020, 2, 3), Balance.Type.CONFIRMED)
       val transfer = Transfer(
-        fromAccount = listOf("john", "external", "test-account1"),
-        toAccount = listOf("john", "external", "test-account2"),
+        fromAccount = tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf,
+        toAccount = tree[listOf("john", "external", "test-account2")] as TreeNode.Leaf,
         fromMonth = month,
         toMonth = month,
         description = "test",
         balance
       )
-      transfer.fromAccount.last() shouldBe "test-account1"
-      transfer.toAccount.last() shouldBe "test-account2"
+      transfer.fromAccount.name shouldBe "test-account1"
+      transfer.toAccount.name shouldBe "test-account2"
       transfer.fromMonth.toString() shouldBe "Feb2020"
       transfer.toMonth.toString() shouldBe "Feb2020"
       transfer.balance.amount shouldBe 100.0
@@ -29,19 +37,27 @@ class TransferTest : DescribeSpec({
   }
   describe("order") {
     it("basic") {
+      val tree = root {
+        branch("john") {
+          branch("external") {
+            leaf("test-account1")
+            leaf("test-account2")
+          }
+        }
+      }
       val month = Month(2020, 1)
       val balance = Balance(100, LocalDate(2020, 2, 3), Balance.Type.CONFIRMED)
       val transfer1 = Transfer(
-        fromAccount = listOf("john", "external", "test-account1"),
-        toAccount = listOf("john", "external", "test-account2"),
+        fromAccount = tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf,
+        toAccount = tree[listOf("john", "external", "test-account2")] as TreeNode.Leaf,
         fromMonth = month,
         toMonth = month,
         description = "test",
         balance
       )
       val transfer2 = Transfer(
-        fromAccount = listOf("john", "external", "test-account1"),
-        toAccount = listOf("john", "external", "test-account2"),
+        fromAccount = tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf,
+        toAccount = tree[listOf("john", "external", "test-account2")] as TreeNode.Leaf,
         fromMonth = month,
         toMonth = month,
         description = "test",

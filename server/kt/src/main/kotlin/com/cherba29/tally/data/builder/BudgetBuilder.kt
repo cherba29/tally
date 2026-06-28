@@ -19,11 +19,11 @@ import kotlin.time.measureTimedValue
 class BudgetBuilder(
   // Account name -> month -> balance map.
   private val balances: MutableMap<List<String>, MutableMap<Month, Balance>> = mutableMapOf(),
-  private val transfers: MutableList<TransferData> = mutableListOf(),
+  private val transferRecordList: MutableList<TransferRecord> = mutableListOf(),
   private val timeSource: TimeSource = TimeSource.Monotonic,
 ) {
   private var monthRange: MonthRange? = null
-  data class TransferData(
+  data class TransferRecord(
     val toAccountName: String,  // Full path is unknown at time of record.
     val toMonth: Month,
     val fromAccountPath: List<String>,
@@ -62,69 +62,52 @@ class BudgetBuilder(
                   toMonth: Month,
                   balance: Balance,
                   description: String?) {
-    val transferData = TransferData(
-      toAccountName,
-      toMonth,
-      fromAccountPath,
-      fromMonth,
-      balance,
-      description,
-    )
-    transfers.add(transferData)
+    transferRecordList.add(TransferRecord(toAccountName, toMonth, fromAccountPath, fromMonth, balance, description))
     monthRange += toMonth
     monthRange += fromMonth
   }
 
-  private fun buildTransfers(tree: TreeNode): MutableMap<TreeNode.Leaf, MutableMap<Month, MutableList<Transfer>>> {
+  private fun buildTransfers(treeRoot: TreeNode): MutableMap<TreeNode.Leaf, MutableMap<Month, MutableList<Transfer>>> {
     val budgetTransfers: MutableMap<TreeNode.Leaf, MutableMap<Month, MutableList<Transfer>>> = mutableMapOf()
-    for (transferData in transfers) {
-
-      val toAccounts = pathToAccount.keys.filter { it.last() == transferData.toAccountName }
+    for (transferRecord in transferRecordList) {
+      val toAccounts = pathToAccount.keys.filter { it.last() == transferRecord.toAccountName }
       if (toAccounts.isEmpty()) {
-        throw IllegalArgumentException("Unknown account ${transferData.toAccountName}, " +
+        throw IllegalArgumentException("Unknown account ${transferRecord.toAccountName}, " +
             "known accounts [${pathToAccount.keys.joinToString { it.joinToString("/") }}]")
       } else if (toAccounts.size > 1) {
         throw IllegalArgumentException(
-          "Ambiguous transfer from ${transferData.fromAccountPath.joinToString("/")} to ${transferData.toAccountName}, " +
+          "Ambiguous transfer from ${transferRecord.fromAccountPath.joinToString("/")} to ${transferRecord.toAccountName}, " +
               "found multiple candidate accounts " + toAccounts.joinToString { it.joinToString("/") })
       }
 
-      val toAccount = tree[toAccounts.first()] as? TreeNode.Leaf
+      val toAccount = treeRoot[toAccounts.first()] as? TreeNode.Leaf
         ?: throw IllegalStateException("Unknown account path ${toAccounts.first().joinToString("/")}")
 
-      val fromAccount = tree[transferData.fromAccountPath] as? TreeNode.Leaf ?: throw IllegalArgumentException(
-        "Unknown account ${transferData.fromAccountPath.joinToString("/")}"
+      val fromAccount = treeRoot[transferRecord.fromAccountPath] as? TreeNode.Leaf ?: throw IllegalArgumentException(
+        "Unknown account ${transferRecord.fromAccountPath.joinToString("/")}"
       )
 
       val fromOwner = fromAccount.top.name
       val toOwner = toAccount.top.name
       if (fromOwner != toOwner) {
         logger.warn {
-          "WARNING: Transaction ${transferData.fromMonth} -> ${transferData.toMonth} has " +
+          "WARNING: Transaction ${transferRecord.fromMonth} -> ${transferRecord.toMonth} has " +
               "to account ${toAccount.name} from ${fromAccount.name} with different owners " +
               "$fromOwner vs $toOwner"
         }
       }
 
       val transfer = Transfer(
-        fromAccount.path,
-        toAccount.path,
-        transferData.fromMonth,
-        transferData.toMonth,
-        transferData.description,
-        transferData.balance
-      )
-      val toMonthTransfers = getMonthTransfers(
-        budgetTransfers,
-        toAccount,
-        transferData.toMonth
-      )
-      toMonthTransfers.add(transfer)
-      val fromMonthTransfers = getMonthTransfers(
-        budgetTransfers,
         fromAccount,
-        transferData.fromMonth
+        toAccount,
+        transferRecord.fromMonth,
+        transferRecord.toMonth,
+        transferRecord.description,
+        transferRecord.balance
       )
+      val toMonthTransfers = getMonthTransfers(budgetTransfers,toAccount, transferRecord.toMonth)
+      toMonthTransfers.add(transfer)
+      val fromMonthTransfers = getMonthTransfers(budgetTransfers,fromAccount, transferRecord.fromMonth)
       fromMonthTransfers.add(transfer)
     }
     return budgetTransfers
@@ -132,26 +115,21 @@ class BudgetBuilder(
 
   fun build(): Budget {
     val months = monthRange ?: MonthRange.Companion.EMPTY
-    val tree = groupTreeBuilder.build()
+    val treeRoot = groupTreeBuilder.build()
     val leafToAccount = pathToAccount.mapKeys {
-      tree[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
+      treeRoot[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
     }
     val leafToBalances = balances.mapKeys {
-      tree[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
+      treeRoot[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
     }
-    val (transfers, elapsedBudgetTime) = timeSource.measureTimedValue { buildTransfers(tree) }
+    val (transfers, elapsedBudgetTime) = timeSource.measureTimedValue { buildTransfers(treeRoot) }
     val nodeToStatement: MutableMap<TreeNode, MutableMap<Month, Statement>> = mutableMapOf()
-    val leafToTransfers = transfers.mapKeys {
-      tree[it.key.path] as? TreeNode.Leaf
-        ?: throw java.lang.IllegalStateException("Could not find path ${it.key.path}")
-    }
 
     val (transactionStatementTable, elapsedTransactionTime) = timeSource.measureTimedValue {
       // TODO: this might throw due to so invariant being violated. Need to recover to previous state.
       val transactionStatementTable = buildTransactionStatementTable(
-        tree,
         months, leafToAccount,
-        leafToBalances, leafToTransfers,  owner = null)
+        leafToBalances, transfers,  owner = null)
       for (stmt in transactionStatementTable) {
         nodeToStatement.getOrPut(stmt.treeNode) { mutableMapOf() }[stmt.monthRange.first] = stmt
       }
@@ -166,7 +144,7 @@ class BudgetBuilder(
       for (statement in transactionStatementTable) {
         summaryStatementBuilder.addStatement(statement)
       }
-      summaryStatementBuilder.build(tree)
+      summaryStatementBuilder.build(treeRoot)
     }
     for ((treeNode, monthToSummary) in summaryNameMonthMap) {
       nodeToStatement.getOrPut(treeNode) { mutableMapOf() }.putAll(monthToSummary)
@@ -184,14 +162,13 @@ class BudgetBuilder(
 
     return Budget(
       months,
-      tree,
+      treeRoot,
       leafToAccount,
       nodeToStatement,
     )
   }
 
   fun buildTransactionStatementTable(
-    treeRoot: TreeNode,
     months: MonthRange,
     leafToAccountMap: Map<TreeNode.Leaf, Account>,
     leafToMonthlyBalancesMap: Map<TreeNode.Leaf, Map<Month, Balance>>,
@@ -217,7 +194,6 @@ class BudgetBuilder(
       // Make statement outside range so that its attributes relating to previous can be used.
       val nextMonth = months.first().next()
       var nextMonthStatement = TransactionStatement.fromTransfers(
-        treeRoot,
         leafTreeNode,
         nextMonth..nextMonth,
         account.isClosed(nextMonth),
@@ -226,7 +202,6 @@ class BudgetBuilder(
       )
       for (month in months) {
         val statement = TransactionStatement.fromTransfers(
-          treeRoot,
           leafTreeNode,
           month..month,
           account.isClosed(month),
@@ -263,16 +238,8 @@ class BudgetBuilder(
       leafTreeNode: TreeNode.Leaf,
       month: Month
     ): MutableList<T> {
-      var accountTransfers = transfers[leafTreeNode]
-      if (accountTransfers == null) {
-        accountTransfers = mutableMapOf()
-        transfers[leafTreeNode] = accountTransfers
-      }
-      var monthTransfers = accountTransfers[month]
-      if (monthTransfers == null) {
-        monthTransfers = mutableListOf()
-        accountTransfers[month] = monthTransfers
-      }
+      val accountTransfers = transfers.getOrPut(leafTreeNode) { mutableMapOf() }
+      val monthTransfers = accountTransfers.getOrPut(month) { mutableListOf() }
       return monthTransfers
     }
 

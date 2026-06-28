@@ -63,7 +63,6 @@ class TransactionStatement(treeNode: TreeNode, monthRange: MonthRange, isClosed:
 
   companion object {
     fun fromTransfers(
-      tree: TreeNode,
       leafTreeNode: TreeNode.Leaf,
       monthRange: MonthRange,
       isClosed: Boolean,
@@ -92,8 +91,8 @@ class TransactionStatement(treeNode: TreeNode, monthRange: MonthRange, isClosed:
       if (firstTransfer != null && startBalance != null && firstTransfer.balance.date < startBalance.date) {
         throw IllegalStateException(
           "Balance ${monthRange.first} $startBalance for account $leafTreeNode starts after " +
-              "transaction ${firstTransfer.fromAccount.last()} --> " +
-              "${firstTransfer.toAccount.last()}/${firstTransfer.balance} desc '${firstTransfer.description}'"
+              "transaction ${firstTransfer.fromAccount.name} --> " +
+              "${firstTransfer.toAccount.name}/${firstTransfer.balance} desc '${firstTransfer.description}'"
         )
       }
 
@@ -103,13 +102,13 @@ class TransactionStatement(treeNode: TreeNode, monthRange: MonthRange, isClosed:
         var otherAccount: TreeNode
         var balance: Balance
         var transactionType: Transaction.Type
-        if (t.toAccount.last() === leafTreeNode.name) {
+        if (t.toAccount.name === leafTreeNode.name) {
           balance = t.balance
-          otherAccount = tree[t.fromAccount] ?: throw IllegalStateException("${t.fromAccount} is not in $tree")
+          otherAccount = t.fromAccount
           transactionType = attributeTransfer(otherAccount, leafTreeNode, balance.amount)
-        } else if (t.fromAccount.last() === leafTreeNode.name) {
+        } else if (t.fromAccount.name === leafTreeNode.name) {
           balance = -t.balance
-          otherAccount = tree[t.toAccount] ?: throw IllegalStateException("${t.toAccount} is not in $tree")
+          otherAccount = t.toAccount
           transactionType = attributeTransfer(leafTreeNode, otherAccount, balance.amount)
         } else {
           // This should never occur since budget should have been validated by now.
@@ -117,7 +116,7 @@ class TransactionStatement(treeNode: TreeNode, monthRange: MonthRange, isClosed:
             "Setting transfer from (${t.fromAccount} to ${t.toAccount}) for '${leafTreeNode.name}' account statement!"
           )
         }
-        if (!statement.coversPrevious && balance.amount > 0 && tree[t.fromAccount]?.path?.first() == leafTreeNode.path.first()) {
+        if (!statement.coversPrevious && balance.amount > 0 && t.fromAccount.top.name == leafTreeNode.top.name) {
           statement.coversProjectedPrevious = true
           if (balance.type != Balance.Type.PROJECTED) {
             statement.coversPrevious = true
