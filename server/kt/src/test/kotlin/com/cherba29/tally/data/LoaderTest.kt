@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.datetime.LocalDate
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TestTimeSource
 
@@ -56,45 +57,78 @@ class LoaderTest : DescribeSpec({
       }
     }
 
+    describe("load") {
+      it("just single account") {
+        val tallyPath = tempdir("tally-", keepOnFailure = false).toPath()
+        (tallyPath / "file2.yaml").createFile().writeText(
+          """
+        name: test-account
+        owner: [someone]
+        path: [external]
+        opened_on: Mar2019
+        balances:
+          - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
+        """.trimIndent()
+        )
+
+        val result = Loader.loadFrom(tallyPath)
+
+        result.nodeToStatement.size shouldBe 3
+        val tranStatement =
+          result.nodeToStatement[result.tree[listOf("someone", "external", "test-account")]]?.get(MAR / 2019)!!
+        tranStatement.monthRange shouldBe MAR / 2019..MAR / 2019
+        tranStatement.treeNode.name shouldBe "test-account"
+
+        tranStatement.startBalance shouldBe Balance(
+          10000, LocalDate(2019, 3, 1),
+          Balance.Type.CONFIRMED
+        )
+      }
+    }
+
     describe("reloads when changed") {
       coroutineTestScope = true
 
       it("reloads when changed") {
+        val testTimeSource = TestTimeSource()
         val channel = Channel<WatchResult>(Channel.BUFFERED)
         val rootPath = Paths.get("/tmp")
         val relativePath = Paths.get("file.yaml")
         channel.trySend(WatchResult(rootPath, relativePath, false)).isSuccess shouldBe true
         val processedBudget = mockk<ProcessedBudget> {
           var count = 1
+          val startTime = testTimeSource.markNow()
+          var mockLoadedOn: Duration? = null
+          every { timeSource } answers { testTimeSource }
+          every { loadedOn } answers { mockLoadedOn }
           every { addFile(any<Path>(), any()) } answers { }
-          every { reProcess() } answers { }
+          every { reProcess() } answers { mockLoadedOn = startTime.elapsedNow() }
           every { dataPayload } answers {
             mockk<Budget> {
               every { tree } returns root { leaf("testAccount${count++}") }
             }
           }
         }
-        val timeSource = TestTimeSource()
 
-        timeSource += 50.seconds
-        Loader(channel.receiveAsFlow(), this, timeSource, processedBudget).use { loader ->
+        testTimeSource += 50.seconds
+        Loader(channel.receiveAsFlow(), this, testTimeSource, processedBudget).use { loader ->
           channel.trySend(WatchResult(rootPath, null, true)).isSuccess shouldBe true
 
           val result1 = loader.budget()
           result1.tree shouldBe root { leaf("testAccount1") }
           val loadedOn = loader.loadedOn
-          loader.loadedOn shouldBe 0.seconds
+          loader.loadedOn shouldBe 50.seconds
 
-          timeSource += 10.seconds
+          testTimeSource += 10.seconds
 
           channel.trySend(WatchResult(rootPath, relativePath, true)).isSuccess shouldBe true
-          timeSource += 10.seconds
+          testTimeSource += 10.seconds
 
           testScheduler.advanceTimeBy(1000)
 
           // Now new reloaded budget.
           loadedOn!! shouldBeLessThan loader.loadedOn!!
-          loader.loadedOn shouldBe 20.seconds
+          loader.loadedOn shouldBe 70.seconds
 
           val result2 = loader.budget()
           result2.tree shouldBe root { leaf("testAccount2") }
@@ -105,37 +139,41 @@ class LoaderTest : DescribeSpec({
       }
 
       it("ignoring add file error") {
-        val timeSource = TestTimeSource()
+        val testTimeSource = TestTimeSource()
         val channel = Channel<WatchResult>(Channel.BUFFERED)
         val rootPath = Paths.get("/tmp")
         val relativePath = Paths.get("file.yaml")
         channel.trySend(WatchResult(rootPath, relativePath, false)).isSuccess shouldBe true
         val processedBudget = mockk<ProcessedBudget> {
           var count = 1
+          val startTime = testTimeSource.markNow()
+          var mockLoadedOn: Duration? = null
+          every { timeSource } answers { testTimeSource }
+          every { loadedOn } answers { mockLoadedOn }
           every { addFile(any<Path>(), any()) } answers {
             if (count > 1) throw IllegalArgumentException("error")
           }
-          every { reProcess() } answers { }
+          every { reProcess() } answers { mockLoadedOn = startTime.elapsedNow() }
           every { dataPayload } answers {
             mockk<Budget> {
               every { tree } returns root { leaf("testAccount${count++}") }
             }
           }
         }
-        timeSource += 50.seconds
-        Loader(channel.receiveAsFlow(), this, timeSource, processedBudget).use { loader ->
+        testTimeSource += 50.seconds
+        Loader(channel.receiveAsFlow(), this, testTimeSource, processedBudget).use { loader ->
           channel.trySend(WatchResult(rootPath, null, true)).isSuccess shouldBe true
-          timeSource += 100.seconds
+          testTimeSource += 100.seconds
 
           val result1 = loader.budget()
           result1.tree shouldBe root { leaf("testAccount1") }
-          loader.loadedOn shouldBe 100.seconds
+          loader.loadedOn shouldBe 150.seconds
 
-          timeSource += 100.seconds
+          testTimeSource += 100.seconds
           channel.trySend(WatchResult(rootPath, relativePath, true)).isSuccess shouldBe true
           testScheduler.advanceTimeBy(1000)
 
-          loader.loadedOn shouldBe 100.seconds  // Should not change since add file fails.
+          loader.loadedOn shouldBe 150.seconds  // Should not change since add file fails.
 
           val result2 = loader.budget()
           result2.tree shouldBe root { leaf("testAccount1") }
@@ -147,16 +185,21 @@ class LoaderTest : DescribeSpec({
       }
 
       it("ignoring reprocess error") {
-        val timeSource = TestTimeSource()
+        val testTimeSource = TestTimeSource()
         val channel = Channel<WatchResult>(Channel.BUFFERED)
         val rootPath = Paths.get("/tmp")
         val relativePath = Paths.get("file.yaml")
         channel.trySend(WatchResult(rootPath, relativePath, false)).isSuccess shouldBe true
         val processedBudget = mockk<ProcessedBudget> {
           var count = 1
+          val startTime = testTimeSource.markNow()
+          var mockLoadedOn: Duration? = null
+          every { timeSource } answers { testTimeSource }
+          every { loadedOn } answers { mockLoadedOn }
           every { addFile(any<Path>(), any()) } answers { }
           every { reProcess() } answers {
             if (count > 1) throw IllegalArgumentException("error")
+            mockLoadedOn = startTime.elapsedNow()
           }
           every { dataPayload } answers {
             mockk<Budget> {
@@ -164,20 +207,20 @@ class LoaderTest : DescribeSpec({
             }
           }
         }
-        timeSource += 50.seconds
-        Loader(channel.receiveAsFlow(), this, timeSource, processedBudget).use { loader ->
+        testTimeSource += 50.seconds
+        Loader(channel.receiveAsFlow(), this, testTimeSource, processedBudget).use { loader ->
           channel.trySend(WatchResult(rootPath, null, true)).isSuccess shouldBe true
-          timeSource += 100.seconds
+          testTimeSource += 100.seconds
 
           val result1 = loader.budget()
           result1.tree shouldBe root { leaf("testAccount1") }
-          loader.loadedOn shouldBe 100.seconds
+          loader.loadedOn shouldBe 150.seconds
 
-          timeSource += 100.seconds
+          testTimeSource += 100.seconds
           channel.trySend(WatchResult(rootPath, relativePath, true)).isSuccess shouldBe true
           testScheduler.advanceTimeBy(1000)
 
-          loader.loadedOn shouldBe 100.seconds  // Should not change since reprocess fails.
+          loader.loadedOn shouldBe 150.seconds  // Should not change since reprocess fails.
 
           val result2 = loader.budget()
           result2.tree shouldBe root { leaf("testAccount1") }

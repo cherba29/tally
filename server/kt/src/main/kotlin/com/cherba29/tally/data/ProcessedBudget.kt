@@ -7,6 +7,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.readText
+import kotlin.time.Duration
 import kotlin.time.TimeSource
 import kotlin.time.measureTime
 
@@ -16,6 +17,9 @@ class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
   var budget: Budget? = null
 
   val dataPayload: Budget get() = budget!!
+  private val startTime = timeSource.markNow()
+  private var processedOn: Duration? = null  // Not yet processed
+  val loadedOn: Duration? get() = processedOn
 
   fun reProcess() {
     val elapsedBudgetTime = timeSource.measureTime {
@@ -37,6 +41,7 @@ class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
           parsedAccountData.remove(filePath)
         }
       }
+      processedOn = startTime.elapsedNow()
     }
     logger.info {
       "Done building budget for ${budget?.leafToAccount?.size} accounts in $elapsedBudgetTime"

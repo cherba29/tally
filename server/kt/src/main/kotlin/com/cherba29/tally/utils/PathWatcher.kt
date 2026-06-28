@@ -32,6 +32,21 @@ data class WatchResult(
   val reprocess: Boolean
 )
 
+fun Path.scan(predicate: (Path)->Boolean) = sequence {
+  val watchedPath = try {
+    this@scan.toRealPath()  // walk below does not work for relative paths.
+  } catch (_: IOException) {
+    return@sequence  // Return empty sequence if path does not exist.
+  }
+  for (filePath in watchedPath.walk()) {
+    val relativeFilePath = filePath.relativeTo(watchedPath)
+    if (predicate(relativeFilePath)) {
+      yield(WatchResult(this@scan, relativeFilePath, false))
+    }
+  }
+  yield(WatchResult(this@scan,null, true))
+}
+
 fun Path.watchedEventFlow(predicate: (Path)->Boolean): Flow<WatchResult> {
   val watcher: WatchService = FileSystems.getDefault().newWatchService()
   val watchedPath = try {
