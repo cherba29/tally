@@ -91,25 +91,25 @@ fun GqlStatement.toObjectNode(root: ObjectNode) {
   root.put("hasProjectedTransfer", hasProjectedTransfer)
   startBalance?.toObjectNode(root.putObject("startBalance"))
   endBalance?.toObjectNode(root.putObject("endBalance"))
-  if (inFlows != 0) {
+  if (inFlows != 0L) {
     root.put("inFlows", inFlows)
   }
-  if (outFlows != 0) {
+  if (outFlows != 0L) {
     root.put("outFlows", outFlows)
   }
-  if (income != 0) {
+  if (income != 0L) {
     root.put("income", income)
   }
-  if (totalPayments != 0) {
+  if (totalPayments != 0L) {
     root.put("totalPayments", totalPayments)
   }
-  if (totalTransfers != 0) {
+  if (totalTransfers != 0L) {
     root.put("totalTransfers", totalTransfers)
   }
-  if (change != 0) {
+  if (change != 0L) {
     root.put("change", change)
   }
-  if (addSub != 0) {
+  if (addSub != 0L) {
     root.put("addSub", addSub)
   }
   if (percentChange.absoluteValue > 0.00001f) {
@@ -118,7 +118,7 @@ fun GqlStatement.toObjectNode(root: ObjectNode) {
   if (annualizedPercentChange.absoluteValue > 0.00001f) {
     root.put("annualizedPercentChange", annualizedPercentChange)
   }
-  if (unaccounted != 0) {
+  if (unaccounted != 0L) {
     root.put("unaccounted", unaccounted)
   }
   if (transactions.isNotEmpty()) {

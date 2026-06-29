@@ -59,32 +59,32 @@ type GqlAccount {
 }
 
 type GqlBalance {
-  amount: Int!
+  amount: Long!
   date: Date!
   desc: String!
   type: String!
 }
 
 type GqlStatement {
-  addSub: Int!
+  addSub: Long!
   annualizedPercentChange: Float!
-  change: Int!
+  change: Long!
   endBalance: GqlBalance
   hasProjectedTransfer: Boolean!
-  inFlows: Int!
-  income: Int!
+  inFlows: Long!
+  income: Long!
   isClosed: Boolean!
   isCovered: Boolean!
   isProjectedCovered: Boolean!
   month: GqlMonth!
   name: String!
-  outFlows: Int!
+  outFlows: Long!
   percentChange: Float!
   startBalance: GqlBalance
-  totalPayments: Int!
-  totalTransfers: Int!
+  totalPayments: Long!
+  totalTransfers: Long!
   transactions: [GqlTransaction!]!
-  unaccounted: Int!
+  unaccounted: Long!
 }
 
 type GqlSummaryData {
@@ -94,20 +94,20 @@ type GqlSummaryData {
 
 type GqlSummaryStatement {
   accounts: [String!]!
-  addSub: Int!
+  addSub: Long!
   annualizedPercentChange: Float!
-  change: Int!
+  change: Long!
   endBalance: GqlBalance
-  inFlows: Int!
-  income: Int!
+  inFlows: Long!
+  income: Long!
   month: GqlMonth!
   name: String!
-  outFlows: Int!
+  outFlows: Long!
   percentChange: Float!
   startBalance: GqlBalance
-  totalPayments: Int!
-  totalTransfers: Int!
-  unaccounted: Int!
+  totalPayments: Long!
+  totalTransfers: Long!
+  unaccounted: Long!
 }
 
 type GqlTable {
@@ -118,9 +118,9 @@ type GqlTable {
 }
 
 type GqlTableCell {
-  addSub: Int!
+  addSub: Long!
   annualizedPercentChange: Float!
-  balance: Int
+  balance: Long
   balanced: Boolean!
   hasProjectedTransfer: Boolean!
   isClosed: Boolean!
@@ -129,7 +129,7 @@ type GqlTableCell {
   isProjectedCovered: Boolean!
   month: GqlMonth!
   percentChange: Float!
-  unaccounted: Int
+  unaccounted: Long
 }
 
 type GqlTableRow {
@@ -144,7 +144,7 @@ type GqlTableRow {
 
 type GqlTransaction {
   balance: GqlBalance!
-  balanceFromStart: Int!
+  balanceFromStart: Long!
   description: String!
   isExpense: Boolean!
   isIncome: Boolean!
@@ -166,4 +166,7 @@ scalar Date
 
 "Month representation in XxxYYYY format."
 scalar GqlMonth
+
+"Long 64-bit integer."
+scalar Long
 ╔═ [end of file] ═╗

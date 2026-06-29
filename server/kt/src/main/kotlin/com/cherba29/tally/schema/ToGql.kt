@@ -28,7 +28,7 @@ fun Account.toGql(isExternal: Boolean, isSummary: Boolean): GqlAccount = GqlAcco
 fun Balance.Type.toGql() = id
 
 fun Balance.toGql(): GqlBalance = GqlBalance(
-  amount = amount.toInt(),
+  amount = amount,
   date = date,
   type = type.toGql(),
   desc = description,
@@ -39,7 +39,7 @@ fun Transaction.toGql(): GqlTransaction = GqlTransaction(
   isIncome = type == Transaction.Type.INCOME,
   isExpense = type == Transaction.Type.EXPENSE,
   balance = balance.toGql(),
-  balanceFromStart = balanceFromStart?.toInt() ?: 0,
+  balanceFromStart = balanceFromStart ?: 0,
   description = description ?: ""
 )
 
@@ -57,46 +57,46 @@ fun TransactionStatement.toGql(): GqlStatement = GqlStatement(
   hasProjectedTransfer = hasProjectedTransfer,
   startBalance = startBalance?.toGql(),
   endBalance = endBalance?.toGql(),
-  inFlows = inFlows.toInt(),
-  outFlows = outFlows.toInt(),
-  income = income.toInt(),
-  totalPayments = totalPayments.toInt(),
-  totalTransfers = totalTransfers.toInt(),
-  change = change?.toInt() ?: 0,
-  addSub = addSub.toInt(),
+  inFlows = inFlows,
+  outFlows = outFlows,
+  income = income,
+  totalPayments = totalPayments,
+  totalTransfers = totalTransfers,
+  change = change ?: 0,
+  addSub = addSub,
   percentChange = percentChange.round2Float(),
   annualizedPercentChange = annualizedPercentChange.round2Float(),
-  unaccounted = unaccounted?.toInt() ?: 0,
+  unaccounted = unaccounted ?: 0,
   transactions = transactions.map { it.toGql() }
 )
 
 fun TransactionStatement.toGqlTableCell(): GqlTableCell = GqlTableCell(
   month = monthRange.first,
   isClosed = isClosed,
-  addSub = addSub.toInt(),
-  balance = endBalance?.amount?.toInt(),
+  addSub = addSub,
+  balance = endBalance?.amount,
   isProjected = (endBalance != null && endBalance?.type != Balance.Type.CONFIRMED) || hasProjectedTransfer,
   isCovered = isCovered,
   isProjectedCovered = isProjectedCovered,
   hasProjectedTransfer = hasProjectedTransfer,
   percentChange = percentChange.round2Float(),
   annualizedPercentChange = annualizedPercentChange.round2Float(),
-  unaccounted = unaccounted?.toInt(),
+  unaccounted = unaccounted,
   balanced = unaccounted == null || unaccounted == 0L
 )
 
 fun Statement.toGqlTableCell(): GqlTableCell = GqlTableCell(
   month = monthRange.first,
   isClosed = isClosed,
-  addSub = addSub.toInt(),
-  balance = endBalance?.amount?.toInt(),
+  addSub = addSub,
+  balance = endBalance?.amount,
   isProjected = endBalance?.type != Balance.Type.CONFIRMED,
   isCovered = false,
   isProjectedCovered = false,
   hasProjectedTransfer = false,
   percentChange = percentChange.round2Float(),
   annualizedPercentChange = annualizedPercentChange.round2Float(),
-  unaccounted = unaccounted?.toInt(),
+  unaccounted = unaccounted,
   balanced = unaccounted == null || unaccounted == 0L
 )
 
@@ -104,16 +104,16 @@ fun SummaryStatement.toGql(): GqlSummaryStatement = GqlSummaryStatement(
   name = treeNode.name,
   month = monthRange.first,
   accounts = statements.map { it.treeNode.name }.sorted(),
-  addSub = addSub.toInt(),
-  income = income.toInt(),
-  change = change?.toInt() ?: 0,
-  inFlows = inFlows.toInt(),
-  outFlows = outFlows.toInt(),
+  addSub = addSub,
+  income = income,
+  change = change ?: 0,
+  inFlows = inFlows,
+  outFlows = outFlows,
   percentChange = percentChange.round2Float(),
   annualizedPercentChange = annualizedPercentChange.round2Float(),
-  totalPayments = totalPayments.toInt(),
-  totalTransfers = totalTransfers.toInt(),
-  unaccounted = unaccounted?.toInt() ?: 0,
+  totalPayments = totalPayments,
+  totalTransfers = totalTransfers,
+  unaccounted = unaccounted ?: 0,
   endBalance = endBalance?.toGql(),
   startBalance = startBalance?.toGql()
 )
@@ -143,16 +143,16 @@ fun Statement.toGql(): GqlStatement = GqlStatement(
   hasProjectedTransfer = false,
   startBalance = startBalance?.toGql(),
   endBalance = endBalance?.toGql(),
-  inFlows = inFlows.toInt(),
-  outFlows = outFlows.toInt(),
-  income = income.toInt(),
-  totalPayments = totalPayments.toInt(),
-  totalTransfers = totalTransfers.toInt(),
-  change = change?.toInt() ?: 0,
-  addSub = addSub.toInt(),
+  inFlows = inFlows,
+  outFlows = outFlows,
+  income = income,
+  totalPayments = totalPayments,
+  totalTransfers = totalTransfers,
+  change = change ?: 0,
+  addSub = addSub,
   percentChange = percentChange.round2Float(),
   annualizedPercentChange = annualizedPercentChange.round2Float(),
-  unaccounted = unaccounted?.toInt() ?: 0,
+  unaccounted = unaccounted ?: 0,
   transactions = listOf()
 )
 

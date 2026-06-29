@@ -8,6 +8,12 @@ import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlinx.datetime.LocalDate
 
+val graphqlLongType: GraphQLScalarType? = GraphQLScalarType.newScalar()
+  .name("Long")
+  .description("Long 64-bit integer.")
+  .coercing(LongCoercing)
+  .build()
+
 val graphqlLocalDateType: GraphQLScalarType? = GraphQLScalarType.newScalar()
   .name("Date")
   .description("Date representation in YYYY-MM-DD format.")
@@ -23,6 +29,7 @@ val graphqlMonthType: GraphQLScalarType? = GraphQLScalarType.newScalar()
 class CustomSchemaGeneratorHooks : SchemaGeneratorHooks {
   override fun willGenerateGraphQLType(type: KType): GraphQLType? = when (type.classifier as? KClass<*>) {
     LocalDate::class -> graphqlLocalDateType
+    Long::class -> graphqlLongType
     Month::class -> graphqlMonthType
     else -> null
   }

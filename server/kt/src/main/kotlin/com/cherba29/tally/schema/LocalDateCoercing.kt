@@ -15,7 +15,7 @@ object LocalDateCoercing : Coercing<LocalDate, String> {
   override fun parseValue(input: Any, graphQLContext: GraphQLContext, locale: Locale): LocalDate = runCatching {
     LocalDate.parse(serialize(input, graphQLContext, locale))
   }.getOrElse {
-    throw CoercingParseValueException("Expected valid Month but was '$input'")
+    throw CoercingParseValueException("Expected valid LocalData but was '$input'")
   }
 
   override fun parseLiteral(
@@ -24,11 +24,11 @@ object LocalDateCoercing : Coercing<LocalDate, String> {
     graphQLContext: GraphQLContext,
     locale: Locale
   ): LocalDate? {
-    val dateString = (input as? StringValue)?.value ?: throw CoercingParseLiteralException("Expected valid Month literal but was '$input'")
+    val dateString = (input as? StringValue)?.value ?: throw CoercingParseLiteralException("Expected valid LocalDate literal but was '$input'")
     return runCatching {
       LocalDate.parse(dateString)
     }.getOrElse {
-      throw CoercingParseLiteralException("Expected valid Month literal but was '$dateString'")
+      throw CoercingParseLiteralException("Expected valid LocalDate literal but was '$dateString'")
     }
   }
 
