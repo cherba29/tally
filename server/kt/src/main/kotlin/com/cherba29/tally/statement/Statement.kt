@@ -22,23 +22,23 @@ open class Statement(
   var endBalance: Balance? = null,
 
   // Total transaction inflows.
-  var inFlows: Int = 0,
+  var inFlows: Long = 0,
 
   // Total transaction outflows.
-  var outFlows: Int = 0,
+  var outFlows: Long = 0,
 
   // Amount transferred to other accounts by same owner.
-  var totalTransfers: Int = 0,
+  var totalTransfers: Long = 0,
 
   // Amount transferred to external entities.
-  var totalPayments: Int = 0,
+  var totalPayments: Long = 0,
 
   // Amount transferred from external entities.
-  var income: Int = 0,
+  var income: Long = 0,
 ) {
-  val addSub: Int
+  val addSub: Long
     get() = inFlows + outFlows
-  val change: Int? get() = startBalance?.let { s ->
+  val change: Long? get() = startBalance?.let { s ->
     endBalance?.let { e -> e.amount - s.amount }
   }
 
@@ -46,8 +46,8 @@ open class Statement(
     val changeAmount = change
     when (changeAmount) {
       null -> null
-      0 -> 0.0
-      else -> if (it.amount != 0) (100.0 * changeAmount) / it.amount else null
+      0L -> 0.0
+      else -> if (it.amount != 0L) (100.0 * changeAmount) / it.amount else null
     }
   }
 
@@ -61,11 +61,11 @@ open class Statement(
       return if (result < 10) 100 * prctChange.sign * result else null
     }
 
-  val unaccounted: Int?
+  val unaccounted: Long?
     get() = change?.let { it - addSub }
 
   // TODO: make inFlows/outFlows immutable.
-  fun addInFlow(inFlowAmount: Int) {
+  fun addInFlow(inFlowAmount: Long) {
     if (inFlowAmount > 0) {
       inFlows += inFlowAmount
     } else {
@@ -73,7 +73,7 @@ open class Statement(
     }
   }
 
-  fun addOutFlow(outFlowAmount: Int) {
+  fun addOutFlow(outFlowAmount: Long) {
     if (outFlowAmount > 0) {
       inFlows += outFlowAmount
     } else {
@@ -82,11 +82,11 @@ open class Statement(
   }
 
   fun isEmpty(): Boolean =
-    startBalance == null && endBalance == null && totalTransfers == 0 && income == 0 &&
-        inFlows == 0 && outFlows == 0 && totalPayments == 0
+    startBalance == null && endBalance == null && totalTransfers == 0L && income == 0L &&
+        inFlows == 0L && outFlows == 0L && totalPayments == 0L
 
   override fun toString(): String {
-    return "$treeNode months=$monthRange isClodes=$isClosed startBalance=$startBalance endBalance=$endBalance"
+    return "${treeNode.path.joinToString("/")} months=$monthRange isClodes=$isClosed startBalance=$startBalance endBalance=$endBalance inFlows=$inFlows outFlows=$outFlows"
   }
 
   override fun equals(other: Any?): Boolean {

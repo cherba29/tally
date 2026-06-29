@@ -56,11 +56,11 @@ class SummaryStatementBuilder {
     var monthRange: MonthRange? = null
     private var startBalance: Balance? = null
     private var endBalance: Balance? = null
-    private var inFlows: Int = 0
-    private var outFlows: Int = 0
-    private var totalTransfers: Int = 0
-    private var totalPayments: Int = 0
-    private var income: Int = 0
+    private var inFlows: Long = 0
+    private var outFlows: Long = 0
+    private var totalTransfers: Long = 0
+    private var totalPayments: Long = 0
+    private var income: Long = 0
 
     private val statements: MutableList<Statement> = mutableListOf()
 
@@ -71,16 +71,8 @@ class SummaryStatementBuilder {
 
       startBalance += statement.startBalance
       endBalance += statement.endBalance
-      if (statement.inFlows > 0) {
-        inFlows += statement.inFlows
-      } else {
-        outFlows += statement.inFlows
-      }
-      if (statement.outFlows > 0) {
-        inFlows += statement.outFlows
-      } else {
-        outFlows += statement.outFlows
-      }
+      inFlows += statement.inFlows
+      outFlows += statement.outFlows
       totalTransfers += statement.totalTransfers
       totalPayments += statement.totalPayments
       income += statement.income

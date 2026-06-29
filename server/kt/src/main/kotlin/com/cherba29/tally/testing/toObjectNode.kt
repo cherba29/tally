@@ -64,19 +64,19 @@ fun Statement.toObjectNode(root: ObjectNode) {
   root.put("months", monthRange.toString())
   startBalance?.toObjectNode(root.putObject("startBalance"))
   endBalance?.toObjectNode(root.putObject("endBalance"))
-  if (inFlows != 0) {
+  if (inFlows != 0L) {
     root.put("inFlows", inFlows)
   }
-  if (outFlows != 0) {
+  if (outFlows != 0L) {
     root.put("outFlows", outFlows)
   }
-  if (totalTransfers != 0) {
+  if (totalTransfers != 0L) {
     root.put("totalTransfers", totalTransfers)
   }
-  if (totalPayments != 0) {
+  if (totalPayments != 0L) {
     root.put("totalPayments", totalPayments)
   }
-  if (income != 0) {
+  if (income != 0L) {
     root.put("income", income)
   }
 }

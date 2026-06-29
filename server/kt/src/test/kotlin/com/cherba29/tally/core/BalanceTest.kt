@@ -13,7 +13,7 @@ class BalanceTest : DescribeSpec({
       val balance = Balance(100, LocalDate(2020, 2, 3), Balance.Type.CONFIRMED)
       val negated = -balance
       negated.date shouldBe LocalDate(2020, 2, 3)
-      negated.amount shouldBe -100.0
+      negated.amount shouldBe -100L
       negated.type shouldBe Balance.Type.CONFIRMED
     }
   }
@@ -23,7 +23,7 @@ class BalanceTest : DescribeSpec({
       val balance2 = Balance(200, LocalDate(2020, 3, 3), Balance.Type.CONFIRMED)
       val sum = balance1 + balance2
       sum.date shouldBe LocalDate(2020, 3, 3)
-      sum.amount shouldBe 300.0
+      sum.amount shouldBe 300L
       sum.type shouldBe Balance.Type.CONFIRMED
     }
 
@@ -32,7 +32,7 @@ class BalanceTest : DescribeSpec({
       val balance2 = Balance(200, LocalDate(2020, 1, 3), Balance.Type.PROJECTED)
       val sum = balance1 + balance2
       sum.date shouldBe LocalDate(2020, 2, 3)
-      sum.amount shouldBe 300.0
+      sum.amount shouldBe 300L
       sum.type shouldBe Balance.Type.PROJECTED
     }
 
@@ -41,7 +41,7 @@ class BalanceTest : DescribeSpec({
       val balance2 = Balance(200, LocalDate(2020, 1, 3), Balance.Type.PROJECTED)
       val sum = balance1 + balance2
       sum?.date shouldBe LocalDate(2020, 1, 3)
-      sum?.amount shouldBe 200.0
+      sum?.amount shouldBe 200L
       sum?.type shouldBe Balance.Type.PROJECTED
     }
 
@@ -50,7 +50,7 @@ class BalanceTest : DescribeSpec({
       val balance2: Balance? = null
       val sum = balance1 + balance2
       sum?.date shouldBe LocalDate(2020, 2, 3)
-      sum?.amount shouldBe 100.0
+      sum?.amount shouldBe 100L
       sum?.type shouldBe Balance.Type.CONFIRMED
     }
     it("both null") {
@@ -67,7 +67,7 @@ class BalanceTest : DescribeSpec({
       val balance2 = Balance(200, LocalDate(2020, 1, 3), Balance.Type.PROJECTED)
       val sum = balance1 - balance2
       sum.date shouldBe LocalDate(2020, 2, 3)
-      sum.amount shouldBe -100.0
+      sum.amount shouldBe -100L
       sum.type shouldBe Balance.Type.PROJECTED
     }
     it("first null") {
@@ -75,7 +75,7 @@ class BalanceTest : DescribeSpec({
       val balance2 = Balance(200, LocalDate(2020, 1, 3), Balance.Type.PROJECTED)
       val sum = balance1 - balance2
       sum?.date shouldBe LocalDate(2020, 1, 3)
-      sum?.amount shouldBe -200.0
+      sum?.amount shouldBe -200L
       sum?.type shouldBe Balance.Type.PROJECTED
     }
 
@@ -84,7 +84,7 @@ class BalanceTest : DescribeSpec({
       val balance1 = Balance(100, LocalDate(2020, 2, 3), Balance.Type.CONFIRMED)
       val sum = balance1 - balance2
       sum?.date shouldBe LocalDate(2020, 2, 3)
-      sum?.amount shouldBe 100.0
+      sum?.amount shouldBe 100L
       sum?.type shouldBe Balance.Type.CONFIRMED
     }
 

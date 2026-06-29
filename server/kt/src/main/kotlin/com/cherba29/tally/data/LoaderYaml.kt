@@ -9,7 +9,7 @@ import com.cherba29.tally.data.yaml.YamlData
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import kotlin.math.abs
-import kotlin.math.roundToInt
+import kotlin.math.roundToLong
 
 private fun YamlData.toAccount(): Account? {
   if (name == null) {
@@ -52,13 +52,13 @@ private fun BalanceYamlData.toBalance(name: String): Balance {
   if (grp == null) {
     throw IllegalArgumentException("Balance entry $this has no grp setting.")
   }
-  var amount: Int
+  var amount: Long
   var balanceType: Balance.Type
   if (camt != null) {
-    amount = (100.0 * camt).roundToInt()
+    amount = (100.0 * camt).roundToLong()
     balanceType = Balance.Type.CONFIRMED
   } else if (pamt != null) {
-    amount = (100.0 * pamt).roundToInt()
+    amount = (100.0 * pamt).roundToLong()
     balanceType = Balance.Type.PROJECTED
   } else {
     throw IllegalArgumentException("Balance $this does not have amount type set, expected camt or pamt entry.")
@@ -110,13 +110,13 @@ private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boole
         var balance: Balance? = null
         if (transferData.pamt != null) {
           balance = Balance(
-            (100 * transferData.pamt).roundToInt(),
+            (100 * transferData.pamt).roundToLong(),
             transferData.date,
             Balance.Type.PROJECTED
           )
         } else if (transferData.camt != null) {
           balance = Balance(
-            (100 * transferData.camt).roundToInt(),
+            (100 * transferData.camt).roundToLong(),
             transferData.date,
             Balance.Type.CONFIRMED
           )

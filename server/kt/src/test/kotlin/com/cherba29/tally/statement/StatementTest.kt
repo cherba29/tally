@@ -16,11 +16,11 @@ internal class TestStatement(
   isClosed: Boolean = false,
   startBalance: Balance? = null,
   endBalance: Balance? = null,
-  inFlows: Int = 0,
-  outFlows: Int = 0,
-  totalTransfers: Int = 0,
-  totalPayments: Int = 0,
-  income: Int = 0,
+  inFlows: Long = 0,
+  outFlows: Long = 0,
+  totalTransfers: Long = 0,
+  totalPayments: Long = 0,
+  income: Long = 0,
 ) : Statement(treeNode, monthRange, isClosed, startBalance, endBalance, inFlows, outFlows, totalTransfers, totalPayments, income) {
   override val isClosed: Boolean = true
 }
@@ -35,12 +35,12 @@ class StatementTest : DescribeSpec({
       )
       stmt.treeNode.path shouldBe listOf("external", "test")
       stmt.monthRange shouldBe MAR / 2021 .. MAR / 2021
-      stmt.inFlows shouldBe 0.0
-      stmt.income shouldBe 0.0
-      stmt.outFlows shouldBe 0.0
-      stmt.totalPayments shouldBe 0.0
-      stmt.totalTransfers shouldBe 0.0
-      stmt.addSub shouldBe 0
+      stmt.inFlows shouldBe 0L
+      stmt.income shouldBe 0L
+      stmt.outFlows shouldBe 0L
+      stmt.totalPayments shouldBe 0L
+      stmt.totalTransfers shouldBe 0L
+      stmt.addSub shouldBe 0L
       stmt.change shouldBe null
       stmt.percentChange shouldBe null
       stmt.unaccounted shouldBe null
@@ -59,16 +59,16 @@ class StatementTest : DescribeSpec({
     stmt.addOutFlow(-30)
     stmt.addOutFlow(10)
 
-    stmt.addSub shouldBe 70.0
+    stmt.addSub shouldBe 70L
     stmt.change shouldBe null
     stmt.endBalance shouldBe null
-    stmt.inFlows shouldBe 110.0
-    stmt.income shouldBe 0.0
+    stmt.inFlows shouldBe 110L
+    stmt.income shouldBe 0L
     stmt.isClosed shouldBe true  // TODO: remove not useful.
-    stmt.outFlows shouldBe -40.0
+    stmt.outFlows shouldBe -40L
     stmt.percentChange shouldBe null
-    stmt.totalPayments shouldBe 0.0
-    stmt.totalTransfers shouldBe 0.0
+    stmt.totalPayments shouldBe 0L
+    stmt.totalTransfers shouldBe 0L
     stmt.unaccounted shouldBe null
   }
 
@@ -88,18 +88,18 @@ class StatementTest : DescribeSpec({
     stmt.addOutFlow(-30)
     stmt.addOutFlow(10)
 
-    stmt.addSub shouldBe 70
-    stmt.change shouldBe 1000
+    stmt.addSub shouldBe 70L
+    stmt.change shouldBe 1000L
     stmt.endBalance shouldBe endBalance
-    stmt.inFlows shouldBe 110
-    stmt.income shouldBe 0
+    stmt.inFlows shouldBe 110L
+    stmt.income shouldBe 0L
     stmt.isClosed shouldBe true
-    stmt.outFlows shouldBe -40
-    stmt.percentChange shouldBe 100
+    stmt.outFlows shouldBe -40L
+    stmt.percentChange shouldBe 100.0
     stmt.startBalance shouldBe startBalance
-    stmt.totalPayments shouldBe 0
-    stmt.totalTransfers shouldBe 0
-    stmt.unaccounted shouldBe 930
+    stmt.totalPayments shouldBe 0L
+    stmt.totalTransfers shouldBe 0L
+    stmt.unaccounted shouldBe 930L
   }
 
   it("with empty statement") {
@@ -110,11 +110,11 @@ class StatementTest : DescribeSpec({
     )
     stmt.startBalance shouldBe null
     stmt.endBalance shouldBe null
-    stmt.totalTransfers shouldBe 0
-    stmt.income shouldBe 0
-    stmt.inFlows shouldBe 0
-    stmt.outFlows shouldBe 0
-    stmt.totalPayments shouldBe 0
+    stmt.totalTransfers shouldBe 0L
+    stmt.income shouldBe 0L
+    stmt.inFlows shouldBe 0L
+    stmt.outFlows shouldBe 0L
+    stmt.totalPayments shouldBe 0L
     stmt.isEmpty() shouldBe true
   }
 
@@ -148,7 +148,7 @@ class StatementTest : DescribeSpec({
     stmt.addInFlow(-10)
     stmt.addOutFlow(-30)
     stmt.addOutFlow(10)
-    stmt.addSub shouldBe 70.0
+    stmt.addSub shouldBe 70L
     stmt.change shouldBe null
     stmt.percentChange shouldBe null
     stmt.unaccounted shouldBe null
@@ -169,7 +169,7 @@ class StatementTest : DescribeSpec({
     stmt.addInFlow(-10)
     stmt.addOutFlow(-30)
     stmt.addOutFlow(10)
-    stmt.addSub shouldBe 70
+    stmt.addSub shouldBe 70L
     stmt.change shouldBe null
     stmt.percentChange shouldBe null
     stmt.unaccounted shouldBe null
@@ -210,7 +210,7 @@ class StatementTest : DescribeSpec({
     stmt.addInFlow(-10)
     stmt.addOutFlow(-30)
     stmt.addOutFlow(10)
-    stmt.change shouldBe 20
+    stmt.change shouldBe 20L
     stmt.percentChange shouldBe 2.0
     stmt.annualizedPercentChange shouldBe (26.8242 plusOrMinus 0.0001)
   }

@@ -9,7 +9,7 @@ data class Transaction(
   val description: String?,
   val type: Type,
   // TODO: make immutable.
-  var balanceFromStart: Int?
+  var balanceFromStart: Long?
 ) {
   enum class Type {
     UNKNOWN,

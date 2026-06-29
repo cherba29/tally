@@ -30,7 +30,7 @@ class TransferTest : DescribeSpec({
       transfer.toAccount.name shouldBe "test-account2"
       transfer.fromMonth.toString() shouldBe "Feb2020"
       transfer.toMonth.toString() shouldBe "Feb2020"
-      transfer.balance.amount shouldBe 100.0
+      transfer.balance.amount shouldBe 100L
       transfer.balance.date.toString() shouldBe "2020-02-03"
       transfer.description shouldBe "test"
     }

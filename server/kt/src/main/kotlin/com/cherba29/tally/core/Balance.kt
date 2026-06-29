@@ -6,7 +6,7 @@ import kotlinx.datetime.LocalDate
  * Represents confirmed or projected balance at a specific date.
  */
 data class Balance(
-  val amount: Int,
+  val amount: Long,
   val date: LocalDate,
   val type: Type,
   val description: String = "",
@@ -55,11 +55,11 @@ data class Balance(
 
   companion object {
     // Helper constructor.
-    fun confirmed(amount: Int, date: String): Balance {
+    fun confirmed(amount: Long, date: String): Balance {
       return Balance(amount, LocalDate.parse(date), Type.CONFIRMED)
     }
 
-    fun projected(amount: Int, date: String): Balance {
+    fun projected(amount: Long, date: String): Balance {
       return Balance(amount, LocalDate.parse(date), Type.PROJECTED)
     }
 

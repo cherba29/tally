@@ -70,7 +70,7 @@ class TransactionStatement(treeNode: TreeNode, monthRange: MonthRange, isClosed:
       startBalance: Balance?
     ): TransactionStatement {
       val statement = TransactionStatement(leafTreeNode, monthRange, isClosed, startBalance)
-      val attributeTransfer: (TreeNode, TreeNode, Int) -> Transaction.Type = { fromAccount, toAccount, amount ->
+      val attributeTransfer: (TreeNode, TreeNode, Long) -> Transaction.Type = { fromAccount, toAccount, amount ->
         if (amount > 0) {
           statement.inFlows += amount
         } else {
@@ -135,7 +135,7 @@ class TransactionStatement(treeNode: TreeNode, monthRange: MonthRange, isClosed:
       return statement
     }
 
-    private fun getTransactionType(fromAccount: TreeNode, toAccount: TreeNode, amount: Int): Transaction.Type {
+    private fun getTransactionType(fromAccount: TreeNode, toAccount: TreeNode, amount: Long): Transaction.Type {
       return if ((toAccount.path.first() == fromAccount.path.first()) && !toAccount.isExternal && !fromAccount.isExternal) {
         Transaction.Type.TRANSFER
       } else {

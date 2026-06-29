@@ -60,8 +60,8 @@ internal fun makeSummaryStatementFromSubstatements(
     )
     combined.startBalance = Balance.pickMinDate(combined.startBalance, stmt.startBalance)
     combined.endBalance = Balance.pickMaxDate(combined.endBalance, stmt.endBalance)
-    combined.addInFlow(stmt.inFlows)
-    combined.addOutFlow(stmt.outFlows)
+    combined.inFlows += stmt.inFlows
+    combined.outFlows += stmt.outFlows
     combined.totalTransfers += stmt.totalTransfers
     combined.totalPayments += stmt.totalPayments
     combined.income += stmt.income

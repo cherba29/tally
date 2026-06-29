@@ -256,15 +256,15 @@ class BudgetBuilderTest : DescribeSpec({
           stmt.coversProjectedPrevious shouldBe false
           stmt.endBalance shouldBe null
           stmt.hasProjectedTransfer shouldBe false
-          stmt.inFlows shouldBe 0.0
-          stmt.income shouldBe 0.0
+          stmt.inFlows shouldBe 0L
+          stmt.income shouldBe 0L
           stmt.isCovered shouldBe true
           stmt.isProjectedCovered shouldBe true
           stmt.monthRange shouldBe DEC / 2019..DEC / 2019
-          stmt.outFlows shouldBe 0.0
+          stmt.outFlows shouldBe 0L
           stmt.startBalance shouldBe null
-          stmt.totalPayments shouldBe 0.0
-          stmt.totalTransfers shouldBe 0.0
+          stmt.totalPayments shouldBe 0L
+          stmt.totalTransfers shouldBe 0L
           stmt.transactions shouldBe listOf()
           stmt.isClosed shouldBe false
         }
@@ -594,8 +594,8 @@ class BudgetBuilderTest : DescribeSpec({
         table[0].treeNode.path shouldBe path1
         table[0].transactions.size shouldBe 2  // 2 transactions for account1
         assertSoftly {
-          table[0].transactions[0].balance.amount shouldBe -2000.0
-          table[0].transactions[1].balance.amount shouldBe -1000.0
+          table[0].transactions[0].balance.amount shouldBe -2000L
+          table[0].transactions[1].balance.amount shouldBe -1000L
           table[0].transactions[0].type shouldBe Transaction.Type.TRANSFER
           table[0].transactions[1].type shouldBe Transaction.Type.EXPENSE
         }

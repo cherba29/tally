@@ -137,7 +137,7 @@ class Generate : CliktCommand() {
   }
 
   companion object {
-    private fun Int.asAmount(): String = "%.2f".format(this / 100.0)
+    private fun Long.asAmount(): String = "%.2f".format(this / 100.0)
 
     private fun printBalanceLine(month: Month, balance: Balance, padAmtLength: Int): String {
       val amtPrefix = if (balance.type == Balance.Type.PROJECTED) "pamt" else "camt"

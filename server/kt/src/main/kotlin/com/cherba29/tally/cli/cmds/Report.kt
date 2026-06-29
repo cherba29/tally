@@ -92,6 +92,6 @@ class Report : CliktCommand() {
       "Transfers",
       "Unaccounted",
     )
-    private fun Int.asAmount(): String = "%.2f".format(this / 100.0)
+    private fun Long.asAmount(): String = "%.2f".format(this / 100.0)
   }
 }

@@ -68,7 +68,7 @@ class Transactions : CliktCommand() {
     for (accountEntries in entries.values) {
       accountEntries.sortWith(Comparator { a, b ->
         if (a.balance.date == b.balance.date) {
-          abs(a.balance.amount) - abs(b.balance.amount)
+          abs(a.balance.amount).compareTo(abs(b.balance.amount))
         } else if (a.balance.date < b.balance.date) -1 else 1
       })
     }
@@ -86,6 +86,6 @@ class Transactions : CliktCommand() {
   }
 
   companion object {
-    private fun Int.asAmount(): String = "%.2f".format(this / 100.0)
+    private fun Long.asAmount(): String = "%.2f".format(this / 100.0)
   }
 }

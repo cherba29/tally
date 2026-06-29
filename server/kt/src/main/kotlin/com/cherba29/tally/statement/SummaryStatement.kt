@@ -10,11 +10,11 @@ class SummaryStatement(
   isClosed: Boolean = false,
   startBalance: Balance? = null,
   endBalance: Balance? = null,
-  inFlows: Int = 0,
-  outFlows: Int = 0,
-  totalTransfers: Int = 0,
-  totalPayments: Int = 0,
-  income: Int = 0,
+  inFlows: Long = 0,
+  outFlows: Long = 0,
+  totalTransfers: Long = 0,
+  totalPayments: Long = 0,
+  income: Long = 0,
   val statements: List<Statement> = listOf()
 ) : Statement(
   treeNode, monthRange, isClosed, startBalance, endBalance, inFlows, outFlows, totalTransfers, totalPayments, income

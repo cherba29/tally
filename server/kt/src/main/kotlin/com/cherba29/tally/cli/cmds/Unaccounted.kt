@@ -69,7 +69,7 @@ class Unaccounted : CliktCommand() {
           continue
         }
         if (
-          transactionStatement.unaccounted != 0 &&
+          transactionStatement.unaccounted != 0L &&
           (includeProjected || transactionStatement.endBalance?.type == Balance.Type.CONFIRMED)
         ) {
           unaccountedEntries += UnaccountedEntry(treeNode, transactionStatement as TransactionStatement)
@@ -78,16 +78,16 @@ class Unaccounted : CliktCommand() {
     }
     unaccountedEntries.sortWith { a, b ->
       if (a.statement.unaccounted != null && b.statement.unaccounted != null) {
-        abs(b.statement.unaccounted!!) - abs(a.statement.unaccounted!!)
+        abs(b.statement.unaccounted!!).compareTo(abs(a.statement.unaccounted!!))
       } else if (a.statement.unaccounted == null) {
         if (b.statement.unaccounted == null) {
           b.statement.transactions.size - a.statement.transactions.size
         }
-        abs((b.statement.unaccounted ?: 0) / 100) - a.statement.transactions.size
-      } else b.statement.transactions.size - abs((a.statement.unaccounted ?: 0) / 100)
+        abs((b.statement.unaccounted ?: 0) / 100).compareTo(a.statement.transactions.size)
+      } else b.statement.transactions.size.compareTo(abs((a.statement.unaccounted ?: 0) / 100))
     }
     for (entry in unaccountedEntries.slice(0..< min(unaccountedEntries.size, limit))) {
-      val unaccountedValue = if (entry.statement.unaccounted != null && entry.statement.unaccounted != 0) {
+      val unaccountedValue = if (entry.statement.unaccounted != null && entry.statement.unaccounted != 0L) {
         entry.statement.unaccounted!!.asAmount().padStart(10)
       } else {
         "---"
@@ -100,8 +100,7 @@ class Unaccounted : CliktCommand() {
   }
 
   companion object {
-    private val ignorePathRegex = Regex("(^_)|(/_)")
-    private fun Int.asAmount(): String = "%.2f".format(this / 100.0)
+    private fun Long.asAmount(): String = "%.2f".format(this / 100.0)
     data class UnaccountedEntry(
       val treeNode: TreeNode,
       val statement: TransactionStatement
