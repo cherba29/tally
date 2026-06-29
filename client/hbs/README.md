@@ -25,3 +25,10 @@ http://localhost:8080/files/client/hbs/js_summary.html#../../../data/yaml/files
 ```
 npm run test
 ```
+
+## Graphql
+
+To regenerate ts graphql schema, using codegen.yaml config.
+```
+$ pnpm client graphql-codegen
+```

@@ -14,7 +14,7 @@ const defaultOptions: DefaultOptions = {
 };
 
 const link = ApolloLink.from([
-  new HttpLink({ uri: "http://localhost:4000/graphql" }),
+  new HttpLink({ uri: "http://localhost:8080/graphql" }),
 ]);
 
 /**
