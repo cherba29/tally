@@ -2,6 +2,7 @@ package com.cherba29.tally.cli
 
 import com.cherba29.tally.cli.cmds.Generate
 import com.cherba29.tally.cli.cmds.Report
+import com.cherba29.tally.cli.cmds.Summary
 import com.cherba29.tally.cli.cmds.Transactions
 import com.cherba29.tally.cli.cmds.Unaccounted
 import com.github.ajalt.clikt.core.CliktCommand
@@ -20,6 +21,7 @@ class Cli : CliktCommand() {
 fun main(args: Array<String>) = Cli().subcommands(
   Generate(),
   Report(),
+  Summary(),
   Transactions(),
   Unaccounted()
 ).main(args)
