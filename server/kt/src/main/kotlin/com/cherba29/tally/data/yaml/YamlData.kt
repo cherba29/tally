@@ -32,6 +32,7 @@ data class TransferYamlData(
 data class YamlData(
   val name: String? = null,
   val desc: String? = null,
+  val rank: Int? = null,
   val number: String? = null,
   val path: List<String>? = null,
   @param:JsonProperty("opened_on")

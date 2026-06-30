@@ -55,7 +55,7 @@ class TableService(val loader: Loader) : Query {
         )
 
       val rows = mutableListOf<GqlTableRow>()
-      for (treeNode in ownerTree.traverseSortedDepthDown()) {
+      for (treeNode in ownerTree.traverseDepthDown()) {
         val account = payload.getAccount(treeNode)
           ?: throw java.lang.IllegalArgumentException(
             "Could not find account for ${treeNode.path.joinToString("/")}"

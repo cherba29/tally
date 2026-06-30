@@ -36,6 +36,7 @@ private fun YamlData.toAccount(): Account? {
     name = name,
     path = path,
     owners = owner.toSet(),
+    rank = rank,
     description = desc,
     number = number,
     openedOn = openedOn,

@@ -1,6 +1,8 @@
 package com.cherba29.tally.core
 
-// TODO: Introduce some notion of order/priority, so that those can be displayed higher up the list.
+/**
+ * Represents an account to serve as source and destination of transfers.
+ */
 data class Account(
   // Account name.
   val name: String,
@@ -10,6 +12,11 @@ data class Account(
   val owners: Set<String>,
   // Human-readable description for the account for display.
   val description: String? = null,
+  /**
+   * Compared to other accounts in this path how important it is.
+   * Lower rank will sort this account above others.
+   */
+  val rank: Int? = null,
   // Real account number associated with this account.
   val number: String? = null,
   // Month when account was opened and possibly closed.

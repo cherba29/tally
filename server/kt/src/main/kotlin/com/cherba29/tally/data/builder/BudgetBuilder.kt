@@ -36,7 +36,7 @@ class BudgetBuilder(
   private val pathToAccount = mutableMapOf<List<String>, Account>()
 
   fun setAccount(fullPath: List<String>, account: Account): BudgetBuilder {
-    groupTreeBuilder.addPath(fullPath)
+    groupTreeBuilder.addPath(fullPath, account.rank)
     pathToAccount[fullPath] = account
     monthRange += account.openedOn
     monthRange += account.closedOn

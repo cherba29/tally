@@ -101,10 +101,10 @@ sealed class TreeNode: TreeNodeInterface<TreeNode> {
     yield(this@TreeNode)
   }
 
-  fun traverseSortedDepthDown(): Sequence<TreeNode> = sequence {
+  fun traverseDepthDown(): Sequence<TreeNode> = sequence {
     yield(this@TreeNode)
-    for (child in children.sortedBy { it.name }) {
-      yieldAll(child.traverseSortedDepthDown())
+    for (child in children) {
+      yieldAll(child.traverseDepthDown())
     }
   }
 
@@ -123,30 +123,28 @@ sealed class TreeNode: TreeNodeInterface<TreeNode> {
 
 
   companion object {
+    /** Checks if given prefix is starting sublist of larger list. */
+    private fun <T> isProperPrefix(fullList: List<T>, prefix: List<T>) = prefix.size < fullList.size &&
+        prefix.indices.all { i -> prefix[i] == fullList[i] }
+
     class Builder {
       // TODO: perhaps use more efficient structure so the list does not have to be rescanned resulting in O(n^2).
-      private val paths = mutableListOf<List<String>>()
+      private val paths = mutableListOf<Pair<List<String>, Int?>>()
 
       /** Add path from which tree containing it can be built. */
-      fun addPath(path: List<String>) { paths.add(path) }
-
-      /** Checks if given prefix is starting sublist of larger list. */
-      private fun <T> isProperPrefix(fullList: List<T>, prefix: List<T>) = prefix.size < fullList.size &&
-          prefix.indices.all { i -> prefix[i] == fullList[i] }
+      fun addPath(path: List<String>, rank: Int? = null) { paths.add(path to rank) }
 
       /** Returns names of children and whether they are leaf under given path prefix. */
-      private fun getChildrenOf(prefix: List<String>): List<Pair<String, Boolean>> = paths.mapNotNull {
+      private fun getChildrenOf(prefix: List<String>): List<Pair<String, Boolean>> = paths.sortedWith(
+        compareBy<Pair<List<String>, Int?>> { it.second ?: Int.MAX_VALUE }.thenBy { it.first.joinToString("/") }).mapNotNull { (path, _) ->
         // Get the names of the child nodes and whether they are a leaf or a branch.
-        if (isProperPrefix(it, prefix)) it[prefix.size] to (it.size - 1 == prefix.size) else null
+        if (isProperPrefix(path, prefix)) path[prefix.size] to (path.size - 1 == prefix.size) else null
       }.groupBy {
         // We can get duplicate entries and moreover some nodes can be both a leaf node and a branch.
         it.first
       }.map { (name, entries) ->
         // Collapse duplicate entries into one, and if there is at least one non-leaf consider it non-leaf.
         name to entries.all { it.second }
-      }.sortedBy {
-        // For consistency order elements by name.
-        it.first
       }
 
       /** Builds a TreeNode tree from provide paths. */

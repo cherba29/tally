@@ -335,7 +335,7 @@ class TreeNodeTest : DescribeSpec({
   describe("traverse down") {
     it("empty") {
       val tree = root {}
-      tree.traverseSortedDepthDown().toList() shouldBe listOf(tree)
+      tree.traverseDepthDown().toList() shouldBe listOf(tree)
     }
 
     it("just leafs") {
@@ -343,7 +343,7 @@ class TreeNodeTest : DescribeSpec({
         leaf("external")
         leaf("internal")
       }
-      tree.traverseSortedDepthDown().toList() shouldBe listOf(
+      tree.traverseDepthDown().toList() shouldBe listOf(
         tree,
         tree.children[0],
         tree.children[1]
@@ -359,7 +359,7 @@ class TreeNodeTest : DescribeSpec({
           leaf("child2")
         }
       }
-      tree.traverseSortedDepthDown().toList() shouldBe listOf(
+      tree.traverseDepthDown().toList() shouldBe listOf(
         tree,
         tree.children[0],
         tree.children[0].children[0],
@@ -376,13 +376,79 @@ class TreeNodeTest : DescribeSpec({
           }
         }
       }
-      tree.traverseSortedDepthDown().toList() shouldBe listOf(
+      tree.traverseDepthDown().toList() shouldBe listOf(
         tree,
         tree.children[0],
         tree.children[0].children[0],
         tree.children[0].children[0].children[0],
       )
     }
+  }
+
+  describe("builder") {
+    it("empty") {
+      val builder = TreeNode.Companion.Builder()
+      builder.build() shouldBe root {}
+    }
+
+    it("just leafs") {
+      val builder = TreeNode.Companion.Builder()
+      builder.addPath(listOf("external"))
+      builder.addPath(listOf("internal"))
+      builder.build() shouldBe root {
+        leaf("external")
+        leaf("internal")
+      }
+    }
+
+    it("branched") {
+      val builder = TreeNode.Companion.Builder()
+      builder.addPath(listOf("external", "child1"))
+      builder.addPath(listOf("internal", "child2"))
+
+      builder.build() shouldBe root {
+        branch("external") {
+          leaf("child1")
+        }
+        branch("internal") {
+          leaf("child2")
+        }
+      }
+    }
+
+    it("nested") {
+      val builder = TreeNode.Companion.Builder()
+      builder.addPath(listOf("branch1", "external", "child1"))
+
+      builder.build() shouldBe  root {
+        branch("branch1") {
+          branch("external") {
+            leaf("child1")
+          }
+        }
+      }
+    }
+
+    it("sorted by name") {
+      val builder = TreeNode.Companion.Builder()
+      builder.addPath(listOf("child2"))
+      builder.addPath(listOf("child1"))
+      builder.build() shouldBe root {
+        leaf("child1")
+        leaf("child2")
+      }
+    }
+
+    it("sorted by rank") {
+      val builder = TreeNode.Companion.Builder()
+      builder.addPath(listOf("child2"), 1)
+      builder.addPath(listOf("child1"), 2)
+      builder.build() shouldBe root {
+        leaf("child2")
+        leaf("child1")
+      }
+    }
+
   }
 
   describe("pretty string") {
