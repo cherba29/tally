@@ -142,6 +142,14 @@ export class SummaryTable extends LitElement {
     this.dispatchEvent(new CustomEvent('cellclick', options));
   }
 
+  copyToClipBoard(amount: number | null | undefined) {
+    if (amount != null || amount != undefined) {
+      let text = (amount / 100.0).toFixed(2);
+      navigator.clipboard.writeText(text);
+      console.log(`Copied to clipboard '${text}'`);
+    }
+  }
+
   // Taggle child row visibility
   private toggleChildRows(rowIdx: number, expanded: boolean) {
     const rowInfo = this.childTableRows[rowIdx];
@@ -269,6 +277,7 @@ export class SummaryTable extends LitElement {
                     <td
                       class="${classMap(unaccountedClass(c))}"
                       style="border-right:2px double #a00"
+                      @click="${()=>this.copyToClipBoard(c.unaccounted)}"
                     >
                       ${currency(c.unaccounted)}
                     </td>
@@ -309,6 +318,7 @@ export class SummaryTable extends LitElement {
                     <td
                       class="${classMap(unaccountedClass(c))}"
                       style="border-right:2px double #a00"
+                      @click="${()=>this.copyToClipBoard(c.unaccounted)}"
                     >
                       ${currency(c.unaccounted)}
                     </td>`;
