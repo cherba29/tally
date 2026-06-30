@@ -58,6 +58,14 @@ export class BalanceTooltip extends LitElement {
     this.dispatchEvent(new CustomEvent('close'));
   }
 
+  copyToClipBoard(amount: number | null | undefined) {
+    if (amount != null || amount != undefined) {
+      let text = (amount / 100.0).toFixed(2);
+      navigator.clipboard.writeText(text);
+      console.log(`Copied to clipboard '${text}'`);
+    }
+  }
+
   override render() {
     const transactionColor = (t: GqlTransaction | undefined | null): StyleInfo => ({
       backgroundColor: t?.isExpense ? '#caa' : t?.isIncome ? '#aca' : null,
@@ -98,7 +106,7 @@ export class BalanceTooltip extends LitElement {
                 ${currency(t?.balance?.amount)}
               </td>
               <td align="middle" style="min-width:60px">${dateFormat(t?.balance?.date)}</td>
-              <td align="right" style="min-width:50px">${currency(t?.balanceFromStart)}</td>
+              <td align="right" style="min-width:50px" @click="${()=>this.copyToClipBoard(t?.balanceFromStart)}">${currency(t?.balanceFromStart)}</td>
             </tr>`
         )}
         <tr>
