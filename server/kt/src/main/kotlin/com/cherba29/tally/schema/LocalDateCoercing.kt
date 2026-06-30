@@ -23,7 +23,7 @@ object LocalDateCoercing : Coercing<LocalDate, String> {
     variables: CoercedVariables,
     graphQLContext: GraphQLContext,
     locale: Locale
-  ): LocalDate? {
+  ): LocalDate {
     val dateString = (input as? StringValue)?.value ?: throw CoercingParseLiteralException("Expected valid LocalDate literal but was '$input'")
     return runCatching {
       LocalDate.parse(dateString)

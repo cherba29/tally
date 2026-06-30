@@ -114,7 +114,7 @@ class BudgetBuilder(
   }
 
   fun build(): Budget {
-    val months = monthRange ?: MonthRange.Companion.EMPTY
+    val months = monthRange ?: MonthRange.EMPTY
     val treeRoot = groupTreeBuilder.build()
     val leafToAccount = pathToAccount.mapKeys {
       treeRoot[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")

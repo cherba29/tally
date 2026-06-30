@@ -151,7 +151,7 @@ class Generate : CliktCommand() {
       transfers: List<Transaction>,
       minDateNextMonthTransfer: LocalDate?,
       balanceType: Balance.Type
-    ): Balance? {
+    ): Balance {
       // The balance date is set to max transfer date,
       // but make sure it is not lower than next month start by default.
       val nextDate = startBalance.date + DatePeriod(months = 1)

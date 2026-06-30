@@ -25,7 +25,7 @@ interface TreeNodeInterface<T> {
   val isExternal: Boolean
 }
 
-sealed class TreeNode(): TreeNodeInterface<TreeNode> {
+sealed class TreeNode: TreeNodeInterface<TreeNode> {
   class Root(
     override val name: String = "",
     override val isExternal: Boolean = false,
@@ -115,9 +115,9 @@ sealed class TreeNode(): TreeNodeInterface<TreeNode> {
     // Pass the correct structural indentation to children
     val newPrefix = prefix + if (isLast) "    " else "│   "
 
-    for (i in 0 until children.size) {
+    for ((i, element) in children.withIndex()) {
       val isLastChild = i == children.size - 1
-      append(children[i].toPrettyString(newPrefix, isLastChild))
+      append(element.toPrettyString(newPrefix, isLastChild))
     }
   }
 

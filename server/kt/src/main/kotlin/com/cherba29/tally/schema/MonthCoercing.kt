@@ -23,7 +23,7 @@ object MonthCoercing : Coercing<Month, String> {
     variables: CoercedVariables,
     graphQLContext: GraphQLContext,
     locale: Locale
-  ): Month? {
+  ): Month {
     val monthString = (input as? StringValue)?.value ?: throw CoercingParseLiteralException("Expected valid Month literal but was '$input'")
     return runCatching {
       Month.fromString(monthString)

@@ -13,7 +13,6 @@ import kotlinx.coroutines.runBlocking
 
 class StatementService(val loader: Loader) : Query {
   @GraphQLDescription("Returns a monthly statement for given account.")
-  @Suppress("unused")
   fun statement(owner:String, account: String, month: Month): GqlStatement {
     logger.info { "statement owner=$owner, account=$account, month=$month" }
     val (result, timeTaken) = measureTimedValue {

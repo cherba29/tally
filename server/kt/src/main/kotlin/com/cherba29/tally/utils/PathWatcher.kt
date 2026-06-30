@@ -89,7 +89,7 @@ fun Path.watchedEventFlow(predicate: (Path)->Boolean): Flow<WatchResult> {
           }
           // TODO: remove this delay. Without it same modify is triggered multiple times. See discussion.
           // https://stackoverflow.com/questions/16777869/java-7-watchservice-ignoring-multiple-occurrences-of-the-same-event
-          // On linux (wsl2) this can be as low as 200ms, but on macos needed to be at least 500ms.
+          // On linux (wsl2) this can be as low as 200ms, but on macOS needed to be at least 500ms.
           delay(500.milliseconds)
         }.join()
 

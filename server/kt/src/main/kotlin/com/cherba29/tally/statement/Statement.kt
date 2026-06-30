@@ -43,8 +43,7 @@ open class Statement(
   }
 
   val percentChange: Double? get() = startBalance?.let {
-    val changeAmount = change
-    when (changeAmount) {
+    when (val changeAmount = change) {
       null -> null
       0L -> 0.0
       else -> if (it.amount != 0L) (100.0 * changeAmount) / it.amount else null
@@ -86,7 +85,7 @@ open class Statement(
         inFlows == 0L && outFlows == 0L && totalPayments == 0L
 
   override fun toString(): String {
-    return "${treeNode.path.joinToString("/")} months=$monthRange isClodes=$isClosed startBalance=$startBalance endBalance=$endBalance inFlows=$inFlows outFlows=$outFlows"
+    return "${treeNode.path.joinToString("/")} months=$monthRange isClosed=$isClosed startBalance=$startBalance endBalance=$endBalance inFlows=$inFlows outFlows=$outFlows"
   }
 
   override fun equals(other: Any?): Boolean {

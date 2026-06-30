@@ -39,8 +39,9 @@ class Report : CliktCommand() {
 
     val monthStatements = payload.nodeToStatement[accountNode] ?: mapOf()
     echo(HEADER_ROW.joinToString(","))
+    val monthRange = startMonth..endMonth
     for ((month, transactionStatement) in monthStatements) {
-      if (month < startMonth || endMonth < month) {
+      if (month !in monthRange) {
         continue
       }
       val row = listOf(

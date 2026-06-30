@@ -22,7 +22,7 @@ object LongCoercing : Coercing<Long, String> {
     variables: CoercedVariables,
     graphQLContext: GraphQLContext,
     locale: Locale
-  ): Long? {
+  ): Long {
     val longString = (input as? StringValue)?.value ?: throw CoercingParseLiteralException("Expected valid Long literal but was '$input'")
     return runCatching {
       longString.toLong()

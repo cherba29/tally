@@ -18,7 +18,6 @@ import kotlinx.coroutines.runBlocking
 
 class TableService(val loader: Loader) : Query {
   @GraphQLDescription("Generates full tally table in given month range.")
-  @Suppress("unused")
   fun table(owner: String?, startMonth: Month, endMonth: Month): GqlTable {
     logger.info { "table owner=$owner startMonth=$startMonth endMonth=$endMonth" }
     val (result, timeTaken) = measureTimedValue {
@@ -67,10 +66,9 @@ class TableService(val loader: Loader) : Query {
           )
 
         val cells = requestedMonths.map { month ->
-          val monthlyStatement = monthMap[month]
           // Extension functions are not polymorphic.
           // TODO: refactor so not to do manual polymorphism here.
-          when (monthlyStatement) {
+          when (val monthlyStatement = monthMap[month]) {
             is TransactionStatement -> monthlyStatement.toGqlTableCell()
             is SummaryStatement -> monthlyStatement.toGqlTableCell()
             else -> throw IllegalStateException("Could not find statement for '${treeNode.path}' for month $month")

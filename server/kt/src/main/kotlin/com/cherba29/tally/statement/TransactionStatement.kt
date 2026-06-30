@@ -102,11 +102,11 @@ class TransactionStatement(treeNode: TreeNode, monthRange: MonthRange, isClosed:
         var otherAccount: TreeNode
         var balance: Balance
         var transactionType: Transaction.Type
-        if (t.toAccount.name === leafTreeNode.name) {
+        if (t.toAccount.name == leafTreeNode.name) {
           balance = t.balance
           otherAccount = t.fromAccount
           transactionType = attributeTransfer(otherAccount, leafTreeNode, balance.amount)
-        } else if (t.fromAccount.name === leafTreeNode.name) {
+        } else if (t.fromAccount.name == leafTreeNode.name) {
           balance = -t.balance
           otherAccount = t.toAccount
           transactionType = attributeTransfer(leafTreeNode, otherAccount, balance.amount)

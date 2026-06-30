@@ -36,7 +36,7 @@ class YamlDataParserTest : DescribeSpec({
         opened_on: Jun2026
         closed_on: Jun2027
         owner: [john, bob]
-        url: http://test-account.com
+        url: https://test-account.com
         phone: 555-123-4567
         address: 123 main st
         username: john123
@@ -52,7 +52,7 @@ class YamlDataParserTest : DescribeSpec({
         openedOn = JUN / 2026,
         closedOn = JUN / 2027,
         owner = listOf("john", "bob"),
-        url = "http://test-account.com",
+        url = "https://test-account.com",
         phone = "555-123-4567",
         address = "123 main st",
         username = "john123",

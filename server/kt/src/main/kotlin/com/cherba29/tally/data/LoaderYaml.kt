@@ -19,13 +19,13 @@ private fun YamlData.toAccount(): Account? {
   if (path == null) {
     logger.warn { "Account '$name' has no path set" }
   }
-  if (owner == null || owner.isEmpty()) {
+  if (owner.isNullOrEmpty()) {
     throw IllegalArgumentException("Account '$name' has no owners")
   }
   if (desc == null) {
     logger.warn { "$name is missing description field." }
   }
-  if (path == null || path.isEmpty()) {
+  if (path.isNullOrEmpty()) {
     throw IllegalArgumentException("$name is missing path field.")
   }
   if (openedOn == null) {

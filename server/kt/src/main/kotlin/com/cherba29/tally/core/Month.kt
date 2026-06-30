@@ -191,7 +191,7 @@ class MonthRange(start: Month, endInclusive: Month) : MonthProgression(start, en
     return last.next()
   }
 
-  override fun contains(value: Month): Boolean = first <= value && value <= last
+  override fun contains(value: Month): Boolean = (first <= value) && (value <= last)
 
   /**
    * Checks whether the range is empty.
@@ -224,7 +224,7 @@ fun MonthRange?.enlargeTo(other: MonthRange?): MonthRange? {
   return Month.min(first, other.first)..Month.max(last, other.last)
 }
 
-operator fun MonthRange?.plus(other: Month?): MonthRange? {
+operator fun MonthRange?.plus(other: Month?): MonthRange {
   if (this == null) return other..other
   if (other == null) return this
   return Month.min(first, other)..Month.max(last, other)
