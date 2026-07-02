@@ -73,6 +73,12 @@ jacoco {
     toolVersion = "0.8.12"
 }
 
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions {
+        freeCompilerArgs.add("-Xcontext-parameters")
+    }
+}
+
 tasks {
     test {
         testLogging {

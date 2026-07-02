@@ -1,5 +1,6 @@
 package com.cherba29.tally.core
 
+import com.cherba29.tally.utils.PrefixTree
 import kotlin.sequences.sequence
 
 interface TreeNodeInterface<T> {
@@ -123,50 +124,23 @@ sealed class TreeNode: TreeNodeInterface<TreeNode> {
 
 
   companion object {
-    /** Checks if given prefix is starting sublist of larger list. */
-    private fun <T> isProperPrefix(fullList: List<T>, prefix: List<T>) = prefix.size < fullList.size &&
-        prefix.indices.all { i -> prefix[i] == fullList[i] }
-
     class Builder {
-      // TODO: perhaps use more efficient structure so the list does not have to be rescanned resulting in O(n^2).
-      private val paths = mutableListOf<Pair<List<String>, Int?>>()
+      private val prefixTree = PrefixTree()
 
       /** Add path from which tree containing it can be built. */
-      fun addPath(path: List<String>, rank: Int? = null) { paths.add(path to rank) }
+      fun addPath(path: List<String>, rank: Int? = null) = prefixTree.insert(path, rank ?: Int.MAX_VALUE)
 
-      /** Returns names of children and whether they are leaf under given path prefix. */
-      private fun getChildrenOf(prefix: List<String>): List<Pair<String, Boolean>> = paths.sortedWith(
-        compareBy<Pair<List<String>, Int?>> { it.second ?: Int.MAX_VALUE }.thenBy { it.first.joinToString("/") }).mapNotNull { (path, _) ->
-        // Get the names of the child nodes and whether they are a leaf or a branch.
-        if (isProperPrefix(path, prefix)) path[prefix.size] to (path.size - 1 == prefix.size) else null
-      }.groupBy {
-        // We can get duplicate entries and moreover some nodes can be both a leaf node and a branch.
-        it.first
-      }.map { (name, entries) ->
-        // Collapse duplicate entries into one, and if there is at least one non-leaf consider it non-leaf.
-        name to entries.all { it.second }
-      }
+      fun build(): TreeNode = root { addChildren(prefixTree) }
 
-      /** Builds a TreeNode tree from provide paths. */
-      fun build(): TreeNode {
-        return root {
-          for ((part, isLeaf) in getChildrenOf(listOf())) {
-            if (isLeaf) {
-              leaf(part)
+      companion object {
+        // Recursively build immutable tree nodes from prefix tree.
+        context(parentList: ParentList)
+        private fun addChildren(prefixTree: PrefixTree) {
+          for ((childName, childTree) in prefixTree.sortedEntries) {
+            if (childTree.isEmpty()) {
+              parentList.leaf(childName)
             } else {
-              build(this, listOf(part))
-            }
-          }
-        }
-      }
-
-      private fun build(list: ParentList, path: List<String>) {
-        list.branch(path.last()) {
-          for ((part, isLeaf) in getChildrenOf(path)) {
-            if (isLeaf) {
-              leaf(part)
-            } else {
-              build(this, path + part)
+              parentList.branch(childName) { addChildren(childTree) }
             }
           }
         }

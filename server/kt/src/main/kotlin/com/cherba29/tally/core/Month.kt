@@ -182,7 +182,6 @@ class MonthProgressionIterator(first: Month, last: Month, val step: Int) : Month
 /**
  * A range of values of type `Month`.
  */
-// TODO: introduce open-ended ranges perhaps making start and end nullable.
 class MonthRange(start: Month, endInclusive: Month) : MonthProgression(start, endInclusive, 1), ClosedRange<Month>, OpenEndRange<Month> {
   override val start: Month get() = first
   override val endInclusive: Month get() = last
@@ -200,7 +199,6 @@ class MonthRange(start: Month, endInclusive: Month) : MonthProgression(start, en
    */
   override fun isEmpty(): Boolean = first > last
 
-  // TODO: also add min/max and contains for month ranges.
   val size: Int = (last - first + 1).absoluteValue
 
   override fun equals(other: Any?): Boolean =
