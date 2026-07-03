@@ -9,7 +9,7 @@ import com.cherba29.tally.core.plus
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 
-class SummaryStatementBuilder {
+class MonthSummaryStatementBuilder {
   // Map of owner -> 'summary name' -> month -> 'summary statement'.
   private val summaryStatements = mutableMapOf<TreeNode, MutableMap<Month, Builder>>()
 

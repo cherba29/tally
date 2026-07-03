@@ -139,11 +139,11 @@ class BudgetBuilder(
     }
 
     val (summaryNameMonthMap, elapsedBuildSummaryStatements) = timeSource.measureTimedValue {
-      val summaryStatementBuilder = SummaryStatementBuilder()
+      val monthSummaryStatementBuilder = MonthSummaryStatementBuilder()
       for (statement in transactionStatementTable) {
-        summaryStatementBuilder.addStatement(statement)
+        monthSummaryStatementBuilder.addStatement(statement)
       }
-      summaryStatementBuilder.build(treeRoot)
+      monthSummaryStatementBuilder.build(treeRoot)
     }
     for ((treeNode, monthToSummary) in summaryNameMonthMap) {
       nodeToStatement.getOrPut(treeNode) { mutableMapOf() }.putAll(monthToSummary)

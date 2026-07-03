@@ -81,7 +81,7 @@ class SummaryTest : DescribeSpec({
       }
 
       val startBalance1 = Balance(100, LocalDate(2026, 4, 1), Balance.Type.CONFIRMED)
-      val stmt1 = SummaryStatementBuilder.builder {
+      val stmt1 = MonthSummaryStatementBuilder.builder {
         treeNode = tree[listOf("john", "internal")]
         monthRange = APR / 2026..APR / 2026
         addStatement(
@@ -94,7 +94,7 @@ class SummaryTest : DescribeSpec({
         )
       }
       val startBalance2 = Balance(200, LocalDate(2026, 5, 1), Balance.Type.CONFIRMED)
-      val stmt2 = SummaryStatementBuilder.builder {
+      val stmt2 = MonthSummaryStatementBuilder.builder {
         treeNode = tree[listOf("john", "internal")]
         monthRange = MAY / 2026..MAY / 2026
         addStatement(

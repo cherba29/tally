@@ -7,10 +7,10 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
 
-class SummaryStatementBuilderTest : DescribeSpec({
+class MonthSummaryStatementBuilderTest : DescribeSpec({
   describe("Creation") {
     it("basic") {
-      val builder = SummaryStatementBuilder()
+      val builder = MonthSummaryStatementBuilder()
       builder.build(root {}).isEmpty() shouldBe true
     }
   }
@@ -23,7 +23,7 @@ class SummaryStatementBuilderTest : DescribeSpec({
           }
         }
       }
-      val builder = SummaryStatementBuilder()
+      val builder = MonthSummaryStatementBuilder()
       builder.addStatement(
         statement = Statement(
           tree[listOf("john", "internal", "test-account")]!!,
@@ -55,7 +55,7 @@ class SummaryStatementBuilderTest : DescribeSpec({
         }
       }
 
-      val aggregator = SummaryStatementBuilder()
+      val aggregator = MonthSummaryStatementBuilder()
       aggregator.addStatement(
         statement = Statement(
           tree[listOf("john", "internal", "test-account")]!!,
@@ -101,7 +101,7 @@ class SummaryStatementBuilderTest : DescribeSpec({
       }
     }
 
-    val aggregator = SummaryStatementBuilder()
+    val aggregator = MonthSummaryStatementBuilder()
     aggregator.addStatement(
       statement = Statement(
         tree[listOf("john", "internal", "test-account1")]!!,

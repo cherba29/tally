@@ -33,7 +33,7 @@ fun combineSummaryStatements(summaryTreeNode: TreeNode, summaryStatements: Map<M
     }
   }
   // Combine all statements as sub-statements of new parent summary statement.
-  return SummaryStatementBuilder.builder {
+  return MonthSummaryStatementBuilder.builder {
     treeNode = summaryTreeNode
     this.monthRange = monthRange
     for ((stmtTreeNode, monthStatementMap) in nodeMonthStatementMap) {
