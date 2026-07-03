@@ -14,7 +14,7 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate
 
-class SummaryTest : DescribeSpec({
+class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
   describe("combineSummaryStatements") {
     it("empty") {
       val exception = shouldThrow<IllegalArgumentException> {
