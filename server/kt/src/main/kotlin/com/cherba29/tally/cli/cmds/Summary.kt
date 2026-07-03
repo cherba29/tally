@@ -50,7 +50,7 @@ class Summary : CliktCommand() {
       if (summaryStatements.size == 1)
         summaryStatements.first()
       else
-        combineSummaryStatements(payload.tree, summaryNode.path, summaryStatements)
+        combineSummaryStatements(summaryNode, summaryStatements)
 
     echo("name: ${summary.treeNode.path.joinToString("/")}")
     echo("month: ${summary.monthRange}")

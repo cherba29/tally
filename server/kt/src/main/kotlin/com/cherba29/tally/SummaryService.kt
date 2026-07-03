@@ -10,6 +10,7 @@ import com.cherba29.tally.statement.SummaryStatement
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlin.text.get
 import kotlin.time.measureTimedValue
 import kotlinx.coroutines.runBlocking
 
@@ -44,7 +45,7 @@ class SummaryService(val loader: Loader) : Query {
           if (summaryStatements.size == 1)
             summaryStatements.first()
           else
-            combineSummaryStatements(budget.tree, summaryPath, summaryStatements)
+            combineSummaryStatements(summaryNode, summaryStatements)
 
         summary.toGqlSummaryData()
       } catch (e: Exception) {

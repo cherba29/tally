@@ -18,7 +18,7 @@ class SummaryTest : DescribeSpec({
   describe("combineSummaryStatements") {
     it("empty") {
       val exception = shouldThrow<IllegalArgumentException> {
-        combineSummaryStatements(root {}, listOf(), summaryStatements = listOf())
+        combineSummaryStatements(root {}, summaryStatements = listOf())
       }
       exception.message shouldBe "Cant combine empty list of summary statements"
     }
@@ -35,7 +35,7 @@ class SummaryTest : DescribeSpec({
         monthRange = APR / 2026..MAY / 2026
 
       )
-      val result = combineSummaryStatements(tree, listOf("john"),listOf(summaryStatement))
+      val result = combineSummaryStatements(tree["john"]!!,listOf(summaryStatement))
       result.treeNode.path shouldBe listOf("john")
       result.monthRange shouldBe APR / 2026..MAY / 2026
       result.totalPayments shouldBe 0
@@ -64,7 +64,7 @@ class SummaryTest : DescribeSpec({
         monthRange = MAY / 2026..MAY / 2026
 
       )
-      val result = combineSummaryStatements(tree, listOf("john"), listOf(stmt1, stmt2))
+      val result = combineSummaryStatements(tree["john"]!!, listOf(stmt1, stmt2))
       result.treeNode.path shouldBe listOf("john")
       result.monthRange shouldBe APR / 2026..MAY / 2026
       result.totalPayments shouldBe 0
@@ -106,7 +106,7 @@ class SummaryTest : DescribeSpec({
         )
       }
       val exception = shouldThrow<IllegalArgumentException> {
-        combineSummaryStatements(tree, listOf("john"), listOf(stmt1, stmt2))
+        combineSummaryStatements(tree["john"]!!, listOf(stmt1, stmt2))
       }
       exception.message shouldBe "Duplicate month statement for test-account1 for Apr2026..Apr2026"
     }
@@ -143,7 +143,7 @@ class SummaryTest : DescribeSpec({
           )
         )
       }
-      val result = combineSummaryStatements(tree, listOf("john"), listOf(stmt1, stmt2))
+      val result = combineSummaryStatements(tree["john"]!!, listOf(stmt1, stmt2))
       result.treeNode.path shouldBe listOf("john")
       result.monthRange shouldBe APR / 2026..MAY / 2026
       result.totalPayments shouldBe 0

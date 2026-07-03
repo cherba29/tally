@@ -12,7 +12,7 @@ import kotlin.collections.iterator
 /**
  * Creates parent summary statement containing all provided summary statements
  */
-fun combineSummaryStatements(tree: TreeNode, summaryPath: List<String>, summaryStatements: List<SummaryStatement>): SummaryStatement {
+fun combineSummaryStatements(summaryTreeNode: TreeNode, summaryStatements: List<SummaryStatement>): SummaryStatement {
   require(summaryStatements.isNotEmpty()) { "Cant combine empty list of summary statements" }
   var monthRange: MonthRange = summaryStatements.first().monthRange
   // Map of 'treeNode' -> month -> 'summary statement'.
@@ -33,7 +33,7 @@ fun combineSummaryStatements(tree: TreeNode, summaryPath: List<String>, summaryS
   }
   // Combine all statements as sub-statements of new parent summary statement.
   return SummaryStatementBuilder.builder {
-    treeNode = tree[summaryPath]!!
+    treeNode = summaryTreeNode
     this.monthRange = monthRange
     for ((stmtTreeNode, monthStatementMap) in nodeMonthStatementMap) {
       // Combine all statements for a given account over all months in the range.
