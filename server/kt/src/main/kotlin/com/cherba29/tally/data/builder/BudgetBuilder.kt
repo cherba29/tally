@@ -72,8 +72,10 @@ class BudgetBuilder(
     for (transferRecord in transferRecordList) {
       val toAccounts = pathToAccount.keys.filter { it.last() == transferRecord.toAccountName }
       if (toAccounts.isEmpty()) {
-        throw IllegalArgumentException("Unknown account ${transferRecord.toAccountName}, " +
-            "known accounts [${pathToAccount.keys.joinToString { it.joinToString("/") }}]")
+        throw IllegalArgumentException(
+          "Unknown to account ${transferRecord.toAccountName} in " +
+              "${transferRecord.fromAccountPath.joinToString("/")}, " +
+            "known accounts\n${treeRoot.toPrettyString()}")
       } else if (toAccounts.size > 1) {
         throw IllegalArgumentException(
           "Ambiguous transfer from ${transferRecord.fromAccountPath.joinToString("/")} to ${transferRecord.toAccountName}, " +

@@ -171,7 +171,13 @@ class BudgetBuilderTest : DescribeSpec({
         )
       }
     }
-    exception.message shouldBe "Unknown account test-account1, known accounts [bob/test-account2]"
+    exception.message shouldBe """
+      Unknown to account test-account1 in bob/test-account2, known accounts
+      └── 
+          └── bob
+              └── test-account2
+
+    """.trimIndent()
   }
 
   it("build budget - bad from account") {
@@ -292,7 +298,14 @@ class BudgetBuilderTest : DescribeSpec({
               )
             }
           }
-        exception.message shouldBe "Unknown account test-account2, known accounts [john/external/test-account1]"
+        exception.message shouldBe """
+          Unknown to account test-account2 in john/external/test-account1, known accounts
+          └── 
+              └── john
+                  └── external
+                      └── test-account1
+
+        """.trimIndent()
       }
 
       it("two accounts with common owner and transfers") {

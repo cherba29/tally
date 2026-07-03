@@ -6,7 +6,7 @@ import com.cherba29.tally.core.MonthName.DEC
 import com.cherba29.tally.data.builder.budget
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 
 class TransactionTest : DescribeSpec({
   describe("Build") {
@@ -32,7 +32,7 @@ class TransactionTest : DescribeSpec({
             )
           }
         }
-      exception.message shouldBe "Unknown account test-account2, known accounts [john/external/test-account1]"
+      exception.message shouldContain "Unknown to account test-account2"
     }
   }
 })
