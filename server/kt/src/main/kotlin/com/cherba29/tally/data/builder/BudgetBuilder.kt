@@ -135,9 +135,6 @@ class BudgetBuilder(
       }
       transactionStatementTable
     }
-    logger.info {
-      "Done building ${transactionStatementTable.size} transaction statements in ${elapsedTransactionTime}ms"
-    }
 
     val (summaryNameMonthMap, elapsedBuildSummaryStatements) = timeSource.measureTimedValue {
       val summaryStatementBuilder = SummaryStatementBuilder()
@@ -151,13 +148,11 @@ class BudgetBuilder(
     }
     val numSummaryStatements = summaryNameMonthMap.size
     logger.info {
-      "Done building $numSummaryStatements summary statements in $elapsedBuildSummaryStatements"
-    }
-    // TODO: Show all timing info in one log line.
-    logger.info {
-      "Done reprocessing ${leafToAccount.size} file(s) ${transactionStatementTable.size} tran statements and $numSummaryStatements summaries in ${
-        elapsedBudgetTime + elapsedTransactionTime + elapsedBuildSummaryStatements
-      }"
+        "Build ${leafToAccount.size} accounts, " +
+        "transfers in $elapsedBudgetTime, " +
+        "${transactionStatementTable.size} transactions in $elapsedTransactionTime, " +
+        "$numSummaryStatements summaries in $elapsedBuildSummaryStatements, " +
+        "total in ${elapsedBudgetTime + elapsedTransactionTime + elapsedBuildSummaryStatements}"
     }
 
     return Budget(
