@@ -3,7 +3,7 @@ package com.cherba29.tally
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.rangeTo
 import com.cherba29.tally.data.Loader
-import com.cherba29.tally.data.builder.combineSummaryStatements
+import com.cherba29.tally.data.builder.MonthRangeSummaryStatementBuilder
 import com.cherba29.tally.schema.GqlSummaryData
 import com.cherba29.tally.schema.toGqlSummaryData
 import com.cherba29.tally.statement.SummaryStatement
@@ -43,9 +43,13 @@ class SummaryService(val loader: Loader) : Query {
         val summary =
           if (summaryStatements.size == 1)
             summaryStatements.entries.first().value
-          else
-            combineSummaryStatements(summaryNode, summaryStatements)
-
+          else {
+            val builder = MonthRangeSummaryStatementBuilder()
+            for ((month, stmt) in summaryStatements) {
+              builder.addStatement(month, stmt)
+            }
+            builder.build(summaryNode)
+          }
         summary.toGqlSummaryData()
       } catch (e: Exception) {
         logger.error(e) {

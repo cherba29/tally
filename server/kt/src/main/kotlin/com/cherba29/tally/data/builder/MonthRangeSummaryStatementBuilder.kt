@@ -7,22 +7,19 @@ import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.plus
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
-
 import kotlin.collections.iterator
 
 /**
  * Creates parent summary statement containing all provided summary statements
  */
-fun combineSummaryStatements(summaryTreeNode: TreeNode, summaryStatements: Map<Month, SummaryStatement>): SummaryStatement {
-  require(summaryStatements.isNotEmpty()) { "Cant combine empty list of summary statements" }
-  var monthRange: MonthRange = summaryStatements.entries.first().value.monthRange
+class MonthRangeSummaryStatementBuilder {
+  var accumulatedMonthRange: MonthRange? = null
   // Map of 'treeNode' -> month -> 'summary statement'.
   val nodeMonthStatementMap = mutableMapOf<TreeNode, MutableMap<Month, Statement>>()
 
-  // Map all sub-statements by month, and find max monthly range.
-  for ((month, summaryStmt) in summaryStatements) {
-    monthRange += month
-    for (stmt in summaryStmt.statements) {
+  fun addStatement(month: Month, stmt: SummaryStatement) {
+    accumulatedMonthRange += month
+    for (stmt in stmt.statements) {
       val accountMonthlyStatements = nodeMonthStatementMap.getOrPut(stmt.treeNode) {
         mutableMapOf()
       }
@@ -32,57 +29,62 @@ fun combineSummaryStatements(summaryTreeNode: TreeNode, summaryStatements: Map<M
       }
     }
   }
-  // Combine all statements as sub-statements of new parent summary statement.
-  return MonthSummaryStatementBuilder.builder {
-    treeNode = summaryTreeNode
-    this.monthRange = monthRange
-    for ((stmtTreeNode, monthStatementMap) in nodeMonthStatementMap) {
-      // Combine all statements for a given account over all months in the range.
-      val stmt = makeSummaryStatementFromSubstatements(stmtTreeNode, monthRange,monthStatementMap)
-      addStatement(stmt)
+
+  fun build(summaryTreeNode: TreeNode): SummaryStatement {
+    require(accumulatedMonthRange != null ) { "Cant combine empty list of summary statements" }
+    return MonthSummaryStatementBuilder.builder {
+      treeNode = summaryTreeNode
+      monthRange = accumulatedMonthRange
+      for ((stmtTreeNode, monthStatementMap) in nodeMonthStatementMap) {
+        // Combine all statements for a given account over all months in the range.
+        val stmt = makeSummaryStatementFromSubstatements(stmtTreeNode, monthRange!!,monthStatementMap)
+        addStatement(stmt)
+      }
     }
   }
-}
 
-internal fun makeSummaryStatementFromSubstatements(
-  treeNode: TreeNode,
-  monthRange: MonthRange,
-  statements: Map<Month, Statement>
-): Statement {
-  val combined = Statement(treeNode, monthRange)
-  for (currentMonth in monthRange) {
-    val stmt = statements[currentMonth]
-      ?: Statement(treeNode, currentMonth..currentMonth)
-    setStatementBalance(
-      currentMonth,
-      stmt,
-      statements[currentMonth.previous()],
-      statements[currentMonth.next()]
-    )
-    combined.startBalance = Balance.pickMinDate(combined.startBalance, stmt.startBalance)
-    combined.endBalance = Balance.pickMaxDate(combined.endBalance, stmt.endBalance)
-    combined.inFlows += stmt.inFlows
-    combined.outFlows += stmt.outFlows
-    combined.totalTransfers += stmt.totalTransfers
-    combined.totalPayments += stmt.totalPayments
-    combined.income += stmt.income
-  }
-  return combined
-}
+  companion object {
+    internal fun makeSummaryStatementFromSubstatements(
+      treeNode: TreeNode,
+      monthRange: MonthRange,
+      statements: Map<Month, Statement>
+    ): Statement {
+      val combined = Statement(treeNode, monthRange)
+      for (currentMonth in monthRange) {
+        val stmt = statements[currentMonth]
+          ?: Statement(treeNode, currentMonth..currentMonth)
+        setStatementBalance(
+          currentMonth,
+          stmt,
+          statements[currentMonth.previous()],
+          statements[currentMonth.next()]
+        )
+        combined.startBalance = Balance.pickMinDate(combined.startBalance, stmt.startBalance)
+        combined.endBalance = Balance.pickMaxDate(combined.endBalance, stmt.endBalance)
+        combined.inFlows += stmt.inFlows
+        combined.outFlows += stmt.outFlows
+        combined.totalTransfers += stmt.totalTransfers
+        combined.totalPayments += stmt.totalPayments
+        combined.income += stmt.income
+      }
+      return combined
+    }
 
-private fun setStatementBalance(
-  month: Month,
-  currStmt: Statement,
-  prevStmt: Statement?,
-  nextStmt: Statement?
-): Statement {
-  if (currStmt.startBalance == null) {
-    currStmt.startBalance = prevStmt?.endBalance
-      ?: Balance(0, month.toDate(), Balance.Type.PROJECTED)
+    private fun setStatementBalance(
+      month: Month,
+      currStmt: Statement,
+      prevStmt: Statement?,
+      nextStmt: Statement?
+    ): Statement {
+      if (currStmt.startBalance == null) {
+        currStmt.startBalance = prevStmt?.endBalance
+          ?: Balance(0, month.toDate(), Balance.Type.PROJECTED)
+      }
+      if (currStmt.endBalance == null) {
+        currStmt.endBalance = nextStmt?.startBalance
+          ?: Balance(0, month.toDate(), Balance.Type.PROJECTED)
+      }
+      return currStmt
+    }
   }
-  if (currStmt.endBalance == null) {
-    currStmt.endBalance = nextStmt?.startBalance
-      ?: Balance(0, month.toDate(), Balance.Type.PROJECTED)
-  }
-  return currStmt
 }

@@ -3,7 +3,7 @@ package com.cherba29.tally.cli.cmds
 import com.cherba29.tally.NotFoundException
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.data.Loader
-import com.cherba29.tally.data.builder.combineSummaryStatements
+import com.cherba29.tally.data.builder.MonthRangeSummaryStatementBuilder
 import com.cherba29.tally.statement.SummaryStatement
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
@@ -49,9 +49,13 @@ class Summary : CliktCommand() {
     val summary =
       if (summaryStatements.size == 1)
         summaryStatements.entries.first().value
-      else
-        combineSummaryStatements(summaryNode, summaryStatements)
-
+      else {
+        val builder = MonthRangeSummaryStatementBuilder()
+        for ((month, stmt) in summaryStatements) {
+          builder.addStatement(month, stmt)
+        }
+        builder.build(summaryNode)
+      }
     echo("name: ${summary.treeNode.path.joinToString("/")}")
     echo("month: ${summary.monthRange}")
     echo("addSub: ${summary.addSub.asAmount()}")

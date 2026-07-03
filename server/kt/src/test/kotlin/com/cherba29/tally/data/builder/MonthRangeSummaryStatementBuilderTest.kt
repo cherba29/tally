@@ -17,8 +17,9 @@ import kotlinx.datetime.LocalDate
 class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
   describe("combineSummaryStatements") {
     it("empty") {
+      val builder = MonthRangeSummaryStatementBuilder()
       val exception = shouldThrow<IllegalArgumentException> {
-        combineSummaryStatements(root {}, summaryStatements = mapOf())
+        builder.build(root {})
       }
       exception.message shouldBe "Cant combine empty list of summary statements"
     }
@@ -35,9 +36,11 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
         monthRange = APR / 2026..MAY / 2026
 
       )
-      val result = combineSummaryStatements(tree["john"]!!,mapOf(APR / 2026 to summaryStatement))
+      val builder = MonthRangeSummaryStatementBuilder()
+      builder.addStatement(APR / 2026, summaryStatement)
+      val result = builder.build(tree["john"]!!)
       result.treeNode.path shouldBe listOf("john")
-      result.monthRange shouldBe APR / 2026..MAY / 2026
+      result.monthRange shouldBe APR / 2026..APR / 2026
       result.totalPayments shouldBe 0
       result.totalTransfers shouldBe 0
       result.statements shouldBe listOf()
@@ -64,7 +67,10 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
         monthRange = MAY / 2026..MAY / 2026
 
       )
-      val result = combineSummaryStatements(tree["john"]!!, mapOf(APR / 2026 to stmt1, MAY / 2026 to stmt2))
+      val builder = MonthRangeSummaryStatementBuilder()
+      builder.addStatement(APR / 2026, stmt1)
+      builder.addStatement(MAY / 2026, stmt2)
+      val result = builder.build(tree["john"]!!)
       result.treeNode.path shouldBe listOf("john")
       result.monthRange shouldBe APR / 2026..MAY / 2026
       result.totalPayments shouldBe 0
@@ -106,7 +112,10 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
           )
         )
       }
-      val result = combineSummaryStatements(tree["john"]!!, mapOf(APR / 2026 to stmt1, MAY / 2026 to stmt2))
+      val builder = MonthRangeSummaryStatementBuilder()
+      builder.addStatement(APR / 2026, stmt1)
+      builder.addStatement(MAY / 2026, stmt2)
+      val result = builder.build(tree["john"]!!)
       result.treeNode.path shouldBe listOf("john")
       result.monthRange shouldBe APR / 2026..MAY / 2026
       result.totalPayments shouldBe 0
@@ -154,7 +163,7 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
         }
       }
 
-      val combined = makeSummaryStatementFromSubstatements(
+      val combined = MonthRangeSummaryStatementBuilder.makeSummaryStatementFromSubstatements(
         tree[listOf("john", "internal", "test-account1")]!!,
         JAN / 2026..MAR / 2026,
         statements = mapOf()
@@ -185,7 +194,7 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
           type = Balance.Type.CONFIRMED
         )
       )
-      val combined = makeSummaryStatementFromSubstatements(
+      val combined = MonthRangeSummaryStatementBuilder.makeSummaryStatementFromSubstatements(
         tree[listOf("john", "internal", "test-account1")]!!,
         startMonth..MAR / 2026,
         statements = mapOf(startMonth to statement)
