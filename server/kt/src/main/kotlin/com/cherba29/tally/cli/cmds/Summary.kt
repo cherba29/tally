@@ -38,7 +38,7 @@ class Summary : CliktCommand() {
 
     val monthRange = startMonth..endMonth
 
-    val summaryStatements = payload.nodeToStatement[summaryNode]!!.filter { it.key in monthRange }.values.map { it as SummaryStatement }
+    val summaryStatements = payload.nodeToStatement[summaryNode]!!.filter { it.key in monthRange }.mapValues { it.value as SummaryStatement }
     if (summaryStatements.isEmpty()) {
       throw NotFoundException(
         "Summary '$account' for months [$startMonth, $endMonth] not found."
@@ -48,7 +48,7 @@ class Summary : CliktCommand() {
     // but for single month we can simply return found single summary.
     val summary =
       if (summaryStatements.size == 1)
-        summaryStatements.first()
+        summaryStatements.entries.first().value
       else
         combineSummaryStatements(summaryNode, summaryStatements)
 

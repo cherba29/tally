@@ -38,6 +38,7 @@ open class Statement(
 ) {
   val addSub: Long
     get() = inFlows + outFlows
+
   val change: Long? get() = startBalance?.let { s ->
     endBalance?.let { e -> e.amount - s.amount }
   }

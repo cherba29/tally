@@ -10,7 +10,6 @@ import com.cherba29.tally.statement.SummaryStatement
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlin.text.get
 import kotlin.time.measureTimedValue
 import kotlinx.coroutines.runBlocking
 
@@ -33,7 +32,7 @@ class SummaryService(val loader: Loader) : Query {
         val summaryNode = budget.tree[summaryPath]
           ?: throw NotFoundException("Summary '$accountType' for owner '$owner' not found.")
         val monthRange = startMonth..endMonth
-        val summaryStatements = budget.nodeToStatement[summaryNode]!!.filter { it.key in monthRange }.values.map { it as SummaryStatement }
+        val summaryStatements = budget.nodeToStatement[summaryNode]!!.filter { it.key in monthRange }.mapValues { it.value as SummaryStatement }
         if (summaryStatements.isEmpty()) {
           throw NotFoundException(
             "Summary '$accountType' for owner '$owner' for months [$startMonth, $endMonth] not found."
@@ -43,7 +42,7 @@ class SummaryService(val loader: Loader) : Query {
         // but for single month we can simply return found single summary.
         val summary =
           if (summaryStatements.size == 1)
-            summaryStatements.first()
+            summaryStatements.entries.first().value
           else
             combineSummaryStatements(summaryNode, summaryStatements)
 
