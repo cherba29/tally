@@ -20,7 +20,9 @@ class MonthSummaryStatementBuilder {
   fun build(): SummaryStatement {
     require(treeNode != null) { "summary build failed: treeNode is not set"}
     require(statements.isNotEmpty()) { "summary build failed: no statements have been added"}
-    var monthRange: MonthRange? = null
+    val monthRanges = statements.map { it.monthRange }.toSet()
+    require(monthRanges.size == 1) { "summary build failed: statements for different months provided"}
+    val monthRange: MonthRange = monthRanges.first()
     var startBalance: Balance? = null
     var endBalance: Balance? = null
     var inFlows: Long = 0
@@ -30,8 +32,6 @@ class MonthSummaryStatementBuilder {
     var income: Long = 0
 
     for (statement in statements) {
-      monthRange = monthRange.enlargeTo(statement.monthRange)
-
       startBalance += statement.startBalance
       endBalance += statement.endBalance
       inFlows += statement.inFlows
@@ -43,7 +43,7 @@ class MonthSummaryStatementBuilder {
 
     return SummaryStatement(
       treeNode!!,
-      monthRange!!,
+      monthRange,
       statements.any { statement -> statement.isClosed },
       startBalance,
       endBalance,

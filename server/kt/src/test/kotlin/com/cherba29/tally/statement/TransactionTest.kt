@@ -25,8 +25,7 @@ class TransactionTest : DescribeSpec({
             addTransfer(
               fromAccountPath = path1,
               toAccountName = "test-account2",
-              toMonth = DEC / 2019,
-              fromMonth = DEC / 2019,
+              month = DEC / 2019,
               balance = Balance.projected(2000, "2019-12-05"),
               description = "First transfer",
             )

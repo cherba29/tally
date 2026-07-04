@@ -24,9 +24,8 @@ class BudgetBuilder(
   private var monthRange: MonthRange? = null
   data class TransferRecord(
     val toAccountName: String,  // Full path is unknown at time of record.
-    val toMonth: Month,
     val fromAccountPath: List<String>,
-    val fromMonth: Month,
+    val month: Month,
     val balance: Balance,
     val description: String?,
   )
@@ -56,14 +55,12 @@ class BudgetBuilder(
    * Add a record of transfer from given account to potentially yet unknown account name.
    */
   fun addTransfer(fromAccountPath: List<String>,
-                  fromMonth: Month,
                   toAccountName: String,
-                  toMonth: Month,
+                  month: Month,
                   balance: Balance,
                   description: String?) {
-    transferRecordList.add(TransferRecord(toAccountName, toMonth, fromAccountPath, fromMonth, balance, description))
-    monthRange += toMonth
-    monthRange += fromMonth
+    transferRecordList.add(TransferRecord(toAccountName, fromAccountPath, month, balance, description))
+    monthRange += month
   }
 
   private fun buildTransfers(treeRoot: TreeNode): MutableMap<TreeNode.Leaf, MutableMap<Month, MutableList<Transfer>>> {
@@ -92,7 +89,7 @@ class BudgetBuilder(
       val toOwner = toAccount.top.name
       if (fromOwner != toOwner) {
         logger.warn {
-          "WARNING: Transaction ${transferRecord.fromMonth} -> ${transferRecord.toMonth} has " +
+          "WARNING: Transaction in ${transferRecord.month} has " +
               "to account ${toAccount.name} from ${fromAccount.name} with different owners " +
               "$fromOwner vs $toOwner"
         }
@@ -101,15 +98,12 @@ class BudgetBuilder(
       val transfer = Transfer(
         fromAccount,
         toAccount,
-        transferRecord.fromMonth,
-        transferRecord.toMonth,
+        transferRecord.month,
         transferRecord.description,
         transferRecord.balance
       )
-      val toMonthTransfers = getMonthTransfers(budgetTransfers,toAccount, transferRecord.toMonth)
-      toMonthTransfers.add(transfer)
-      val fromMonthTransfers = getMonthTransfers(budgetTransfers,fromAccount, transferRecord.fromMonth)
-      fromMonthTransfers.add(transfer)
+      budgetTransfers.get(toAccount, transferRecord.month).add(transfer)
+      budgetTransfers.get(fromAccount, transferRecord.month).add(transfer)
     }
     return budgetTransfers
   }
@@ -169,18 +163,11 @@ class BudgetBuilder(
 
   companion object {
     private val logger = KotlinLogging.logger {}
-
-    private fun <T> getMonthTransfers(
-      transfers: MutableMap<TreeNode.Leaf, MutableMap<Month, MutableList<T>>>,
-      leafTreeNode: TreeNode.Leaf,
-      month: Month
-    ): MutableList<T> {
-      val accountTransfers = transfers.getOrPut(leafTreeNode) { mutableMapOf() }
-      val monthTransfers = accountTransfers.getOrPut(month) { mutableListOf() }
-      return monthTransfers
-    }
-
   }
+}
+
+private fun <K1, K2, V> MutableMap<K1, MutableMap<K2, MutableList<V>>>.get(k1: K1, k2: K2): MutableList<V> {
+  return getOrPut(k1) { mutableMapOf() }.getOrPut(k2) { mutableListOf() }
 }
 
 fun budget(block: BudgetBuilder.()->Unit): Budget {

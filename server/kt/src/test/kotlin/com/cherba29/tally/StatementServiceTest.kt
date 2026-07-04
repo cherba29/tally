@@ -108,7 +108,6 @@ class StatementServiceTest : DescribeSpec({
           )
           addTransfer(
             listOf("john", "internal", "test-account2"),
-            MAR / 2026,
             "test-account1",
             MAR / 2026,
             Balance(

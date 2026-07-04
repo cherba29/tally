@@ -121,16 +121,14 @@ class TransactionTableBuilderTest : DescribeSpec({
       val firstTransfer1to2 = Transfer(
         fromAccount = tree[path1] as TreeNode.Leaf,
         toAccount = tree[path2] as TreeNode.Leaf,
-        fromMonth = DEC / 2019,
-        toMonth = DEC / 2019,
+        month = DEC / 2019,
         description = "First transfer",
         balance = Balance.projected(2000, "2019-12-05")
       )
       val secondTransfer1to2 = Transfer(
         fromAccount = tree[path1] as TreeNode.Leaf,
         toAccount = tree[path2] as TreeNode.Leaf,
-        fromMonth = DEC / 2019,
-        toMonth = DEC / 2019,
+        month = DEC / 2019,
         description = "Second transfer",
         balance = Balance.projected(1000, "2019-12-05")
       )
@@ -180,16 +178,14 @@ class TransactionTableBuilderTest : DescribeSpec({
       val firstTransfer1to2 = Transfer(
         fromAccount = node1,
         toAccount = node2,
-        fromMonth = DEC / 2019,
-        toMonth = DEC / 2019,
+        month = DEC / 2019,
         description = "First transfer",
         balance = Balance.projected(2000, "2019-12-05")
       )
       val secondTransfer1to2 = Transfer(
         fromAccount = node1,
         toAccount = node2,
-        fromMonth = DEC / 2019,
-        toMonth = DEC / 2019,
+        month = DEC / 2019,
         description = "Second transfer",
         balance = Balance.projected(1000, "2019-12-05")
       )
@@ -250,8 +246,7 @@ class TransactionTableBuilderTest : DescribeSpec({
             Transfer(
               fromAccount = node1,
               toAccount = node2,
-              fromMonth = DEC / 2019,
-              toMonth = DEC / 2019,
+              month = DEC / 2019,
               description = "First transfer",
               balance = Balance.projected(2000, "2019-12-05")
             ),
@@ -325,16 +320,14 @@ class TransactionTableBuilderTest : DescribeSpec({
       val transfer1to2 = Transfer(
         fromAccount = node1,
         toAccount = node2,
-        fromMonth = DEC / 2019,
-        toMonth = DEC / 2019,
+        month = DEC / 2019,
         description = "First transfer",
         balance = Balance.projected(2000, "2019-12-05")
       )
       val transfer1to3 = Transfer(
         fromAccount = node1,
         toAccount = node3,
-        fromMonth = DEC / 2019,
-        toMonth = DEC / 2019,
+        month = DEC / 2019,
         description = "Second transfer",
         balance = Balance.projected(1000, "2019-12-05")
       )

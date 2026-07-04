@@ -89,9 +89,8 @@ class SummaryServiceTest : DescribeSpec({
           setBalance(listOf("john", "internal", "test-account2"), MAR / 2026, Balance.confirmed(200, "2026-03-01"))
           addTransfer(
             fromAccountPath = listOf("john", "internal", "test-account1"),
-            fromMonth = MAR / 2026,
             toAccountName = "test-account2",
-            toMonth = MAR / 2026,
+            month = MAR / 2026,
             balance = Balance.confirmed(50, "2026-03-02"),
             description = "transfer from 1 to 2"
           )
@@ -119,9 +118,8 @@ class SummaryServiceTest : DescribeSpec({
           setBalance(listOf("john", "external", "test-account2"), MAR / 2026, Balance.confirmed(200, "2026-03-01"))
           addTransfer(
             fromAccountPath = listOf("john", "internal", "test-account1"),
-            fromMonth = MAR / 2026,
             toAccountName = "test-account2",
-            toMonth = MAR / 2026,
+            month = MAR / 2026,
             balance = Balance.confirmed(50, "2026-04-02"),
             description = "transfer from 1 to 2"
           )
@@ -150,17 +148,15 @@ class SummaryServiceTest : DescribeSpec({
           setBalance(listOf("john", "external", "test-account2"), APR / 2026, Balance.confirmed(250, "2026-04-01"))
           addTransfer(
             fromAccountPath = listOf("john", "internal", "test-account1"),
-            fromMonth = MAR / 2026,
             toAccountName = "test-account2",
-            toMonth = MAR / 2026,
+            month = MAR / 2026,
             balance = Balance.confirmed(50, "2026-03-02"),
             description = "transfer from 1 to 2"
           )
           addTransfer(
             fromAccountPath = listOf("john", "external", "test-account2"),
-            fromMonth = APR / 2026,
             toAccountName = "test-account1",
-            toMonth = APR / 2026,
+            month = APR / 2026,
             balance = Balance.confirmed(75, "2026-04-02"),
             description = "transfer from 2 to 1"
           )
@@ -190,17 +186,15 @@ class SummaryServiceTest : DescribeSpec({
           setBalance(listOf("john", "external", "test-account2"), APR / 2026, Balance.confirmed(250, "2026-04-01"))
           addTransfer(
             fromAccountPath = listOf("john", "internal", "test-account1"),
-            fromMonth = MAR / 2026,
             toAccountName = "test-account2",
-            toMonth = MAR / 2026,
+            month = MAR / 2026,
             balance = Balance.confirmed(50, "2026-03-02"),
             description = "transfer from 1 to 2"
           )
           addTransfer(
             fromAccountPath = listOf("john", "external", "test-account2"),
-            fromMonth = APR / 2026,
             toAccountName = "test-account1",
-            toMonth = APR / 2026,
+            month = APR / 2026,
             balance = Balance.confirmed(75, "2026-04-02"),
             description = "transfer from 2 to 1"
           )

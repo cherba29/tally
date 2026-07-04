@@ -49,17 +49,15 @@ class BudgetBuilderTest : DescribeSpec({
       )
       addTransfer(
         toAccountName = "test-account1",
-        toMonth = NOV / 2019,
         fromAccountPath = listOf("john", "internal", "test-account2"),
-        fromMonth = NOV / 2019,
+        month = NOV / 2019,
         balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
         description = null
       )
       addTransfer(
         toAccountName = "test-account3",
-        toMonth = NOV / 2019,
         fromAccountPath = listOf("john", "internal", "test-account2"),
-        fromMonth = NOV / 2019,
+        month = NOV / 2019,
         balance = Balance(70, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
         description = null
       )
@@ -116,9 +114,8 @@ class BudgetBuilderTest : DescribeSpec({
         )
         addTransfer(
           toAccountName = "test-account1",
-          toMonth = NOV / 2019,
           fromAccountPath = path2,
-          fromMonth = NOV / 2019,
+          month = NOV / 2019,
           balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
           description = null
         )
@@ -157,9 +154,8 @@ class BudgetBuilderTest : DescribeSpec({
         setAccount(path2, account2)
         addTransfer(
           toAccountName = "test-account1",
-          toMonth = NOV / 2019,
           fromAccountPath = path2,
-          fromMonth = NOV / 2019,
+          month = NOV / 2019,
           balance = Balance(50, LocalDate(2019, 12, 2), Balance.Type.CONFIRMED),
           description = null,
         )
@@ -183,9 +179,8 @@ class BudgetBuilderTest : DescribeSpec({
         setAccount(path1, account1)
         addTransfer(
           toAccountName = "test-account1",
-          toMonth = NOV / 2019,
           fromAccountPath = path2,
-          fromMonth = NOV / 2019,
+          month = NOV / 2019,
           balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
           description = null,
         )
@@ -238,8 +233,7 @@ class BudgetBuilderTest : DescribeSpec({
               addTransfer(
                 fromAccountPath = path1,
                 toAccountName = "test-account2",
-                toMonth = DEC / 2019,
-                fromMonth = DEC / 2019,
+                month = DEC / 2019,
                 balance = Balance.projected(2000, "2019-12-05"),
                 description = "First transfer",
               )
@@ -268,8 +262,7 @@ class BudgetBuilderTest : DescribeSpec({
               addTransfer(
                 fromAccountPath = path1,
                 toAccountName = "test-account1",
-                toMonth = DEC / 2019,
-                fromMonth = DEC / 2019,
+                month = DEC / 2019,
                 balance = Balance.projected(2000, "2019-11-25"),
                 description = "First transfer",
               )

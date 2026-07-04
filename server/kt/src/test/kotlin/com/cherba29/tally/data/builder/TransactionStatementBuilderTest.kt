@@ -54,8 +54,7 @@ class TransactionStatementBuilderTest : DescribeSpec({
       val testTransfer = Transfer(
         fromAccount = testTreeLeafNode1,
         toAccount = testTreeLeafNode2,
-        fromMonth = JUL / 2026,
-        toMonth = JUL / 2026,
+        month = JUL / 2026,
         description = "test transfer",
         balance = testTransferBalance
       )
@@ -89,8 +88,7 @@ class TransactionStatementBuilderTest : DescribeSpec({
       val testTransfer = Transfer(
         fromAccount = testTreeLeafNode1,
         toAccount = testTreeLeafNode2,
-        fromMonth = JUL / 2026,
-        toMonth = JUL / 2026,
+        month = JUL / 2026,
         description = "test transfer",
         balance = testTransferBalance
       )
@@ -134,16 +132,14 @@ class TransactionStatementBuilderTest : DescribeSpec({
       val testTransferFrom = Transfer(
         fromAccount = testTreeLeafNode1,
         toAccount = testTreeLeafNode2,
-        fromMonth = JUL / 2026,
-        toMonth = JUL / 2026,
+        month = JUL / 2026,
         description = "test transfer",
         balance = testTransferBalance
       )
       val testTransferTo = Transfer(
         fromAccount = testTreeLeafNode2,
         toAccount = testTreeLeafNode1,
-        fromMonth = JUL / 2026,
-        toMonth = JUL / 2026,
+        month = JUL / 2026,
         description = "test transfer",
         balance = testTransferBalance
       )

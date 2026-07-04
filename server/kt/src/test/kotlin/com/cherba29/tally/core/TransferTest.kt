@@ -21,15 +21,13 @@ class TransferTest : DescribeSpec({
       val transfer = Transfer(
         fromAccount = tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf,
         toAccount = tree[listOf("john", "external", "test-account2")] as TreeNode.Leaf,
-        fromMonth = month,
-        toMonth = month,
+        month = month,
         description = "test",
         balance
       )
       transfer.fromAccount.name shouldBe "test-account1"
       transfer.toAccount.name shouldBe "test-account2"
-      transfer.fromMonth.toString() shouldBe "Feb2020"
-      transfer.toMonth.toString() shouldBe "Feb2020"
+      transfer.month.toString() shouldBe "Feb2020"
       transfer.balance.amount shouldBe 100L
       transfer.balance.date.toString() shouldBe "2020-02-03"
       transfer.description shouldBe "test"
@@ -50,16 +48,14 @@ class TransferTest : DescribeSpec({
       val transfer1 = Transfer(
         fromAccount = tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf,
         toAccount = tree[listOf("john", "external", "test-account2")] as TreeNode.Leaf,
-        fromMonth = month,
-        toMonth = month,
+        month = month,
         description = "test",
         balance
       )
       val transfer2 = Transfer(
         fromAccount = tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf,
         toAccount = tree[listOf("john", "external", "test-account2")] as TreeNode.Leaf,
-        fromMonth = month,
-        toMonth = month,
+        month = month,
         description = "test",
         balance
       )

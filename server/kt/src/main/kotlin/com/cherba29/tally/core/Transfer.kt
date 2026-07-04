@@ -3,8 +3,7 @@ package com.cherba29.tally.core
 data class Transfer(
   val fromAccount: TreeNode.Leaf,
   val toAccount: TreeNode.Leaf,
-  val fromMonth: Month,
-  val toMonth: Month,
+  val month: Month,
   val description: String?,
   val balance: Balance,
 ) : Comparable<Transfer> {
@@ -12,12 +11,10 @@ data class Transfer(
     var eq: Int = balance.compareTo(other.balance)
     return if (eq != 0) eq
     else {
-      eq = fromMonth.compareTo(other.fromMonth)
+      eq = month.compareTo(other.month)
       if (eq != 0) eq
       else {
-        eq = toMonth.compareTo(other.toMonth)
-        if (eq != 0) eq
-        else if (fromAccount.name != other.fromAccount.name) {
+        if (fromAccount.name != other.fromAccount.name) {
           if (fromAccount.name < other.fromAccount.name) -1 else 1
         } else if (toAccount.name != other.toAccount.name) {
           if (toAccount.name < other.toAccount.name) -1 else 1

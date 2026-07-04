@@ -50,9 +50,8 @@ class TableServiceTest : DescribeSpec({
         setAccount(accountPath2, account2)
         addTransfer(
           fromAccountPath = accountPath1,
-          fromMonth = MAR / 2026,
           toAccountName = "test-account2",
-          toMonth = MAR / 2026,
+          month = MAR / 2026,
           balance = Balance(
             amount = 100,
             date = LocalDate(2026, 3, 1),

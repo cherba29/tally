@@ -143,9 +143,8 @@ private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boole
 
           budgetBuilder.addTransfer(
             fromAccountPath = fullPath,
-            fromMonth = transferMonth,
             toAccountName = accountName,
-            toMonth = transferMonth,
+            month = transferMonth,
             balance = balance,
             description = transferData.desc,
           )
