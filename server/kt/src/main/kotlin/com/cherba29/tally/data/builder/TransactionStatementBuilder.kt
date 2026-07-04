@@ -31,7 +31,7 @@ class TransactionStatementBuilder {
       }
       transactionType
     }
-    val descTransfers = transfers?.sortedDescending() ?: listOf()
+    val descTransfers = transfers?.sorted() ?: listOf()
 
     val firstTransfer: Transfer? = descTransfers.lastOrNull()
     if (firstTransfer != null && startBalance != null && firstTransfer.balance.date < startBalance.date) {
@@ -42,6 +42,7 @@ class TransactionStatementBuilder {
       )
     }
 
+    var prevBalance = startBalance?.amount
     for (t in descTransfers) {
       statement.hasProjectedTransfer =
         statement.hasProjectedTransfer || t.balance.type == Balance.Type.PROJECTED
@@ -68,16 +69,18 @@ class TransactionStatementBuilder {
           statement.coversPrevious = true
         }
       }
-      statement.transactions.add(
-        Transaction(
-          treeNode = otherAccount,
-          description = t.description,
-          balance = balance,
-          type = transactionType,
-          balanceFromStart = null,
-        )
+      prevBalance = prevBalance?.plus(balance.amount)
+      val transaction = Transaction(
+        treeNode = otherAccount,
+        description = t.description,
+        balance = balance,
+        type = transactionType,
+        balanceFromStart = prevBalance,
       )
+      statement.transactions.add(transaction)
     }
+    // Transactions are displayed last at the top.
+    statement.transactions.reverse()
     return statement
   }
 

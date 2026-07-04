@@ -147,17 +147,18 @@ class TransactionStatementBuilderTest : DescribeSpec({
         description = "test transfer",
         balance = testTransferBalance
       )
+      val testStartBalance = Balance(1000, LocalDate(2026, 7, 1), Balance.Type.PROJECTED)
       val builder = TransactionStatementBuilder()
       val transactionStatement = builder.fromTransfers(
         leafTreeNode = testTreeLeafNode1,
         monthRange = testMonthRange,
         isClosed = false,
         transfers = listOf(testTransferFrom, testTransferTo),
-        startBalance = null
+        startBalance = testStartBalance
       )
       transactionStatement.treeNode shouldBe testTreeLeafNode1
       transactionStatement.monthRange shouldBe testMonthRange
-      transactionStatement.startBalance shouldBe null
+      transactionStatement.startBalance shouldBe testStartBalance
       transactionStatement.endBalance shouldBe null
       transactionStatement.change shouldBe null
       transactionStatement.transactions shouldBe listOf(
@@ -166,14 +167,14 @@ class TransactionStatementBuilderTest : DescribeSpec({
           balance = testTransferBalance,
           description = "test transfer",
           type = Transaction.Type.INCOME,
-          balanceFromStart = null
+          balanceFromStart = 1000
         ),
         Transaction(
           treeNode = testTreeLeafNode2,
           balance = -testTransferBalance,
           description = "test transfer",
           type = Transaction.Type.EXPENSE,
-          balanceFromStart = null
+          balanceFromStart = 900
         ),
       )
     }

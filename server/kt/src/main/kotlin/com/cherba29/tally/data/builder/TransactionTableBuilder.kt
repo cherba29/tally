@@ -50,13 +50,6 @@ class TransactionTableBuilder {
           statement.endBalance == null || statement.endBalance!!.amount >= 0 || nextMonthStatement.coversPrevious
         statement.isProjectedCovered = statement.isCovered || nextMonthStatement.coversProjectedPrevious
         nextMonthStatement = statement
-        if (statement.startBalance != null) {
-          var prevBalance = statement.startBalance!!.amount
-          for (t in statement.transactions.asReversed()) {
-            t.balanceFromStart = prevBalance + t.balance.amount
-            prevBalance = t.balanceFromStart!!
-          }
-        }
         accountStatements.add(statement)
       }
       // Do not include account if for all months it was closed.
