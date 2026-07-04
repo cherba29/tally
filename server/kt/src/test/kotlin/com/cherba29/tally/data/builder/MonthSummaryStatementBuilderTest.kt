@@ -27,54 +27,12 @@ class MonthSummaryStatementBuilderTest : DescribeSpec({
       error.message shouldBe "summary build failed: month range is not set"
     }
 
-    it("zero when empty with no statements") {
-      val testTree = root { }
-      val testMonthRange = JUL / 2026 .. JUL / 2026
-      val summary = MonthSummaryStatementBuilder.builder {
-        treeNode = testTree
-        monthRange = testMonthRange
-      }
-      summary.treeNode shouldBe testTree
-      summary.monthRange shouldBe testMonthRange
-      summary.statements shouldBe listOf()
-      summary.startBalance shouldBe null
-      summary.endBalance shouldBe null
-      summary.inFlows shouldBe 0
-      summary.outFlows shouldBe 0
-      summary.totalTransfers shouldBe 0
-      summary.totalPayments shouldBe 0
-      summary.income shouldBe 0
-    }
-
-    it("closed statements skipped") {
-      val testTree = root { }
-      val testMonthRange = JUL / 2026 .. JUL / 2026
-      val testStatement = Statement(testTree, testMonthRange, isClosed = true)
-      val summary = MonthSummaryStatementBuilder.builder {
-        treeNode = testTree
-        monthRange = testMonthRange
-        addStatement(testStatement)
-      }
-
-      summary.treeNode shouldBe testTree
-      summary.monthRange shouldBe testMonthRange
-      summary.statements shouldBe listOf()
-      summary.startBalance shouldBe null
-      summary.endBalance shouldBe null
-      summary.inFlows shouldBe 0
-      summary.outFlows shouldBe 0
-      summary.totalTransfers shouldBe 0
-      summary.totalPayments shouldBe 0
-      summary.income shouldBe 0
-    }
-
     it("with single zero statements") {
       val testTree = root { }
       val testMonthRange = JUL / 2026 .. JUL / 2026
       val testStatement = Statement(testTree, testMonthRange)
       val summary = MonthSummaryStatementBuilder.builder {
         treeNode = testTree
-        monthRange = testMonthRange
         addStatement(testStatement)
       }
 
@@ -108,7 +66,6 @@ class MonthSummaryStatementBuilderTest : DescribeSpec({
       )
       val summary = MonthSummaryStatementBuilder.builder {
         treeNode = testTree
-        monthRange = testMonthRange
         addStatement(testStatement)
       }
 

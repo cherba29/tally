@@ -34,10 +34,9 @@ class MonthRangeSummaryStatementBuilder {
     require(accumulatedMonthRange != null ) { "Cant combine empty list of summary statements" }
     return MonthSummaryStatementBuilder.builder {
       treeNode = summaryTreeNode
-      monthRange = accumulatedMonthRange
       for ((stmtTreeNode, monthStatementMap) in nodeMonthStatementMap) {
         // Combine all statements for a given account over all months in the range.
-        val stmt = makeSummaryStatementFromSubstatements(stmtTreeNode, monthRange!!,monthStatementMap)
+        val stmt = makeSummaryStatementFromSubstatements(stmtTreeNode, accumulatedMonthRange!!,monthStatementMap)
         addStatement(stmt)
       }
     }

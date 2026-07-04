@@ -11,13 +11,13 @@ class SummaryMapBuilder {
 
   // Adds statement to its immediate parent summary statement.
   fun addStatement(statement: Statement) {
+    if (statement.isClosed) return  // Does not contribute to the summary.
     val parent = statement.treeNode.parent!!
     summaryStatements.getOrPut(parent) {
       mutableMapOf()
     }.getOrPut(statement.monthRange.first) {
       val builder = MonthSummaryStatementBuilder()
       builder.treeNode = parent
-      builder.monthRange = statement.monthRange
       builder
     }.addStatement(statement)
   }
@@ -37,8 +37,17 @@ class SummaryMapBuilder {
             "$fullPath has no monthly statements. Available ${summaryStatements.keys}"
           )  // Should never happen.
 
-        for (monthlyStatement in monthlyStatements.values) {
-          addStatement(monthlyStatement.build())
+        for ((month, monthlyStatement) in monthlyStatements) {
+          addStatement(
+            try {
+              monthlyStatement.build()
+            } catch (e: Exception) {
+              throw IllegalStateException(
+                "Failed to build summary for ${node.path.joinToString("/")} for month $month",
+                e
+              )
+            }
+          )
         }
       }
     }

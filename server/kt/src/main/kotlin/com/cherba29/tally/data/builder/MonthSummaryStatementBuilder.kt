@@ -10,7 +10,7 @@ import com.cherba29.tally.statement.SummaryStatement
 
 class MonthSummaryStatementBuilder {
   var treeNode: TreeNode? = null
-  var monthRange: MonthRange? = null
+  private var monthRange: MonthRange? = null
   private var startBalance: Balance? = null
   private var endBalance: Balance? = null
   private var inFlows: Long = 0
@@ -22,8 +22,6 @@ class MonthSummaryStatementBuilder {
   private val statements: MutableList<Statement> = mutableListOf()
 
   fun addStatement(statement: Statement) {
-    if (statement.isClosed) return  // Does not contribute to the summary.
-
     monthRange = monthRange.enlargeTo(statement.monthRange)
 
     startBalance += statement.startBalance

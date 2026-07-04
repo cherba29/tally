@@ -31,10 +31,11 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
           }
         }
       }
+      val testStatement = Statement(tree[listOf("john", "external", "test-account1")]!!, APR / 2026..APR / 2026)
       val summaryStatement = SummaryStatement(
         tree[listOf("john", "external")]!!,
-        monthRange = APR / 2026..MAY / 2026
-
+        monthRange = APR / 2026..MAY / 2026,
+        statements = listOf(testStatement)
       )
       val builder = MonthRangeSummaryStatementBuilder()
       builder.addStatement(APR / 2026, summaryStatement)
@@ -43,7 +44,7 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
       result.monthRange shouldBe APR / 2026..APR / 2026
       result.totalPayments shouldBe 0
       result.totalTransfers shouldBe 0
-      result.statements shouldBe listOf()
+      result.statements shouldBe listOf(testStatement)
     }
     it("two node statements with different months") {
       val tree = root {
@@ -56,15 +57,17 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
           }
         }
       }
-
+      val testStatement1 = Statement(tree[listOf("john", "internal", "test-account1")]!!, APR / 2026..APR / 2026)
       val stmt1 = SummaryStatement(
         tree[listOf("john", "internal")]!!,
-        monthRange = APR / 2026..APR / 2026
-
+        monthRange = APR / 2026..APR / 2026,
+        statements = listOf(testStatement1)
       )
+      val testStatement2 = Statement(tree[listOf("john", "external", "test-account2")]!!, MAY / 2026..MAY / 2026)
       val stmt2 = SummaryStatement(
         tree[listOf("john", "external")]!!,
-        monthRange = MAY / 2026..MAY / 2026
+        monthRange = MAY / 2026..MAY / 2026,
+        statements = listOf(testStatement2)
 
       )
       val builder = MonthRangeSummaryStatementBuilder()
@@ -75,7 +78,11 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
       result.monthRange shouldBe APR / 2026..MAY / 2026
       result.totalPayments shouldBe 0
       result.totalTransfers shouldBe 0
-      result.statements shouldBe listOf()
+      result.statements.size shouldBe 2
+      val firstStmt = result.statements[0]
+      firstStmt.treeNode.path shouldBe listOf("john", "internal", "test-account1")
+      val secondStmt = result.statements[1]
+      secondStmt.treeNode.path shouldBe listOf("john", "external", "test-account2")
     }
     it("two node statements with substatements") {
       val tree = root {
@@ -89,7 +96,6 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
       val startBalance1 = Balance(100, LocalDate(2026, 4, 1), Balance.Type.CONFIRMED)
       val stmt1 = MonthSummaryStatementBuilder.builder {
         treeNode = tree[listOf("john", "internal")]
-        monthRange = APR / 2026..APR / 2026
         addStatement(
           TransactionStatement(
             tree[listOf("john", "internal", "test-account1")]!!,
@@ -102,7 +108,6 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
       val startBalance2 = Balance(200, LocalDate(2026, 5, 1), Balance.Type.CONFIRMED)
       val stmt2 = MonthSummaryStatementBuilder.builder {
         treeNode = tree[listOf("john", "internal")]
-        monthRange = MAY / 2026..MAY / 2026
         addStatement(
           TransactionStatement(
             tree[listOf("john", "internal", "test-account1")]!!,
