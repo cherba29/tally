@@ -37,8 +37,8 @@ class MonthSummaryStatementBuilder {
   }
 
   fun build(): SummaryStatement {
-    require(treeNode != null) { "build failed: treeNode is not set"}
-    require(monthRange != null)
+    require(treeNode != null) { "summary build failed: treeNode is not set"}
+    require(monthRange != null) { "summary build failed: month range is not set"}
     return SummaryStatement(
       treeNode!!,
       monthRange!!,
