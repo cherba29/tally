@@ -7,36 +7,40 @@ import com.cherba29.tally.core.enlargeTo
 import com.cherba29.tally.core.plus
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
+import kotlin.collections.plusAssign
 
 class MonthSummaryStatementBuilder {
   var treeNode: TreeNode? = null
-  private var monthRange: MonthRange? = null
-  private var startBalance: Balance? = null
-  private var endBalance: Balance? = null
-  private var inFlows: Long = 0
-  private var outFlows: Long = 0
-  private var totalTransfers: Long = 0
-  private var totalPayments: Long = 0
-  private var income: Long = 0
-
   private val statements: MutableList<Statement> = mutableListOf()
 
   fun addStatement(statement: Statement) {
-    monthRange = monthRange.enlargeTo(statement.monthRange)
-
-    startBalance += statement.startBalance
-    endBalance += statement.endBalance
-    inFlows += statement.inFlows
-    outFlows += statement.outFlows
-    totalTransfers += statement.totalTransfers
-    totalPayments += statement.totalPayments
-    income += statement.income
     statements.add(statement)
   }
 
   fun build(): SummaryStatement {
     require(treeNode != null) { "summary build failed: treeNode is not set"}
-    require(monthRange != null) { "summary build failed: month range is not set"}
+    require(statements.isNotEmpty()) { "summary build failed: no statements have been added"}
+    var monthRange: MonthRange? = null
+    var startBalance: Balance? = null
+    var endBalance: Balance? = null
+    var inFlows: Long = 0
+    var outFlows: Long = 0
+    var totalTransfers: Long = 0
+    var totalPayments: Long = 0
+    var income: Long = 0
+
+    for (statement in statements) {
+      monthRange = monthRange.enlargeTo(statement.monthRange)
+
+      startBalance += statement.startBalance
+      endBalance += statement.endBalance
+      inFlows += statement.inFlows
+      outFlows += statement.outFlows
+      totalTransfers += statement.totalTransfers
+      totalPayments += statement.totalPayments
+      income += statement.income
+    }
+
     return SummaryStatement(
       treeNode!!,
       monthRange!!,
@@ -51,7 +55,6 @@ class MonthSummaryStatementBuilder {
       statements
     )
   }
-
 
   companion object {
     fun builder(block: MonthSummaryStatementBuilder.() -> Unit): SummaryStatement {

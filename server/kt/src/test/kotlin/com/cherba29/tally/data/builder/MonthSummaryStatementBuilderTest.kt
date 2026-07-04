@@ -24,7 +24,7 @@ class MonthSummaryStatementBuilderTest : DescribeSpec({
           treeNode = root { }
         }
       }
-      error.message shouldBe "summary build failed: month range is not set"
+      error.message shouldBe "summary build failed: no statements have been added"
     }
 
     it("with single zero statements") {
