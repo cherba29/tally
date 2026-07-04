@@ -232,7 +232,7 @@ class BudgetBuilderTest : DescribeSpec({
       it("no months") {
         val exception = shouldThrow<IllegalArgumentException> {
           BudgetBuilder().buildTransactionStatementTable(
-            months = DEC / 2019..NOV / 2019, owner = null,
+            months = DEC / 2019..NOV / 2019,
             leafToAccountMap = mapOf(),
             leafToMonthlyBalancesMap = mapOf(),
             leafToMonthlyTransfersMap = mapOf()
@@ -251,8 +251,7 @@ class BudgetBuilderTest : DescribeSpec({
           months = budget.months,
           budget.leafToAccount,
           leafToMonthlyBalancesMap = mapOf(),
-          leafToMonthlyTransfersMap = mapOf(),
-          owner = null
+          leafToMonthlyTransfersMap = mapOf()
         )
         table.size shouldBe 1
         val stmt = table.first()
@@ -368,8 +367,7 @@ class BudgetBuilderTest : DescribeSpec({
           DEC / 2019..FEB / 2020,
           accounts,
           balances,
-          transfers,
-          owner = null
+          transfers
         )
         table.size shouldBe 6
         
@@ -428,8 +426,7 @@ class BudgetBuilderTest : DescribeSpec({
           DEC / 2019..FEB / 2020,
           accounts,
           balances,
-          transfers,
-          owner = null
+          transfers
         )
         table.size shouldBe 6
         
@@ -515,8 +512,7 @@ class BudgetBuilderTest : DescribeSpec({
           NOV / 2019..DEC / 2019,
           accounts,
           balances,
-          transfers,
-          owner = null
+          transfers
         )
         table.size shouldBe 4  // Two transaction statements for the account
         table[0].monthRange shouldBe DEC / 2019..DEC / 2019
@@ -600,8 +596,7 @@ class BudgetBuilderTest : DescribeSpec({
           DEC / 2019..DEC / 2019,
           accounts,
           balances,
-          transfers,
-          owner = null
+          transfers
         )
         table.size shouldBe 3  // 3 accounts
         table[0].treeNode.path shouldBe path1

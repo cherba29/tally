@@ -131,7 +131,7 @@ class BudgetBuilder(
       // TODO: this might throw due to so invariant being violated. Need to recover to previous state.
       val transactionStatementTable = buildTransactionStatementTable(
         months, leafToAccount,
-        leafToBalances, transfers,  owner = null)
+        leafToBalances, transfers)
       for (stmt in transactionStatementTable) {
         nodeToStatement.getOrPut(stmt.treeNode) { mutableMapOf() }[stmt.monthRange.first] = stmt
       }
@@ -169,8 +169,7 @@ class BudgetBuilder(
     months: MonthRange,
     leafToAccountMap: Map<TreeNode.Leaf, Account>,
     leafToMonthlyBalancesMap: Map<TreeNode.Leaf, Map<Month, Balance>>,
-    leafToMonthlyTransfersMap: Map<TreeNode.Leaf, Map<Month, List<Transfer>>>,
-    owner: String?
+    leafToMonthlyTransfersMap: Map<TreeNode.Leaf, Map<Month, List<Transfer>>>
   ): List<TransactionStatement> {
     val statementTable = mutableListOf<TransactionStatement>()
 
@@ -181,16 +180,13 @@ class BudgetBuilder(
     }
 
     for ((leafTreeNode, account) in leafToAccountMap) {
-      if (owner != null && owner !in leafTreeNode.path.first()) {
-        continue
-      }
       val accountStatements = mutableListOf<TransactionStatement>()
       val monthlyTransfers = leafToMonthlyTransfersMap[leafTreeNode] ?: mapOf()
       val monthlyBalances = leafToMonthlyBalancesMap[leafTreeNode] ?: mapOf()
 
       // Make statement outside range so that its attributes relating to previous can be used.
       val nextMonth = months.first().next()
-      var nextMonthStatement = TransactionStatement.fromTransfers(
+      var nextMonthStatement = TransactionStatementBuilder().fromTransfers(
         leafTreeNode,
         nextMonth..nextMonth,
         account.isClosed(nextMonth),
@@ -198,7 +194,7 @@ class BudgetBuilder(
         monthlyBalances[nextMonth]
       )
       for (month in months) {
-        val statement = TransactionStatement.fromTransfers(
+        val statement = TransactionStatementBuilder().fromTransfers(
           leafTreeNode,
           month..month,
           account.isClosed(month),
