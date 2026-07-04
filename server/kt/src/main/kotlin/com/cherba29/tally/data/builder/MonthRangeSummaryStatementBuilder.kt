@@ -13,25 +13,22 @@ import kotlin.collections.iterator
  * Creates parent summary statement containing all provided summary statements
  */
 class MonthRangeSummaryStatementBuilder {
-  var accumulatedMonthRange: MonthRange? = null
   // Map of 'treeNode' -> month -> 'summary statement'.
   val nodeMonthStatementMap = mutableMapOf<TreeNode, MutableMap<Month, Statement>>()
 
-  fun addStatement(month: Month, stmt: SummaryStatement) {
-    accumulatedMonthRange += month
-    for (stmt in stmt.statements) {
-      val accountMonthlyStatements = nodeMonthStatementMap.getOrPut(stmt.treeNode) {
-        mutableMapOf()
-      }
-      val prevEntry = accountMonthlyStatements.putIfAbsent(stmt.monthRange.first, stmt)
-      if (prevEntry != null) {
-        throw IllegalArgumentException("Duplicate month statement for ${stmt.treeNode.name} for ${stmt.monthRange}")
-      }
+  fun addStatement(stmt: Statement) {
+    val prevEntry = nodeMonthStatementMap.getOrPut(stmt.treeNode) {
+      mutableMapOf()
+    }.putIfAbsent(stmt.monthRange.first, stmt)
+    if (prevEntry != null) {
+      throw IllegalArgumentException("Duplicate month statement for ${stmt.treeNode.name} for ${stmt.monthRange}")
     }
   }
 
   fun build(summaryTreeNode: TreeNode): SummaryStatement {
-    require(accumulatedMonthRange != null ) { "Cant combine empty list of summary statements" }
+    val accumulatedMonthRange: MonthRange? = nodeMonthStatementMap.values.map { it.keys }.flatten().fold(null as MonthRange?) {
+      acc, elem -> acc + elem
+    }
     return MonthSummaryStatementBuilder.builder {
       treeNode = summaryTreeNode
       for ((stmtTreeNode, monthStatementMap) in nodeMonthStatementMap) {

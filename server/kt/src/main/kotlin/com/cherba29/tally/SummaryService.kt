@@ -45,8 +45,10 @@ class SummaryService(val loader: Loader) : Query {
             summaryStatements.entries.first().value
           else {
             val builder = MonthRangeSummaryStatementBuilder()
-            for ((month, stmt) in summaryStatements) {
-              builder.addStatement(month, stmt)
+            for (summaryStatement in summaryStatements.values) {
+              for (subStatement in summaryStatement.statements) {
+                builder.addStatement(subStatement)
+              }
             }
             builder.build(summaryNode)
           }
