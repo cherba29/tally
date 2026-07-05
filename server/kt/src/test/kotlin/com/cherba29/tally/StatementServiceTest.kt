@@ -5,6 +5,7 @@ import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.data.Loader
+import com.cherba29.tally.data.builder.BudgetBuilder
 import com.cherba29.tally.data.builder.budget
 import com.cherba29.tally.schema.GqlBalance
 import com.cherba29.tally.schema.GqlStatement
@@ -57,7 +58,8 @@ class StatementServiceTest : DescribeSpec({
     }
 
     it("single statement no transactions") {
-      val account = Account(name = "test-account", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
+      val account =
+        Account(name = "test-account", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
           setAccount(listOf("john", "internal", "test-account"), account)
@@ -93,8 +95,10 @@ class StatementServiceTest : DescribeSpec({
     }
 
     it("statement with transactions") {
-      val account1 = Account(name = "test-account1", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
-      val account2 = Account(name = "test-account2", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
+      val account1 =
+        Account(name = "test-account1", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
+      val account2 =
+        Account(name = "test-account2", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
 
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
@@ -107,16 +111,18 @@ class StatementServiceTest : DescribeSpec({
             )
           )
           addTransfer(
-            listOf("john", "internal", "test-account2"),
-            "test-account1",
-            MAR / 2026,
-            Balance(
-              amount = 200,
-              date = LocalDate(2026, 3, 2),
-              type = Balance.Type.CONFIRMED,
-              description = "transfer1"
-            ),
-            "transfer1"
+            BudgetBuilder.TransferRecord(
+              "test-account1",
+              listOf("john", "internal", "test-account2"),
+              MAR / 2026,
+              Balance(
+                amount = 200,
+                date = LocalDate(2026, 3, 2),
+                type = Balance.Type.CONFIRMED,
+                description = "transfer1"
+              ),
+              "transfer1"
+            )
           )
         }
       }

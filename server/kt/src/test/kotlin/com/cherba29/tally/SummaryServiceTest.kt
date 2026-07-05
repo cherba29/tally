@@ -7,6 +7,7 @@ import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.root
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.data.Loader
+import com.cherba29.tally.data.builder.BudgetBuilder
 import com.cherba29.tally.data.builder.budget
 import com.cherba29.tally.testing.toSnapshot
 import com.diffplug.selfie.coroutines.expectSelfie
@@ -57,7 +58,7 @@ class SummaryServiceTest : DescribeSpec({
       }
       exception.message shouldBe "Summary 'internal' for owner 'john' not found."
     }
-    
+
     it("single") {
       val account = Account("test-account1", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
       val loader = mockk<Loader> {
@@ -88,11 +89,13 @@ class SummaryServiceTest : DescribeSpec({
           setBalance(listOf("john", "internal", "test-account1"), MAR / 2026, Balance.confirmed(100, "2026-03-01"))
           setBalance(listOf("john", "internal", "test-account2"), MAR / 2026, Balance.confirmed(200, "2026-03-01"))
           addTransfer(
-            fromAccountPath = listOf("john", "internal", "test-account1"),
-            toAccountName = "test-account2",
-            month = MAR / 2026,
-            balance = Balance.confirmed(50, "2026-03-02"),
-            description = "transfer from 1 to 2"
+            BudgetBuilder.TransferRecord(
+              fromAccountPath = listOf("john", "internal", "test-account1"),
+              toAccountName = "test-account2",
+              month = MAR / 2026,
+              balance = Balance.confirmed(50, "2026-03-02"),
+              description = "transfer from 1 to 2"
+            )
           )
         }
       }
@@ -117,11 +120,13 @@ class SummaryServiceTest : DescribeSpec({
           setBalance(listOf("john", "internal", "test-account1"), MAR / 2026, Balance.confirmed(100, "2026-03-01"))
           setBalance(listOf("john", "external", "test-account2"), MAR / 2026, Balance.confirmed(200, "2026-03-01"))
           addTransfer(
-            fromAccountPath = listOf("john", "internal", "test-account1"),
-            toAccountName = "test-account2",
-            month = MAR / 2026,
-            balance = Balance.confirmed(50, "2026-04-02"),
-            description = "transfer from 1 to 2"
+            BudgetBuilder.TransferRecord(
+              fromAccountPath = listOf("john", "internal", "test-account1"),
+              toAccountName = "test-account2",
+              month = MAR / 2026,
+              balance = Balance.confirmed(50, "2026-04-02"),
+              description = "transfer from 1 to 2"
+            )
           )
         }
       }
@@ -147,18 +152,22 @@ class SummaryServiceTest : DescribeSpec({
           setBalance(listOf("john", "internal", "test-account1"), APR / 2026, Balance.confirmed(150, "2026-04-01"))
           setBalance(listOf("john", "external", "test-account2"), APR / 2026, Balance.confirmed(250, "2026-04-01"))
           addTransfer(
-            fromAccountPath = listOf("john", "internal", "test-account1"),
-            toAccountName = "test-account2",
-            month = MAR / 2026,
-            balance = Balance.confirmed(50, "2026-03-02"),
-            description = "transfer from 1 to 2"
+            BudgetBuilder.TransferRecord(
+              fromAccountPath = listOf("john", "internal", "test-account1"),
+              toAccountName = "test-account2",
+              month = MAR / 2026,
+              balance = Balance.confirmed(50, "2026-03-02"),
+              description = "transfer from 1 to 2"
+            )
           )
           addTransfer(
-            fromAccountPath = listOf("john", "external", "test-account2"),
-            toAccountName = "test-account1",
-            month = APR / 2026,
-            balance = Balance.confirmed(75, "2026-04-02"),
-            description = "transfer from 2 to 1"
+            BudgetBuilder.TransferRecord(
+              fromAccountPath = listOf("john", "external", "test-account2"),
+              toAccountName = "test-account1",
+              month = APR / 2026,
+              balance = Balance.confirmed(75, "2026-04-02"),
+              description = "transfer from 2 to 1"
+            )
           )
         }
       }
@@ -185,18 +194,22 @@ class SummaryServiceTest : DescribeSpec({
           setBalance(listOf("john", "internal", "test-account1"), APR / 2026, Balance.confirmed(150, "2026-04-01"))
           setBalance(listOf("john", "external", "test-account2"), APR / 2026, Balance.confirmed(250, "2026-04-01"))
           addTransfer(
-            fromAccountPath = listOf("john", "internal", "test-account1"),
-            toAccountName = "test-account2",
-            month = MAR / 2026,
-            balance = Balance.confirmed(50, "2026-03-02"),
-            description = "transfer from 1 to 2"
+            BudgetBuilder.TransferRecord(
+              fromAccountPath = listOf("john", "internal", "test-account1"),
+              toAccountName = "test-account2",
+              month = MAR / 2026,
+              balance = Balance.confirmed(50, "2026-03-02"),
+              description = "transfer from 1 to 2"
+            )
           )
           addTransfer(
-            fromAccountPath = listOf("john", "external", "test-account2"),
-            toAccountName = "test-account1",
-            month = APR / 2026,
-            balance = Balance.confirmed(75, "2026-04-02"),
-            description = "transfer from 2 to 1"
+            BudgetBuilder.TransferRecord(
+              fromAccountPath = listOf("john", "external", "test-account2"),
+              toAccountName = "test-account1",
+              month = APR / 2026,
+              balance = Balance.confirmed(75, "2026-04-02"),
+              description = "transfer from 2 to 1"
+            )
           )
         }
       }

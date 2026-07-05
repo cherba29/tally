@@ -54,13 +54,9 @@ class BudgetBuilder(
   /**
    * Add a record of transfer from given account to potentially yet unknown account name.
    */
-  fun addTransfer(fromAccountPath: List<String>,
-                  toAccountName: String,
-                  month: Month,
-                  balance: Balance,
-                  description: String?) {
-    transferRecordList.add(TransferRecord(toAccountName, fromAccountPath, month, balance, description))
-    monthRange += month
+  fun addTransfer(record: TransferRecord) {
+    transferRecordList.add(record)
+    monthRange += record.month
   }
 
   private fun buildTransfers(treeRoot: TreeNode): MutableMap<TreeNode.Leaf, MutableMap<Month, MutableList<Transfer>>> {

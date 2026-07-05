@@ -5,6 +5,7 @@ import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.data.Loader
+import com.cherba29.tally.data.builder.BudgetBuilder
 import com.cherba29.tally.data.builder.budget
 import com.cherba29.tally.testing.toSnapshot
 import com.diffplug.selfie.coroutines.expectSelfie
@@ -49,6 +50,7 @@ class TableServiceTest : DescribeSpec({
         setAccount(accountPath1, account1)
         setAccount(accountPath2, account2)
         addTransfer(
+          BudgetBuilder.TransferRecord(
           fromAccountPath = accountPath1,
           toAccountName = "test-account2",
           month = MAR / 2026,
@@ -58,6 +60,7 @@ class TableServiceTest : DescribeSpec({
             type = Balance.Type.CONFIRMED
           ),
           description = "test transfer"
+          )
         )
       }
 

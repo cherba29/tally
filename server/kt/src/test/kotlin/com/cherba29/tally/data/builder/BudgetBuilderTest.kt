@@ -48,18 +48,22 @@ class BudgetBuilderTest : DescribeSpec({
         Balance(200, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED)
       )
       addTransfer(
-        toAccountName = "test-account1",
-        fromAccountPath = listOf("john", "internal", "test-account2"),
-        month = NOV / 2019,
-        balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
-        description = null
+        BudgetBuilder.TransferRecord(
+          toAccountName = "test-account1",
+          fromAccountPath = listOf("john", "internal", "test-account2"),
+          month = NOV / 2019,
+          balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
+          description = null
+        )
       )
       addTransfer(
-        toAccountName = "test-account3",
-        fromAccountPath = listOf("john", "internal", "test-account2"),
-        month = NOV / 2019,
-        balance = Balance(70, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
-        description = null
+        BudgetBuilder.TransferRecord(
+          toAccountName = "test-account3",
+          fromAccountPath = listOf("john", "internal", "test-account2"),
+          month = NOV / 2019,
+          balance = Balance(70, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
+          description = null
+        )
       )
     }
     budget.leafToAccount.size shouldBe 3
@@ -67,7 +71,11 @@ class BudgetBuilderTest : DescribeSpec({
     budget.leafToAccount[budget.tree[listOf("john", "internal", "test-account2")]] shouldBe account2
     budget.nodeToStatement.filter { it.key.children.isEmpty() }.size shouldBe 3
     budget.nodeToStatement.values.sumOf { it.values.count { s -> (s as? TransactionStatement)?.startBalance != null } } shouldBe 3
-    budget.nodeToStatement.values.sumOf { it.values.sumOf { s -> (s as? TransactionStatement)?.transactions?.size ?: 0 } } shouldBe 4
+    budget.nodeToStatement.values.sumOf {
+      it.values.sumOf { s ->
+        (s as? TransactionStatement)?.transactions?.size ?: 0
+      }
+    } shouldBe 4
     budget.months shouldBe NOV / 2019..DEC / 2019
     budget.tree shouldBe root {
       branch("john") {
@@ -113,11 +121,13 @@ class BudgetBuilderTest : DescribeSpec({
           Balance(200, LocalDate(2019, 11, 3), Balance.Type.CONFIRMED)
         )
         addTransfer(
-          toAccountName = "test-account1",
-          fromAccountPath = path2,
-          month = NOV / 2019,
-          balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
-          description = null
+          BudgetBuilder.TransferRecord(
+            toAccountName = "test-account1",
+            fromAccountPath = path2,
+            month = NOV / 2019,
+            balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
+            description = null
+          )
         )
       }
     }
@@ -153,11 +163,13 @@ class BudgetBuilderTest : DescribeSpec({
       budget {
         setAccount(path2, account2)
         addTransfer(
-          toAccountName = "test-account1",
-          fromAccountPath = path2,
-          month = NOV / 2019,
-          balance = Balance(50, LocalDate(2019, 12, 2), Balance.Type.CONFIRMED),
-          description = null,
+          BudgetBuilder.TransferRecord(
+            toAccountName = "test-account1",
+            fromAccountPath = path2,
+            month = NOV / 2019,
+            balance = Balance(50, LocalDate(2019, 12, 2), Balance.Type.CONFIRMED),
+            description = null,
+          )
         )
       }
     }
@@ -178,11 +190,13 @@ class BudgetBuilderTest : DescribeSpec({
       budget {
         setAccount(path1, account1)
         addTransfer(
-          toAccountName = "test-account1",
-          fromAccountPath = path2,
-          month = NOV / 2019,
-          balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
-          description = null,
+          BudgetBuilder.TransferRecord(
+            toAccountName = "test-account1",
+            fromAccountPath = path2,
+            month = NOV / 2019,
+            balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
+            description = null,
+          )
         )
       }
     }
@@ -205,7 +219,8 @@ class BudgetBuilderTest : DescribeSpec({
       val path2 = listOf("bob", "test-account2")
       val account2 = Account("test-account2", path = listOf(), owners = setOf(), openedOn = NOV / 2019)
       val path3 = listOf("bob", "test-account3")
-      val account3 = Account("test-account3", path = listOf(), owners = setOf(), openedOn = JAN / 2020, closedOn = FEB / 2020)
+      val account3 =
+        Account("test-account3", path = listOf(), owners = setOf(), openedOn = JAN / 2020, closedOn = FEB / 2020)
       val budget = budget {
         setAccount(path1, account1)
         setAccount(path2, account2)
@@ -231,11 +246,13 @@ class BudgetBuilderTest : DescribeSpec({
             budget {
               setAccount(path1, account1)
               addTransfer(
-                fromAccountPath = path1,
-                toAccountName = "test-account2",
-                month = DEC / 2019,
-                balance = Balance.projected(2000, "2019-12-05"),
-                description = "First transfer",
+                BudgetBuilder.TransferRecord(
+                  fromAccountPath = path1,
+                  toAccountName = "test-account2",
+                  month = DEC / 2019,
+                  balance = Balance.projected(2000, "2019-12-05"),
+                  description = "First transfer",
+                )
               )
             }
           }
@@ -251,20 +268,24 @@ class BudgetBuilderTest : DescribeSpec({
 
       it("transfer with date before start balance") {
         val path1 = listOf("john", "external", "test-account1")
-        val account1 = Account(name = "test-account1",
+        val account1 = Account(
+          name = "test-account1",
           path = listOf("external"),
-          owners = setOf("john"), openedOn = DEC / 2021)
+          owners = setOf("john"), openedOn = DEC / 2021
+        )
         val exception =
           shouldThrow<IllegalStateException> {
             budget {
               setAccount(path1, account1)
               setBalance(path1, DEC / 2019, Balance.confirmed(1000, "2019-12-01"))
               addTransfer(
-                fromAccountPath = path1,
-                toAccountName = "test-account1",
-                month = DEC / 2019,
-                balance = Balance.projected(2000, "2019-11-25"),
-                description = "First transfer",
+                BudgetBuilder.TransferRecord(
+                  fromAccountPath = path1,
+                  toAccountName = "test-account1",
+                  month = DEC / 2019,
+                  balance = Balance.projected(2000, "2019-11-25"),
+                  description = "First transfer",
+                )
               )
             }
           }
@@ -278,9 +299,11 @@ class BudgetBuilderTest : DescribeSpec({
   describe("buildSummaryStatementTable") {
     it("single closed account - produces summary without it") {
       val path1 = listOf("john", "external", "test-account1")
-      val account1 = Account(name = "test-account1",
+      val account1 = Account(
+        name = "test-account1",
         path = listOf("external"),
-        owners = setOf("john"), openedOn = MAR / 2021)
+        owners = setOf("john"), openedOn = MAR / 2021
+      )
       val startBalance = Balance(
         100,
         LocalDate(2023, 12, 2),
@@ -347,9 +370,11 @@ class BudgetBuilderTest : DescribeSpec({
 
     it("single external account - no SUMMARY") {
       val path1 = listOf("john", "external", "test-account1")
-      val account1 = Account(name = "test-account1",
+      val account1 = Account(
+        name = "test-account1",
         path = listOf("external"),
-        owners = setOf("john"), openedOn = MAR / 2021)
+        owners = setOf("john"), openedOn = MAR / 2021
+      )
       val balance1 = Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       val budget = budget {
         setAccount(path1, account1)
@@ -388,9 +413,11 @@ class BudgetBuilderTest : DescribeSpec({
 
     it("single account - no transfers") {
       val path1 = listOf("john", "external", "test-account1")
-      val account1 = Account(name = "test-account1",
+      val account1 = Account(
+        name = "test-account1",
         path = listOf("external"),
-        owners = setOf("john"), openedOn = MAR / 2021)
+        owners = setOf("john"), openedOn = MAR / 2021
+      )
       val balance1 = Balance(
         100,
         LocalDate(2023, 12, 2),
@@ -455,9 +482,11 @@ class BudgetBuilderTest : DescribeSpec({
 
     it("multiple accounts - selected owner") {
       val path1 = listOf("john", "external", "test-account1")
-      val account1 = Account(name = "test-account1",
+      val account1 = Account(
+        name = "test-account1",
         path = listOf("external"),
-        owners = setOf("john"), openedOn = MAR / 2021)
+        owners = setOf("john"), openedOn = MAR / 2021
+      )
 
       val balance1 = Balance(
         100,
@@ -466,9 +495,11 @@ class BudgetBuilderTest : DescribeSpec({
       )
       // Should skip since different owner.
       val path2 = listOf("bob", "external", "test-account2")
-      val account2 = Account(        name = "test-account2",
+      val account2 = Account(
+        name = "test-account2",
         path = listOf("external"),
-        owners = setOf("bob"), openedOn = MAR / 2021)
+        owners = setOf("bob"), openedOn = MAR / 2021
+      )
       val balance2 = Balance(
         300,
         LocalDate(2023, 12, 2),
@@ -476,9 +507,11 @@ class BudgetBuilderTest : DescribeSpec({
       )
       // Should skip since path is empty.
       val path3 = listOf("john", "test-account3")
-      val account3 = Account(name = "test-account3",
+      val account3 = Account(
+        name = "test-account3",
         path = listOf(),
-        owners = setOf("john"), openedOn = MAR / 2021)
+        owners = setOf("john"), openedOn = MAR / 2021
+      )
       val balance3 = Balance(
         500,
         LocalDate(2023, 12, 2),

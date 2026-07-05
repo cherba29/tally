@@ -4,6 +4,7 @@ import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.data.builder.BudgetBuilder
+import com.cherba29.tally.data.builder.BudgetBuilder.TransferRecord
 import com.cherba29.tally.data.yaml.BalanceYamlData
 import com.cherba29.tally.data.yaml.YamlData
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -79,23 +80,14 @@ private fun BalanceYamlData.toBalance(name: String): Balance {
   return balance
 }
 
-// TODO: Preprocess but do not put it into budget builder yet, so warnings are only produced files that change.
+/**
+ * Validates YamlData and atomically adds it to the budget.
+ */
 private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
   // Ignore data which dont represent account.
   val account = data.toAccount() ?: return false
-  for (owner in account.owners) {
-    val fullPath = listOf(owner) + account.path + listOf(account.name)
-    budgetBuilder.setAccount(fullPath, account)
-  }
-  if (data.balances != null) {
-    for (balanceData in data.balances) {
-      val balance = balanceData.toBalance(account.name)
-      for (owner in account.owners) {
-        val fullPath = listOf(owner) + account.path + listOf(account.name)
-        budgetBuilder.setBalance(fullPath, balanceData.grp!!, balance)
-      }
-    }
-  }
+  val convertedBalances = data.balances?.map { it.grp to it.toBalance(account.name) } ?: listOf()
+  val convertedTransfers = mutableListOf<TransferRecord>()
   if (data.transfersTo != null) {
     for ((accountName, transfers) in data.transfersTo.entries) {
       if (transfers == null) continue
@@ -140,20 +132,33 @@ private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boole
                 "for $transferMonth date ${balance.date} (${balanceMonth}) are too far apart"
           )
         }
-
         for (owner in account.owners) {
           val fullPath = listOf(owner) + account.path + listOf(account.name)
 
-          budgetBuilder.addTransfer(
-            fromAccountPath = fullPath,
-            toAccountName = accountName,
-            month = transferMonth,
-            balance = balance,
-            description = transferData.desc,
+          convertedTransfers.add(
+            TransferRecord(
+              toAccountName = accountName,
+              fromAccountPath = fullPath,
+              month = transferMonth,
+              balance = balance,
+              description = transferData.desc
+            )
           )
         }
       }
     }
+  }
+
+  for (owner in account.owners) {
+    val fullPath = listOf(owner) + account.path + listOf(account.name)
+    budgetBuilder.setAccount(fullPath, account)
+    for ((month, balance) in convertedBalances) {
+      budgetBuilder.setBalance(fullPath, month!!, balance)
+    }
+  }
+
+  for (transfer in convertedTransfers) {
+    budgetBuilder.addTransfer(transfer)
   }
   return true
 }

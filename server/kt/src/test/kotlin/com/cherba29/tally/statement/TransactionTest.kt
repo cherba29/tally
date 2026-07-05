@@ -3,6 +3,7 @@ package com.cherba29.tally.statement
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.DEC
+import com.cherba29.tally.data.builder.BudgetBuilder
 import com.cherba29.tally.data.builder.budget
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
@@ -23,11 +24,13 @@ class TransactionTest : DescribeSpec({
           budget {
             setAccount(path1, account1)
             addTransfer(
-              fromAccountPath = path1,
-              toAccountName = "test-account2",
-              month = DEC / 2019,
-              balance = Balance.projected(2000, "2019-12-05"),
-              description = "First transfer",
+              BudgetBuilder.TransferRecord(
+                fromAccountPath = path1,
+                toAccountName = "test-account2",
+                month = DEC / 2019,
+                balance = Balance.projected(2000, "2019-12-05"),
+                description = "First transfer",
+              )
             )
           }
         }
