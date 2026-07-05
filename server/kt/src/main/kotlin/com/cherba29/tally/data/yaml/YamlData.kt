@@ -14,7 +14,6 @@ data class BalanceYamlData(
   val desc: String? = null,
 )
 
-// TODO: add checks for duplicate keys, eg: two desc fields are provided.
 data class TransferYamlData(
   val grp: Month? = null,
   val date: LocalDate? = null,
@@ -25,7 +24,6 @@ data class TransferYamlData(
   val cat: String? = null,
   val tags: List<String>? = null,
   // TODO: add option for running annual total.
-  // TODO: add support for confirmation number to display it.
 )
 
 @JsonIgnoreProperties(value = [])

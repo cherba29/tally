@@ -53,7 +53,7 @@ class LoadYamlTest : DescribeSpec({
           )
         }
       }
-      exception.message shouldBe "Account 'test' has no owners while processing path/file.yaml"
+      exception.message shouldBe "Account 'test' has no owners, while processing path/file.yaml"
     }
 
     it("empty account") {
@@ -155,10 +155,8 @@ class LoadYamlTest : DescribeSpec({
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(budgetBuilder, accountData, relativeFilePath)
       }
-      // TODO: do not test for BalanceData toString representation.
-      exception.message shouldBe "Balance entry BalanceYamlData(" +
-          "grp=null, date=2020-01-01, camt=0.0, pamt=null, desc=null) " +
-          "has no grp setting. while processing path/file.yaml"
+      exception.message shouldBe "For test-account account balance entry with date '2020-01-01' " +
+          "and desc 'null' has no grp setting, while processing path/file.yaml"
     }
 
     it("fails without balance date") {
@@ -175,10 +173,8 @@ class LoadYamlTest : DescribeSpec({
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(budgetBuilder, accountData, relativeFilePath)
       }
-      // TODO: do not test for BalanceData toString representation.
-      exception.message shouldBe "Balance BalanceYamlData(" +
-          "grp=Jan2020, date=null, camt=0.0, pamt=null, desc=null)" +
-          " does not have date set. while processing path/file.yaml"
+      exception.message shouldBe "For test-account account balance for Jan2020 " +
+          "does not have date set, while processing path/file.yaml"
     }
 
     it("fails without balance type") {
@@ -197,10 +193,8 @@ class LoadYamlTest : DescribeSpec({
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(budgetBuilder, accountData, relativeFilePath)
       }
-      // TODO: do not test for BalanceData toString representation.
-      exception.message shouldBe "Balance BalanceYamlData(" +
-          "grp=Jan2020, date=2020-01-01, camt=null, pamt=null, desc=null) " +
-          "does not have amount type set, expected camt or pamt entry. while processing path/file.yaml"
+      exception.message shouldBe "For test-account account balance for Jan2020 " +
+          "does not have amount type set, expected camt or pamt entry, while processing path/file.yaml"
     }
 
     it("with projected and confirmed transfers") {
@@ -326,7 +320,7 @@ class LoadYamlTest : DescribeSpec({
         loadYamlFile(budgetBuilder, testAccountData, relativeFilePath)
       }
       exception.message shouldBe "For account 'test-account' transfer to 'external' " +
-          "does not have 'grp' field. while processing path/test.yaml"
+          "does not have 'grp' field, while processing path/test.yaml"
     }
 
     it("fails with transfer and no date") {
@@ -350,8 +344,8 @@ class LoadYamlTest : DescribeSpec({
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(budgetBuilder, testAccountData, relativeFilePath)
       }
-      exception.message shouldBe "For account 'test-account' transfer to 'external' does not have a " +
-          "valid 'date' field. while processing path/test.yaml"
+      exception.message shouldBe "For account 'test-account' transfer to 'external' " +
+          "does not have a valid 'date' field, while processing path/test.yaml"
     }
 
     it("fails with transfer and too far apart dates") {
@@ -377,7 +371,7 @@ class LoadYamlTest : DescribeSpec({
         loadYamlFile(budgetBuilder, testAccountData, relativeFilePath)
       }
       exception.message shouldBe "For account 'test-account' transfer to 'external' for Jan2020 date " +
-          "2020-04-01 (Apr2020) are too far apart. while processing path/test.yaml"
+          "2020-04-01 (Apr2020) are too far apart, while processing path/test.yaml"
     }
 
     it("fails with transfer and no balance") {
@@ -401,10 +395,8 @@ class LoadYamlTest : DescribeSpec({
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(budgetBuilder, testAccountData, relativeFilePath)
       }
-      exception.message shouldBe "For account 'test-account' transfer to 'external' does not " +
-          "have 'pamt' or 'camt' field:" +
-          " TransferYamlData(grp=Jan2020, date=2020-01-17, camt=null, pamt=null, " +
-          "desc=null, cat=null, tags=null). while processing path/test.yaml"
+      exception.message shouldBe "For account 'test-account' transfer to 'external' " +
+          "for Jan2020 2020-01-17 does not have 'pamt' or 'camt' field, while processing path/test.yaml"
     }
   }
 })

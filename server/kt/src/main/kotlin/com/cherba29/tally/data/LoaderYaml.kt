@@ -26,10 +26,10 @@ private fun YamlData.toAccount(): Account? {
     logger.warn { "$name is missing description field." }
   }
   if (path.isNullOrEmpty()) {
-    throw IllegalArgumentException("$name is missing path field.")
+    throw IllegalArgumentException("$name is missing path field")
   }
   if (openedOn == null) {
-    throw IllegalArgumentException("$name is missing opened_on field.")
+    throw IllegalArgumentException("$name is missing opened_on field")
   }
 
   return Account(
@@ -51,7 +51,9 @@ private fun YamlData.toAccount(): Account? {
 
 private fun BalanceYamlData.toBalance(name: String): Balance {
   if (grp == null) {
-    throw IllegalArgumentException("Balance entry $this has no grp setting.")
+    throw IllegalArgumentException(
+      "For $name account balance entry with date '$date' and desc '$desc' has no grp setting"
+    )
   }
   var amount: Long
   var balanceType: Balance.Type
@@ -62,16 +64,16 @@ private fun BalanceYamlData.toBalance(name: String): Balance {
     amount = (100.0 * pamt).roundToLong()
     balanceType = Balance.Type.PROJECTED
   } else {
-    throw IllegalArgumentException("Balance $this does not have amount type set, expected camt or pamt entry.")
+    throw IllegalArgumentException("For $name account balance for $grp does not have amount type set, expected camt or pamt entry")
   }
   if (date == null) {
-    throw IllegalArgumentException("Balance $this does not have date set.")
+    throw IllegalArgumentException("For $name account balance for $grp does not have date set")
   }
   val balance =  Balance(amount, date, balanceType, desc ?: "")
   val balanceMonthDiff = abs(balance.date.year * 12 + balance.date.month.ordinal - grp.year * 12 - grp.month)
   if (balanceMonthDiff > 2) {
     throw IllegalArgumentException(
-      "For $name account $balance and month $grp are $balanceMonthDiff months apart (2 max)."
+      "For $name account $balance and month $grp are $balanceMonthDiff months apart (2 max)"
     )
   }
   return balance
@@ -100,12 +102,12 @@ private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boole
       for (transferData in transfers) {
         if (transferData.grp == null) {
           throw IllegalArgumentException(
-            "For account '${account.name}' transfer to '$accountName' does not have 'grp' field."
+            "For account '${account.name}' transfer to '$accountName' does not have 'grp' field"
           )
         }
         if (transferData.date == null) {
           throw IllegalArgumentException(
-            "For account '${account.name}' transfer to '${accountName}' does not have a valid 'date' field."
+            "For account '${account.name}' transfer to '$accountName' does not have a valid 'date' field"
           )
         }
         var balance: Balance? = null
@@ -124,8 +126,9 @@ private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boole
         }
         if (balance == null) {
           throw IllegalArgumentException(
-            "For account '${account.name}' transfer to '${accountName}' " +
-                "does not have 'pamt' or 'camt' field: ${transferData}."
+            "For account '${account.name}' transfer to '$accountName' " +
+                "for ${transferData.grp} ${transferData.date} " +
+                "does not have 'pamt' or 'camt' field"
           )
         }
 
@@ -134,7 +137,7 @@ private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boole
         if (abs(balanceMonth - transferMonth) > 2) {
           throw IllegalArgumentException(
             "For account '${account.name}' transfer to '${accountName}' " +
-                "for $transferMonth date ${balance.date} (${balanceMonth}) are too far apart."
+                "for $transferMonth date ${balance.date} (${balanceMonth}) are too far apart"
           )
         }
 
@@ -160,9 +163,9 @@ fun loadYamlFile(budgetBuilder: BudgetBuilder, accountData: YamlData, relativeFi
     processYamlData(budgetBuilder, accountData)
   } catch (e: IllegalArgumentException) {
     logger.error { e.javaClass.simpleName + ": " + e.message }
-    throw IllegalArgumentException(e.message + " while processing $relativeFilePath", e)
+    throw IllegalArgumentException(e.message + ", while processing $relativeFilePath", e)
   } catch (e: Exception) {
-    val message = " while processing $relativeFilePath"
+    val message = ", while processing $relativeFilePath"
     logger.error { e.javaClass.simpleName + ": " + e.message + message }
     logger.info { "Account Data$accountData" }
     throw e

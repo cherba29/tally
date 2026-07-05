@@ -121,7 +121,6 @@ class BudgetBuilder(
     val nodeToStatement: MutableMap<TreeNode, MutableMap<Month, Statement>> = mutableMapOf()
 
     val (transactionStatementTable, elapsedTransactionTime) = timeSource.measureTimedValue {
-      // TODO: this might throw due to so invariant being violated. Need to recover to previous state.
       val transactionStatementTable = TransactionTableBuilder().buildTransactionStatementTable(
         months,
         leafToAccount,
