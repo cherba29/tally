@@ -6,7 +6,7 @@ import io.kotest.matchers.shouldBe
 class TreeNodeTest : DescribeSpec({
   describe("Creation") {
     it("single root") {
-      val tree = root {  }
+      val tree = root { }
       tree.name shouldBe ""
       tree.children.isEmpty() shouldBe true
     }
@@ -186,7 +186,10 @@ class TreeNodeTest : DescribeSpec({
       }
       tree.children[0].isExternal shouldBe false
       tree.children[0].children[0].isExternal shouldBe true
-      tree.children[0].children[0].children[0].isExternal shouldBe true
+      tree.children[0]
+        .children[0]
+        .children[0]
+        .isExternal shouldBe true
     }
   }
 
@@ -230,7 +233,10 @@ class TreeNodeTest : DescribeSpec({
       }
       tree.children[0].top shouldBe tree.children[0]
       tree.children[0].children[0].top shouldBe tree.children[0]
-      tree.children[0].children[0].children[0].top shouldBe tree.children[0]
+      tree.children[0]
+        .children[0]
+        .children[0]
+        .top shouldBe tree.children[0]
     }
   }
 
@@ -275,7 +281,10 @@ class TreeNodeTest : DescribeSpec({
       }
       tree.children[0].path shouldBe listOf("branch1")
       tree.children[0].children[0].path shouldBe listOf("branch1", "external")
-      tree.children[0].children[0].children[0].path shouldBe listOf("branch1", "external", "child1")
+      tree.children[0]
+        .children[0]
+        .children[0]
+        .path shouldBe listOf("branch1", "external", "child1")
     }
   }
 
@@ -364,7 +373,7 @@ class TreeNodeTest : DescribeSpec({
         tree.children[0],
         tree.children[0].children[0],
         tree.children[1],
-        tree.children[1].children[0],
+        tree.children[1].children[0]
       )
     }
 
@@ -380,7 +389,7 @@ class TreeNodeTest : DescribeSpec({
         tree,
         tree.children[0],
         tree.children[0].children[0],
-        tree.children[0].children[0].children[0],
+        tree.children[0].children[0].children[0]
       )
     }
   }
@@ -420,7 +429,7 @@ class TreeNodeTest : DescribeSpec({
       val builder = TreeNode.Companion.Builder()
       builder.addPath(listOf("branch1", "external", "child1"))
 
-      builder.build() shouldBe  root {
+      builder.build() shouldBe root {
         branch("branch1") {
           branch("external") {
             leaf("child1")
@@ -448,12 +457,11 @@ class TreeNodeTest : DescribeSpec({
         leaf("child1")
       }
     }
-
   }
 
   describe("pretty string") {
     it("single root") {
-      val tree = root {  }
+      val tree = root { }
       tree.toPrettyString() shouldBe "└── \n"
     }
 
@@ -462,12 +470,13 @@ class TreeNodeTest : DescribeSpec({
         leaf("child1")
         leaf("child2")
       }
-      tree.toPrettyString() shouldBe """
-      └── 
-          ├── child1
-          └── child2
-
-      """.trimIndent()
+      tree.toPrettyString() shouldBe
+        """
+        └── 
+            ├── child1
+            └── child2
+        
+        """.trimIndent()
     }
 
     it("nested") {
@@ -478,13 +487,14 @@ class TreeNodeTest : DescribeSpec({
           }
         }
       }
-      tree.toPrettyString() shouldBe """
-      └── 
-          └── branch1
-              └── external
-                  └── child1
-
-      """.trimIndent()
+      tree.toPrettyString() shouldBe
+        """
+        └── 
+            └── branch1
+                └── external
+                    └── child1
+        
+        """.trimIndent()
     }
   }
 })

@@ -65,7 +65,8 @@ class SummaryServiceTest : DescribeSpec({
         coEvery { budget() } returns budget {
           setAccount(listOf("john", "internal", "test-account1"), account)
           setBalance(
-            listOf("john", "internal", "test-account1"), MAR / 2026,
+            listOf("john", "internal", "test-account1"),
+            MAR / 2026,
             Balance.confirmed(100, "2026-03-01")
           )
         }

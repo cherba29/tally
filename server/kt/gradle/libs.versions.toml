@@ -56,6 +56,7 @@ turbine = { group = "app.cash.turbine", name = "turbine", version = "1.2.1" }
 
 [plugins]
 expediagroup-graphql = { id = "com.expediagroup.graphql", version.ref = "graphql-ktor" }
+klint = { id = "org.jlleitschuh.gradle.ktlint", version = "14.2.0"}
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 kotest = { id = "io.kotest", version.ref = "kotest" }

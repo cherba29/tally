@@ -46,8 +46,8 @@ class UnaccountedTest : DescribeSpec({
       command.startMonth shouldBe APR / 2026
       command.endMonth shouldBe MAY / 2026
     }
-
   }
+
   describe("runs") {
     it("successfully") {
       val tallyPath = tempdir("tally-", keepOnFailure = false).toPath()

@@ -41,7 +41,7 @@ class LastSetFlowStateTest : DescribeSpec({
         testScheduler.runCurrent()
         state.last() shouldBe 5
         flow.emit(6)
-        state.last() shouldBe 5  // Still 5 since flow did not get chance to run yet.
+        state.last() shouldBe 5 // Still 5 since flow did not get chance to run yet.
       }
     }
   }
@@ -53,12 +53,12 @@ class LastSetFlowStateTest : DescribeSpec({
       state.last() shouldBe 2
       flow.emit(3)
       testScheduler.runCurrent()
-      state.last() shouldBe 3  // Updates last when flow updates.
+      state.last() shouldBe 3 // Updates last when flow updates.
       state.close()
-      testScheduler.runCurrent()  // Now flow should get closed/canceled.
+      testScheduler.runCurrent() // Now flow should get closed/canceled.
       flow.emit(4)
       testScheduler.runCurrent()
-      state.last() shouldBe 3  // Still 3 now that flow was closed it no longer updates.
+      state.last() shouldBe 3 // Still 3 now that flow was closed it no longer updates.
     }
   }
 })

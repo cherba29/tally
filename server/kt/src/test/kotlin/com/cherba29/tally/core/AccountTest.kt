@@ -26,7 +26,7 @@ class AccountTest : DescribeSpec({
         "testAccount",
         path = listOf(),
         owners = setOf(),
-        openedOn = NOV / 2020,
+        openedOn = NOV / 2020
       )
       account.isClosed(MAR / 2021) shouldBe false
     }
@@ -37,7 +37,7 @@ class AccountTest : DescribeSpec({
         path = listOf(),
         owners = setOf(),
         openedOn = FEB / 2021,
-        closedOn = APR / 2021,
+        closedOn = APR / 2021
       )
       account.isClosed(MAY / 2021) shouldBe true
     }
@@ -48,7 +48,7 @@ class AccountTest : DescribeSpec({
         path = listOf(),
         owners = setOf(),
         openedOn = FEB / 2021,
-        closedOn = APR / 2021,
+        closedOn = APR / 2021
       )
       account.isClosed(Month(2020, 1)) shouldBe true
     }

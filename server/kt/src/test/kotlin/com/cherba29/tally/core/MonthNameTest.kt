@@ -1,7 +1,5 @@
 package com.cherba29.tally.core
 
-import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.matchers.shouldBe
 import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.AUG
 import com.cherba29.tally.core.MonthName.DEC
@@ -14,6 +12,8 @@ import com.cherba29.tally.core.MonthName.MAY
 import com.cherba29.tally.core.MonthName.NOV
 import com.cherba29.tally.core.MonthName.OCT
 import com.cherba29.tally.core.MonthName.SEP
+import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.shouldBe
 
 class MonthNameTest : DescribeSpec({
   describe("Creation") {

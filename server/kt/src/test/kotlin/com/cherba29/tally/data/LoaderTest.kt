@@ -10,18 +10,18 @@ import io.kotest.engine.coroutines.testScheduler
 import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.comparables.shouldBeLessThan
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
-import kotlin.io.path.createFile
-import kotlin.io.path.div
-import kotlin.io.path.writeText
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.datetime.LocalDate
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.createFile
+import kotlin.io.path.div
+import kotlin.io.path.writeText
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.TestTimeSource
@@ -46,12 +46,14 @@ class LoaderTest : DescribeSpec({
         val result = loader.budget()
 
         result.nodeToStatement.size shouldBe 3
-        val tranStatement = result.nodeToStatement[result.tree[listOf("someone", "external", "test-account")]]?.get(MAR / 2019)!!
+        val accountNode = result.tree[listOf("someone", "external", "test-account")]
+        val tranStatement = result.nodeToStatement[accountNode]?.get(MAR / 2019)!!
         tranStatement.monthRange shouldBe MAR / 2019..MAR / 2019
         tranStatement.treeNode.name shouldBe "test-account"
 
         tranStatement.startBalance shouldBe Balance(
-          10000, LocalDate(2019, 3, 1),
+          10000,
+          LocalDate(2019, 3, 1),
           Balance.Type.CONFIRMED
         )
       }
@@ -62,13 +64,13 @@ class LoaderTest : DescribeSpec({
         val tallyPath = tempdir("tally-", keepOnFailure = false).toPath()
         (tallyPath / "file2.yaml").createFile().writeText(
           """
-        name: test-account
-        owner: [someone]
-        path: [external]
-        opened_on: Mar2019
-        balances:
-          - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
-        """.trimIndent()
+          name: test-account
+          owner: [someone]
+          path: [external]
+          opened_on: Mar2019
+          balances:
+            - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
+          """.trimIndent()
         )
 
         val result = Loader.loadFrom(tallyPath)
@@ -80,7 +82,8 @@ class LoaderTest : DescribeSpec({
         tranStatement.treeNode.name shouldBe "test-account"
 
         tranStatement.startBalance shouldBe Balance(
-          10000, LocalDate(2019, 3, 1),
+          10000,
+          LocalDate(2019, 3, 1),
           Balance.Type.CONFIRMED
         )
       }
@@ -173,14 +176,14 @@ class LoaderTest : DescribeSpec({
           channel.trySend(WatchResult(rootPath, relativePath, true)).isSuccess shouldBe true
           testScheduler.advanceTimeBy(1000)
 
-          loader.loadedOn shouldBe 150.seconds  // Should not change since add file fails.
+          loader.loadedOn shouldBe 150.seconds // Should not change since add file fails.
 
           val result2 = loader.budget()
           result2.tree shouldBe root { leaf("testAccount1") }
           channel.close() shouldBe true
 
           verify { processedBudget.addFile(rootPath, relativePath) }
-          verify(exactly = 1) { processedBudget.reProcess() }  // Second call was not made due to error.
+          verify(exactly = 1) { processedBudget.reProcess() } // Second call was not made due to error.
         }
       }
 
@@ -220,7 +223,7 @@ class LoaderTest : DescribeSpec({
           channel.trySend(WatchResult(rootPath, relativePath, true)).isSuccess shouldBe true
           testScheduler.advanceTimeBy(1000)
 
-          loader.loadedOn shouldBe 150.seconds  // Should not change since reprocess fails.
+          loader.loadedOn shouldBe 150.seconds // Should not change since reprocess fails.
 
           val result2 = loader.budget()
           result2.tree shouldBe root { leaf("testAccount1") }
@@ -228,7 +231,7 @@ class LoaderTest : DescribeSpec({
 
           verify(exactly = 2) { processedBudget.addFile(rootPath, relativePath) }
           verify(exactly = 2) { processedBudget.reProcess() }
-          verify(exactly = 1) { processedBudget.dataPayload }  // Second call was not made due to error.
+          verify(exactly = 1) { processedBudget.dataPayload } // Second call was not made due to error.
         }
       }
     }

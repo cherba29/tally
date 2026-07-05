@@ -28,12 +28,14 @@ class ProcessedBudgetTest : DescribeSpec({
     it("single") {
       val folder = tempdir("tally-", keepOnFailure = false).toPath()
       val filePath = (folder / "file2.yaml").createFile()
-      filePath.writeText("""
+      filePath.writeText(
+        """
         name: test-account
         path: [external]
         owner: [john]
         opened_on: Mar2026
-       """.trimIndent())
+        """.trimIndent()
+      )
 
       val processedBudget = ProcessedBudget()
       processedBudget.addFile(
@@ -42,16 +44,23 @@ class ProcessedBudgetTest : DescribeSpec({
       )
       processedBudget.reProcess()
       val budget = processedBudget.budget!!
-      budget.tree shouldBe root { branch("john") { branch("external") { leaf("test-account") }  } }
+      budget.tree shouldBe root {
+        branch("john") {
+          branch("external") {
+            leaf("test-account")
+          }
+        }
+      }
+      val accountNode = budget.tree[listOf("john", "external", "test-account")]
       budget.nodeToStatement.keys shouldBe setOf(
-        budget.tree[listOf("john", "external", "test-account")],
+        accountNode,
         budget.tree[listOf("john", "external")],
-        budget.tree[listOf("john")],
+        budget.tree[listOf("john")]
       )
 
-      val transactionStatement = budget.nodeToStatement[budget.tree[listOf("john", "external", "test-account")]]?.get(MAR / 2026)!! as TransactionStatement
+      val transactionStatement = budget.nodeToStatement[accountNode]?.get(MAR / 2026)!! as TransactionStatement
       transactionStatement.treeNode.name shouldBe "test-account"
-      transactionStatement.monthRange shouldBe MAR / 2026 .. MAR / 2026
+      transactionStatement.monthRange shouldBe MAR / 2026..MAR / 2026
       transactionStatement.treeNode.path shouldBe listOf("john", "external", "test-account")
 
       transactionStatement.transactions.isEmpty() shouldBe true

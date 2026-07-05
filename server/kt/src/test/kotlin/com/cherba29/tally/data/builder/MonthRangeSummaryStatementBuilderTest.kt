@@ -32,7 +32,7 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
       }
       val testStatement = Statement(tree[listOf("john", "external", "test-account1")]!!, APR / 2026..APR / 2026)
       val builder = MonthRangeSummaryStatementBuilder()
-      builder.addStatement( testStatement)
+      builder.addStatement(testStatement)
       val result = builder.build(tree["john"]!!)
       result.treeNode.path shouldBe listOf("john")
       result.monthRange shouldBe APR / 2026..APR / 2026
@@ -81,16 +81,15 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
         tree[listOf("john", "internal", "test-account1")]!!,
         monthRange = APR / 2026..APR / 2026,
         isClosed = false,
-        startBalance = startBalance1,
+        startBalance = startBalance1
       )
       val startBalance2 = Balance(200, LocalDate(2026, 5, 1), Balance.Type.CONFIRMED)
       val stmt2 = TransactionStatement(
         tree[listOf("john", "internal", "test-account1")]!!,
         monthRange = MAY / 2026..MAY / 2026,
         isClosed = false,
-        startBalance = startBalance2,
+        startBalance = startBalance2
       )
-
 
       val builder = MonthRangeSummaryStatementBuilder()
       builder.addStatement(stmt1)
@@ -127,7 +126,7 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
 
       val statement = Statement(
         tree[listOf("john", "internal", "test-account1")]!!,
-        JAN / 2026..MAR / 2026,
+        JAN / 2026..MAR / 2026
       )
       statement.isClosed shouldBe false
       statement.percentChange shouldBe null

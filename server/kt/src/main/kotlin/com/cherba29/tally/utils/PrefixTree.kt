@@ -13,7 +13,7 @@ class PrefixTree(var rank: Int = Int.MAX_VALUE) {
 
   fun insert(path: List<String>, rank: Int = Int.MAX_VALUE): PrefixTree {
     var node = this
-    for (part in path.subList(0, path.size-1)) {
+    for (part in path.subList(0, path.size - 1)) {
       node.rank = min(node.rank, rank)
       node = node.insert(part)
     }

@@ -1,6 +1,12 @@
 package com.cherba29.tally.core
 
-import com.cherba29.tally.core.MonthName.*
+import com.cherba29.tally.core.MonthName.APR
+import com.cherba29.tally.core.MonthName.DEC
+import com.cherba29.tally.core.MonthName.FEB
+import com.cherba29.tally.core.MonthName.JAN
+import com.cherba29.tally.core.MonthName.JUN
+import com.cherba29.tally.core.MonthName.MAR
+import com.cherba29.tally.core.MonthName.MAY
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.ints.shouldBeGreaterThan
@@ -10,7 +16,6 @@ import io.kotest.matchers.ranges.shouldNotBeIn
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import kotlinx.datetime.LocalDate
-
 
 class MonthTest : DescribeSpec({
   describe("Creation") {
@@ -148,7 +153,6 @@ class MonthTest : DescribeSpec({
       (monthB - monthA) shouldBe -1
       monthA shouldBe Month(2020, 0)
     }
-
   }
 
   describe("Naming") {
@@ -170,7 +174,8 @@ class MonthTest : DescribeSpec({
 
     it("fromString bad name") {
       val exception = shouldThrow<java.lang.IllegalArgumentException> { Month.fromString("Sec2020") }
-      exception.message shouldBe "Bad month name 'Sec' for 'Sec2020', valid names [Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec]"
+      exception.message shouldBe
+        "Bad month name 'Sec' for 'Sec2020', valid names [Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec]"
     }
 
     it("fromString bad year") {
@@ -272,7 +277,7 @@ class MonthTest : DescribeSpec({
       val start = Month(2019, 10)
       val end = Month(2020, 1)
 
-      val exception = shouldThrow<IllegalArgumentException> { start..end step -1  }
+      val exception = shouldThrow<IllegalArgumentException> { start..end step -1 }
       exception.message shouldBe "Step must be positive, was: -1."
     }
 
@@ -280,7 +285,7 @@ class MonthTest : DescribeSpec({
       val start = Month(2019, 10)
       val end = Month(2020, 1)
 
-      val exception = shouldThrow<IllegalArgumentException> { end downTo start step -1  }
+      val exception = shouldThrow<IllegalArgumentException> { end downTo start step -1 }
       exception.message shouldBe "Step must be positive, was: -1."
     }
   }
@@ -325,8 +330,8 @@ class MonthTest : DescribeSpec({
       val empty1 = MonthProgression(MAR / 2026, FEB / 2026, 1)
       val empty2 = MonthProgression(FEB / 2026, MAR / 2026, -1)
       val range = MonthProgression(MAR / 2026, APR / 2026, 1)
-      range shouldNotBe "Mar2026..Apr2026"  // Is not equal to another type.
-      range shouldNotBe MonthProgression(MAR / 2026, MAY / 2026,1)
+      range shouldNotBe "Mar2026..Apr2026" // Is not equal to another type.
+      range shouldNotBe MonthProgression(MAR / 2026, MAY / 2026, 1)
       range shouldNotBe MonthProgression(FEB / 2026, APR / 2026, 1)
       range shouldNotBe MonthProgression(MAR / 2026, APR / 2026, -1)
       range shouldBe MonthProgression(MAR / 2026, APR / 2026, 1)
@@ -351,9 +356,10 @@ class MonthTest : DescribeSpec({
       }
       it("distribution") {
         val start = MAR / 2026
-        val hashCodes = (1..1000).map {
-          MonthProgression(start,start.next(it), 1).hashCode()
-        }.toSet()
+        val hashCodes = (1..1000)
+          .map {
+            MonthProgression(start, start.next(it), 1).hashCode()
+          }.toSet()
         hashCodes.size shouldBe 1000
       }
     }
@@ -404,16 +410,16 @@ class MonthTest : DescribeSpec({
     }
 
     it("equal") {
-      val range = MAR / 2026 .. APR / 2026
-      range shouldNotBe "Mar2026..Apr2026"  // Is not equal to another type.
-      range shouldNotBe MAR / 2026 .. MAY / 2026
-      range shouldNotBe FEB / 2026 .. APR / 2026
+      val range = MAR / 2026..APR / 2026
+      range shouldNotBe "Mar2026..Apr2026" // Is not equal to another type.
+      range shouldNotBe MAR / 2026..MAY / 2026
+      range shouldNotBe FEB / 2026..APR / 2026
       range shouldNotBe MonthRange.EMPTY
       MonthRange.EMPTY shouldNotBe range
     }
 
     it("left open") {
-      val range = null .. APR / 2026
+      val range = null..APR / 2026
       MAR / 2026 shouldBeIn range
       APR / 2026 shouldBeIn range
       MAY / 2026 shouldNotBeIn range
@@ -421,7 +427,7 @@ class MonthTest : DescribeSpec({
     }
 
     it("right open") {
-      val range = MAR / 2026 .. null
+      val range = MAR / 2026..null
       MAR / 2026 shouldBeIn range
       APR / 2026 shouldBeIn range
       FEB / 2026 shouldNotBeIn range
@@ -430,7 +436,7 @@ class MonthTest : DescribeSpec({
     }
 
     it("toString") {
-      val range = MonthRange(MAR / 2026,  APR / 2026)
+      val range = MonthRange(MAR / 2026, APR / 2026)
       range.toString() shouldBe "Mar2026..Apr2026"
     }
 
@@ -453,39 +459,39 @@ class MonthTest : DescribeSpec({
     }
     describe("enlargeTo") {
       it("same does not change") {
-        val range = MAR / 2026 .. APR / 2026
-        range.enlargeTo(range) shouldBe MAR / 2026 .. APR / 2026
+        val range = MAR / 2026..APR / 2026
+        range.enlargeTo(range) shouldBe MAR / 2026..APR / 2026
       }
       it("with null no change") {
-        val range = MAR / 2026 .. APR / 2026
-        range.enlargeTo(null) shouldBe MAR / 2026 .. APR / 2026
-        null.enlargeTo(range) shouldBe MAR / 2026 .. APR / 2026
+        val range = MAR / 2026..APR / 2026
+        range.enlargeTo(null) shouldBe MAR / 2026..APR / 2026
+        null.enlargeTo(range) shouldBe MAR / 2026..APR / 2026
         null.enlargeTo(null) shouldBe null
       }
       it("overlapping enlarges") {
-        val range1 = MAR / 2026 .. MAR / 2027
-        val range2 = APR / 2026 .. APR / 2027
-        range1.enlargeTo(range2) shouldBe MAR / 2026 .. APR / 2027
-        range2.enlargeTo(range1) shouldBe MAR / 2026 .. APR / 2027
+        val range1 = MAR / 2026..MAR / 2027
+        val range2 = APR / 2026..APR / 2027
+        range1.enlargeTo(range2) shouldBe MAR / 2026..APR / 2027
+        range2.enlargeTo(range1) shouldBe MAR / 2026..APR / 2027
       }
     }
 
     describe("reduceTo") {
       it("same does not change") {
-        val range = MAR / 2026 .. APR / 2026
-        range.reduceTo(range) shouldBe MAR / 2026 .. APR / 2026
+        val range = MAR / 2026..APR / 2026
+        range.reduceTo(range) shouldBe MAR / 2026..APR / 2026
       }
       it("with null no change") {
-        val range = MAR / 2026 .. APR / 2026
-        range.reduceTo(null) shouldBe MAR / 2026 .. APR / 2026
-        null.reduceTo(range) shouldBe MAR / 2026 .. APR / 2026
+        val range = MAR / 2026..APR / 2026
+        range.reduceTo(null) shouldBe MAR / 2026..APR / 2026
+        null.reduceTo(range) shouldBe MAR / 2026..APR / 2026
         null.reduceTo(null) shouldBe null
       }
       it("overlapping reduces") {
-        val range1 = MAR / 2026 .. MAR / 2027
-        val range2 = APR / 2026 .. APR / 2027
-        range1.reduceTo(range2) shouldBe APR / 2026 .. MAR / 2027
-        range2.reduceTo(range1) shouldBe APR / 2026 .. MAR / 2027
+        val range1 = MAR / 2026..MAR / 2027
+        val range2 = APR / 2026..APR / 2027
+        range1.reduceTo(range2) shouldBe APR / 2026..MAR / 2027
+        range2.reduceTo(range1) shouldBe APR / 2026..MAR / 2027
       }
     }
     describe("plus") {
@@ -499,15 +505,15 @@ class MonthTest : DescribeSpec({
       }
       it("within rage max does not change") {
         val range = MAR / 2026..APR / 2026
-        range + APR / 2026 shouldBe MAR / 2026 .. APR / 2026
+        range + APR / 2026 shouldBe MAR / 2026..APR / 2026
       }
       it("increases max") {
         val range = MAR / 2026..APR / 2026
-        range + MAY / 2026 shouldBe MAR / 2026 .. MAY / 2026
+        range + MAY / 2026 shouldBe MAR / 2026..MAY / 2026
       }
       it("decreases min") {
         val range = MAR / 2026..APR / 2026
-        range + FEB / 2026 shouldBe FEB / 2026 .. APR / 2026
+        range + FEB / 2026 shouldBe FEB / 2026..APR / 2026
       }
     }
   }

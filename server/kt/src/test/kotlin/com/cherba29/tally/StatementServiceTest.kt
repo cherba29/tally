@@ -32,7 +32,7 @@ class StatementServiceTest : DescribeSpec({
         StatementService(loader).statement(
           owner = "john",
           account = "test-account",
-          month = MAR / 2026,
+          month = MAR / 2026
         )
       }
       exception.message shouldBe "Did not find account 'test-account' for owner 'john'"
@@ -51,10 +51,11 @@ class StatementServiceTest : DescribeSpec({
         StatementService(loader).statement(
           owner = "john",
           account = "test-account1",
-          month = APR / 2026,
+          month = APR / 2026
         )
       }
-      exception.message shouldBe "Did not find statement for month 'Apr2026' for owner 'john' in account 'test-account1'"
+      exception.message shouldBe "Did not find statement for month 'Apr2026' " +
+        "for owner 'john' in account 'test-account1'"
     }
 
     it("single statement no transactions") {
@@ -69,7 +70,7 @@ class StatementServiceTest : DescribeSpec({
       val result = StatementService(loader).statement(
         owner = "john",
         account = "test-account",
-        month = MAR / 2026,
+        month = MAR / 2026
       )
       result shouldBe GqlStatement(
         name = "test-account",
@@ -95,19 +96,31 @@ class StatementServiceTest : DescribeSpec({
     }
 
     it("statement with transactions") {
-      val account1 =
-        Account(name = "test-account1", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
-      val account2 =
-        Account(name = "test-account2", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
+      val account1 = Account(
+        name = "test-account1",
+        owners = setOf("john"),
+        path = listOf("internal"),
+        openedOn = MAR / 2026
+      )
+      val account2 = Account(
+        name = "test-account2",
+        owners = setOf("john"),
+        path = listOf("internal"),
+        openedOn = MAR / 2026
+      )
 
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
           setAccount(listOf("john", "internal", "test-account1"), account1)
           setAccount(listOf("john", "internal", "test-account2"), account2)
           setBalance(
-            listOf("john", "internal", "test-account1"), MAR / 2026,
+            listOf("john", "internal", "test-account1"),
+            MAR / 2026,
             Balance(
-              amount = 100, date = LocalDate(2026, 3, 1), type = Balance.Type.CONFIRMED, description = "start balance"
+              amount = 100,
+              date = LocalDate(2026, 3, 1),
+              type = Balance.Type.CONFIRMED,
+              description = "start balance"
             )
           )
           addTransfer(
@@ -130,7 +143,7 @@ class StatementServiceTest : DescribeSpec({
       val result = StatementService(loader).statement(
         owner = "john",
         account = "test-account1",
-        month = MAR / 2026,
+        month = MAR / 2026
       )
       result shouldBe GqlStatement(
         name = "test-account1",
@@ -140,7 +153,10 @@ class StatementServiceTest : DescribeSpec({
         isProjectedCovered = true,
         hasProjectedTransfer = false,
         startBalance = GqlBalance(
-          amount = 100, date = LocalDate(2026, 3, 1), type = "CONFIRMED", desc = "start balance"
+          amount = 100,
+          date = LocalDate(2026, 3, 1),
+          type = "CONFIRMED",
+          desc = "start balance"
         ),
         endBalance = null,
         inFlows = 200,

@@ -20,8 +20,10 @@ class TableServiceTest : DescribeSpec({
   describe("buildGqlTable") {
     it("empty") {
       val account = Account(
-        "test-account", owners = setOf("john"), path = listOf("internal"),
-        openedOn = MAR / 2026,
+        "test-account",
+        owners = setOf("john"),
+        path = listOf("internal"),
+        openedOn = MAR / 2026
       )
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
@@ -36,13 +38,17 @@ class TableServiceTest : DescribeSpec({
     it("empty - no open accounts") {
       val accountPath1 = listOf("john", "external", "test-account1")
       val account1 = Account(
-        name = "test-account1", path = listOf("external"), owners = setOf("john"),
+        name = "test-account1",
+        path = listOf("external"),
+        owners = setOf("john"),
         openedOn = MAR / 2026,
         closedOn = MAR / 2026
       )
       val accountPath2 = listOf("john", "external", "test-account2")
       val account2 = Account(
-        name = "test-account2", path = listOf("external"), owners = setOf("john"),
+        name = "test-account2",
+        path = listOf("external"),
+        owners = setOf("john"),
         openedOn = MAR / 2026,
         closedOn = MAR / 2026
       )
@@ -51,15 +57,15 @@ class TableServiceTest : DescribeSpec({
         setAccount(accountPath2, account2)
         addTransfer(
           BudgetBuilder.TransferRecord(
-          fromAccountPath = accountPath1,
-          toAccountName = "test-account2",
-          month = MAR / 2026,
-          balance = Balance(
-            amount = 100,
-            date = LocalDate(2026, 3, 1),
-            type = Balance.Type.CONFIRMED
-          ),
-          description = "test transfer"
+            fromAccountPath = accountPath1,
+            toAccountName = "test-account2",
+            month = MAR / 2026,
+            balance = Balance(
+              amount = 100,
+              date = LocalDate(2026, 3, 1),
+              type = Balance.Type.CONFIRMED
+            ),
+            description = "test transfer"
           )
         )
       }
@@ -74,13 +80,17 @@ class TableServiceTest : DescribeSpec({
     it("single open account without path") {
       val accountPath = listOf("john", "external", "test-account")
       val account = Account(
-        name = "test-account", path = listOf("external"), owners = setOf("john"),
+        name = "test-account",
+        path = listOf("external"),
+        owners = setOf("john"),
         openedOn = JAN / 2026
       )
       val payload = budget {
         setAccount(accountPath, account)
         setBalance(
-          accountPath, MAR / 2026, Balance(
+          accountPath,
+          MAR / 2026,
+          Balance(
             amount = 100,
             date = LocalDate(2026, 3, 1),
             type = Balance.Type.CONFIRMED
@@ -95,13 +105,17 @@ class TableServiceTest : DescribeSpec({
     it("single open account with path") {
       val accountPath = listOf("john", "internal", "test-account")
       val account = Account(
-        name = "test-account", path = listOf("internal"), owners = setOf("john"),
+        name = "test-account",
+        path = listOf("internal"),
+        owners = setOf("john"),
         openedOn = JAN / 2026
       )
       val payload = budget {
         setAccount(accountPath, account)
         setBalance(
-          accountPath, MAR / 2026, Balance(
+          accountPath,
+          MAR / 2026,
+          Balance(
             amount = 100,
             date = LocalDate(2026, 3, 1),
             type = Balance.Type.CONFIRMED

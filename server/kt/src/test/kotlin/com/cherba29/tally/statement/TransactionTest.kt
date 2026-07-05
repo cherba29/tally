@@ -29,7 +29,7 @@ class TransactionTest : DescribeSpec({
                 toAccountName = "test-account2",
                 month = DEC / 2019,
                 balance = Balance.projected(2000, "2019-12-05"),
-                description = "First transfer",
+                description = "First transfer"
               )
             )
           }

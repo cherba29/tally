@@ -13,7 +13,7 @@ import kotlin.io.path.createFile
 import kotlin.io.path.div
 import kotlin.io.path.writeText
 
-class ReportTest: DescribeSpec({
+class ReportTest : DescribeSpec({
   describe("parameter validation") {
     it("account required") {
       val command = Report()
@@ -71,7 +71,6 @@ class ReportTest: DescribeSpec({
       command.startMonth shouldBe APR / 2026
       command.endMonth shouldBe MAY / 2026
     }
-
   }
   describe("runs") {
     it("successfully for account") {
@@ -94,8 +93,8 @@ class ReportTest: DescribeSpec({
       )
       result.stderr shouldBe ""
       result.stdout shouldBe "Executing report for test-account from Apr2026 to May2026 for $tallyPath\n" +
-          "Account,Path,OpenedOn,ClosedOn,External,Closed,Year,Month,Start Amount,Start Projected,End Amount," +
-          "End Projected,Inflows,OutFlows,Income,Expense,Transfers,Unaccounted\n"
+        "Account,Path,OpenedOn,ClosedOn,External,Closed,Year,Month,Start Amount,Start Projected,End Amount," +
+        "End Projected,Inflows,OutFlows,Income,Expense,Transfers,Unaccounted\n"
       result.statusCode shouldBe 0
     }
     it("successfully for summary") {
@@ -118,8 +117,8 @@ class ReportTest: DescribeSpec({
       )
       result.stderr shouldBe ""
       result.stdout shouldBe "Executing report for someone/external from Apr2026 to May2026 for $tallyPath\n" +
-          "Account,Path,OpenedOn,ClosedOn,External,Closed,Year,Month,Start Amount,Start Projected,End Amount," +
-          "End Projected,Inflows,OutFlows,Income,Expense,Transfers,Unaccounted\n"
+        "Account,Path,OpenedOn,ClosedOn,External,Closed,Year,Month,Start Amount,Start Projected,End Amount," +
+        "End Projected,Inflows,OutFlows,Income,Expense,Transfers,Unaccounted\n"
       result.statusCode shouldBe 0
     }
   }

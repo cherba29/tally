@@ -29,7 +29,7 @@ class PrefixTreeTest : DescribeSpec({
       prefixTree.isEmpty() shouldBe false
       prefixTree.sortedEntries shouldBe listOf(
         "test1" to prefixTree[path1],
-        "test2" to prefixTree[path2],
+        "test2" to prefixTree[path2]
       )
     }
   }
@@ -43,7 +43,7 @@ class PrefixTreeTest : DescribeSpec({
       prefixTree.isEmpty() shouldBe false
       prefixTree.sortedEntries shouldBe listOf(
         "test1" to prefixTree[path1],
-        "test2" to prefixTree[path2],
+        "test2" to prefixTree[path2]
       )
     }
     it("by rank") {
@@ -55,7 +55,7 @@ class PrefixTreeTest : DescribeSpec({
       prefixTree.isEmpty() shouldBe false
       prefixTree.sortedEntries shouldBe listOf(
         "test2" to prefixTree[path2],
-        "test1" to prefixTree[path1],
+        "test1" to prefixTree[path1]
       )
     }
 
@@ -68,7 +68,7 @@ class PrefixTreeTest : DescribeSpec({
       prefixTree.isEmpty() shouldBe false
       prefixTree.sortedEntries shouldBe listOf(
         "test2" to prefixTree[listOf("test2")],
-        "test1" to prefixTree[listOf("test1")],
+        "test1" to prefixTree[listOf("test1")]
       )
     }
   }

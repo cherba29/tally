@@ -17,7 +17,6 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate
 
-
 class BudgetBuilderTest : DescribeSpec({
   it("build empty budget") {
     val error = shouldThrow<IllegalArgumentException> { budget {} }
@@ -70,7 +69,12 @@ class BudgetBuilderTest : DescribeSpec({
     budget.leafToAccount[budget.tree[listOf("john", "internal", "test-account1")]] shouldBe account1
     budget.leafToAccount[budget.tree[listOf("john", "internal", "test-account2")]] shouldBe account2
     budget.nodeToStatement.filter { it.key.children.isEmpty() }.size shouldBe 3
-    budget.nodeToStatement.values.sumOf { it.values.count { s -> (s as? TransactionStatement)?.startBalance != null } } shouldBe 3
+    val numberOfStatementsWithBalances = budget.nodeToStatement.values.sumOf {
+      it.values.count { s ->
+        (s as? TransactionStatement)?.startBalance != null
+      }
+    }
+    numberOfStatementsWithBalances shouldBe 3
     budget.nodeToStatement.values.sumOf {
       it.values.sumOf { s ->
         (s as? TransactionStatement)?.transactions?.size ?: 0
@@ -92,7 +96,7 @@ class BudgetBuilderTest : DescribeSpec({
       budget.tree[listOf("john", "internal")],
       budget.tree[listOf("john", "internal", "test-account1")],
       budget.tree[listOf("john", "internal", "test-account2")],
-      budget.tree[listOf("john", "internal", "test-account3")],
+      budget.tree[listOf("john", "internal", "test-account3")]
     )
   }
 
@@ -132,7 +136,7 @@ class BudgetBuilderTest : DescribeSpec({
       }
     }
     exception.message shouldBe "Ambiguous transfer from alice/test-account1 to test-account1, " +
-        "found multiple candidate accounts bob/test-account1, alice/test-account1"
+      "found multiple candidate accounts bob/test-account1, alice/test-account1"
   }
 
   it("build budget - duplicate balance") {
@@ -153,7 +157,7 @@ class BudgetBuilderTest : DescribeSpec({
       )
     }
     exception.message shouldBe "Balance for 'bob/internal/test-account1' 'Nov2019' is already set to" +
-        " Balance { amount: 200.00, date: 2020-03-01, type: PROJECTED }"
+      " Balance { amount: 200.00, date: 2020-03-01, type: PROJECTED }"
   }
 
   it("build budget - bad to account") {
@@ -168,18 +172,19 @@ class BudgetBuilderTest : DescribeSpec({
             fromAccountPath = path2,
             month = NOV / 2019,
             balance = Balance(50, LocalDate(2019, 12, 2), Balance.Type.CONFIRMED),
-            description = null,
+            description = null
           )
         )
       }
     }
-    exception.message shouldBe """
+    exception.message shouldBe
+      """
       Unknown to account test-account1 in bob/test-account2, known accounts
       └── 
           └── bob
               └── test-account2
 
-    """.trimIndent()
+      """.trimIndent()
   }
 
   it("build budget - bad from account") {
@@ -195,7 +200,7 @@ class BudgetBuilderTest : DescribeSpec({
             fromAccountPath = path2,
             month = NOV / 2019,
             balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
-            description = null,
+            description = null
           )
         )
       }
@@ -251,19 +256,20 @@ class BudgetBuilderTest : DescribeSpec({
                   toAccountName = "test-account2",
                   month = DEC / 2019,
                   balance = Balance.projected(2000, "2019-12-05"),
-                  description = "First transfer",
+                  description = "First transfer"
                 )
               )
             }
           }
-        exception.message shouldBe """
+        exception.message shouldBe
+          """
           Unknown to account test-account2 in john/external/test-account1, known accounts
           └── 
               └── john
                   └── external
                       └── test-account1
 
-        """.trimIndent()
+          """.trimIndent()
       }
 
       it("transfer with date before start balance") {
@@ -271,7 +277,8 @@ class BudgetBuilderTest : DescribeSpec({
         val account1 = Account(
           name = "test-account1",
           path = listOf("external"),
-          owners = setOf("john"), openedOn = DEC / 2021
+          owners = setOf("john"),
+          openedOn = DEC / 2021
         )
         val exception =
           shouldThrow<IllegalStateException> {
@@ -284,15 +291,15 @@ class BudgetBuilderTest : DescribeSpec({
                   toAccountName = "test-account1",
                   month = DEC / 2019,
                   balance = Balance.projected(2000, "2019-11-25"),
-                  description = "First transfer",
+                  description = "First transfer"
                 )
               )
             }
           }
         exception.message shouldBe "Balance Dec2019 Balance { amount: 10.00, date: 2019-12-01, type: CONFIRMED } " +
-            "for account test-account1 starts after transaction test-account1 --> " +
-            "test-account1/Balance { amount: 20.00, date: 2019-11-25, type: PROJECTED } " +
-            "desc 'First transfer'"
+          "for account test-account1 starts after transaction test-account1 --> " +
+          "test-account1/Balance { amount: 20.00, date: 2019-11-25, type: PROJECTED } " +
+          "desc 'First transfer'"
       }
     }
   }
@@ -302,7 +309,8 @@ class BudgetBuilderTest : DescribeSpec({
       val account1 = Account(
         name = "test-account1",
         path = listOf("external"),
-        owners = setOf("john"), openedOn = MAR / 2021
+        owners = setOf("john"),
+        openedOn = MAR / 2021
       )
       val startBalance = Balance(
         100,
@@ -336,7 +344,7 @@ class BudgetBuilderTest : DescribeSpec({
         statements.keys shouldBe setOf(
           budget.tree[listOf("john", "external", "test-account1")],
           budget.tree[listOf("john", "external")],
-          budget.tree[listOf("john")],
+          budget.tree[listOf("john")]
         )
       }
       val treeNode1 = budget.tree[listOf("john", "external")]!!
@@ -373,7 +381,8 @@ class BudgetBuilderTest : DescribeSpec({
       val account1 = Account(
         name = "test-account1",
         path = listOf("external"),
-        owners = setOf("john"), openedOn = MAR / 2021
+        owners = setOf("john"),
+        openedOn = MAR / 2021
       )
       val balance1 = Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       val budget = budget {
@@ -393,7 +402,7 @@ class BudgetBuilderTest : DescribeSpec({
       statements.keys shouldBe setOf(
         budget.tree[listOf("john", "external", "test-account1")],
         budget.tree[listOf("john", "external")],
-        budget.tree[listOf("john")],
+        budget.tree[listOf("john")]
       )
 
       val treeNode = budget.tree["john"]
@@ -416,7 +425,8 @@ class BudgetBuilderTest : DescribeSpec({
       val account1 = Account(
         name = "test-account1",
         path = listOf("external"),
-        owners = setOf("john"), openedOn = MAR / 2021
+        owners = setOf("john"),
+        openedOn = MAR / 2021
       )
       val balance1 = Balance(
         100,
@@ -450,7 +460,7 @@ class BudgetBuilderTest : DescribeSpec({
       statements.keys shouldBe setOf(
         budget.tree[listOf("john", "external", "test-account1")],
         budget.tree[listOf("john", "external")],
-        budget.tree[listOf("john")],
+        budget.tree[listOf("john")]
       )
 
       val externalTreeNode = budget.tree[listOf("john", "external")]
@@ -485,7 +495,8 @@ class BudgetBuilderTest : DescribeSpec({
       val account1 = Account(
         name = "test-account1",
         path = listOf("external"),
-        owners = setOf("john"), openedOn = MAR / 2021
+        owners = setOf("john"),
+        openedOn = MAR / 2021
       )
 
       val balance1 = Balance(
@@ -498,7 +509,8 @@ class BudgetBuilderTest : DescribeSpec({
       val account2 = Account(
         name = "test-account2",
         path = listOf("external"),
-        owners = setOf("bob"), openedOn = MAR / 2021
+        owners = setOf("bob"),
+        openedOn = MAR / 2021
       )
       val balance2 = Balance(
         300,
@@ -510,7 +522,8 @@ class BudgetBuilderTest : DescribeSpec({
       val account3 = Account(
         name = "test-account3",
         path = listOf(),
-        owners = setOf("john"), openedOn = MAR / 2021
+        owners = setOf("john"),
+        openedOn = MAR / 2021
       )
       val balance3 = Balance(
         500,

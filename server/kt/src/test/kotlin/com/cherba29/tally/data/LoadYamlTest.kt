@@ -17,8 +17,8 @@ import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import java.nio.file.Paths
 import kotlinx.datetime.LocalDate
+import java.nio.file.Paths
 
 class LoadYamlTest : DescribeSpec({
   describe("loadYaml") {
@@ -26,7 +26,7 @@ class LoadYamlTest : DescribeSpec({
       val relativeFilePath = Paths.get("path/file.yaml")
       val accountData = YamlData(
         number = "123",
-        openedOn = DEC / 2019,
+        openedOn = DEC / 2019
       )
       val error = shouldThrow<IllegalArgumentException> {
         budget {
@@ -42,7 +42,7 @@ class LoadYamlTest : DescribeSpec({
         name = "test",
         number = "123",
         openedOn = DEC / 2019,
-        owner = listOf(),
+        owner = listOf()
       )
       val exception = shouldThrow<IllegalArgumentException> {
         budget {
@@ -109,7 +109,7 @@ class LoadYamlTest : DescribeSpec({
       budget.nodeToStatement.keys shouldBe setOf(
         budget.tree[listOf("arthur", "external", "test-account")],
         budget.tree[listOf("arthur", "external")],
-        budget.tree[listOf("arthur")],
+        budget.tree[listOf("arthur")]
       )
     }
 
@@ -122,8 +122,8 @@ class LoadYamlTest : DescribeSpec({
         owner = listOf("someone"),
         balances = listOf(
           BalanceYamlData(grp = FEB / 2020, date = LocalDate(2020, 2, 1), pamt = 10.0),
-          BalanceYamlData(grp = JAN / 2020, date = LocalDate(2020, 1, 1), camt = 0.0),
-        ),
+          BalanceYamlData(grp = JAN / 2020, date = LocalDate(2020, 1, 1), camt = 0.0)
+        )
       )
       val budget = budget {
         loadYamlFile(this, accountData, relativeFilePath)
@@ -132,12 +132,19 @@ class LoadYamlTest : DescribeSpec({
       budget.leafToAccount.size shouldBe 1
       budget.nodeToStatement.size shouldBe 3
       budget.months.size shouldBe 2
-      budget.nodeToStatement.values.sumOf { it.values.sumOf { s -> (s as? TransactionStatement)?.transactions?.size ?: 0 } } shouldBe 0
+      budget.nodeToStatement.values.sumOf {
+        it.values.sumOf { s ->
+          (s as? TransactionStatement)?.transactions?.size ?: 0
+        }
+      } shouldBe
+        0
 
       val monthlyStatements = budget.nodeToStatement[budget.tree[listOf("someone", "external", "test-account")]]!!
       monthlyStatements.size shouldBe 2
-      monthlyStatements[JAN / 2020]?.startBalance shouldBe Balance(0, LocalDate.parse("2020-01-01"), Balance.Type.CONFIRMED)
-      monthlyStatements[FEB / 2020]?.startBalance shouldBe Balance(1000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
+      monthlyStatements[JAN / 2020]?.startBalance shouldBe
+        Balance(0, LocalDate.parse("2020-01-01"), Balance.Type.CONFIRMED)
+      monthlyStatements[FEB / 2020]?.startBalance shouldBe
+        Balance(1000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     }
 
     it("fails without balance month") {
@@ -149,14 +156,14 @@ class LoadYamlTest : DescribeSpec({
         openedOn = JAN / 2020,
         owner = listOf("someone"),
         balances = listOf(
-          BalanceYamlData(date = LocalDate(2020, 1, 1), camt = 0.0),
-        ),
+          BalanceYamlData(date = LocalDate(2020, 1, 1), camt = 0.0)
+        )
       )
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(budgetBuilder, accountData, relativeFilePath)
       }
       exception.message shouldBe "For test-account account balance entry with date '2020-01-01' " +
-          "and desc 'null' has no grp setting, while processing path/file.yaml"
+        "and desc 'null' has no grp setting, while processing path/file.yaml"
     }
 
     it("fails without balance date") {
@@ -167,14 +174,14 @@ class LoadYamlTest : DescribeSpec({
         path = listOf("external"),
         openedOn = JAN / 2020,
         owner = listOf("someone"),
-        balances = listOf(BalanceYamlData(grp = JAN / 2020, camt = 0.0)),
+        balances = listOf(BalanceYamlData(grp = JAN / 2020, camt = 0.0))
       )
 
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(budgetBuilder, accountData, relativeFilePath)
       }
       exception.message shouldBe "For test-account account balance for Jan2020 " +
-          "does not have date set, while processing path/file.yaml"
+        "does not have date set, while processing path/file.yaml"
     }
 
     it("fails without balance type") {
@@ -186,15 +193,15 @@ class LoadYamlTest : DescribeSpec({
         openedOn = JAN / 2020,
         owner = listOf("someone"),
         balances = listOf(
-          BalanceYamlData(grp = JAN / 2020, date = LocalDate(2020, 1, 1)),
-        ),
+          BalanceYamlData(grp = JAN / 2020, date = LocalDate(2020, 1, 1))
+        )
       )
 
       val exception = shouldThrow<IllegalArgumentException> {
         loadYamlFile(budgetBuilder, accountData, relativeFilePath)
       }
       exception.message shouldBe "For test-account account balance for Jan2020 " +
-          "does not have amount type set, expected camt or pamt entry, while processing path/file.yaml"
+        "does not have amount type set, expected camt or pamt entry, while processing path/file.yaml"
     }
 
     it("with projected and confirmed transfers") {
@@ -206,20 +213,20 @@ class LoadYamlTest : DescribeSpec({
         owner = listOf("someone"),
         balances = listOf(
           BalanceYamlData(grp = FEB / 2020, date = LocalDate(2020, 2, 1), pamt = 10.0),
-          BalanceYamlData(grp = JAN / 2020, date = LocalDate(2020, 1, 1), camt = 0.0),
+          BalanceYamlData(grp = JAN / 2020, date = LocalDate(2020, 1, 1), camt = 0.0)
         ),
         transfersTo = mapOf(
           "external" to listOf(
             TransferYamlData(
               grp = JAN / 2020,
               date = LocalDate(2020, 1, 17),
-              pamt = 37.5,
+              pamt = 37.5
             ),
             TransferYamlData(
               grp = JAN / 2020,
               date = LocalDate(2020, 1, 15),
-              camt = -22.48,
-            ),
+              camt = -22.48
+            )
           )
         )
       )
@@ -228,7 +235,7 @@ class LoadYamlTest : DescribeSpec({
         name = "external",
         path = listOf("external"),
         openedOn = JAN / 2020,
-        owner = listOf("someone"),
+        owner = listOf("someone")
       )
 
       val budget = budget {
@@ -250,12 +257,13 @@ class LoadYamlTest : DescribeSpec({
         budget.tree[listOf("someone", "external")],
         budget.tree[listOf("someone")],
         budget.tree[listOf("someone", "external", "test-account")],
-        budget.tree[listOf("someone", "external", "external")],
+        budget.tree[listOf("someone", "external", "external")]
       )
       budget.nodeToStatement[budget.tree[listOf("someone", "external")]]?.keys shouldBe setOf(FEB / 2020, JAN / 2020)
       budget.nodeToStatement[budget.tree[listOf("someone")]]?.keys shouldBe setOf(FEB / 2020, JAN / 2020)
 
-      val testAccountMonthlyStatements = budget.nodeToStatement[budget.tree[listOf("someone", "external", "test-account")]]!!
+      val testAccountNode = budget.tree[listOf("someone", "external", "test-account")]
+      val testAccountMonthlyStatements = budget.nodeToStatement[testAccountNode]!!
 
       testAccountMonthlyStatements.size shouldBe 2
       testAccountMonthlyStatements.values.count { it.startBalance != null } shouldBe 2
@@ -275,9 +283,10 @@ class LoadYamlTest : DescribeSpec({
           description = null,
           type = Transaction.Type.INCOME,
           balanceFromStart = 2248
-        ),
+        )
       )
-      val externalAccountMonthlyStatements = budget.nodeToStatement[budget.tree[listOf("someone", "external", "external")]]!!
+      val externalAccountNode = budget.tree[listOf("someone", "external", "external")]
+      val externalAccountMonthlyStatements = budget.nodeToStatement[externalAccountNode]!!
       externalAccountMonthlyStatements.size shouldBe 2
       val externalAccountStatement = externalAccountMonthlyStatements[JAN / 2020]!! as TransactionStatement
       externalAccountStatement.transactions shouldBe setOf(
@@ -286,15 +295,15 @@ class LoadYamlTest : DescribeSpec({
           balance = Balance(3750, LocalDate.parse("2020-01-17"), Balance.Type.PROJECTED),
           description = null,
           type = Transaction.Type.INCOME,
-          balanceFromStart = null,
+          balanceFromStart = null
         ),
         Transaction(
           treeNode = budget.tree[listOf("someone", "external", "test-account")]!!,
           balance = Balance(-2248, LocalDate.parse("2020-01-15"), Balance.Type.CONFIRMED),
           description = null,
           type = Transaction.Type.EXPENSE,
-          balanceFromStart = null,
-        ),
+          balanceFromStart = null
+        )
       )
     }
 
@@ -310,7 +319,7 @@ class LoadYamlTest : DescribeSpec({
           "external" to listOf(
             TransferYamlData(
               date = LocalDate(2020, 1, 17),
-              pamt = 37.5,
+              pamt = 37.5
             )
           )
         )
@@ -320,7 +329,7 @@ class LoadYamlTest : DescribeSpec({
         loadYamlFile(budgetBuilder, testAccountData, relativeFilePath)
       }
       exception.message shouldBe "For account 'test-account' transfer to 'external' " +
-          "does not have 'grp' field, while processing path/test.yaml"
+        "does not have 'grp' field, while processing path/test.yaml"
     }
 
     it("fails with transfer and no date") {
@@ -335,7 +344,7 @@ class LoadYamlTest : DescribeSpec({
           "external" to listOf(
             TransferYamlData(
               grp = JAN / 2020,
-              pamt = 37.5,
+              pamt = 37.5
             )
           )
         )
@@ -345,7 +354,7 @@ class LoadYamlTest : DescribeSpec({
         loadYamlFile(budgetBuilder, testAccountData, relativeFilePath)
       }
       exception.message shouldBe "For account 'test-account' transfer to 'external' " +
-          "does not have a valid 'date' field, while processing path/test.yaml"
+        "does not have a valid 'date' field, while processing path/test.yaml"
     }
 
     it("fails with transfer and too far apart dates") {
@@ -361,7 +370,7 @@ class LoadYamlTest : DescribeSpec({
             TransferYamlData(
               grp = JAN / 2020,
               date = LocalDate(2020, 4, 1),
-              pamt = 37.5,
+              pamt = 37.5
             )
           )
         )
@@ -371,7 +380,7 @@ class LoadYamlTest : DescribeSpec({
         loadYamlFile(budgetBuilder, testAccountData, relativeFilePath)
       }
       exception.message shouldBe "For account 'test-account' transfer to 'external' for Jan2020 date " +
-          "2020-04-01 (Apr2020) are too far apart, while processing path/test.yaml"
+        "2020-04-01 (Apr2020) are too far apart, while processing path/test.yaml"
     }
 
     it("fails with transfer and no balance") {
@@ -386,7 +395,7 @@ class LoadYamlTest : DescribeSpec({
           "external" to listOf(
             TransferYamlData(
               grp = JAN / 2020,
-              date = LocalDate(2020, 1, 17),
+              date = LocalDate(2020, 1, 17)
             )
           )
         )
@@ -396,7 +405,8 @@ class LoadYamlTest : DescribeSpec({
         loadYamlFile(budgetBuilder, testAccountData, relativeFilePath)
       }
       exception.message shouldBe "For account 'test-account' transfer to 'external' " +
-          "for Jan2020 2020-01-17 does not have 'pamt' or 'camt' field, while processing path/test.yaml"
+        "for Jan2020 2020-01-17 does not have 'pamt' or 'camt' field, " +
+        "while processing path/test.yaml"
     }
   }
 })

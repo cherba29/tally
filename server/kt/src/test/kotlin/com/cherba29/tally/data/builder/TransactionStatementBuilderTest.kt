@@ -68,7 +68,8 @@ class TransactionStatementBuilderTest : DescribeSpec({
           startBalance = null
         )
       }
-      error.message shouldBe "Setting transfer from (test-account1 to test-account2) for 'test-account3' account statement!"
+      error.message shouldBe "Setting transfer from (test-account1 to test-account2) for " +
+        "'test-account3' account statement!"
     }
 
     it("single transfer") {
@@ -171,7 +172,7 @@ class TransactionStatementBuilderTest : DescribeSpec({
           description = "test transfer",
           type = Transaction.Type.EXPENSE,
           balanceFromStart = 900
-        ),
+        )
       )
     }
   }

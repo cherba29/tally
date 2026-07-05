@@ -2,10 +2,10 @@ package com.cherba29.tally
 
 import com.diffplug.selfie.coroutines.expectSelfie
 import com.expediagroup.graphql.server.types.GraphQLRequest
+import io.kotest.assertions.ktor.client.shouldHaveStatus
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.shouldBe
-import io.kotest.assertions.ktor.client.shouldHaveStatus
 import io.kotest.matchers.string.shouldContain
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
@@ -36,10 +36,12 @@ fun ApplicationTestBuilder.configureTestClient(tallyPath: Path?) {
   }
   environment {
     if (tallyPath != null) {
-      config = config.mergeWith(MapApplicationConfig(
-        "tally.data.path" to tallyPath.resolve("data").pathString,
-        "tally.client.path" to tallyPath.resolve("client").pathString,
-      ))
+      config = config.mergeWith(
+        MapApplicationConfig(
+          "tally.data.path" to tallyPath.resolve("data").pathString,
+          "tally.client.path" to tallyPath.resolve("client").pathString
+        )
+      )
     }
   }
 }
@@ -50,13 +52,13 @@ class ApplicationTest : DescribeSpec({
   ((tallyPath / "client").createDirectory() / "index.html").createFile().writeText("Hello World!")
   ((tallyPath / "data").createDirectory() / "file2.yaml").createFile().writeText(
     """
-        name: test-account
-        owner: [someone]
-        path: [ external ]
-        opened_on: Mar2019
-        balances:
-          - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
-        """.trimIndent()
+    name: test-account
+    owner: [someone]
+    path: [ external ]
+    opened_on: Mar2019
+    balances:
+      - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
+    """.trimIndent()
   )
 
   describe("routing") {

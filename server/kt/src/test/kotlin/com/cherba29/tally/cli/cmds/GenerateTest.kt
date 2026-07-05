@@ -84,8 +84,8 @@ class GenerateTest : DescribeSpec({
       )
       result.stderr shouldBe ""
       result.stdout shouldBe "Generating balances for test-account starting from Mar2019 for $tallyPath\n" +
-          "  - { grp: Apr2019, date: 2019-04-01, pamt:  100.00 }\n" +
-          "  - { grp: Mar2019, date: 2019-03-01, camt:  100.00 }\n"
+        "  - { grp: Apr2019, date: 2019-04-01, pamt:  100.00 }\n" +
+        "  - { grp: Mar2019, date: 2019-03-01, camt:  100.00 }\n"
       result.statusCode shouldBe 0
     }
 
@@ -107,7 +107,7 @@ class GenerateTest : DescribeSpec({
       val result = command.test(
         listOf("test-account1", "--start-month=Mar2019", "--tally-path=$tallyPath")
       )
-      result.stderr shouldContain  "The account test-account1 has no statements."
+      result.stderr shouldContain "The account test-account1 has no statements."
       result.stdout shouldBe "Generating balances for test-account1 starting from Mar2019 for $tallyPath\n"
       result.statusCode shouldBe 1
     }
@@ -155,9 +155,9 @@ class GenerateTest : DescribeSpec({
       )
       result.stderr shouldContain ""
       result.stdout shouldBe "Generating balances for test-account starting from Mar2018 for $tallyPath\n" +
-          "  - { grp: Apr2019, date: 2019-04-01, pamt:  100.00 }\n" +
-          "  - { grp: Mar2019, date: 2019-03-01, camt:  100.00 }\n" +
-          "  - { grp: Feb2019 } # has no balance and had 0 transfers.\n"
+        "  - { grp: Apr2019, date: 2019-04-01, pamt:  100.00 }\n" +
+        "  - { grp: Mar2019, date: 2019-03-01, camt:  100.00 }\n" +
+        "  - { grp: Feb2019 } # has no balance and had 0 transfers.\n"
       result.statusCode shouldBe 0
     }
 
@@ -179,7 +179,7 @@ class GenerateTest : DescribeSpec({
         listOf("test-account", "--start-month=Mar2019", "--tally-path=$tallyPath")
       )
       result.stdout shouldBe "Generating balances for test-account starting from Mar2019 for $tallyPath\n"
-      result.stderr shouldContain  "Error: Account 'test-account' has no records for any month."
+      result.stderr shouldContain "Error: Account 'test-account' has no records for any month."
       result.statusCode shouldBe 1
     }
 
@@ -216,8 +216,8 @@ class GenerateTest : DescribeSpec({
       )
       result.stderr shouldBe ""
       result.stdout shouldBe "Generating balances for test-account1 starting from Mar2019 for $tallyPath\n" +
-          "  - { grp: Apr2019, date: 2019-04-01, camt: -245.00 }\n" +
-          "  - { grp: Mar2019, date: 2019-03-01, camt:  100.00 }\n"
+        "  - { grp: Apr2019, date: 2019-04-01, camt: -245.00 }\n" +
+        "  - { grp: Mar2019, date: 2019-03-01, camt:  100.00 }\n"
       result.statusCode shouldBe 0
     }
 
@@ -254,9 +254,9 @@ class GenerateTest : DescribeSpec({
       )
       result.stderr shouldBe ""
       result.stdout shouldBe "Generating balances for test-account1 starting from Mar2019 for $tallyPath\n" +
-          "  - { grp: Apr2019, date: 2019-04-01, pamt: -245.00 }\n" +
-          "    Mar2019 test-account1 --> test-account2 Balance { amount: 345.00, date: 2019-03-25, type: CONFIRMED }\n" +
-          "  - { grp: Mar2019, date: 2019-03-01, camt:  100.00 }\n"
+        "  - { grp: Apr2019, date: 2019-04-01, pamt: -245.00 }\n" +
+        "    Mar2019 test-account1 --> test-account2 Balance { amount: 345.00, date: 2019-03-25, type: CONFIRMED }\n" +
+        "  - { grp: Mar2019, date: 2019-03-01, camt:  100.00 }\n"
       result.statusCode shouldBe 0
     }
 
@@ -294,9 +294,9 @@ class GenerateTest : DescribeSpec({
       )
       result.stderr shouldBe ""
       result.stdout shouldBe "Generating balances for test-account1 starting from Mar2019 for $tallyPath\n" +
-          "  - { grp: May2019, date: 2019-05-01, pamt:  200.00 }\n" +
-          "  - { grp: Apr2019, date: 2019-04-01, pamt:  200.00 } # predicted -245.00 unaccounted  445.00\n" +
-          "  - { grp: Mar2019, date: 2019-03-01, camt:  100.00 }\n"
+        "  - { grp: May2019, date: 2019-05-01, pamt:  200.00 }\n" +
+        "  - { grp: Apr2019, date: 2019-04-01, pamt:  200.00 } # predicted -245.00 unaccounted  445.00\n" +
+        "  - { grp: Mar2019, date: 2019-03-01, camt:  100.00 }\n"
       result.statusCode shouldBe 0
     }
 
@@ -334,9 +334,9 @@ class GenerateTest : DescribeSpec({
       )
       result.stderr shouldBe ""
       result.stdout shouldBe "Generating balances for test-account1 starting from Mar2019 for $tallyPath\n" +
-          "  - { grp: May2019, date: 2019-05-02, pamt:  545.00 }\n" +
-          "  - { grp: Apr2019, date: 2019-04-02, pamt:  445.00 }\n" +
-          "  - { grp: Mar2019, date: 2019-03-01, camt:  100.00 }\n"
+        "  - { grp: May2019, date: 2019-05-02, pamt:  545.00 }\n" +
+        "  - { grp: Apr2019, date: 2019-04-02, pamt:  445.00 }\n" +
+        "  - { grp: Mar2019, date: 2019-03-01, camt:  100.00 }\n"
       result.statusCode shouldBe 0
     }
 
@@ -377,10 +377,10 @@ class GenerateTest : DescribeSpec({
       )
       result.stderr shouldBe ""
       result.stdout shouldBe "Generating balances for test-account1 starting from Dec2019 for $tallyPath\n" +
-          "  - { grp: Feb2020, date: 2020-02-01, pamt:    0.00 }\n" +
-          "  - { grp: Jan2020, date: 2020-01-01, pamt:  200.00 } # predicted -195.00 unaccounted  395.00\n" +
-          "  - { grp: Dec2019, date: 2019-12-01, camt:  100.00 }\n" +
-          "    - { grp: Jan2020, date: 2020-01-02, camt:  200.00, desc: \"Total for 2019\" }\n"
+        "  - { grp: Feb2020, date: 2020-02-01, pamt:    0.00 }\n" +
+        "  - { grp: Jan2020, date: 2020-01-01, pamt:  200.00 } # predicted -195.00 unaccounted  395.00\n" +
+        "  - { grp: Dec2019, date: 2019-12-01, camt:  100.00 }\n" +
+        "    - { grp: Jan2020, date: 2020-01-02, camt:  200.00, desc: \"Total for 2019\" }\n"
       result.statusCode shouldBe 0
     }
   }

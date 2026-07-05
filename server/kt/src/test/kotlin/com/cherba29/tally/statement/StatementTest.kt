@@ -1,9 +1,9 @@
 package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthRange
+import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.root
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.doubles.plusOrMinus
@@ -20,8 +20,19 @@ internal class TestStatement(
   outFlows: Long = 0,
   totalTransfers: Long = 0,
   totalPayments: Long = 0,
-  income: Long = 0,
-) : Statement(treeNode, monthRange, isClosed, startBalance, endBalance, inFlows, outFlows, totalTransfers, totalPayments, income) {
+  income: Long = 0
+) : Statement(
+    treeNode,
+    monthRange,
+    isClosed,
+    startBalance,
+    endBalance,
+    inFlows,
+    outFlows,
+    totalTransfers,
+    totalPayments,
+    income
+  ) {
   override val isClosed: Boolean = true
 }
 
@@ -31,10 +42,10 @@ class StatementTest : DescribeSpec({
       val tree = root { branch("external") { leaf("test") } }
       val stmt = TestStatement(
         tree[listOf("external", "test")]!!,
-        MAR / 2021 .. MAR / 2021
+        MAR / 2021..MAR / 2021
       )
       stmt.treeNode.path shouldBe listOf("external", "test")
-      stmt.monthRange shouldBe MAR / 2021 .. MAR / 2021
+      stmt.monthRange shouldBe MAR / 2021..MAR / 2021
       stmt.inFlows shouldBe 0L
       stmt.income shouldBe 0L
       stmt.outFlows shouldBe 0L
@@ -52,7 +63,7 @@ class StatementTest : DescribeSpec({
     val tree = root { branch("external") { leaf("test") } }
     val stmt = TestStatement(
       tree[listOf("external", "test")]!!,
-      MAR / 2021 .. MAR / 2021
+      MAR / 2021..MAR / 2021
     )
     stmt.addInFlow(100)
     stmt.addInFlow(-10)
@@ -64,7 +75,7 @@ class StatementTest : DescribeSpec({
     stmt.endBalance shouldBe null
     stmt.inFlows shouldBe 110L
     stmt.income shouldBe 0L
-    stmt.isClosed shouldBe true  // TODO: remove not useful.
+    stmt.isClosed shouldBe true // TODO: remove not useful.
     stmt.outFlows shouldBe -40L
     stmt.percentChange shouldBe null
     stmt.totalPayments shouldBe 0L
@@ -78,10 +89,10 @@ class StatementTest : DescribeSpec({
     val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
       tree[listOf("external", "test")]!!,
-      MAR / 2021 .. MAR / 2021,
+      MAR / 2021..MAR / 2021,
       false,
       startBalance,
-      endBalance,
+      endBalance
     )
     stmt.addInFlow(100)
     stmt.addInFlow(-10)
@@ -106,7 +117,7 @@ class StatementTest : DescribeSpec({
     val tree = root { branch("external") { leaf("test") } }
     val stmt = TestStatement(
       tree[listOf("external", "test")]!!,
-      MAR / 2021 .. MAR / 2021
+      MAR / 2021..MAR / 2021
     )
     stmt.startBalance shouldBe null
     stmt.endBalance shouldBe null
@@ -122,7 +133,7 @@ class StatementTest : DescribeSpec({
     val tree = root { branch("external") { leaf("test") } }
     val stmt = TestStatement(
       tree[listOf("external", "test")]!!,
-      MAR / 2021 .. MAR / 2021
+      MAR / 2021..MAR / 2021
     )
     stmt.addInFlow(100)
     stmt.addInFlow(-10)
@@ -139,7 +150,7 @@ class StatementTest : DescribeSpec({
     val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
       tree[listOf("external", "test")]!!,
-      MAR / 2021 .. MAR / 2021,
+      MAR / 2021..MAR / 2021,
       false,
       startBalance
     )
@@ -159,7 +170,7 @@ class StatementTest : DescribeSpec({
     val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
       tree[listOf("external", "test")]!!,
-      MAR / 2021 .. MAR / 2021,
+      MAR / 2021..MAR / 2021,
       false,
       null,
       endBalance
@@ -182,7 +193,7 @@ class StatementTest : DescribeSpec({
 
     val stmt = TestStatement(
       tree[listOf("external", "test")]!!,
-      MAR / 2021 .. MAR / 2021,
+      MAR / 2021..MAR / 2021,
       false,
       startBalance,
       endBalance
@@ -192,7 +203,7 @@ class StatementTest : DescribeSpec({
     stmt.addOutFlow(-30)
     stmt.addOutFlow(10)
     stmt.percentChange shouldBe 100.0
-    stmt.annualizedPercentChange shouldBe null  // since more than 1000%
+    stmt.annualizedPercentChange shouldBe null // since more than 1000%
   }
 
   it("change") {
@@ -201,7 +212,7 @@ class StatementTest : DescribeSpec({
     val endBalance = Balance(1020, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     val stmt = TestStatement(
       tree[listOf("external", "test")]!!,
-      MAR / 2021 .. MAR / 2021,
+      MAR / 2021..MAR / 2021,
       false,
       startBalance,
       endBalance

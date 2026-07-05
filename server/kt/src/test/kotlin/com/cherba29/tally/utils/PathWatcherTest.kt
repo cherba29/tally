@@ -6,17 +6,15 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.engine.coroutines.backgroundScope
 import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.flow.takeWhile
+import kotlinx.coroutines.flow.toList
 import java.nio.file.Paths
 import kotlin.io.path.createDirectory
 import kotlin.io.path.createFile
 import kotlin.io.path.div
 import kotlin.io.path.writeText
-import kotlinx.coroutines.flow.takeWhile
-import kotlinx.coroutines.flow.toList
 
 class PathWatcherTest : DescribeSpec({
-  //coroutineTestScope = true
-
   describe("empty directory") {
     it("returns empty on non-existent directory") {
       val folder = Paths.get("tmp/tally-123")
@@ -39,7 +37,6 @@ class PathWatcherTest : DescribeSpec({
       folder.watchedEventFlow { true }.takeWhile { !it.reprocess }.toList(result)
       result shouldBe listOf()
     }
-
   }
 
   describe("emits existing") {
@@ -48,7 +45,7 @@ class PathWatcherTest : DescribeSpec({
       (folder / "file2.yaml").createFile()
 
       folder.watchedEventFlow { true }.takeWhile { !it.reprocess }.test {
-        awaitItem() shouldBe WatchResult(folder, Paths.get("file2.yaml"), reprocess=false)
+        awaitItem() shouldBe WatchResult(folder, Paths.get("file2.yaml"), reprocess = false)
         awaitComplete()
       }
     }
@@ -59,7 +56,7 @@ class PathWatcherTest : DescribeSpec({
       (folder / "subfolder" / "file2.yaml").createFile()
 
       folder.watchedEventFlow { true }.takeWhile { !it.reprocess }.test {
-        awaitItem() shouldBe WatchResult(folder, Paths.get("subfolder/file2.yaml"), reprocess=false)
+        awaitItem() shouldBe WatchResult(folder, Paths.get("subfolder/file2.yaml"), reprocess = false)
         awaitComplete()
       }
     }

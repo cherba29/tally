@@ -13,7 +13,7 @@ import kotlin.io.path.createFile
 import kotlin.io.path.div
 import kotlin.io.path.writeText
 
-class TransactionsTest: DescribeSpec({
+class TransactionsTest : DescribeSpec({
   describe("parameter validation") {
     it("needs tally path") {
       val command = Transactions()
@@ -46,8 +46,8 @@ class TransactionsTest: DescribeSpec({
       command.startMonth shouldBe APR / 2026
       command.endMonth shouldBe MAY / 2026
     }
-
   }
+
   describe("runs") {
     it("successfully") {
       val tallyPath = tempdir("tally-", keepOnFailure = false).toPath()
