@@ -5,26 +5,48 @@ import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.MonthRange
 
 // Extension of Statement for transactions over an account.
-class TransactionStatement(treeNode: TreeNode, monthRange: MonthRange, isClosed: Boolean, startBalance: Balance?) :
-  Statement(treeNode, monthRange, isClosed, startBalance) {
-  // List of transaction in this statement.
-  val transactions: MutableList<Transaction> = mutableListOf()
-
+class TransactionStatement(
+  treeNode: TreeNode,
+  monthRange: MonthRange,
+  isClosed: Boolean,
+  startBalance: Balance?,
+  endBalance: Balance? = null,
+  inFlows: Long = 0L,
+  outFlows: Long = 0L,
+  totalTransfers: Long = 0L,
+  totalPayments: Long = 0L,
+  income: Long = 0L,
   // True if any transactions in this statement "cover" previous statement.
-  var coversPrevious = false
+  var coversPrevious: Boolean = false,
 
   // True if any projected transactions in this statement "cover"
   // previous statement.
-  var coversProjectedPrevious = false
+  var coversProjectedPrevious: Boolean = false,
 
   // True if any of the transactions are projects.
-  var hasProjectedTransfer = false
+  var hasProjectedTransfer: Boolean = false,
 
   // True if this statement is covered by next.
-  var isCovered = false
+  var isCovered: Boolean = false,
 
   // True if this statement is covered by any projected transactions in next statement.
-  var isProjectedCovered = false
+  var isProjectedCovered: Boolean = false,
+
+  // List of transaction in this statement.
+  val transactions: MutableList<Transaction> = mutableListOf()
+) :
+  Statement(
+    treeNode,
+    monthRange,
+    isClosed,
+    startBalance,
+    endBalance,
+    inFlows,
+    outFlows,
+    totalTransfers,
+    totalPayments,
+    income
+  ) {
 
   override fun toString(): String {
     return super.toString() + " coversPrevious=$coversPrevious coversProjectPrevious=$coversProjectedPrevious" +

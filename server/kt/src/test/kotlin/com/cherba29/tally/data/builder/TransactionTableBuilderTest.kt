@@ -224,7 +224,7 @@ class TransactionTableBuilderTest : DescribeSpec({
 
       expectSelfie(table.toSnapshot()).toMatchDisk()
     }
-
+    
     it("transfer to closed account") {
       val account1 = Account(
         name = "test-account1",
@@ -376,10 +376,10 @@ class TransactionTableBuilderTest : DescribeSpec({
       table[0].treeNode.path shouldBe path1
       table[0].transactions.size shouldBe 2 // 2 transactions for account1
       assertSoftly {
-        table[0].transactions[0].balance.amount shouldBe -2000L
-        table[0].transactions[1].balance.amount shouldBe -1000L
-        table[0].transactions[0].type shouldBe Transaction.Type.TRANSFER
-        table[0].transactions[1].type shouldBe Transaction.Type.EXPENSE
+        table[0].transactions[0].balance.amount shouldBe -1000L
+        table[0].transactions[1].balance.amount shouldBe -2000L
+        table[0].transactions[0].type shouldBe Transaction.Type.EXPENSE
+        table[0].transactions[1].type shouldBe Transaction.Type.TRANSFER
       }
       table[1].treeNode.path shouldBe path2
       table[1].transactions.size shouldBe 1 // 1 transaction for account2

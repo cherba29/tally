@@ -1,87 +1,124 @@
 package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.Transfer
 import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.statement.TransactionStatement
+import java.lang.IllegalArgumentException
+import kotlin.collections.sorted
 
 class TransactionStatementBuilder {
-  fun fromTransfers(
-    leafTreeNode: TreeNode.Leaf,
-    monthRange: MonthRange,
-    isClosed: Boolean,
-    transfers: List<Transfer>?,
-    startBalance: Balance?
-  ): TransactionStatement {
-    val statement = TransactionStatement(leafTreeNode, monthRange, isClosed, startBalance)
-    val attributeTransfer: (TreeNode, TreeNode, Long) -> Transaction.Type = { fromAccount, toAccount, amount ->
-      if (amount > 0) {
-        statement.inFlows += amount
-      } else {
-        statement.outFlows += amount
-      }
-      val transactionType = getTransactionType(fromAccount, toAccount, amount)
-      when (transactionType) {
-        Transaction.Type.EXPENSE -> statement.totalPayments += amount
-        Transaction.Type.INCOME -> statement.income += amount
-        Transaction.Type.UNKNOWN -> {}
-        Transaction.Type.TRANSFER -> statement.totalTransfers += amount
-      }
-      transactionType
-    }
-    val descTransfers = transfers?.sorted() ?: listOf()
+  var treeNode: TreeNode.Leaf? = null
+  var month: Month? = null
+  var isClosed: Boolean = false
+  var startBalance: Balance? = null
+  var endBalance: Balance? = null
+  private var inFlows = 0L
+  private var outFlows = 0L
+  private var totalPayments = 0L
+  private var totalTransfers = 0L
+  private var income = 0L
+  private var hasProjectedTransfer: Boolean = false
+  private var coversPrevious: Boolean = false
+  private var coversProjectedPrevious: Boolean = false
+  private var transactions = mutableListOf<Transaction>()
 
-    val firstTransfer: Transfer? = descTransfers.lastOrNull()
-    if (firstTransfer != null && startBalance != null && firstTransfer.balance.date < startBalance.date) {
+  fun addTransfer(transfer: Transfer) {
+    val leafTreeNode = treeNode ?: throw IllegalArgumentException("TreeNode must be set before adding transfer")
+    hasProjectedTransfer = hasProjectedTransfer || transfer.balance.type == Balance.Type.PROJECTED
+
+    var otherAccount: TreeNode
+    var balance: Balance
+    var transactionType: Transaction.Type
+    if (transfer.toAccount.name == leafTreeNode.name) {
+      balance = transfer.balance
+      otherAccount = transfer.fromAccount
+      transactionType = getTransactionType(fromAccount = otherAccount, toAccount = leafTreeNode, balance.amount)
+    } else if (transfer.fromAccount.name == leafTreeNode.name) {
+      balance = -transfer.balance
+      otherAccount = transfer.toAccount
+      transactionType = getTransactionType(fromAccount = leafTreeNode, toAccount = otherAccount, balance.amount)
+    } else {
+      // This should never occur since budget should have been validated by now.
       throw IllegalStateException(
-        "Balance ${monthRange.first} $startBalance for account $leafTreeNode starts after " +
-            "transaction ${firstTransfer.fromAccount.name} --> " +
-            "${firstTransfer.toAccount.name}/${firstTransfer.balance} desc '${firstTransfer.description}'"
+        "Setting transfer from (${transfer.fromAccount} to ${transfer.toAccount}) for '${leafTreeNode.name}' account statement!"
       )
     }
 
-    var prevBalance = startBalance?.amount
-    for (t in descTransfers) {
-      statement.hasProjectedTransfer =
-        statement.hasProjectedTransfer || t.balance.type == Balance.Type.PROJECTED
-      var otherAccount: TreeNode
-      var balance: Balance
-      var transactionType: Transaction.Type
-      if (t.toAccount.name == leafTreeNode.name) {
-        balance = t.balance
-        otherAccount = t.fromAccount
-        transactionType = attributeTransfer(otherAccount, leafTreeNode, balance.amount)
-      } else if (t.fromAccount.name == leafTreeNode.name) {
-        balance = -t.balance
-        otherAccount = t.toAccount
-        transactionType = attributeTransfer(leafTreeNode, otherAccount, balance.amount)
-      } else {
-        // This should never occur since budget should have been validated by now.
-        throw IllegalStateException(
-          "Setting transfer from (${t.fromAccount} to ${t.toAccount}) for '${leafTreeNode.name}' account statement!"
-        )
+    if (balance.amount > 0) {
+      inFlows += balance.amount
+    } else {
+      outFlows += balance.amount
+    }
+    when (transactionType) {
+      Transaction.Type.EXPENSE -> totalPayments += balance.amount
+      Transaction.Type.INCOME -> income += balance.amount
+      Transaction.Type.UNKNOWN -> {}
+      Transaction.Type.TRANSFER -> totalTransfers += balance.amount
+    }
+    if (!coversPrevious
+      && balance.amount > 0
+      && transfer.fromAccount.top.name == leafTreeNode.top.name) {
+      coversProjectedPrevious = true
+      if (balance.type != Balance.Type.PROJECTED) {
+        coversPrevious = true
       }
-      if (!statement.coversPrevious && balance.amount > 0 && t.fromAccount.top.name == leafTreeNode.top.name) {
-        statement.coversProjectedPrevious = true
-        if (balance.type != Balance.Type.PROJECTED) {
-          statement.coversPrevious = true
-        }
-      }
-      prevBalance = prevBalance?.plus(balance.amount)
-      val transaction = Transaction(
-        treeNode = otherAccount,
-        description = t.description,
-        balance = balance,
-        type = transactionType,
-        balanceFromStart = prevBalance,
+    }
+    transactions.add(
+      Transaction(
+        otherAccount,
+        balance,
+        transfer.description,
+        transactionType,
+        balanceFromStart = null
       )
-      statement.transactions.add(transaction)
+    )
+  }
+
+  fun build(): TransactionStatement {
+    transactions.sort()
+
+    val firstTransaction = transactions.firstOrNull()
+    if (firstTransaction != null
+      && startBalance != null
+      && firstTransaction.balance.date < startBalance!!.date) {
+      throw IllegalStateException(
+        "$month $startBalance for account $treeNode starts after its first " +
+            "transfer to ${firstTransaction.treeNode.path.joinToString("/")} " +
+            "for amount of ${firstTransaction.balance} desc '${firstTransaction.description}'"
+      )
+    }
+
+    val updatedTransactions = mutableListOf<Transaction>()
+    var prevBalance = startBalance?.amount
+    for (t in transactions) {
+      prevBalance = prevBalance?.plus(t.balance.amount)
+      updatedTransactions.add(t.copy(balanceFromStart = prevBalance))
     }
     // Transactions are displayed last at the top.
-    statement.transactions.reverse()
-    return statement
+    updatedTransactions.reverse()
+
+    return TransactionStatement(
+      treeNode!!,
+      month!!..month!!,
+      isClosed,
+      startBalance,
+      endBalance,
+      inFlows,
+      outFlows,
+      totalTransfers,
+      totalPayments,
+      income,
+      coversPrevious,
+      coversProjectedPrevious,
+      hasProjectedTransfer,
+      isCovered = true,
+      isProjectedCovered = true,
+      transactions = updatedTransactions
+    )
   }
 
   private fun getTransactionType(fromAccount: TreeNode, toAccount: TreeNode, amount: Long): Transaction.Type {

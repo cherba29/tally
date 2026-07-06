@@ -76,10 +76,10 @@
     - test-account2
     balance:
       __type: Balance
-      amount: -2000
+      amount: -1000
       date: 2019-12-05
       type: PROJECTED
-    description: First transfer
+    description: Second transfer
     type: EXPENSE
     balanceFromStart: -2990
   - __type: Transaction
@@ -89,12 +89,12 @@
     - test-account2
     balance:
       __type: Balance
-      amount: -1000
+      amount: -2000
       date: 2019-12-05
       type: PROJECTED
-    description: Second transfer
+    description: First transfer
     type: EXPENSE
-    balanceFromStart: -990
+    balanceFromStart: -1990
 - __type: TransactionStatement
   __base:
     __type: Statement
@@ -243,10 +243,10 @@
     - test-account2
     balance:
       __type: Balance
-      amount: -2000
+      amount: -1000
       date: 2019-12-05
       type: PROJECTED
-    description: First transfer
+    description: Second transfer
     type: EXPENSE
     balanceFromStart: -2990
   - __type: Transaction
@@ -256,12 +256,12 @@
     - test-account2
     balance:
       __type: Balance
-      amount: -1000
+      amount: -2000
       date: 2019-12-05
       type: PROJECTED
-    description: Second transfer
+    description: First transfer
     type: EXPENSE
-    balanceFromStart: -990
+    balanceFromStart: -1990
 - __type: TransactionStatement
   __base:
     __type: Statement
