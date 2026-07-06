@@ -45,7 +45,14 @@ class MonthRangeSummaryStatementBuilder {
       monthRange: MonthRange,
       statements: Map<Month, Statement>
     ): Statement {
-      val combined = Statement(treeNode, monthRange)
+      var startBalance: Balance? = null
+      var endBalance: Balance? = null
+      var inFlows = 0L
+      var outFlows = 0L
+      var totalTransfers = 0L
+      var totalPayments = 0L
+      var income = 0L
+
       for (currentMonth in monthRange) {
         val stmt = statements[currentMonth]
           ?: Statement(treeNode, currentMonth..currentMonth)
@@ -55,15 +62,26 @@ class MonthRangeSummaryStatementBuilder {
           statements[currentMonth.previous()],
           statements[currentMonth.next()]
         )
-        combined.startBalance = Balance.pickMinDate(combined.startBalance, stmt.startBalance)
-        combined.endBalance = Balance.pickMaxDate(combined.endBalance, stmt.endBalance)
-        combined.inFlows += stmt.inFlows
-        combined.outFlows += stmt.outFlows
-        combined.totalTransfers += stmt.totalTransfers
-        combined.totalPayments += stmt.totalPayments
-        combined.income += stmt.income
+        startBalance = Balance.pickMinDate(startBalance, stmt.startBalance)
+        endBalance = Balance.pickMaxDate(endBalance, stmt.endBalance)
+        inFlows += stmt.inFlows
+        outFlows += stmt.outFlows
+        totalTransfers += stmt.totalTransfers
+        totalPayments += stmt.totalPayments
+        income += stmt.income
       }
-      return combined
+      return Statement(
+        treeNode,
+        monthRange,
+        isClosed = false,
+        startBalance,
+        endBalance,
+        inFlows,
+        outFlows,
+        totalTransfers,
+        totalPayments,
+        income
+      )
     }
 
     private fun setStatementBalance(
