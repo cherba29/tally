@@ -21,6 +21,7 @@ open class Statement(
   // Recorded end balance for the statement.
   var endBalance: Balance? = null,
 
+  // TODO: make inFlows/outFlows immutable.
   // Total transaction inflows.
   var inFlows: Long = 0,
 
@@ -63,23 +64,6 @@ open class Statement(
 
   val unaccounted: Long?
     get() = change?.let { it - addSub }
-
-  // TODO: make inFlows/outFlows immutable.
-  fun addInFlow(inFlowAmount: Long) {
-    if (inFlowAmount > 0) {
-      inFlows += inFlowAmount
-    } else {
-      outFlows += inFlowAmount
-    }
-  }
-
-  fun addOutFlow(outFlowAmount: Long) {
-    if (outFlowAmount > 0) {
-      inFlows += outFlowAmount
-    } else {
-      outFlows += outFlowAmount
-    }
-  }
 
   fun isEmpty(): Boolean =
     startBalance == null && endBalance == null && totalTransfers == 0L && income == 0L &&
