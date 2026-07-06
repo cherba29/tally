@@ -13,7 +13,7 @@ open class Statement(
   // Period of time for the statement
   val monthRange: MonthRange,
 
-  open val isClosed: Boolean = false,
+  val isClosed: Boolean = false,
 
   // Recorded start balance for the statement.
   var startBalance: Balance? = null,
