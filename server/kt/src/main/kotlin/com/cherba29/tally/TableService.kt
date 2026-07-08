@@ -5,6 +5,7 @@ import com.cherba29.tally.core.reduceTo
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.schema.GqlTable
+import com.cherba29.tally.schema.GqlTableCell
 import com.cherba29.tally.schema.GqlTableRow
 import com.cherba29.tally.schema.toGql
 import com.cherba29.tally.schema.toGqlTableCell
@@ -71,7 +72,22 @@ class TableService(val loader: Loader) : Query {
           when (val monthlyStatement = monthMap[month]) {
             is TransactionStatement -> monthlyStatement.toGqlTableCell()
             is SummaryStatement -> monthlyStatement.toGqlTableCell()
-            else -> throw IllegalStateException("Could not find statement for '${treeNode.path}' for month $month")
+            // TODO: Make sure nodeToStatement map always has an entry, so this is not necessary.
+            // All substatements must have been closed for this month.
+            else -> GqlTableCell(
+              month = month,
+              isClosed = true,
+              addSub = 0,
+              balance = 0,
+              isProjected = false,
+              isCovered = false,
+              isProjectedCovered = false,
+              hasProjectedTransfer = false,
+              percentChange = 0f,
+              annualizedPercentChange = 0f,
+              unaccounted = 0,
+              balanced = true
+            )
           }
         }
 

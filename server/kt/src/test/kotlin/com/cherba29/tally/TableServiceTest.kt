@@ -2,6 +2,7 @@ package com.cherba29.tally
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.MonthName.DEC
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.data.Loader
@@ -124,6 +125,53 @@ class TableServiceTest : DescribeSpec({
       }
       val loader = mockk<Loader> { coEvery { budget() } returns payload }
       val table = TableService(loader).table("john", startMonth = MAR / 2026, endMonth = MAR / 2026)
+      expectSelfie(table.toSnapshot()).toMatchDisk()
+    }
+    
+    it("closed account within path - summary also closed") {
+      val accountPath1 = listOf("john", "internal", "test-account1")
+      val account1 = Account(
+        name = "test-account1",
+        path = listOf("internal"),
+        owners = setOf("john"),
+        openedOn = JAN / 2026,
+        closedOn = JAN / 2026
+      )
+      val accountPath2 = listOf("john", "external", "test-account2")
+      val account2 = Account(
+        name = "test-account2",
+        path = listOf("external"),
+        owners = setOf("john"),
+        openedOn = DEC / 2025
+      )
+      val payload = budget {
+        setAccount(accountPath1, account1)
+        setBalance(
+          accountPath1,
+          JAN / 2026,
+          Balance(
+            amount = 100,
+            date = LocalDate(2026, 1, 3),
+            type = Balance.Type.CONFIRMED
+          )
+        )
+        setAccount(accountPath2, account2)
+        setBalance(
+          accountPath2,
+          DEC / 2025,
+          Balance(
+            amount = 100,
+            date = LocalDate(2025, 12, 2),
+            type = Balance.Type.CONFIRMED
+          )
+        )
+      }
+      val loader = mockk<Loader> { coEvery { budget() } returns payload }
+      val table = TableService(loader).table(
+        "john",
+        startMonth = DEC / 2025,
+        endMonth = MAR / 2026
+      )
       expectSelfie(table.toSnapshot()).toMatchDisk()
     }
   }
