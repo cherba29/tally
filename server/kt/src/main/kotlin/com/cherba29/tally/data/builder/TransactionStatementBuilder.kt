@@ -2,13 +2,11 @@ package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.Transfer
 import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.statement.TransactionStatement
 import java.lang.IllegalArgumentException
-import kotlin.collections.sorted
 
 class TransactionStatementBuilder {
   var treeNode: TreeNode.Leaf? = null
@@ -16,6 +14,8 @@ class TransactionStatementBuilder {
   var isClosed: Boolean = false
   var startBalance: Balance? = null
   var endBalance: Balance? = null
+  var isCovered: Boolean = false
+  var isProjectedCovered: Boolean = false
   private var inFlows = 0L
   private var outFlows = 0L
   private var totalPayments = 0L
@@ -115,8 +115,8 @@ class TransactionStatementBuilder {
       coversPrevious,
       coversProjectedPrevious,
       hasProjectedTransfer,
-      isCovered = true,
-      isProjectedCovered = true,
+      isCovered,
+      isProjectedCovered,
       transactions = updatedTransactions
     )
   }
@@ -128,4 +128,10 @@ class TransactionStatementBuilder {
       if (amount > 0) Transaction.Type.INCOME else Transaction.Type.EXPENSE
     }
   }
+}
+
+fun transactionStatement(init: TransactionStatementBuilder.() -> Unit): TransactionStatement {
+  val statementBuilder = TransactionStatementBuilder()
+  statementBuilder.init()
+  return statementBuilder.build()
 }

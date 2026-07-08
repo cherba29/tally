@@ -17,20 +17,20 @@ class TransactionStatement(
   totalPayments: Long = 0L,
   income: Long = 0L,
   // True if any transactions in this statement "cover" previous statement.
-  var coversPrevious: Boolean = false,
+  val coversPrevious: Boolean = false,
 
   // True if any projected transactions in this statement "cover"
   // previous statement.
-  var coversProjectedPrevious: Boolean = false,
+  val coversProjectedPrevious: Boolean = false,
 
   // True if any of the transactions are projects.
-  var hasProjectedTransfer: Boolean = false,
+  val hasProjectedTransfer: Boolean = false,
 
   // True if this statement is covered by next.
-  var isCovered: Boolean = false,
+  val isCovered: Boolean = false,
 
   // True if this statement is covered by any projected transactions in next statement.
-  var isProjectedCovered: Boolean = false,
+  val isProjectedCovered: Boolean = false,
 
   // List of transaction in this statement.
   val transactions: MutableList<Transaction> = mutableListOf()

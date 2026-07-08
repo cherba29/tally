@@ -8,6 +8,7 @@ import com.cherba29.tally.core.MonthName.FEB
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthName.NOV
+import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.root
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
@@ -311,24 +312,24 @@ class BudgetBuilderTest : DescribeSpec({
         owners = setOf("john"),
         openedOn = MAR / 2021
       )
-      val startBalance = Balance(
+      val testStartBalance = Balance(
         100,
         LocalDate(2023, 12, 2),
         Balance.Type.CONFIRMED
       )
       val budget = budget {
         setAccount(path1, account1)
-        setBalance(path1, MAR / 2021, startBalance)
+        setBalance(path1, MAR / 2021, testStartBalance)
       }
-      val tranStmt = TransactionStatement(
-        budget.tree[path1]!!,
-        MAR / 2021..MAR / 2021,
-        false,
-        startBalance
-      )
-      // There no other transactions and balance is positive.
-      tranStmt.isCovered = true
-      tranStmt.isProjectedCovered = true
+      val tranStmt = transactionStatement {
+        treeNode = budget.tree[path1] as TreeNode.Leaf
+        month = MAR / 2021
+        isClosed = false
+        startBalance = testStartBalance
+        // There no other transactions and balance is positive.
+        isCovered = true
+        isProjectedCovered = true
+      }
       budget.tree shouldBe root {
         branch("john") {
           branch("external") {
@@ -350,7 +351,7 @@ class BudgetBuilderTest : DescribeSpec({
       val stmt1 = statements[treeNode1]!![MAR / 2021]!! as SummaryStatement
       stmt1.treeNode.path shouldBe listOf("john", "external")
       withClue("statement: $stmt1") {
-        stmt1.startBalance shouldBe startBalance
+        stmt1.startBalance shouldBe testStartBalance
         stmt1.endBalance shouldBe null
         stmt1.inFlows shouldBe 0
         stmt1.income shouldBe 0
@@ -364,7 +365,7 @@ class BudgetBuilderTest : DescribeSpec({
       val treeNode2 = budget.tree["john"]!!
       val stmt2 = statements[treeNode2]!![MAR / 2021]!! as SummaryStatement
       stmt2.treeNode.path shouldBe listOf("john")
-      stmt2.startBalance shouldBe startBalance
+      stmt2.startBalance shouldBe testStartBalance
       stmt2.endBalance shouldBe null
       stmt2.inFlows shouldBe 0
       stmt2.income shouldBe 0
@@ -443,15 +444,14 @@ class BudgetBuilderTest : DescribeSpec({
           }
         }
       }
-      val tranStmt = TransactionStatement(
-        budget.tree[listOf("john", "external", "test-account1")]!!,
-        MAR / 2021..MAR / 2021,
-        false,
-        startBalance = null
-      )
-      tranStmt.isCovered = true
-      tranStmt.isProjectedCovered = true
-      tranStmt.startBalance = balance1
+      val tranStmt = transactionStatement {
+        treeNode = budget.tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf
+        month = MAR / 2021
+        isClosed = false
+        isCovered = true
+        isProjectedCovered = true
+        startBalance = balance1
+      }
 
       val statements = budget.nodeToStatement
       statements.isEmpty() shouldBe false
@@ -550,15 +550,14 @@ class BudgetBuilderTest : DescribeSpec({
           leaf("test-account3")
         }
       }
-      val tranStmt1 = TransactionStatement(
-        budget.tree[listOf("john", "external", "test-account1")]!!,
-        MAR / 2021..MAR / 2021,
-        false,
-        startBalance = null
-      )
-      tranStmt1.startBalance = balance1
-      tranStmt1.isCovered = true
-      tranStmt1.isProjectedCovered = true
+      val tranStmt1 = transactionStatement {
+        treeNode = budget.tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf
+        month = MAR / 2021
+        isClosed = false
+        startBalance = balance1
+        isCovered = true
+        isProjectedCovered = true
+      }
 
       val ownerTreeNode = budget.tree["john"]
       val statements = budget.nodeToStatement[ownerTreeNode]!!
