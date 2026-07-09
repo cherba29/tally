@@ -55,11 +55,11 @@ class Report : CliktCommand() {
         (month.month + 1).toString(),
         transactionStatement.startBalance?.amount?.asAmount() ?: "",
         if (transactionStatement.startBalance != null) {
-          if (transactionStatement.startBalance?.type == Balance.Type.PROJECTED) "P" else "C"
+          if (transactionStatement.startBalance.type == Balance.Type.PROJECTED) "P" else "C"
         } else "",
         transactionStatement.endBalance?.amount?.asAmount() ?: "",
         if (transactionStatement.endBalance != null) {
-          if (transactionStatement.endBalance?.type == Balance.Type.PROJECTED) "P" else "C"
+          if (transactionStatement.endBalance.type == Balance.Type.PROJECTED) "P" else "C"
         } else "",
         transactionStatement.inFlows.asAmount(),
         transactionStatement.outFlows.asAmount(),

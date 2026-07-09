@@ -34,12 +34,10 @@ class StatementTest : DescribeSpec({
     val tree = root { branch("external") { leaf("test") } }
     val stmt = Statement(
       tree[listOf("external", "test")]!!,
-      MAR / 2021..MAR / 2021
+      MAR / 2021..MAR / 2021,
+      inFlows = 110,
+      outFlows = -40
     )
-    stmt.inFlows += 100
-    stmt.outFlows += -10
-    stmt.outFlows += -30
-    stmt.inFlows += 10
 
     stmt.addSub shouldBe 70L
     stmt.change shouldBe null
@@ -62,12 +60,10 @@ class StatementTest : DescribeSpec({
       MAR / 2021..MAR / 2021,
       false,
       startBalance,
-      endBalance
+      endBalance,
+      inFlows = 110,
+      outFlows = -40
     )
-    stmt.inFlows += 100
-    stmt.outFlows += -10
-    stmt.outFlows += -30
-    stmt.inFlows += 10
 
     stmt.addSub shouldBe 70L
     stmt.change shouldBe 1000L
@@ -102,12 +98,10 @@ class StatementTest : DescribeSpec({
     val tree = root { branch("external") { leaf("test") } }
     val stmt = Statement(
       tree[listOf("external", "test")]!!,
-      MAR / 2021..MAR / 2021
+      MAR / 2021..MAR / 2021,
+      inFlows = 110,
+      outFlows = -40
     )
-    stmt.inFlows += 100
-    stmt.outFlows += -10
-    stmt.outFlows += -30
-    stmt.inFlows += 10
     stmt.addSub shouldBe 70
     stmt.change shouldBe null
     stmt.percentChange shouldBe null
@@ -121,13 +115,10 @@ class StatementTest : DescribeSpec({
       tree[listOf("external", "test")]!!,
       MAR / 2021..MAR / 2021,
       false,
-      startBalance
+      startBalance,
+      inFlows = 110,
+      outFlows = -40
     )
-
-    stmt.inFlows += 100
-    stmt.outFlows += -10
-    stmt.outFlows += -30
-    stmt.inFlows += 10
     stmt.addSub shouldBe 70L
     stmt.change shouldBe null
     stmt.percentChange shouldBe null
@@ -142,13 +133,10 @@ class StatementTest : DescribeSpec({
       MAR / 2021..MAR / 2021,
       false,
       null,
-      endBalance
+      endBalance,
+      inFlows = 110,
+      outFlows = -40
     )
-
-    stmt.inFlows += 100
-    stmt.outFlows += -10
-    stmt.outFlows += -30
-    stmt.inFlows += 10
     stmt.addSub shouldBe 70L
     stmt.change shouldBe null
     stmt.percentChange shouldBe null
@@ -165,12 +153,10 @@ class StatementTest : DescribeSpec({
       MAR / 2021..MAR / 2021,
       false,
       startBalance,
-      endBalance
+      endBalance,
+      inFlows = 110,
+      outFlows = -40
     )
-    stmt.inFlows += 100
-    stmt.outFlows += -10
-    stmt.outFlows += -30
-    stmt.inFlows += 10
     stmt.percentChange shouldBe 100.0
     stmt.annualizedPercentChange shouldBe null // since more than 1000%
   }
@@ -184,12 +170,10 @@ class StatementTest : DescribeSpec({
       MAR / 2021..MAR / 2021,
       false,
       startBalance,
-      endBalance
+      endBalance,
+      inFlows = 110,
+      outFlows = -40
     )
-    stmt.inFlows += 100
-    stmt.outFlows += -10
-    stmt.outFlows += -30
-    stmt.inFlows += 10
     stmt.change shouldBe 20L
     stmt.percentChange shouldBe 2.0
     stmt.annualizedPercentChange shouldBe (26.8242 plusOrMinus 0.0001)

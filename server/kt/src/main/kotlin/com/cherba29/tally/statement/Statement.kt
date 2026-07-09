@@ -16,26 +16,25 @@ open class Statement(
   val isClosed: Boolean = false,
 
   // Recorded start balance for the statement.
-  var startBalance: Balance? = null,
+  val startBalance: Balance? = null,
 
   // Recorded end balance for the statement.
-  var endBalance: Balance? = null,
+  val endBalance: Balance? = null,
 
-  // TODO: make inFlows/outFlows immutable.
   // Total transaction inflows.
-  var inFlows: Long = 0,
+  val inFlows: Long = 0,
 
   // Total transaction outflows.
-  var outFlows: Long = 0,
+  val outFlows: Long = 0,
 
   // Amount transferred to other accounts by same owner.
-  var totalTransfers: Long = 0,
+  val totalTransfers: Long = 0,
 
   // Amount transferred to external entities.
-  var totalPayments: Long = 0,
+  val totalPayments: Long = 0,
 
   // Amount transferred from external entities.
-  var income: Long = 0,
+  val income: Long = 0,
 ) {
   val addSub: Long
     get() = inFlows + outFlows

@@ -75,7 +75,7 @@ fun TransactionStatement.toGqlTableCell(): GqlTableCell = GqlTableCell(
   isClosed = isClosed,
   addSub = addSub,
   balance = endBalance?.amount,
-  isProjected = (endBalance != null && endBalance?.type != Balance.Type.CONFIRMED) || hasProjectedTransfer,
+  isProjected = (endBalance != null && endBalance.type != Balance.Type.CONFIRMED) || hasProjectedTransfer,
   isCovered = isCovered,
   isProjectedCovered = isProjectedCovered,
   hasProjectedTransfer = hasProjectedTransfer,
