@@ -36,14 +36,13 @@ open class Statement(
   // Amount transferred from external entities.
   val income: Long = 0,
 ) {
-  val addSub: Long
-    get() = inFlows + outFlows
+  val addSub: Long = inFlows + outFlows
 
-  val change: Long? get() = startBalance?.let { s ->
+  val change: Long? = startBalance?.let { s ->
     endBalance?.let { e -> e.amount - s.amount }
   }
 
-  val percentChange: Double? get() = startBalance?.let {
+  val percentChange: Double? = startBalance?.let {
     when (val changeAmount = change) {
       null -> null
       0L -> 0.0
@@ -51,20 +50,18 @@ open class Statement(
     }
   }
 
-  val annualizedPercentChange: Double?
-    get() {
-      val prctChange = percentChange ?: return null
-      val numberOfMonths = monthRange.size
-      val annualFrequency = 12.0 / numberOfMonths
-      val result = (1 + prctChange.absoluteValue / 100).pow(annualFrequency) - 1
-      // Annualized percentage change is not that meaningful if large.
-      return if (result < 10) 100 * prctChange.sign * result else null
-    }
+  val annualizedPercentChange: Double? = run {
+    val prctChange = percentChange ?: return@run null
+    val numberOfMonths = monthRange.size
+    val annualFrequency = 12.0 / numberOfMonths
+    val result = (1 + prctChange.absoluteValue / 100).pow(annualFrequency) - 1
+    // Annualized percentage change is not that meaningful if large.
+    if (result < 10) 100 * prctChange.sign * result else null
+  }
 
-  val unaccounted: Long?
-    get() = change?.let { it - addSub }
+  val unaccounted: Long? = change?.let { it - addSub }
 
-  fun isEmpty(): Boolean =
+  val isEmpty: Boolean =
     startBalance == null && endBalance == null && totalTransfers == 0L && income == 0L &&
         inFlows == 0L && outFlows == 0L && totalPayments == 0L
 

@@ -91,7 +91,7 @@ class StatementTest : DescribeSpec({
     stmt.inFlows shouldBe 0L
     stmt.outFlows shouldBe 0L
     stmt.totalPayments shouldBe 0L
-    stmt.isEmpty() shouldBe true
+    stmt.isEmpty shouldBe true
   }
 
   it("with no start-end balance") {

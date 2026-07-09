@@ -78,17 +78,17 @@ class Unaccounted : CliktCommand() {
     }
     unaccountedEntries.sortWith { a, b ->
       if (a.statement.unaccounted != null && b.statement.unaccounted != null) {
-        abs(b.statement.unaccounted!!).compareTo(abs(a.statement.unaccounted!!))
+        abs(b.statement.unaccounted).compareTo(abs(a.statement.unaccounted))
       } else if (a.statement.unaccounted == null) {
         if (b.statement.unaccounted == null) {
           b.statement.transactions.size - a.statement.transactions.size
         }
         abs((b.statement.unaccounted ?: 0) / 100).compareTo(a.statement.transactions.size)
-      } else b.statement.transactions.size.compareTo(abs((a.statement.unaccounted ?: 0) / 100))
+      } else b.statement.transactions.size.compareTo(abs((a.statement.unaccounted) / 100))
     }
     for (entry in unaccountedEntries.slice(0..< min(unaccountedEntries.size, limit))) {
       val unaccountedValue = if (entry.statement.unaccounted != null && entry.statement.unaccounted != 0L) {
-        entry.statement.unaccounted!!.asAmount().padStart(10)
+        entry.statement.unaccounted.asAmount().padStart(10)
       } else {
         "---"
       }
