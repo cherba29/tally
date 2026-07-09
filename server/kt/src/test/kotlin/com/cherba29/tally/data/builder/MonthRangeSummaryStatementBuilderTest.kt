@@ -38,7 +38,14 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
       result.monthRange shouldBe APR / 2026..APR / 2026
       result.totalPayments shouldBe 0
       result.totalTransfers shouldBe 0
-      result.statements shouldBe listOf(testStatement)
+      result.statements shouldBe listOf(
+        Statement(
+          tree[listOf("john", "external", "test-account1")]!!,
+          APR / 2026..APR / 2026,
+          startBalance = Balance(0, LocalDate(2026, 4, 1), Balance.Type.PROJECTED),
+          endBalance = Balance(0, LocalDate(2026, 5, 1), Balance.Type.PROJECTED)
+        )
+      )
     }
     it("two node statements with different months") {
       val tree = root {
@@ -101,7 +108,7 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
       result.totalTransfers shouldBe 0
       result.income shouldBe 0
       result.startBalance shouldBe startBalance1
-      result.endBalance shouldBe Balance(0, LocalDate(2026, 5, 1), Balance.Type.PROJECTED)
+      result.endBalance shouldBe Balance(0, LocalDate(2026, 6, 1), Balance.Type.PROJECTED)
       result.change shouldBe -100
       result.statements.size shouldBe 1
       val statement = result.statements.first()

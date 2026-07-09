@@ -15,7 +15,7 @@
     endBalance:
       __type: GqlBalance
       amount: 0
-      date: 2026-04-01
+      date: 2026-05-01
       type: PROJECTED
     inFlows: 75
     outFlows: -50
@@ -44,7 +44,7 @@
     endBalance:
       __type: GqlBalance
       amount: 0
-      date: 2026-04-01
+      date: 2026-05-01
       type: PROJECTED
     startBalance:
       __type: GqlBalance

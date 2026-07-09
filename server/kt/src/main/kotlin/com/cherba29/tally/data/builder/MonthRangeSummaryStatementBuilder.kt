@@ -45,8 +45,16 @@ class MonthRangeSummaryStatementBuilder {
       monthRange: MonthRange,
       statements: Map<Month, Statement>
     ): Statement {
-      var startBalance: Balance? = null
-      var endBalance: Balance? = null
+      val firstStmt = statements[monthRange.first.previous()]
+      val lastStmt = statements[monthRange.last.next()]
+
+      val startBalance: Balance? = firstStmt?.endBalance
+        ?: (statements[monthRange.first]?.startBalance
+          ?: Balance(0, monthRange.first.toDate(), Balance.Type.PROJECTED))
+      val endBalance: Balance? = lastStmt?.startBalance
+        ?: (statements[monthRange.last]?.endBalance
+          ?: Balance(0, monthRange.last.next().toDate(), Balance.Type.PROJECTED))
+
       var inFlows = 0L
       var outFlows = 0L
       var totalTransfers = 0L
@@ -56,14 +64,6 @@ class MonthRangeSummaryStatementBuilder {
       for (currentMonth in monthRange) {
         val stmt = statements[currentMonth]
           ?: Statement(treeNode, currentMonth..currentMonth)
-        setStatementBalance(
-          currentMonth,
-          stmt,
-          statements[currentMonth.previous()],
-          statements[currentMonth.next()]
-        )
-        startBalance = Balance.pickMinDate(startBalance, stmt.startBalance)
-        endBalance = Balance.pickMaxDate(endBalance, stmt.endBalance)
         inFlows += stmt.inFlows
         outFlows += stmt.outFlows
         totalTransfers += stmt.totalTransfers
@@ -82,23 +82,6 @@ class MonthRangeSummaryStatementBuilder {
         totalPayments,
         income
       )
-    }
-
-    private fun setStatementBalance(
-      month: Month,
-      currStmt: Statement,
-      prevStmt: Statement?,
-      nextStmt: Statement?
-    ): Statement {
-      if (currStmt.startBalance == null) {
-        currStmt.startBalance = prevStmt?.endBalance
-          ?: Balance(0, month.toDate(), Balance.Type.PROJECTED)
-      }
-      if (currStmt.endBalance == null) {
-        currStmt.endBalance = nextStmt?.startBalance
-          ?: Balance(0, month.toDate(), Balance.Type.PROJECTED)
-      }
-      return currStmt
     }
   }
 }
