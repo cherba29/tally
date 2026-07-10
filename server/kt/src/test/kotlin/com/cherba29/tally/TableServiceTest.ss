@@ -37,14 +37,16 @@
       balanced: true
     - __type: GqlTableCell
       month: Dec2025
-      isClosed: false
+      isClosed: true
       addSub: 0
-      isProjected: true
+      balance: 100
+      isProjected: false
       isCovered: false
       isProjectedCovered: false
       hasProjectedTransfer: false
       percentChange: 0.0
       annualizedPercentChange: 0.0
+      unaccounted: 0
       balanced: true
   - __type: GqlTableRow
     title: external
@@ -156,14 +158,13 @@
       month: Dec2025
       isClosed: true
       addSub: 0
-      balance: 0
+      balance: 100
       isProjected: false
       isCovered: false
       isProjectedCovered: false
       hasProjectedTransfer: false
       percentChange: 0.0
       annualizedPercentChange: 0.0
-      unaccounted: 0
       balanced: true
   - __type: GqlTableRow
     title: test-account1

@@ -11,7 +11,6 @@ class SummaryMapBuilder {
 
   // Adds statement to its immediate parent summary statement.
   fun addStatement(statement: Statement) {
-    if (statement.isClosed) return  // Does not contribute to the summary.
     val parent = statement.treeNode.parent!!
     summaryStatements.getOrPut(parent) {
       mutableMapOf()

@@ -3,11 +3,9 @@ package com.cherba29.tally.data.builder
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.MonthRange
-import com.cherba29.tally.core.enlargeTo
 import com.cherba29.tally.core.plus
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
-import kotlin.collections.plusAssign
 
 class MonthSummaryStatementBuilder {
   var treeNode: TreeNode? = null
@@ -44,7 +42,7 @@ class MonthSummaryStatementBuilder {
     return SummaryStatement(
       treeNode!!,
       monthRange,
-      statements.any { statement -> statement.isClosed },
+      statements.all { statement -> statement.isClosed },
       startBalance,
       endBalance,
       inFlows,
