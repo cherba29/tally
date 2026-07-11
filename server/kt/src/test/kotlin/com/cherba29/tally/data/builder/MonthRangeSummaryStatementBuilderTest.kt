@@ -6,7 +6,7 @@ import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthName.MAY
 import com.cherba29.tally.core.root
-import com.cherba29.tally.statement.Statement
+import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
@@ -30,7 +30,12 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
           }
         }
       }
-      val testStatement = Statement(tree[listOf("john", "external", "test-account1")]!!, APR / 2026..APR / 2026)
+      val testStatement = TransactionStatement(
+        tree[listOf("john", "external", "test-account1")]!!,
+        APR / 2026..APR / 2026,
+        isClosed = false,
+        startBalance = null
+      )
       val builder = MonthRangeSummaryStatementBuilder()
       builder.addStatement(testStatement)
       val result = builder.build(tree["john"]!!)
@@ -39,7 +44,7 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
       result.totalPayments shouldBe 0
       result.totalTransfers shouldBe 0
       result.statements shouldBe listOf(
-        Statement(
+        SummaryStatement(
           tree[listOf("john", "external", "test-account1")]!!,
           APR / 2026..APR / 2026,
           startBalance = Balance(0, LocalDate(2026, 4, 1), Balance.Type.PROJECTED),
@@ -58,8 +63,18 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
           }
         }
       }
-      val testStatement1 = Statement(tree[listOf("john", "internal", "test-account1")]!!, APR / 2026..APR / 2026)
-      val testStatement2 = Statement(tree[listOf("john", "external", "test-account2")]!!, MAY / 2026..MAY / 2026)
+      val testStatement1 = TransactionStatement(
+        tree[listOf("john", "internal", "test-account1")]!!,
+        APR / 2026..APR / 2026,
+        isClosed = false,
+        startBalance = null
+      )
+      val testStatement2 = TransactionStatement(
+        tree[listOf("john", "external", "test-account2")]!!,
+        MAY / 2026..MAY / 2026,
+        isClosed = false,
+        startBalance = null
+      )
       val builder = MonthRangeSummaryStatementBuilder()
       builder.addStatement(testStatement1)
       builder.addStatement(testStatement2)
@@ -122,24 +137,6 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
   }
 
   describe("fromStatements") {
-    it("empty") {
-      val tree = root {
-        branch("john") {
-          branch("internal") {
-            leaf("test-account1")
-          }
-        }
-      }
-
-      val statement = Statement(
-        tree[listOf("john", "internal", "test-account1")]!!,
-        JAN / 2026..MAR / 2026
-      )
-      statement.isClosed shouldBe false
-      statement.percentChange shouldBe null
-      statement.annualizedPercentChange shouldBe null
-    }
-
     it("from empty list of statements") {
       val tree = root {
         branch("john") {
@@ -154,7 +151,7 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
         JAN / 2026..MAR / 2026,
         statements = mapOf()
       )
-      combined.isClosed shouldBe false
+      combined.isClosed shouldBe true
       combined.change shouldBe 0
       combined.percentChange shouldBe 0.0
       combined.annualizedPercentChange shouldBe 0.0

@@ -12,7 +12,7 @@ class StatementTest : DescribeSpec({
   describe("Creation") {
     it("basic") {
       val tree = root { branch("external") { leaf("test") } }
-      val stmt = Statement(
+      val stmt = SummaryStatement(
         tree[listOf("external", "test")]!!,
         MAR / 2021..MAR / 2021
       )
@@ -32,7 +32,7 @@ class StatementTest : DescribeSpec({
 
   it("with inFlow outFlow no start-end balance") {
     val tree = root { branch("external") { leaf("test") } }
-    val stmt = Statement(
+    val stmt = SummaryStatement(
       tree[listOf("external", "test")]!!,
       MAR / 2021..MAR / 2021,
       inFlows = 110,
@@ -55,7 +55,7 @@ class StatementTest : DescribeSpec({
     val tree = root { branch("external") { leaf("test") } }
     val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), Balance.Type.PROJECTED)
     val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
-    val stmt = Statement(
+    val stmt = SummaryStatement(
       tree[listOf("external", "test")]!!,
       MAR / 2021..MAR / 2021,
       false,
@@ -80,7 +80,7 @@ class StatementTest : DescribeSpec({
 
   it("with empty statement") {
     val tree = root { branch("external") { leaf("test") } }
-    val stmt = Statement(
+    val stmt = SummaryStatement(
       tree[listOf("external", "test")]!!,
       MAR / 2021..MAR / 2021
     )
@@ -96,7 +96,7 @@ class StatementTest : DescribeSpec({
 
   it("with no start-end balance") {
     val tree = root { branch("external") { leaf("test") } }
-    val stmt = Statement(
+    val stmt = SummaryStatement(
       tree[listOf("external", "test")]!!,
       MAR / 2021..MAR / 2021,
       inFlows = 110,
@@ -111,7 +111,7 @@ class StatementTest : DescribeSpec({
   it("with inFlow outFlow with start balance") {
     val tree = root { branch("external") { leaf("test") } }
     val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), Balance.Type.PROJECTED)
-    val stmt = Statement(
+    val stmt = SummaryStatement(
       tree[listOf("external", "test")]!!,
       MAR / 2021..MAR / 2021,
       false,
@@ -128,7 +128,7 @@ class StatementTest : DescribeSpec({
   it("with inFlow outFlow with end balance") {
     val tree = root { branch("external") { leaf("test") } }
     val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
-    val stmt = Statement(
+    val stmt = SummaryStatement(
       tree[listOf("external", "test")]!!,
       MAR / 2021..MAR / 2021,
       false,
@@ -148,7 +148,7 @@ class StatementTest : DescribeSpec({
     val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), Balance.Type.PROJECTED)
     val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
 
-    val stmt = Statement(
+    val stmt = SummaryStatement(
       tree[listOf("external", "test")]!!,
       MAR / 2021..MAR / 2021,
       false,
@@ -165,7 +165,7 @@ class StatementTest : DescribeSpec({
     val tree = root { branch("external") { leaf("test") } }
     val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), Balance.Type.PROJECTED)
     val endBalance = Balance(1020, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
-    val stmt = Statement(
+    val stmt = SummaryStatement(
       tree[listOf("external", "test")]!!,
       MAR / 2021..MAR / 2021,
       false,

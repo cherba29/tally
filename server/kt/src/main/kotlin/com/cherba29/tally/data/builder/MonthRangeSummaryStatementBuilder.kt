@@ -60,20 +60,21 @@ class MonthRangeSummaryStatementBuilder {
       var totalTransfers = 0L
       var totalPayments = 0L
       var income = 0L
+      var isClosed = true
 
       for (currentMonth in monthRange) {
-        val stmt = statements[currentMonth]
-          ?: Statement(treeNode, currentMonth..currentMonth)
+        val stmt = statements[currentMonth] ?: continue
         inFlows += stmt.inFlows
         outFlows += stmt.outFlows
         totalTransfers += stmt.totalTransfers
         totalPayments += stmt.totalPayments
         income += stmt.income
+        isClosed = isClosed && stmt.isClosed
       }
-      return Statement(
+      return SummaryStatement(
         treeNode,
         monthRange,
-        isClosed = false,
+        isClosed,
         startBalance,
         endBalance,
         inFlows,

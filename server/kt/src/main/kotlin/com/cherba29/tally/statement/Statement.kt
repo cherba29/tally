@@ -7,7 +7,7 @@ import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sign
 
-open class Statement(
+sealed class Statement(
   val treeNode: TreeNode,
 
   // Period of time for the statement

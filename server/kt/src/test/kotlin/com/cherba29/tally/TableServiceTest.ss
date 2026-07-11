@@ -37,7 +37,7 @@
       balanced: true
     - __type: GqlTableCell
       month: Dec2025
-      isClosed: true
+      isClosed: false
       addSub: 0
       balance: 100
       isProjected: false

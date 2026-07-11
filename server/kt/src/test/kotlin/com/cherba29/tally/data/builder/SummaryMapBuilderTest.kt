@@ -2,7 +2,7 @@ package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.MonthName.MAY
 import com.cherba29.tally.core.root
-import com.cherba29.tally.statement.Statement
+import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
@@ -24,9 +24,11 @@ class SummaryMapBuilderTest : DescribeSpec({
       }
       val builder = SummaryMapBuilder()
       builder.addStatement(
-        statement = Statement(
+        statement = TransactionStatement(
           tree[listOf("john", "internal", "test-account")]!!,
-          monthRange = MAY / 2026..MAY / 2026
+          monthRange = MAY / 2026..MAY / 2026,
+          isClosed = false,
+          startBalance = null
         )
       )
       val summaryStatements = builder.build(tree)
@@ -56,9 +58,11 @@ class SummaryMapBuilderTest : DescribeSpec({
 
       val aggregator = SummaryMapBuilder()
       aggregator.addStatement(
-        statement = Statement(
+        statement = TransactionStatement(
           tree[listOf("john", "internal", "test-account")]!!,
-          monthRange = MAY / 2026..MAY / 2026
+          monthRange = MAY / 2026..MAY / 2026,
+          isClosed = false,
+          startBalance = null
         )
       )
       val summaryStatements = aggregator.build(tree)
@@ -102,21 +106,27 @@ class SummaryMapBuilderTest : DescribeSpec({
 
     val aggregator = SummaryMapBuilder()
     aggregator.addStatement(
-      statement = Statement(
+      statement = TransactionStatement(
         tree[listOf("john", "internal", "test-account1")]!!,
-        monthRange = MAY / 2026..MAY / 2026
+        monthRange = MAY / 2026..MAY / 2026,
+        isClosed = false,
+        startBalance = null
       )
     )
     aggregator.addStatement(
-      statement = Statement(
+      statement = TransactionStatement(
         tree[listOf("john", "external", "test-account2")]!!,
-        monthRange = MAY / 2026..MAY / 2026
+        monthRange = MAY / 2026..MAY / 2026,
+        isClosed = false,
+        startBalance = null
       )
     )
     aggregator.addStatement(
-      statement = Statement(
+      statement = TransactionStatement(
         tree[listOf("john", "external", "test-account3")]!!,
-        monthRange = MAY / 2026..MAY / 2026
+        monthRange = MAY / 2026..MAY / 2026,
+        isClosed = false,
+        startBalance = null
       )
     )
     val summaryStatements = aggregator.build(tree)
