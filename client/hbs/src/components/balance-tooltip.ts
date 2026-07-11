@@ -4,7 +4,7 @@ import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
 import {customElement, property} from 'lit/decorators.js';
 
 import {dateFormat, currency, isProjected} from '../format';
-import {GqlBalance, GqlStatement, GqlTransaction} from 'src/gql_types';
+import {GqlBalance, GqlStatement, GqlTransaction} from '../gql_types';
 
 @customElement('balance-tooltip')
 export class BalanceTooltip extends LitElement {
@@ -95,7 +95,7 @@ export class BalanceTooltip extends LitElement {
           <th align="right">${currency(this.stmt?.endBalance?.amount)}</th>
         </tr>
         ${this.stmt?.transactions?.map(
-          (t, index) =>
+          (t: GqlTransaction, index: number) =>
             html`<tr class="highlight">
               <td style="min-width:175px">
                 ${index + 1} ${t?.toAccountName}

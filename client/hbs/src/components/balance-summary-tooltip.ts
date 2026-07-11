@@ -3,7 +3,7 @@ import {customElement, property} from 'lit/decorators.js';
 import {StatementEntry} from '../utils';
 import {dateFormat, currency, isProjected} from '../format';
 import {classMap, ClassInfo} from 'lit/directives/class-map.js';
-import {GqlBalance, GqlSummaryStatement} from 'src/gql_types';
+import {GqlBalance, GqlSummaryStatement} from '../gql_types';
 import {Month} from '@tally/lib/core/month';
 
 enum SummaryView {

@@ -4,7 +4,7 @@ import {LitElement, css, html, nothing} from 'lit';
 import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
 import {customElement, property} from 'lit/decorators.js';
 import {currency} from '../format';
-import {GqlAccount, GqlTableRow, GqlTableCell} from 'src/gql_types';
+import {GqlAccount, GqlTableRow, GqlTableCell} from '../gql_types';
 import {classMap, ClassInfo} from 'lit/directives/class-map.js';
 import {Month} from '@tally/lib/core/month';
 
