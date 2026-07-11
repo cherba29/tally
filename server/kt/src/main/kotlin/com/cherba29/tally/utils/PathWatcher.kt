@@ -13,7 +13,6 @@ import kotlin.io.path.walk
 import kotlin.io.path.name
 import kotlin.io.path.relativeTo
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -21,7 +20,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
 import java.io.IOException
 import kotlin.time.Duration.Companion.milliseconds
@@ -79,40 +77,31 @@ fun Path.watchedEventFlow(predicate: (Path)->Boolean): Flow<WatchResult> {
     emit(WatchResult(this@watchedEventFlow,null, true))
 
     while (currentCoroutineContext().isActive) {
-      coroutineScope {
-        var key: WatchKey? = null
-        launch {
-          runInterruptible(Dispatchers.IO) {
-            logger.info { "Waiting for changes to $watchedPath" }
-            // TODO: Perhaps use poll so no need for runInterruptable.
-            key = watcher.take()
-          }
-          // TODO: remove this delay. Without it same modify is triggered multiple times. See discussion.
-          // https://stackoverflow.com/questions/16777869/java-7-watchservice-ignoring-multiple-occurrences-of-the-same-event
-          // On linux (wsl2) this can be as low as 200ms, but on macOS needed to be at least 500ms.
-          delay(500.milliseconds)
-        }.join()
-
-        val currentKey = key
-        if (currentKey != null) {
-          val updatedFolderPath = watchKeyToFolderMap[currentKey]
-          if (updatedFolderPath != null) {
-            // TODO: detect creation of new directories.
-            // TODO: support deletions.
-            // TODO: remove eventIndex.
-            for ((eventIndex, event) in currentKey.pollEvents().withIndex()) {
-              val filePath = updatedFolderPath / (event.context() as Path)  // Relative to watched root path.
-              if (predicate(filePath)) {
-                logger.info { "Emitting $eventIndex kind=${event.kind()} $ANSI_YELLOW$filePath$ANSI_RESET for event ${event.kind()}" }
-                emit(WatchResult(this@watchedEventFlow, filePath, true))
-              }
-            }
-          } else {
-            logger.warn { "Could not find registered key for $key" }
-          }
-          currentKey.reset()
-        }
+      val key: WatchKey = runInterruptible(Dispatchers.IO) {
+        logger.info { "Waiting for changes to $watchedPath" }
+        // TODO: Perhaps use poll so no need for runInterruptable.
+        watcher.take()
       }
+      // TODO: remove this delay. Without it same modify is triggered multiple times. See discussion.
+      // https://stackoverflow.com/questions/16777869/java-7-watchservice-ignoring-multiple-occurrences-of-the-same-event
+      // On linux (wsl2) this can be as low as 200ms, but on macOS needed to be at least 500ms.
+      delay(500.milliseconds)
+
+      val updatedFolderPath = watchKeyToFolderMap[key]
+      if (updatedFolderPath != null) {
+        // TODO: detect creation of new directories.
+        // TODO: support deletions.
+        for (event in key.pollEvents()) {
+          val filePath = updatedFolderPath / (event.context() as Path)  // Relative to watched root path.
+          if (predicate(filePath)) {
+            logger.info { "$ANSI_YELLOW$filePath$ANSI_RESET for event ${event.kind()}" }
+            emit(WatchResult(this@watchedEventFlow, filePath, true))
+          }
+        }
+      } else {
+        logger.warn { "Could not find registered key for $key" }
+      }
+      key.reset()
     }
   }.onCompletion {
     watcher.close()
