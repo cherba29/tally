@@ -85,7 +85,7 @@ fun TransactionStatement.toGqlTableCell(): GqlTableCell = GqlTableCell(
   balanced = unaccounted == null || unaccounted == 0L
 )
 
-fun Statement.toGqlTableCell(): GqlTableCell = GqlTableCell(
+fun SummaryStatement.toGqlTableCell(): GqlTableCell = GqlTableCell(
   month = monthRange.first,
   isClosed = isClosed,
   addSub = addSub,
@@ -99,6 +99,11 @@ fun Statement.toGqlTableCell(): GqlTableCell = GqlTableCell(
   unaccounted = unaccounted,
   balanced = unaccounted == null || unaccounted == 0L
 )
+
+fun Statement.toGqlTableCell() = when (this) {
+  is TransactionStatement -> toGqlTableCell()
+  is SummaryStatement -> toGqlTableCell()
+}
 
 fun SummaryStatement.toGql(): GqlSummaryStatement = GqlSummaryStatement(
   name = treeNode.name,

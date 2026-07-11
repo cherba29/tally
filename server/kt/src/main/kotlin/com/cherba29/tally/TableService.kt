@@ -66,16 +66,10 @@ class TableService(val loader: Loader) : Query {
           )
 
         val cells = requestedMonths.map { month ->
-          // Extension functions are not polymorphic.
-          // TODO: refactor so not to do manual polymorphism here.
-          when (val monthlyStatement = monthMap[month]) {
-            is TransactionStatement -> monthlyStatement.toGqlTableCell()
-            is SummaryStatement -> monthlyStatement.toGqlTableCell()
-            else -> throw IllegalStateException(
+          monthMap[month]?.toGqlTableCell()
+            ?: throw IllegalStateException(
               "Missing statement for ${treeNode.path.joinToString("/")} for month $month, " +
-                  "only available ${monthMap.keys}"
-            )
-          }
+                  "only available ${monthMap.keys}")
         }
 
         if (cells.any { c -> !c.isClosed }) {
