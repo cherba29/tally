@@ -8,6 +8,7 @@
   - Dec2025
   rows:
   - __type: GqlTableRow
+    id: john
     title: john
     account:
       __type: GqlAccount
@@ -49,6 +50,7 @@
       unaccounted: 0
       balanced: true
   - __type: GqlTableRow
+    id: john/external
     title: external
     account:
       __type: GqlAccount
@@ -88,6 +90,7 @@
       annualizedPercentChange: 0.0
       balanced: true
   - __type: GqlTableRow
+    id: john/external/test-account2
     title: test-account2
     account:
       __type: GqlAccount
@@ -127,6 +130,7 @@
       annualizedPercentChange: 0.0
       balanced: true
   - __type: GqlTableRow
+    id: john/internal
     title: internal
     account:
       __type: GqlAccount
@@ -167,6 +171,7 @@
       annualizedPercentChange: 0.0
       balanced: true
   - __type: GqlTableRow
+    id: john/internal/test-account1
     title: test-account1
     account:
       __type: GqlAccount
@@ -217,6 +222,7 @@
   - Mar2026
   rows:
   - __type: GqlTableRow
+    id: john
     title: john
     account:
       __type: GqlAccount
@@ -245,6 +251,7 @@
       annualizedPercentChange: 0.0
       balanced: true
   - __type: GqlTableRow
+    id: john/internal
     title: internal
     account:
       __type: GqlAccount
@@ -273,6 +280,7 @@
       annualizedPercentChange: 0.0
       balanced: true
   - __type: GqlTableRow
+    id: john/internal/test-account1
     title: test-account1
     account:
       __type: GqlAccount
@@ -310,6 +318,7 @@
   - Mar2026
   rows:
   - __type: GqlTableRow
+    id: john
     title: john
     account:
       __type: GqlAccount
@@ -338,6 +347,7 @@
       annualizedPercentChange: 0.0
       balanced: true
   - __type: GqlTableRow
+    id: john/internal
     title: internal
     account:
       __type: GqlAccount
@@ -366,6 +376,7 @@
       annualizedPercentChange: 0.0
       balanced: true
   - __type: GqlTableRow
+    id: john/internal/test-account
     title: test-account
     account:
       __type: GqlAccount
@@ -403,6 +414,7 @@
   - Mar2026
   rows:
   - __type: GqlTableRow
+    id: john
     title: john
     account:
       __type: GqlAccount
@@ -431,6 +443,7 @@
       annualizedPercentChange: 0.0
       balanced: true
   - __type: GqlTableRow
+    id: john/external
     title: external
     account:
       __type: GqlAccount
@@ -459,6 +472,7 @@
       annualizedPercentChange: 0.0
       balanced: true
   - __type: GqlTableRow
+    id: john/external/test-account
     title: test-account
     account:
       __type: GqlAccount

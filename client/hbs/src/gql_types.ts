@@ -126,6 +126,7 @@ export type GqlTableRow = {
   __typename?: 'GqlTableRow';
   account: GqlAccount;
   cells: Array<GqlTableCell>;
+  id: Scalars['String']['output'];
   indent: Scalars['Int']['output'];
   isNormal: Scalars['Boolean']['output'];
   isSpace: Scalars['Boolean']['output'];

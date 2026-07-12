@@ -8,8 +8,6 @@ import com.cherba29.tally.schema.GqlTable
 import com.cherba29.tally.schema.GqlTableRow
 import com.cherba29.tally.schema.toGql
 import com.cherba29.tally.schema.toGqlTableCell
-import com.cherba29.tally.statement.SummaryStatement
-import com.cherba29.tally.statement.TransactionStatement
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -35,7 +33,7 @@ class TableService(val loader: Loader) : Query {
   companion object {
     private val logger = KotlinLogging.logger {}
 
-    fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: Month): GqlTable {
+    private fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: Month): GqlTable {
       val requestedMonths = payload.months.reduceTo(startMonth..endMonth)?.sortedDescending()
       if (requestedMonths.isNullOrEmpty()) {
         throw IllegalArgumentException(
@@ -75,6 +73,7 @@ class TableService(val loader: Loader) : Query {
         if (cells.any { c -> !c.isClosed }) {
           rows.add(
             GqlTableRow(
+              id = treeNode.path.joinToString("/"),
               title = treeNode.name,
               indent = treeNode.path.size - 1,
               account = account.toGql(treeNode.isExternal, treeNode.children.isNotEmpty()),

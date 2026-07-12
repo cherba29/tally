@@ -93,6 +93,7 @@ data class GqlTableCell(
 )
 
 data class GqlTableRow(
+  val id: String,
   val title: String,
   val account: GqlAccount,
   val indent: Int,

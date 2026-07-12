@@ -46,6 +46,7 @@ export class BackendClient {
             owners
             months
             rows {
+              id
               title
               account {
                 name

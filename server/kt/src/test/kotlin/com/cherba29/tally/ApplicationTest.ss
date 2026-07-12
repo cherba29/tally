@@ -135,6 +135,7 @@ type GqlTableCell {
 type GqlTableRow {
   account: GqlAccount!
   cells: [GqlTableCell!]!
+  id: String!
   indent: Int!
   isNormal: Boolean!
   isSpace: Boolean!
