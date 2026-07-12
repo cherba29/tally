@@ -53,7 +53,8 @@ class BudgetBuilderTest : DescribeSpec({
           fromAccountPath = listOf("john", "internal", "test-account2"),
           month = NOV / 2019,
           balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
-          description = null
+          description = null,
+          tags = listOf()
         )
       )
       addTransfer(
@@ -62,7 +63,8 @@ class BudgetBuilderTest : DescribeSpec({
           fromAccountPath = listOf("john", "internal", "test-account2"),
           month = NOV / 2019,
           balance = Balance(70, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
-          description = null
+          description = null,
+          tags = listOf()
         )
       )
     }
@@ -131,7 +133,8 @@ class BudgetBuilderTest : DescribeSpec({
             fromAccountPath = path2,
             month = NOV / 2019,
             balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
-            description = null
+            description = null,
+            tags = listOf()
           )
         )
       }
@@ -173,7 +176,8 @@ class BudgetBuilderTest : DescribeSpec({
             fromAccountPath = path2,
             month = NOV / 2019,
             balance = Balance(50, LocalDate(2019, 12, 2), Balance.Type.CONFIRMED),
-            description = null
+            description = null,
+            tags = listOf()
           )
         )
       }
@@ -201,7 +205,8 @@ class BudgetBuilderTest : DescribeSpec({
             fromAccountPath = path2,
             month = NOV / 2019,
             balance = Balance(50, LocalDate(2019, 11, 2), Balance.Type.CONFIRMED),
-            description = null
+            description = null,
+            tags = listOf()
           )
         )
       }
@@ -257,7 +262,8 @@ class BudgetBuilderTest : DescribeSpec({
                   toAccountName = "test-account2",
                   month = DEC / 2019,
                   balance = Balance.projected(2000, "2019-12-05"),
-                  description = "First transfer"
+                  description = "First transfer",
+                  tags = listOf()
                 )
               )
             }
@@ -292,7 +298,8 @@ class BudgetBuilderTest : DescribeSpec({
                   toAccountName = "test-account1",
                   month = DEC / 2019,
                   balance = Balance.projected(2000, "2019-11-25"),
-                  description = "First transfer"
+                  description = "First transfer",
+                  tags = listOf()
                 )
               )
             }

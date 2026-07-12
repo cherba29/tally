@@ -129,7 +129,8 @@ class TransactionTableBuilderTest : DescribeSpec({
         toAccount = tree[path2] as TreeNode.Leaf,
         month = DEC / 2019,
         description = "First transfer",
-        balance = Balance.projected(2000, "2019-12-05")
+        balance = Balance.projected(2000, "2019-12-05"),
+        tags = listOf()
       )
 
       val secondTransfer1to2 = Transfer(
@@ -137,7 +138,8 @@ class TransactionTableBuilderTest : DescribeSpec({
         toAccount = tree[path2] as TreeNode.Leaf,
         month = DEC / 2019,
         description = "Second transfer",
-        balance = Balance.projected(1000, "2019-12-05")
+        balance = Balance.projected(1000, "2019-12-05"),
+        tags = listOf()
       )
 
       val transfers = mapOf(
@@ -199,14 +201,16 @@ class TransactionTableBuilderTest : DescribeSpec({
         toAccount = node2,
         month = DEC / 2019,
         description = "First transfer",
-        balance = Balance.projected(2000, "2019-12-05")
+        balance = Balance.projected(2000, "2019-12-05"),
+        tags = listOf()
       )
       val secondTransfer1to2 = Transfer(
         fromAccount = node1,
         toAccount = node2,
         month = DEC / 2019,
         description = "Second transfer",
-        balance = Balance.projected(1000, "2019-12-05")
+        balance = Balance.projected(1000, "2019-12-05"),
+        tags = listOf()
       )
 
       val transfers = mapOf(
@@ -267,7 +271,8 @@ class TransactionTableBuilderTest : DescribeSpec({
               toAccount = node2,
               month = DEC / 2019,
               description = "First transfer",
-              balance = Balance.projected(2000, "2019-12-05")
+              balance = Balance.projected(2000, "2019-12-05"),
+              tags = listOf()
             )
           )
         )
@@ -350,14 +355,16 @@ class TransactionTableBuilderTest : DescribeSpec({
         toAccount = node2,
         month = DEC / 2019,
         description = "First transfer",
-        balance = Balance.projected(2000, "2019-12-05")
+        balance = Balance.projected(2000, "2019-12-05"),
+        tags = listOf()
       )
       val transfer1to3 = Transfer(
         fromAccount = node1,
         toAccount = node3,
         month = DEC / 2019,
         description = "Second transfer",
-        balance = Balance.projected(1000, "2019-12-05")
+        balance = Balance.projected(1000, "2019-12-05"),
+        tags = listOf()
       )
       val transfers = mapOf(
         node1 to mapOf(DEC / 2019 to listOf(transfer1to2, transfer1to3)),

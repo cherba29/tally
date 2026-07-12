@@ -141,7 +141,8 @@ private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boole
               fromAccountPath = fullPath,
               month = transferMonth,
               balance = balance,
-              description = transferData.desc
+              description = transferData.desc,
+              tags = transferData.tags ?: listOf()
             )
           )
         }

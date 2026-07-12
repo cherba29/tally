@@ -95,7 +95,8 @@ class SummaryServiceTest : DescribeSpec({
               toAccountName = "test-account2",
               month = MAR / 2026,
               balance = Balance.confirmed(50, "2026-03-02"),
-              description = "transfer from 1 to 2"
+              description = "transfer from 1 to 2",
+              tags = listOf()
             )
           )
         }
@@ -126,7 +127,8 @@ class SummaryServiceTest : DescribeSpec({
               toAccountName = "test-account2",
               month = MAR / 2026,
               balance = Balance.confirmed(50, "2026-04-02"),
-              description = "transfer from 1 to 2"
+              description = "transfer from 1 to 2",
+              tags = listOf()
             )
           )
         }
@@ -158,7 +160,8 @@ class SummaryServiceTest : DescribeSpec({
               toAccountName = "test-account2",
               month = MAR / 2026,
               balance = Balance.confirmed(50, "2026-03-02"),
-              description = "transfer from 1 to 2"
+              description = "transfer from 1 to 2",
+              tags = listOf()
             )
           )
           addTransfer(
@@ -167,7 +170,8 @@ class SummaryServiceTest : DescribeSpec({
               toAccountName = "test-account1",
               month = APR / 2026,
               balance = Balance.confirmed(75, "2026-04-02"),
-              description = "transfer from 2 to 1"
+              description = "transfer from 2 to 1",
+              tags = listOf()
             )
           )
         }
@@ -200,7 +204,8 @@ class SummaryServiceTest : DescribeSpec({
               toAccountName = "test-account2",
               month = MAR / 2026,
               balance = Balance.confirmed(50, "2026-03-02"),
-              description = "transfer from 1 to 2"
+              description = "transfer from 1 to 2",
+              tags = listOf()
             )
           )
           addTransfer(
@@ -209,7 +214,8 @@ class SummaryServiceTest : DescribeSpec({
               toAccountName = "test-account1",
               month = APR / 2026,
               balance = Balance.confirmed(75, "2026-04-02"),
-              description = "transfer from 2 to 1"
+              description = "transfer from 2 to 1",
+              tags = listOf()
             )
           )
         }

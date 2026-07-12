@@ -54,7 +54,8 @@ class TransactionStatementBuilderTest : DescribeSpec({
         toAccount = testTreeLeafNode2,
         month = JUL / 2026,
         description = "test transfer",
-        balance = testTransferBalance
+        balance = testTransferBalance,
+        tags = listOf()
       )
       val builder = TransactionStatementBuilder()
       builder.treeNode = testTreeLeafNode3
@@ -86,7 +87,8 @@ class TransactionStatementBuilderTest : DescribeSpec({
         toAccount = testTreeLeafNode2,
         month = JUL / 2026,
         description = "test transfer",
-        balance = testTransferBalance
+        balance = testTransferBalance,
+        tags = listOf()
       )
       val builder = TransactionStatementBuilder()
       builder.treeNode = testTreeLeafNode1
@@ -128,14 +130,16 @@ class TransactionStatementBuilderTest : DescribeSpec({
         toAccount = testTreeLeafNode2,
         month = JUL / 2026,
         description = "test transfer",
-        balance = testTransferBalance
+        balance = testTransferBalance,
+        tags = listOf()
       )
       val testTransferTo = Transfer(
         fromAccount = testTreeLeafNode2,
         toAccount = testTreeLeafNode1,
         month = JUL / 2026,
         description = "test transfer",
-        balance = testTransferBalance
+        balance = testTransferBalance,
+        tags = listOf()
       )
       val testStartBalance = Balance(1000, LocalDate(2026, 7, 1), Balance.Type.PROJECTED)
       val builder = TransactionStatementBuilder()

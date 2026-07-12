@@ -66,7 +66,8 @@ class TableServiceTest : DescribeSpec({
               date = LocalDate(2026, 3, 1),
               type = Balance.Type.CONFIRMED
             ),
-            description = "test transfer"
+            description = "test transfer",
+            tags = listOf()
           )
         )
       }

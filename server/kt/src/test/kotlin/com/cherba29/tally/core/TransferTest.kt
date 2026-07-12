@@ -22,8 +22,9 @@ class TransferTest : DescribeSpec({
         fromAccount = tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf,
         toAccount = tree[listOf("john", "external", "test-account2")] as TreeNode.Leaf,
         month = month,
+        balance,
         description = "test",
-        balance
+        tags = listOf()
       )
       transfer.fromAccount.name shouldBe "test-account1"
       transfer.toAccount.name shouldBe "test-account2"
@@ -49,15 +50,17 @@ class TransferTest : DescribeSpec({
         fromAccount = tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf,
         toAccount = tree[listOf("john", "external", "test-account2")] as TreeNode.Leaf,
         month = month,
+        balance,
         description = "test",
-        balance
+        tags = listOf()
       )
       val transfer2 = Transfer(
         fromAccount = tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf,
         toAccount = tree[listOf("john", "external", "test-account2")] as TreeNode.Leaf,
         month = month,
+        balance,
         description = "test",
-        balance
+        tags = listOf()
       )
       transfer1 shouldNotBeLessThan transfer2
       transfer2 shouldNotBeLessThan transfer1

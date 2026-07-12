@@ -4,8 +4,9 @@ data class Transfer(
   val fromAccount: TreeNode.Leaf,
   val toAccount: TreeNode.Leaf,
   val month: Month,
-  val description: String?,
   val balance: Balance,
+  val description: String?,
+  val tags: List<String>,
 ) : Comparable<Transfer> {
   override fun compareTo(other: Transfer): Int {
     var eq: Int = balance.compareTo(other.balance)

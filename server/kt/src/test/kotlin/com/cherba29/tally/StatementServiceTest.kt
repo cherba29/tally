@@ -134,7 +134,8 @@ class StatementServiceTest : DescribeSpec({
                 type = Balance.Type.CONFIRMED,
                 description = "transfer1"
               ),
-              "transfer1"
+              "transfer1",
+              tags = listOf()
             )
           )
         }

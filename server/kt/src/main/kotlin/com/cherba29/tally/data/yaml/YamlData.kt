@@ -20,10 +20,7 @@ data class TransferYamlData(
   val camt: Double? = null,
   val pamt: Double? = null,
   val desc: String? = null,
-  // TODO: choose cat or tags and wire it in.
-  val cat: String? = null,
   val tags: List<String>? = null,
-  // TODO: add option for running annual total.
 )
 
 @JsonIgnoreProperties(value = [])

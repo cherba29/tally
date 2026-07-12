@@ -28,6 +28,7 @@ class BudgetBuilder(
     val month: Month,
     val balance: Balance,
     val description: String?,
+    val tags: List<String>,
   )
 
   private val groupTreeBuilder = TreeNode.Companion.Builder()
@@ -95,8 +96,9 @@ class BudgetBuilder(
         fromAccount,
         toAccount,
         transferRecord.month,
+        transferRecord.balance,
         transferRecord.description,
-        transferRecord.balance
+        transferRecord.tags,
       )
       budgetTransfers.get(toAccount, transferRecord.month).add(transfer)
       budgetTransfers.get(fromAccount, transferRecord.month).add(transfer)
