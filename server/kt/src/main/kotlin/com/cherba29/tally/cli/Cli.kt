@@ -1,5 +1,6 @@
 package com.cherba29.tally.cli
 
+import com.cherba29.tally.cli.cmds.CsvToTransfers
 import com.cherba29.tally.cli.cmds.Generate
 import com.cherba29.tally.cli.cmds.Report
 import com.cherba29.tally.cli.cmds.Summary
@@ -19,6 +20,7 @@ class Cli : CliktCommand() {
 }
 
 fun main(args: Array<String>) = Cli().subcommands(
+  CsvToTransfers(),
   Generate(),
   Report(),
   Summary(),

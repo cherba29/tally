@@ -29,6 +29,7 @@ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-c
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version = "1.10.2" }
 kotlinx-coroutines-test-jvm = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test-jvm", version = "1.10.2" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime-jvm", version = "0.7.1" }
+kotlin-csv = { group = "com.jsoizo", name="kotlin-csv", version = "2.0.0" }
 kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version = "7.0.13" }
 
 ktor-client-content = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
