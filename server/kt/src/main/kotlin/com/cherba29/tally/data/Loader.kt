@@ -3,6 +3,7 @@ package com.cherba29.tally.data
 import com.cherba29.tally.utils.LastSetFlowState
 import com.cherba29.tally.utils.WatchResult
 import com.cherba29.tally.utils.scan
+import com.cherba29.tally.utils.watchedEventFlow
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.lang.AutoCloseable
 import java.nio.file.Path
@@ -47,6 +48,11 @@ class Loader(
       }
       return processedBudget.budget!!
     }
+
+    fun watchPath(path: Path) =
+      Loader(path.watchedEventFlow {
+        it.extension == "yaml" && !ignorePathRegex.containsMatchIn(it.pathString)
+      })
 
     private fun process(
       processedBudget: ProcessedBudget,
