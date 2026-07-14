@@ -8,7 +8,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.lang.AutoCloseable
 import java.nio.file.Path
 import kotlin.io.path.extension
-import kotlin.io.path.pathString
 import kotlin.time.Duration
 import kotlin.time.TimeSource
 import kotlinx.coroutines.CoroutineScope
@@ -36,12 +35,10 @@ class Loader(
 
   companion object {
     private val logger = KotlinLogging.logger {}
-    private val ignorePathRegex = Regex("(^_)|(/_)")
+    private val filePathFilter: (Path)-> Boolean = { it.extension == "yaml" }
 
     fun loadFrom(path: Path, timeSource: TimeSource = TimeSource.Monotonic): Budget {
-      val fileResults = path.scan {
-        it.extension == "yaml" && !ignorePathRegex.containsMatchIn(it.pathString)
-      }
+      val fileResults = path.scan(filePathFilter)
       val processedBudget = ProcessedBudget(timeSource)
       for (fileResult in fileResults) {
         process(processedBudget, fileResult)
@@ -49,10 +46,7 @@ class Loader(
       return processedBudget.budget!!
     }
 
-    fun watchPath(path: Path) =
-      Loader(path.watchedEventFlow {
-        it.extension == "yaml" && !ignorePathRegex.containsMatchIn(it.pathString)
-      })
+    fun watchPath(path: Path) = Loader(path.watchedEventFlow(filePathFilter))
 
     private fun process(
       processedBudget: ProcessedBudget,

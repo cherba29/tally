@@ -10,7 +10,6 @@ import kotlin.io.path.PathWalkOption
 import kotlin.io.path.div
 import kotlin.io.path.isDirectory
 import kotlin.io.path.walk
-import kotlin.io.path.name
 import kotlin.io.path.relativeTo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
@@ -22,6 +21,7 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.runInterruptible
 import java.io.IOException
+import kotlin.io.path.pathString
 import kotlin.time.Duration.Companion.milliseconds
 
 data class WatchResult(
@@ -30,7 +30,7 @@ data class WatchResult(
   val reprocess: Boolean
 )
 
-fun Path.scan(predicate: (Path)->Boolean) = sequence {
+fun Path.scan(filePathFilter: (Path)->Boolean) = sequence {
   val watchedPath = try {
     this@scan.toRealPath()  // walk below does not work for relative paths.
   } catch (_: IOException) {
@@ -38,14 +38,21 @@ fun Path.scan(predicate: (Path)->Boolean) = sequence {
   }
   for (filePath in watchedPath.walk()) {
     val relativeFilePath = filePath.relativeTo(watchedPath)
-    if (predicate(relativeFilePath)) {
+    if (ignorePathRegex.containsMatchIn(relativeFilePath.pathString)) {
+      continue
+    }
+    if (filePathFilter(relativeFilePath)) {
       yield(WatchResult(this@scan, relativeFilePath, false))
     }
   }
   yield(WatchResult(this@scan,null, true))
 }
 
-fun Path.watchedEventFlow(predicate: (Path)->Boolean): Flow<WatchResult> {
+/**
+ * Watches for changes in this path and emits WatchResults.
+ * Paths starting with '_' are skipped and ignored.
+ */
+fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
   val watcher: WatchService = FileSystems.getDefault().newWatchService()
   val watchedPath = try {
     this.toRealPath()  // walk below does not work for relative paths.
@@ -56,8 +63,7 @@ fun Path.watchedEventFlow(predicate: (Path)->Boolean): Flow<WatchResult> {
 
   logger.info { "Registering all paths under $watchedPath" }
   watchedPath.walk(PathWalkOption.INCLUDE_DIRECTORIES).filter {
-    // TODO: reconcile with predicate.
-    it.isDirectory() && !it.name.startsWith("_")
+    it.isDirectory() && !ignorePathRegex.containsMatchIn(it.pathString)
   }.associateTo(watchKeyToFolderMap) {
     logger.info { "Registering $it" }
     it.register(watcher,
@@ -70,7 +76,10 @@ fun Path.watchedEventFlow(predicate: (Path)->Boolean): Flow<WatchResult> {
     // Emit existing files.
     for (filePath in watchedPath.walk()) {
       val relativeFilePath = filePath.relativeTo(watchedPath)
-      if (predicate(relativeFilePath)) {
+      if (ignorePathRegex.containsMatchIn(relativeFilePath.pathString)) {
+        continue
+      }
+      if (filePathFilter(relativeFilePath)) {
         emit(WatchResult(this@watchedEventFlow, relativeFilePath, false))
       }
     }
@@ -93,7 +102,7 @@ fun Path.watchedEventFlow(predicate: (Path)->Boolean): Flow<WatchResult> {
         // TODO: support deletions.
         for (event in key.pollEvents()) {
           val filePath = updatedFolderPath / (event.context() as Path)  // Relative to watched root path.
-          if (predicate(filePath)) {
+          if (filePathFilter(filePath)) {
             logger.info { "$ANSI_YELLOW$filePath$ANSI_RESET for event ${event.kind()}" }
             emit(WatchResult(this@watchedEventFlow, filePath, true))
           }
@@ -108,6 +117,7 @@ fun Path.watchedEventFlow(predicate: (Path)->Boolean): Flow<WatchResult> {
   }
 }
 
+private val ignorePathRegex = Regex("(^_)|(/_)")
 private const val ANSI_RESET = "\u001B[0m"
 private const val ANSI_RED = "\u001B[31m"
 private const val ANSI_GREEN = "\u001B[32m"
