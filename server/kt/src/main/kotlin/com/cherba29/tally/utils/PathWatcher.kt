@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.runInterruptible
 import java.io.IOException
+import java.nio.file.WatchEvent
 import kotlin.io.path.pathString
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -66,29 +67,22 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
     it.isDirectory() && !ignorePathRegex.containsMatchIn(it.pathString)
   }.associateTo(watchKeyToFolderMap) {
     logger.info { "Registering $it" }
-    it.register(watcher,
+    it.register(
+      watcher,
       StandardWatchEventKinds.ENTRY_CREATE,
       StandardWatchEventKinds.ENTRY_DELETE,
-      StandardWatchEventKinds.ENTRY_MODIFY) to watchedPath.relativize(it)
+      StandardWatchEventKinds.ENTRY_MODIFY,
+      StandardWatchEventKinds.OVERFLOW
+    ) to watchedPath.relativize(it)
   }
 
   return flow {
     // Emit existing files.
-    for (filePath in watchedPath.walk()) {
-      val relativeFilePath = filePath.relativeTo(watchedPath)
-      if (ignorePathRegex.containsMatchIn(relativeFilePath.pathString)) {
-        continue
-      }
-      if (filePathFilter(relativeFilePath)) {
-        emit(WatchResult(this@watchedEventFlow, relativeFilePath, false))
-      }
-    }
-    emit(WatchResult(this@watchedEventFlow,null, true))
+    scan(filePathFilter).forEach { emit(it) }
 
     while (currentCoroutineContext().isActive) {
       val key: WatchKey = runInterruptible(Dispatchers.IO) {
         logger.info { "Waiting for changes to $watchedPath" }
-        // TODO: Perhaps use poll so no need for runInterruptable.
         watcher.take()
       }
       // TODO: remove this delay. Without it same modify is triggered multiple times. See discussion.
@@ -98,21 +92,41 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
 
       val updatedFolderPath = watchKeyToFolderMap[key]
       if (updatedFolderPath != null) {
-        // TODO: detect creation of new directories.
-        // TODO: support deletions.
         for (event in key.pollEvents()) {
           val filePath = updatedFolderPath / (event.context() as Path)  // Relative to watched root path.
           if (filePathFilter(filePath)) {
             logger.info { "$ANSI_YELLOW$filePath$ANSI_RESET for event ${event.kind()}" }
-            emit(WatchResult(this@watchedEventFlow, filePath, true))
+            when (event.kind()) {
+              StandardWatchEventKinds.ENTRY_CREATE -> {
+                if (filePath.isDirectory()) {
+                  TODO("Implement directory create")
+                } else {
+                  emit(WatchResult(this@watchedEventFlow, filePath, true))
+                }
+              }
+              StandardWatchEventKinds.ENTRY_DELETE -> {
+                TODO("Implement file/directory delete")
+              }
+              StandardWatchEventKinds.ENTRY_MODIFY -> {
+                emit(WatchResult(this@watchedEventFlow, filePath, true))
+              }
+              StandardWatchEventKinds.OVERFLOW -> {
+                logger.warn { "Filesystem event overflow at ${this@watchedEventFlow}, rescanning..." }
+                scan(filePathFilter).forEach { emit(it) }
+              }
+              else -> {
+                throw IllegalStateException("Unknown event ${event.kind()} for $filePath")
+              }
+            }
           }
         }
       } else {
         logger.warn { "Could not find registered key for $key" }
       }
-      key.reset()
+      if (!key.reset()) break
     }
   }.onCompletion {
+    logger.info { "Closing watcher for path '${this@watchedEventFlow}'"}
     watcher.close()
   }
 }

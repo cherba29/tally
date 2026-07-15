@@ -78,5 +78,19 @@ class PathWatcherTest : DescribeSpec({
         flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
       }
     }
+
+    it("returns new file") {
+      val folder = tempdir("tally-", keepOnFailure = false).toPath()
+      (folder / "file1.yaml").createFile()
+
+      turbineScope {
+        val flow = folder.watchedEventFlow { true }.testIn(backgroundScope)
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file1.yaml"), reprocess = false)
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = null, reprocess = true)
+        (folder / "file2.yaml").createFile()
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file2.yaml"), reprocess = true)
+        flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
+      }
+    }
   }
 })
