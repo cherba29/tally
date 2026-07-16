@@ -67,13 +67,7 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
     it.isDirectory() && !ignorePathRegex.containsMatchIn(it.pathString)
   }.associateTo(watchKeyToFolderMap) {
     logger.info { "Registering $it" }
-    it.register(
-      watcher,
-      StandardWatchEventKinds.ENTRY_CREATE,
-      StandardWatchEventKinds.ENTRY_DELETE,
-      StandardWatchEventKinds.ENTRY_MODIFY,
-      StandardWatchEventKinds.OVERFLOW
-    ) to watchedPath.relativize(it)
+    it.register(watcher,*eventsToWatch) to watchedPath.relativize(it)
   }
 
   return flow {
@@ -98,8 +92,18 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
             logger.info { "$ANSI_YELLOW$filePath$ANSI_RESET for event ${event.kind()}" }
             when (event.kind()) {
               StandardWatchEventKinds.ENTRY_CREATE -> {
-                if (filePath.isDirectory()) {
-                  TODO("Implement directory create")
+                val fullPath = watchedPath / filePath
+                if (fullPath.isDirectory()) {
+                  logger.info { "Registering new directory $fullPath" }
+                  watchKeyToFolderMap[fullPath.register(watcher, *eventsToWatch)] = filePath
+                  // We added new directory, it can already contain files in it, so scan and emit them.
+                  fullPath.scan(filePathFilter).forEach {
+                    if (it.relativePath != null) {
+                      emit(WatchResult(this@watchedEventFlow, filePath / it.relativePath, false))
+                    } else { // Emit end of scan event.
+                      emit(WatchResult(this@watchedEventFlow, null, true))
+                    }
+                  }
                 } else {
                   emit(WatchResult(this@watchedEventFlow, filePath, true))
                 }
@@ -111,6 +115,7 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
                 emit(WatchResult(this@watchedEventFlow, filePath, true))
               }
               StandardWatchEventKinds.OVERFLOW -> {
+                // This can happen if watcher event queue gets overflows. In that case just rescan everything.
                 logger.warn { "Filesystem event overflow at ${this@watchedEventFlow}, rescanning..." }
                 scan(filePathFilter).forEach { emit(it) }
               }
@@ -131,6 +136,12 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
   }
 }
 
+private val eventsToWatch = arrayOf(
+  StandardWatchEventKinds.ENTRY_CREATE,
+  StandardWatchEventKinds.ENTRY_DELETE,
+  StandardWatchEventKinds.ENTRY_MODIFY,
+  StandardWatchEventKinds.OVERFLOW
+)
 private val ignorePathRegex = Regex("(^_)|(/_)")
 private const val ANSI_RESET = "\u001B[0m"
 private const val ANSI_RED = "\u001B[31m"
