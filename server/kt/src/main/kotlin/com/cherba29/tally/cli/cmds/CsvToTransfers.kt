@@ -36,43 +36,78 @@ class CsvToTransfers : CliktCommand("csv-to-transfers") {
       }
       data
     }
-    val dates = data["Date"]?.map { LocalDate.parse(it, dateFormat) }
-      ?: throw CliktError("Cant find 'Date' field")
+    val csvMetadata = getCsvSource(data.keys)
+      ?: throw CliktError("Unknown type of csv with fields ${data.keys}")
+
+    val dates = data[csvMetadata.dateField]?.map { LocalDate.parse(it, dateFormat) }
+      ?: throw CliktError("Cant find Date field '${csvMetadata.dateField}'")
     val month = dates.max().run { Month(year, month.number - 1) }
 
-    echo("Detected source: ${getCsvSource(data.keys)}")
+    echo("Detected source: ${csvMetadata.name}")
     echo("Detected month: $month")
 
-    val descriptions = data["Description"]
-      ?: throw IllegalArgumentException("Cant find 'Description' field")
+    val descriptions = data[csvMetadata.descriptionField]
+      ?: throw IllegalArgumentException("Cant find description field ${csvMetadata.descriptionField}")
     require(descriptions.size == dates.size)
-    val debits = data["Debit"]
+    val debits = data[csvMetadata.debitField]
       ?: throw IllegalArgumentException("Cant find 'Debit' field")
     require(debits.size == dates.size)
 
-    val credits = data["Credit"]
+    val credits = data[csvMetadata.creditField]
       ?: throw IllegalArgumentException("Cant find 'Credit' field")
     require(credits.size == dates.size)
 
+    val amountFactor = if (csvMetadata.negated) -1 else 1
+    val amountFormat = csvMetadata.amountFormat
+
     for ((i, date) in dates.withIndex()) {
       val description = descriptions[i]
-      val amount = debits[i].toFloatOrNull() ?: (credits[i].toFloatOrNull()) ?:
-        throw IllegalArgumentException("'Credit' or 'Debit' field is not set on row $i for date $date")
+      val amount = amountFactor * (debits[i].toFloatOrNull() ?: (credits[i].toFloatOrNull()) ?:
+        throw IllegalArgumentException("'Credit' or 'Debit' field is not set on row $i for date $date"))
 
       if (amount < 0 && description.contains("payment", ignoreCase = true)) {
         continue
       }
-      echo("    - { grp: $month, date: $date, camt: ${"%8.2f".format(amount)}, desc: \"$description\" }")
+      echo("    - { grp: $month, date: $date, camt: ${amountFormat.format(amount)}, desc: \"$description\" }")
     }
   }
 
   companion object {
-    private val creditCardFields = mapOf(
-      "costco" to setOf("Status", "Date", "Description", "Debit", "Credit", "Member Name")
+    data class CsvMetadata(
+      val name: String,
+      val fields: Set<String>,
+      val dateField: String,
+      val descriptionField: String,
+      val debitField: String,
+      val creditField: String,
+      val negated: Boolean,
+      val amountFormat: String,
     )
-    fun getCsvSource(header: Set<String>): String? {
-      for ((source, fields) in creditCardFields) {
-        if (fields == header) return source
+    private val creditCardFields = listOf(
+      CsvMetadata(
+        name = "costco",
+        setOf("Status", "Date", "Description", "Debit", "Credit", "Member Name"),
+        dateField = "Date",
+        descriptionField = "Description",
+        debitField = "Debit",
+        creditField = "Credit",
+        negated = false,
+        amountFormat = "%8.2f",
+      ),
+      CsvMetadata(
+        name = "chase_amazon",
+          setOf("Transaction Date","Post Date","Description","Category","Type","Amount","Memo"),
+        dateField = "Transaction Date",
+        descriptionField = "Description",
+        debitField = "Amount",
+        creditField = "Amount",
+        negated = true,
+        amountFormat = "%7.2f",
+      )
+    )
+    fun getCsvSource(header: Set<String>): CsvMetadata? {
+      for (metadata in creditCardFields) {
+        if (metadata.fields == header) return metadata
       }
       return null
     }

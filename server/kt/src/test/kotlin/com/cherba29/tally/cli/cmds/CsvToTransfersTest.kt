@@ -35,12 +35,12 @@ class CsvToTransfersTest : DescribeSpec({
       val result = command.test(
         listOf("--csv-file=$csvPath")
       )
-      result.stderr shouldContain "Cant find 'Date' field"
+      result.stderr shouldContain "Unknown type of csv with fields []"
       result.stdout shouldBe "Converting csv '$csvPath' to transfers\n"
       result.statusCode shouldBe 1
     }
 
-    it("fails on file empty") {
+    it("converts citi costco") {
       val csvPath = (tempdir("tally-", keepOnFailure = false).toPath()
           / "transactions.csv").createFile()
 
@@ -63,6 +63,36 @@ class CsvToTransfersTest : DescribeSpec({
         Detected source: costco
         Detected month: Jul2025
             - { grp: Jul2025, date: 2025-07-17, camt:     2.12, desc: "COSTCO WHSE#5 JOHNSVILLECA" }
+
+      """.trimIndent()
+      result.statusCode shouldBe 0
+    }
+
+    it("converts chace amazon") {
+      val csvPath = (tempdir("tally-", keepOnFailure = false).toPath()
+          / "transactions.csv").createFile()
+
+      csvPath.writeText(
+        """
+          Transaction Date,Post Date,Description,Category,Type,Amount,Memo
+          07/12/2026,07/12/2026,Payment Thank You - Web,,Payment,181.32,
+          07/09/2026,07/10/2026,Amazon.com*BM16E52V3,Shopping,Sale,-48.99,
+        """.trimIndent()
+      )
+
+      val command = CsvToTransfers()
+
+      val result = command.test(
+        listOf("--csv-file=$csvPath")
+      )
+      result.stderr shouldBe ""
+      result.stdout shouldBe """
+        Converting csv '$csvPath' to transfers
+        {Transaction Date=07/12/2026, Post Date=07/12/2026, Description=Payment Thank You - Web, Category=, Type=Payment, Amount=181.32, Memo=}
+        {Transaction Date=07/09/2026, Post Date=07/10/2026, Description=Amazon.com*BM16E52V3, Category=Shopping, Type=Sale, Amount=-48.99, Memo=}
+        Detected source: chase_amazon
+        Detected month: Jul2026
+            - { grp: Jul2026, date: 2026-07-09, camt:   48.99, desc: "Amazon.com*BM16E52V3" }
 
       """.trimIndent()
       result.statusCode shouldBe 0
