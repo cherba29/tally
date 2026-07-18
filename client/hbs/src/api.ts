@@ -1,6 +1,6 @@
-import {ApolloClient, gql, DefaultOptions, HttpLink, ApolloLink} from '@apollo/client/core';
+import {ApolloClient, gql, type DefaultOptions, HttpLink, ApolloLink} from '@apollo/client/core';
 import {InMemoryCache} from '@apollo/client/cache';
-import {Query} from './gql_types';
+import { type Query} from './gql_types';
 
 const defaultOptions: DefaultOptions = {
   watchQuery: {

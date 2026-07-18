@@ -1,4 +1,4 @@
-import {GqlAccount, GqlStatement, GqlSummaryStatement, GqlTableRow} from './gql_types';
+import { type GqlAccount, type GqlStatement, type GqlSummaryStatement, type GqlTableRow} from './gql_types';
 
 export interface PopupMonthSummaryData {
   accountName: string;

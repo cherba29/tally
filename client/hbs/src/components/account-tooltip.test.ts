@@ -1,30 +1,20 @@
-import { expect } from '@esm-bundle/chai'; // Or your preferred ESM-friendly assertion bundle
+import { html, fixture, expect } from '@open-wc/testing';
 import { AccountTooltip } from './account-tooltip';
-import { Account } from '@tally/lib/core/account';
+import { type GqlAccount } from '../gql_types';
 
 describe('AccountTooltip component', () => {
-  let element: AccountTooltip;
-
-  beforeEach(()=> {
-    // Create and append the component to the jsdom body
-    element = document.createElement('account-tooltip') as AccountTooltip;
-    document.body.appendChild(element);
-  });
-
-  afterEach(() => {
-    // Clean up DOM after each test execution
-    element.remove();
-  });
-
   it('renders with default property values', async () => {
-    element.account = {
-      name: "test-account1"
-    } as Account;
-    // Wait for Lit's async rendering lifecycles to finish
-    await element.updateComplete;
+    const account = {
+       name: "test-account1"
+    } as GqlAccount;
+
+    const element = await fixture<AccountTooltip>(
+      html`<account-tooltip .account=${account}></account-tooltip>`
+    );
 
     // Drill into the Shadow DOM to verify content.
-    // TODO: fix this should not be null.
-    expect(element.shadowRoot).to.be.null;
+    expect(element.shadowRoot).not.to.be.null;
+    const accountNameCellValue = element.shadowRoot!.querySelector('table td:nth-child(2)')!.textContent
+    expect(accountNameCellValue.trim()).to.equal("test-account1")
   });
 });

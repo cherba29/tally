@@ -1,10 +1,10 @@
-import {LitElement, css, html, TemplateResult} from 'lit';
-import {classMap, ClassInfo} from 'lit/directives/class-map.js';
-import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
+import {LitElement, css, html, type TemplateResult} from 'lit';
+import {classMap, type ClassInfo} from 'lit/directives/class-map.js';
+import {styleMap, type StyleInfo} from 'lit/directives/style-map.js';
 import {customElement, property} from 'lit/decorators.js';
 
 import {dateFormat, currency, isProjected} from '../format';
-import {GqlBalance, GqlStatement, GqlTransaction} from '../gql_types';
+import {type GqlBalance, type GqlStatement, type GqlTransaction} from '../gql_types';
 
 @customElement('balance-tooltip')
 export class BalanceTooltip extends LitElement {

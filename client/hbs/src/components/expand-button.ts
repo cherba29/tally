@@ -1,4 +1,4 @@
-import {html, css, LitElement, CSSResultGroup} from 'lit';
+import {html, css, LitElement, type CSSResultGroup} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 
 @customElement('expand-button')

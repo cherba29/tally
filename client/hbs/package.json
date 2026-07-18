@@ -1,5 +1,6 @@
 {
   "name": "@tally/client",
+  "type": "module",
   "private": true,
   "version": "0.3.0",
   "devDependencies": {
@@ -28,6 +29,7 @@
   },
   "dependencies": {
     "@apollo/client": "^4.1.3",
+    "@open-wc/testing": "^5.0.0",
     "@tally/lib": "workspace:*",
     "graphql": "^16.12.0",
     "lit": "^3.3.2",

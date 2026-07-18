@@ -37,7 +37,8 @@
     "strictFunctionTypes": true /* Enable strict checking of function types. */,
     "strictNullChecks": true /* Enable strict null checks. */,
     "strictPropertyInitialization": true /* Enable strict checking of property initialization in classes. */,
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "verbatimModuleSyntax": true,
   },
   "exclude": ["node_modules/**/*", "public/**/*"]
 }

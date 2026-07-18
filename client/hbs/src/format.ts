@@ -1,6 +1,6 @@
-import {html, TemplateResult} from 'lit';
+import {html, type TemplateResult} from 'lit';
 import {Type as BalanceType} from '@tally/lib/core/balance';
-import {GqlBalance} from './gql_types';
+import {type GqlBalance} from './gql_types';
 
 export function dateFormat(value: string | Date | undefined | null): string {
   if (value === null || value === undefined) {

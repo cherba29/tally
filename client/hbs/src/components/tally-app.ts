@@ -1,15 +1,15 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {customElement} from 'lit/decorators.js';
 import {BackendClient} from '../api';
-import {HeadingPopupData, PopupData, PopupMonthData, PopupMonthSummaryData, Rows} from '../utils';
-import {styleMap, StyleInfo} from 'lit/directives/style-map.js';
+import {type HeadingPopupData, type PopupData, type PopupMonthData, type PopupMonthSummaryData, type Rows} from '../utils';
+import {styleMap, type StyleInfo} from 'lit/directives/style-map.js';
 
 import './account-tooltip';
 import './balance-tooltip';
 import './balance-summary-tooltip';
 import './summary-table';
-import {MonthRangeChange} from './balance-summary-tooltip';
-import {CellClickEventData} from './summary-table';
+import {type MonthRangeChange} from './balance-summary-tooltip';
+import {type CellClickEventData} from './summary-table';
 import {Month} from '@tally/lib/core/month';
 
 @customElement('tally-app')

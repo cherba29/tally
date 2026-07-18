@@ -11,8 +11,9 @@ export default {
   plugins: [
     esbuildPlugin({ 
       ts: true, 
-      target: 'auto', 
-      sourceMap: true 
+      target: 'es2022', 
+      sourceMap: true,
+      tsconfig: './tsconfig.json' 
     })
   ],
 };

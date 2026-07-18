@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import {Account} from '@tally/lib/core/account';
+import {type GqlAccount} from '../gql_types';
 
 @customElement('account-tooltip')
 export class AccountTooltip extends LitElement {
@@ -14,7 +14,7 @@ export class AccountTooltip extends LitElement {
   `;
 
   @property({attribute: false})
-  account: Account | undefined = undefined;
+  account: GqlAccount | undefined = undefined;
 
   onCloseButton() {
     this.dispatchEvent(new CustomEvent('close'));
