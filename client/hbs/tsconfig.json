@@ -12,6 +12,7 @@
     "removeComments": false,
     "inlineSourceMap": true,
     "moduleResolution": "Bundler",
+    "types": ["mocha", "chai"],
 
     /* Interop Constraints */
     "isolatedModules": true,

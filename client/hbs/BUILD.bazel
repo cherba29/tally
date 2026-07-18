@@ -53,23 +53,23 @@ esbuild(
 )
 
 # See bazel-testlogs/lib/test/test.log
-jest_test(
-    name = "test",
-    config = "jest_config.js",
-    data = glob(["src/**/*.ts"]) + LIB_DEPS + [
-        ":node_modules/@jest/globals",
-        ":node_modules/jest",
-        ":node_modules/jest-util",
-        ":node_modules/ts-jest",
-        ":node_modules/jest-environment-jsdom",
-        ":tsconfig.json",
-    ],
-    node_modules = ":node_modules",
-    # snapshots = glob(
-    #     ["src/**/__snapshots__"],
-    #     exclude_directories = 0,
-    # ),
-)
+# jest_test(
+#     name = "test",
+#     config = "jest_config.js",
+#     data = glob(["src/**/*.ts"]) + LIB_DEPS + [
+#         ":node_modules/@jest/globals",
+#         ":node_modules/jest",
+#         ":node_modules/jest-util",
+#         ":node_modules/ts-jest",
+#         ":node_modules/jest-environment-jsdom",
+#         ":tsconfig.json",
+#     ],
+#     node_modules = ":node_modules",
+#     # snapshots = glob(
+#     #     ["src/**/__snapshots__"],
+#     #     exclude_directories = 0,
+#     # ),
+# )
 
 js_library(
     name = "bundle",

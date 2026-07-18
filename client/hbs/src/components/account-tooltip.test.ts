@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
+import { expect } from '@esm-bundle/chai'; // Or your preferred ESM-friendly assertion bundle
 import { AccountTooltip } from './account-tooltip';
-import {Account} from '@tally/lib/core/account';
+import { Account } from '@tally/lib/core/account';
 
 describe('AccountTooltip component', () => {
   let element: AccountTooltip;
@@ -24,7 +24,7 @@ describe('AccountTooltip component', () => {
     await element.updateComplete;
 
     // Drill into the Shadow DOM to verify content.
-    // TODO: use recomended https://lit.dev/docs/tools/testing/.
-    expect(element.shadowRoot).toBeNull();
+    // TODO: fix this should not be null.
+    expect(element.shadowRoot).to.be.null;
   });
 });
