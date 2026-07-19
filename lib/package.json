@@ -1,5 +1,6 @@
 {
   "name": "@tally/lib",
+  "type": "module",
   "private": true,
   "version": "0.1.2",
   "main": "build/index.js",

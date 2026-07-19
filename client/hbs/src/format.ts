@@ -1,5 +1,4 @@
 import {html, type TemplateResult} from 'lit';
-import {Type as BalanceType} from '@tally/lib/core/balance';
 import {type GqlBalance} from './gql_types';
 
 export function dateFormat(value: string | Date | undefined | null): string {
@@ -20,5 +19,5 @@ export function currency(value: number | undefined | null): TemplateResult {
 }
 
 export function isProjected(balance: GqlBalance | undefined | null): boolean {
-  return (balance?.type ?? BalanceType.UNKNOWN) !== BalanceType.CONFIRMED;
+  return (balance?.type ?? "UNKNOWN") !== "CONFIRMED";
 }
