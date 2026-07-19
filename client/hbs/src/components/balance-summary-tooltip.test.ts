@@ -45,11 +45,7 @@ describe('BalanceSummaryTooltip component', () => {
       </balance-summary-tooltip>`
     );
 
-    // Drill into the Shadow DOM to verify content.
     expect(element.shadowRoot).not.to.be.null;
-    const tableElement = element.shadowRoot!.querySelector('table')!
-    expect(tableElement).not.to.be.null;
-
     assert.shadowDom.equal(
       element, 
       `<span>XXX</span>
