@@ -16,4 +16,19 @@ export default {
       tsconfig: './tsconfig.json' 
     })
   ],
+
+  coverage: true,
+  coverageConfig: {
+    report: true,
+    reportDir: 'coverage',
+    reporters: ['lcov', 'text-summary'],
+    include: ['src/**/*.ts'],
+    exclude: ['src/**/*.test.ts', 'src/**/*.spec.ts'],
+    threshold: {
+      statements: 60,
+      branches: 30,
+      functions: 60,
+      lines: 60,
+    },
+  },
 };
