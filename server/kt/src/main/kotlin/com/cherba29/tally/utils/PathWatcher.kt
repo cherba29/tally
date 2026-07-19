@@ -21,15 +21,38 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.runInterruptible
 import java.io.IOException
-import java.nio.file.WatchEvent
 import kotlin.io.path.pathString
 import kotlin.time.Duration.Companion.milliseconds
+
 
 data class WatchResult(
   val rootPath: Path,
   val relativePath: Path?,
-  val reprocess: Boolean
-)
+  val action: Action
+) {
+  enum class Action {
+    /**
+     * Add this item to the list to be processed.
+     */
+    ADD,
+
+    /**
+     * Remove this item from the list and reprocess.
+     */
+    REMOVE,
+
+    /**
+     * Remove all items from the list, and wait for new ones to be added.
+     */
+    REMOVE_ALL,
+
+    /**
+     * Reprocess all added items in the list.
+     */
+    REPROCESS,
+  }
+
+}
 
 fun Path.scan(filePathFilter: (Path)->Boolean) = sequence {
   val watchedPath = try {
@@ -43,10 +66,10 @@ fun Path.scan(filePathFilter: (Path)->Boolean) = sequence {
       continue
     }
     if (filePathFilter(relativeFilePath)) {
-      yield(WatchResult(this@scan, relativeFilePath, false))
+      yield(WatchResult(this@scan, relativeFilePath, WatchResult.Action.ADD))
     }
   }
-  yield(WatchResult(this@scan,null, true))
+  yield(WatchResult(this@scan,null, WatchResult.Action.REPROCESS))
 }
 
 /**
@@ -70,6 +93,7 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
     it.register(watcher,*eventsToWatch) to watchedPath.relativize(it)
   }
 
+  val rootPath = this
   return flow {
     // Emit existing files.
     scan(filePathFilter).forEach { emit(it) }
@@ -99,24 +123,30 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
                   // We added new directory, it can already contain files in it, so scan and emit them.
                   fullPath.scan(filePathFilter).forEach {
                     if (it.relativePath != null) {
-                      emit(WatchResult(this@watchedEventFlow, filePath / it.relativePath, false))
+                      emit(WatchResult(rootPath, filePath / it.relativePath, WatchResult.Action.ADD))
                     } else { // Emit end of scan event.
-                      emit(WatchResult(this@watchedEventFlow, null, true))
+                      emit(WatchResult(rootPath, null, WatchResult.Action.REPROCESS))
                     }
                   }
                 } else {
-                  emit(WatchResult(this@watchedEventFlow, filePath, true))
+                  emit(WatchResult(rootPath, filePath, WatchResult.Action.REPROCESS))
                 }
               }
               StandardWatchEventKinds.ENTRY_DELETE -> {
-                TODO("Implement file/directory delete")
+                val fullPath = watchedPath / filePath
+                if (fullPath.isDirectory()) {
+                  TODO("Handle directory delete")
+                } else {
+                  emit(WatchResult(rootPath, filePath, WatchResult.Action.REMOVE))
+                }
               }
               StandardWatchEventKinds.ENTRY_MODIFY -> {
-                emit(WatchResult(this@watchedEventFlow, filePath, true))
+                emit(WatchResult(rootPath, filePath, WatchResult.Action.REPROCESS))
               }
               StandardWatchEventKinds.OVERFLOW -> {
                 // This can happen if watcher event queue gets overflows. In that case just rescan everything.
-                logger.warn { "Filesystem event overflow at ${this@watchedEventFlow}, rescanning..." }
+                logger.warn { "Filesystem event overflow at $rootPath, rescanning..." }
+                emit(WatchResult(rootPath, null, WatchResult.Action.REMOVE_ALL))
                 scan(filePathFilter).forEach { emit(it) }
               }
               else -> {
@@ -131,7 +161,7 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
       if (!key.reset()) break
     }
   }.onCompletion {
-    logger.info { "Closing watcher for path '${this@watchedEventFlow}'"}
+    logger.info { "Closing watcher for path '$rootPath'"}
     watcher.close()
   }
 }

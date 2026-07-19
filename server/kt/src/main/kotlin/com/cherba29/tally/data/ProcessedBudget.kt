@@ -54,6 +54,12 @@ class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
     parsedAccountData[relativeFilePath.toString()] = accountData
   }
 
+  fun removeFile(relativeFilePath: Path) {
+    parsedAccountData.remove(relativeFilePath.toString())
+  }
+
+  fun removeAll() = parsedAccountData.clear()
+
   companion object {
     private val logger = KotlinLogging.logger {}
   }

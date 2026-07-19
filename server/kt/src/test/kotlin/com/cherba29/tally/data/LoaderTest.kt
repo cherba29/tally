@@ -92,12 +92,12 @@ class LoaderTest : DescribeSpec({
     describe("reloads when changed") {
       coroutineTestScope = true
 
-      it("reloads when changed") {
+      it("reloads when added") {
         val testTimeSource = TestTimeSource()
         val channel = Channel<WatchResult>(Channel.BUFFERED)
         val rootPath = Paths.get("/tmp")
         val relativePath = Paths.get("file.yaml")
-        channel.trySend(WatchResult(rootPath, relativePath, false)).isSuccess shouldBe true
+        channel.trySend(WatchResult(rootPath, relativePath, WatchResult.Action.ADD)).isSuccess shouldBe true
         val processedBudget = mockk<ProcessedBudget> {
           var count = 1
           val startTime = testTimeSource.markNow()
@@ -115,7 +115,7 @@ class LoaderTest : DescribeSpec({
 
         testTimeSource += 50.seconds
         Loader(channel.receiveAsFlow(), this, testTimeSource, processedBudget).use { loader ->
-          channel.trySend(WatchResult(rootPath, null, true)).isSuccess shouldBe true
+          channel.trySend(WatchResult(rootPath, null, WatchResult.Action.REPROCESS)).isSuccess shouldBe true
 
           val result1 = loader.budget()
           result1.tree shouldBe root { leaf("testAccount1") }
@@ -124,7 +124,57 @@ class LoaderTest : DescribeSpec({
 
           testTimeSource += 10.seconds
 
-          channel.trySend(WatchResult(rootPath, relativePath, true)).isSuccess shouldBe true
+          channel.trySend(WatchResult(rootPath, relativePath, WatchResult.Action.REPROCESS)).isSuccess shouldBe true
+          testTimeSource += 10.seconds
+
+          testScheduler.advanceTimeBy(1000)
+
+          // Now new reloaded budget.
+          loadedOn!! shouldBeLessThan loader.loadedOn!!
+          loader.loadedOn shouldBe 70.seconds
+
+          val result2 = loader.budget()
+          result2.tree shouldBe root { leaf("testAccount2") }
+
+          verify { processedBudget.addFile(rootPath, relativePath) }
+          verify(exactly = 2) { processedBudget.reProcess() }
+        }
+      }
+
+      it("reloads when removed") {
+        val testTimeSource = TestTimeSource()
+        val channel = Channel<WatchResult>(Channel.BUFFERED)
+        val rootPath = Paths.get("/tmp")
+        val relativePath = Paths.get("file1.yaml")
+        channel.trySend(WatchResult(rootPath, relativePath, WatchResult.Action.ADD)).isSuccess shouldBe true
+        val processedBudget = mockk<ProcessedBudget> {
+          var count = 1
+          val startTime = testTimeSource.markNow()
+          var mockLoadedOn: Duration? = null
+          every { timeSource } answers { testTimeSource }
+          every { loadedOn } answers { mockLoadedOn }
+          every { addFile(any<Path>(), any()) } answers { }
+          every { removeFile(any()) } answers { }
+          every { reProcess() } answers { mockLoadedOn = startTime.elapsedNow() }
+          every { dataPayload } answers {
+            mockk<Budget> {
+              every { tree } returns root { leaf("testAccount${count++}") }
+            }
+          }
+        }
+
+        testTimeSource += 50.seconds
+        Loader(channel.receiveAsFlow(), this, testTimeSource, processedBudget).use { loader ->
+          channel.trySend(WatchResult(rootPath, null, WatchResult.Action.REPROCESS)).isSuccess shouldBe true
+
+          val result1 = loader.budget()
+          result1.tree shouldBe root { leaf("testAccount1") }
+          val loadedOn = loader.loadedOn
+          loader.loadedOn shouldBe 50.seconds
+
+          testTimeSource += 10.seconds
+
+          channel.trySend(WatchResult(rootPath, relativePath, WatchResult.Action.REMOVE)).isSuccess shouldBe true
           testTimeSource += 10.seconds
 
           testScheduler.advanceTimeBy(1000)
@@ -146,7 +196,7 @@ class LoaderTest : DescribeSpec({
         val channel = Channel<WatchResult>(Channel.BUFFERED)
         val rootPath = Paths.get("/tmp")
         val relativePath = Paths.get("file.yaml")
-        channel.trySend(WatchResult(rootPath, relativePath, false)).isSuccess shouldBe true
+        channel.trySend(WatchResult(rootPath, relativePath, WatchResult.Action.ADD)).isSuccess shouldBe true
         val processedBudget = mockk<ProcessedBudget> {
           var count = 1
           val startTime = testTimeSource.markNow()
@@ -165,7 +215,7 @@ class LoaderTest : DescribeSpec({
         }
         testTimeSource += 50.seconds
         Loader(channel.receiveAsFlow(), this, testTimeSource, processedBudget).use { loader ->
-          channel.trySend(WatchResult(rootPath, null, true)).isSuccess shouldBe true
+          channel.trySend(WatchResult(rootPath, null, WatchResult.Action.REPROCESS)).isSuccess shouldBe true
           testTimeSource += 100.seconds
 
           val result1 = loader.budget()
@@ -173,7 +223,7 @@ class LoaderTest : DescribeSpec({
           loader.loadedOn shouldBe 150.seconds
 
           testTimeSource += 100.seconds
-          channel.trySend(WatchResult(rootPath, relativePath, true)).isSuccess shouldBe true
+          channel.trySend(WatchResult(rootPath, relativePath, WatchResult.Action.REPROCESS)).isSuccess shouldBe true
           testScheduler.advanceTimeBy(1000)
 
           loader.loadedOn shouldBe 150.seconds // Should not change since add file fails.
@@ -192,7 +242,7 @@ class LoaderTest : DescribeSpec({
         val channel = Channel<WatchResult>(Channel.BUFFERED)
         val rootPath = Paths.get("/tmp")
         val relativePath = Paths.get("file.yaml")
-        channel.trySend(WatchResult(rootPath, relativePath, false)).isSuccess shouldBe true
+        channel.trySend(WatchResult(rootPath, relativePath, WatchResult.Action.ADD)).isSuccess shouldBe true
         val processedBudget = mockk<ProcessedBudget> {
           var count = 1
           val startTime = testTimeSource.markNow()
@@ -212,7 +262,7 @@ class LoaderTest : DescribeSpec({
         }
         testTimeSource += 50.seconds
         Loader(channel.receiveAsFlow(), this, testTimeSource, processedBudget).use { loader ->
-          channel.trySend(WatchResult(rootPath, null, true)).isSuccess shouldBe true
+          channel.trySend(WatchResult(rootPath, null, WatchResult.Action.REPROCESS)).isSuccess shouldBe true
           testTimeSource += 100.seconds
 
           val result1 = loader.budget()
@@ -220,7 +270,7 @@ class LoaderTest : DescribeSpec({
           loader.loadedOn shouldBe 150.seconds
 
           testTimeSource += 100.seconds
-          channel.trySend(WatchResult(rootPath, relativePath, true)).isSuccess shouldBe true
+          channel.trySend(WatchResult(rootPath, relativePath, WatchResult.Action.REPROCESS)).isSuccess shouldBe true
           testScheduler.advanceTimeBy(1000)
 
           loader.loadedOn shouldBe 150.seconds // Should not change since reprocess fails.
