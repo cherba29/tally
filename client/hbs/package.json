@@ -36,7 +36,7 @@
     "prettier": "^3.8.1"
   },
   "scripts": {
-    "test": "web-test-runner --puppeteer",
+    "test": "DEBUG=pw:api web-test-runner --debug --puppeteer",
     "serve": "TS_NODE_PROJECT=\"tsconfig-for-webpack-config.json\" webpack serve --port 9000",
     "build": "TS_NODE_PROJECT=\"tsconfig-for-webpack-config.json\" webpack --config webpack.config.ts",
     "karma": "karma start karma.conf.js",
