@@ -17,6 +17,10 @@ export default {
     })
   ],
 
+  // Remove repeating waringing message in component test.
+  // Lit is in dev mode. Not recommended for production! See https://lit.dev/msg/dev-mode for more information.
+  filterBrowserLogs: ({args}) => !args.join(' ').startsWith('Lit is in dev mode'),
+
   coverage: true,
   coverageConfig: {
     report: true,

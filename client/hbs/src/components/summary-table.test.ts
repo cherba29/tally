@@ -1,6 +1,6 @@
 import { assert } from '@esm-bundle/chai';
 import { html, fixture, expect, oneEvent } from '@open-wc/testing';
-import { SummaryTable } from './summary-table';
+import { type CellClickEventData, SummaryTable } from './summary-table';
 import { type GqlTableRow } from '../gql_types'
 
 describe('SummaryTable component', () => {
@@ -80,7 +80,6 @@ describe('SummaryTable component', () => {
   });
 
   it('renders over multiple months and rows', async () => {
-    const onCellClick = (e: CustomEvent) => { console.log(e); };
     const months: String[] = ['Aug2026', 'Jul2026'];
     const rows: GqlTableRow[] = [
       {
@@ -180,6 +179,10 @@ describe('SummaryTable component', () => {
         title: 'test-account1'
       }
     ];
+    let cellClickedData: CellClickEventData | null = null;
+    const onCellClick = (e: CustomEvent<CellClickEventData>) => { 
+      cellClickedData = e.detail;
+     };
 
     const element = await fixture<SummaryTable>(
       html`<summary-table
@@ -243,6 +246,7 @@ describe('SummaryTable component', () => {
       balanceCell.click();
     });
     const { detail } = await oneEvent(element, 'cellclick');
+    expect(cellClickedData!.accountName).to.equal('internal/test-account1');
     expect(detail.accountName).to.equal('internal/test-account1');
     expect(detail.month).to.equal('Aug2026');
     expect(detail.isSummary).to.be.true;
