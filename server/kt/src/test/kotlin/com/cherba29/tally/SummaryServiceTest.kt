@@ -32,10 +32,10 @@ class SummaryServiceTest : DescribeSpec({
           owner = "john",
           startMonth = APR / 2026,
           endMonth = APR / 2026,
-          accountType = "internal"
+          accountType = "john/internal"
         )
       }
-      exception.message shouldBe "Summary 'internal' for owner 'john' for months [Apr2026, Apr2026] not found."
+      exception.message shouldBe "Summary 'john/internal' for months [Apr2026, Apr2026] not found."
     }
 
     it("missing months") {
@@ -53,10 +53,10 @@ class SummaryServiceTest : DescribeSpec({
           owner = "john",
           startMonth = APR / 2026,
           endMonth = APR / 2026,
-          accountType = "internal"
+          accountType = "john/internal"
         )
       }
-      exception.message shouldBe "Summary 'internal' for owner 'john' not found."
+      exception.message shouldBe "Summary 'john/internal' not found."
     }
 
     it("single") {
@@ -75,7 +75,7 @@ class SummaryServiceTest : DescribeSpec({
         owner = "john",
         startMonth = MAR / 2026,
         endMonth = MAR / 2026,
-        accountType = "internal"
+        accountType = "john/internal"
       )
       expectSelfie(data.toSnapshot()).toMatchDisk()
     }
@@ -106,7 +106,7 @@ class SummaryServiceTest : DescribeSpec({
         owner = "john",
         startMonth = MAR / 2026,
         endMonth = MAR / 2026,
-        accountType = "internal"
+        accountType = "john/internal"
       )
       expectSelfie(data.toSnapshot()).toMatchDisk()
     }
@@ -137,7 +137,7 @@ class SummaryServiceTest : DescribeSpec({
         owner = "john",
         startMonth = MAR / 2026,
         endMonth = MAR / 2026,
-        accountType = "internal"
+        accountType = "john/internal"
       )
       expectSelfie(data.toSnapshot()).toMatchDisk()
     }
@@ -181,7 +181,7 @@ class SummaryServiceTest : DescribeSpec({
         owner = "john",
         startMonth = MAR / 2026,
         endMonth = APR / 2026,
-        accountType = "internal"
+        accountType = "john/internal"
       )
       expectSelfie(data.toSnapshot()).toMatchDisk()
     }
@@ -224,7 +224,7 @@ class SummaryServiceTest : DescribeSpec({
         owner = "john",
         startMonth = null,
         endMonth = MAR / 2026,
-        accountType = "internal"
+        accountType = "john/internal"
       )
       expectSelfie(data.toSnapshot()).toMatchDisk()
     }

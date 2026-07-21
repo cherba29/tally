@@ -13,18 +13,22 @@ import kotlinx.coroutines.runBlocking
 
 class StatementService(val loader: Loader) : Query {
   @GraphQLDescription("Returns a monthly statement for given account.")
+  // TODO: remove owner.
   fun statement(owner:String, account: String, month: Month): GqlStatement {
-    logger.info { "statement owner=$owner, account=$account, month=$month" }
+    logger.info { "statement account=$account, month=$month" }
     val (result, timeTaken) = measureTimedValue {
       try {
         val payload = runBlocking { loader.budget() }
-        val accountNode = payload.getAccountNode(account)
-          ?: throw NotFoundException("Did not find account '$account' for owner '$owner'")
+        val accountPath = account.split("/").filter { it.isNotEmpty() }
+        val accountName = accountPath.lastOrNull()
+          ?: throw NotFoundException("Did not find account '$account'")
+        val accountNode = payload.getAccountNode(accountName)
+          ?: throw NotFoundException("Did not find account '$account'")
         val statement: TransactionStatement = payload.nodeToStatement[accountNode]?.get(month) as? TransactionStatement
-          ?: throw NotFoundException("Did not find statement for month '$month' for owner '$owner' in account '$account'")
+          ?: throw NotFoundException("Did not find statement for month '$month' for account '$account'")
         statement.toGql()
       } catch (e: Exception) {
-        logger.error(e) { "Error while processing table query owner=$owner, account=$account month=$month" }
+        logger.error(e) { "Error while processing table query account=$account month=$month" }
         throw e
       }
     }

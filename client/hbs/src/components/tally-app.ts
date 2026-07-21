@@ -169,7 +169,7 @@ export class TallyApp extends LitElement {
   private onCellClick(e: CustomEvent<CellClickEventData>) {
     if (e.detail.isSummary) {
       this.reloadPopupSummaryStatement(
-        e.detail.accountName ?? '',
+        e.detail.rowId ?? '',
         e.detail.month ?? '',
         e.detail.month ?? ''
       );
@@ -179,12 +179,12 @@ export class TallyApp extends LitElement {
       };
     } else if (e.detail.month) {
       this.backendClient
-        .loadStatement(this.currentOwner ?? '', e.detail.accountName ?? '', e.detail.month ?? '')
+        .loadStatement(this.currentOwner ?? '', e.detail.rowId ?? '', e.detail.month ?? '')
         .then((result) => {
           console.log(`PopupData for ${e.detail}`, result);
           const statement = result.data!.statement;
           const popupData: PopupMonthData = {
-            accountName: e.detail.accountName ?? '',
+            accountName: e.detail.rowId ?? '',
             month: e.detail.month ?? '',
             stmt: statement!,
           };

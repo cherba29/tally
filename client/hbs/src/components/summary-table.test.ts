@@ -246,8 +246,8 @@ describe('SummaryTable component', () => {
       balanceCell.click();
     });
     const { detail } = await oneEvent(element, 'cellclick');
-    expect(cellClickedData!.accountName).to.equal('internal/test-account1');
-    expect(detail.accountName).to.equal('internal/test-account1');
+    expect(cellClickedData!.rowId).to.equal('internal');
+    expect(detail.rowId).to.equal('internal');
     expect(detail.month).to.equal('Aug2026');
     expect(detail.isSummary).to.be.true;
   });

@@ -35,7 +35,7 @@ class StatementServiceTest : DescribeSpec({
           month = MAR / 2026
         )
       }
-      exception.message shouldBe "Did not find account 'test-account' for owner 'john'"
+      exception.message shouldBe "Did not find account 'test-account'"
     }
 
     it("no given month") {
@@ -55,7 +55,7 @@ class StatementServiceTest : DescribeSpec({
         )
       }
       exception.message shouldBe "Did not find statement for month 'Apr2026' " +
-        "for owner 'john' in account 'test-account1'"
+        "for account 'test-account1'"
     }
 
     it("single statement no transactions") {

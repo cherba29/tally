@@ -10,7 +10,7 @@ import {Month} from '@tally/lib/core/month';
 
 export type CellClickEventData = {
   mouseEvent: MouseEvent;
-  accountName?: string;
+  rowId: string;
   account?: GqlAccount | null;
   month?: string;
   isSummary?: boolean;
@@ -113,14 +113,14 @@ export class SummaryTable extends LitElement {
 
   onCellClick(
     mouseEvent: MouseEvent,
-    accountName: string | undefined | null,
+    rowId: string,
     month: string,
     isSummary: boolean
   ) {
     const options: CustomEventInit<CellClickEventData> = {
       detail: {
         mouseEvent,
-        accountName: accountName ?? undefined,
+        rowId: rowId,
         month,
         isSummary,
       },
@@ -130,10 +130,11 @@ export class SummaryTable extends LitElement {
     this.dispatchEvent(new CustomEvent('cellclick', options));
   }
 
-  onTitleCellClick(e: MouseEvent, account: GqlAccount | undefined | null) {
+  onTitleCellClick(e: MouseEvent, rowId: string, account: GqlAccount | undefined | null) {
     const options: CustomEventInit<CellClickEventData> = {
       detail: {
         mouseEvent: e,
+        rowId: rowId,
         account,
       },
       bubbles: true,
@@ -267,7 +268,7 @@ export class SummaryTable extends LitElement {
                     <td class="add_sub">${currency(c.addSub)}</td>
                     <td
                       @click="${(e: MouseEvent) =>
-                        this.onCellClick(e, r.account?.name ?? r.title, c.month, true)}"
+                        this.onCellClick(e, r.id ?? r.account?.name ?? r.title, c.month, true)}"
                       style="font-weight:700;font-size:75%;"
                       class="balance ${classMap(projectedClass(c))}"
                     >
@@ -289,7 +290,7 @@ export class SummaryTable extends LitElement {
               return html`<tr id="row-${rowIdx}">
                 <td
                   id="${account.name}"
-                  @click="${(e: MouseEvent) => this.onTitleCellClick(e, r.account)}"
+                  @click="${(e: MouseEvent) => this.onTitleCellClick(e, r.id, r.account)}"
                 >
                   ${Array(r.indent ?? 0)
                     .fill(0)
@@ -308,7 +309,7 @@ export class SummaryTable extends LitElement {
                   }
                   return html`<td class="add_sub">${currency(c.addSub)}</td>
                     <td
-                      @click="${(e: MouseEvent) => this.onCellClick(e, r.title, c.month, false)}"
+                      @click="${(e: MouseEvent) => this.onCellClick(e, r.id ?? r.title, c.month, false)}"
                       class="balance ${classMap(projectedClass(c))}"
                       style=${styleMap(coveredStyle(c))}
                     >
