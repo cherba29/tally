@@ -133,7 +133,8 @@ type GqlTableCell {
 }
 
 type GqlTableRow {
-  account: GqlAccount!
+  "Summary rows don't have an account."
+  account: GqlAccount
   cells: [GqlTableCell!]!
   id: String!
   indent: Int!

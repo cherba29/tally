@@ -124,7 +124,8 @@ export type GqlTableCell = {
 
 export type GqlTableRow = {
   __typename?: 'GqlTableRow';
-  account: GqlAccount;
+  /** Summary rows don't have an account. */
+  account?: Maybe<GqlAccount>;
   cells: Array<GqlTableCell>;
   id: Scalars['String']['output'];
   indent: Scalars['Int']['output'];

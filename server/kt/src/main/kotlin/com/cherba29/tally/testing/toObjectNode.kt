@@ -230,7 +230,7 @@ fun GqlTableRow.toObjectNode(root: ObjectNode) {
   root.put("__type", this.javaClass.simpleName)
   root.put("id", id)
   root.put("title", title)
-  account.toObjectNode(root.putObject("account"))
+  account?.toObjectNode(root.putObject("account"))
   root.put("indent", indent)
   root.put("isSpace", isSpace)
   root.put("isTotal", isTotal)
