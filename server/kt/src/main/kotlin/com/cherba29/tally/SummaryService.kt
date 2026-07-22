@@ -38,21 +38,16 @@ class SummaryService(val loader: Loader) : Query {
             "Summary '$accountType' for months [$startMonth, $endMonth] not found."
           )
         }
-        // Multi-month queries will produce multiple summary statements which need to be combined,
-        // but for single month we can simply return found single summary.
-        val summary =
-          if (summaryStatements.size == 1)
-            summaryStatements.entries.first().value
-          else {
-            val builder = MonthRangeSummaryStatementBuilder()
-            for (summaryStatement in summaryStatements.values) {
-              for (subStatement in summaryStatement.statements) {
-                builder.addStatement(subStatement)
-              }
+        val builder = MonthRangeSummaryStatementBuilder()
+        for (summaryStatement in summaryStatements.values) {
+          for (subStatement in summaryStatement.statements) {
+            // Do not include closed statements in the summary.
+            if (!subStatement.isClosed) {
+              builder.addStatement(subStatement)
             }
-            builder.build(summaryNode)
           }
-        summary.toGqlSummaryData()
+        }
+        builder.build(summaryNode).toGqlSummaryData()
       } catch (e: Exception) {
         logger.error(e) {
           "Error while processing summary query accountType=$accountType " +

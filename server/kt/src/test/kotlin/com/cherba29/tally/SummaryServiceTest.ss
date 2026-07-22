@@ -1,3 +1,52 @@
+╔═ closed accounts excluded ═╗
+- statements:
+  - __type: GqlStatement
+    name: test-account2
+    month: Mar2026
+    isClosed: false
+    isCovered: true
+    isProjectedCovered: true
+    hasProjectedTransfer: false
+    startBalance:
+      __type: GqlBalance
+      amount: 200
+      date: 2026-03-01
+      type: CONFIRMED
+    endBalance:
+      __type: GqlBalance
+      amount: 250
+      date: 2026-04-01
+      type: CONFIRMED
+    change: 50
+    percentChange: 25.0
+    unaccounted: 50
+  total:
+    __type: GqlSummaryStatement
+    name: internal
+    month: Mar2026
+    accounts:
+    - test-account2
+    addSub: 0
+    income: 0
+    change: 50
+    inFlows: 0
+    outFlows: 0
+    percentChange: 25.0
+    annualizedPercentChange: 0.0
+    totalPayments: 0
+    totalTransfers: 0
+    unaccounted: 50
+    endBalance:
+      __type: GqlBalance
+      amount: 250
+      date: 2026-04-01
+      type: CONFIRMED
+    startBalance:
+      __type: GqlBalance
+      amount: 200
+      date: 2026-03-01
+      type: CONFIRMED
+
 ╔═ multiple months ═╗
 - statements:
   - __type: GqlStatement
@@ -118,6 +167,14 @@
       amount: 100
       date: 2026-03-01
       type: CONFIRMED
+    endBalance:
+      __type: GqlBalance
+      amount: 0
+      date: 2026-04-01
+      type: PROJECTED
+    change: -100
+    percentChange: -100.0
+    unaccounted: -100
   total:
     __type: GqlSummaryStatement
     name: internal
@@ -126,14 +183,19 @@
     - test-account1
     addSub: 0
     income: 0
-    change: 0
+    change: -100
     inFlows: 0
     outFlows: 0
-    percentChange: 0.0
+    percentChange: -100.0
     annualizedPercentChange: 0.0
     totalPayments: 0
     totalTransfers: 0
-    unaccounted: 0
+    unaccounted: -100
+    endBalance:
+      __type: GqlBalance
+      amount: 0
+      date: 2026-04-01
+      type: PROJECTED
     startBalance:
       __type: GqlBalance
       amount: 100
@@ -154,9 +216,17 @@
       amount: 100
       date: 2026-03-01
       type: CONFIRMED
+    endBalance:
+      __type: GqlBalance
+      amount: 0
+      date: 2026-04-01
+      type: PROJECTED
     outFlows: -50
     totalPayments: -50
+    change: -100
     addSub: -50
+    percentChange: -100.0
+    unaccounted: -50
   total:
     __type: GqlSummaryStatement
     name: internal
@@ -165,14 +235,19 @@
     - test-account1
     addSub: -50
     income: 0
-    change: 0
+    change: -100
     inFlows: 0
     outFlows: -50
-    percentChange: 0.0
+    percentChange: -100.0
     annualizedPercentChange: 0.0
     totalPayments: -50
     totalTransfers: 0
-    unaccounted: 0
+    unaccounted: -50
+    endBalance:
+      __type: GqlBalance
+      amount: 0
+      date: 2026-04-01
+      type: PROJECTED
     startBalance:
       __type: GqlBalance
       amount: 100
@@ -193,9 +268,17 @@
       amount: 100
       date: 2026-03-01
       type: CONFIRMED
+    endBalance:
+      __type: GqlBalance
+      amount: 0
+      date: 2026-04-01
+      type: PROJECTED
     outFlows: -50
     totalTransfers: -50
+    change: -100
     addSub: -50
+    percentChange: -100.0
+    unaccounted: -50
   - __type: GqlStatement
     name: test-account2
     month: Mar2026
@@ -208,9 +291,17 @@
       amount: 200
       date: 2026-03-01
       type: CONFIRMED
+    endBalance:
+      __type: GqlBalance
+      amount: 0
+      date: 2026-04-01
+      type: PROJECTED
     inFlows: 50
     totalTransfers: 50
+    change: -200
     addSub: 50
+    percentChange: -100.0
+    unaccounted: -250
   total:
     __type: GqlSummaryStatement
     name: internal
@@ -220,14 +311,19 @@
     - test-account2
     addSub: 0
     income: 0
-    change: 0
+    change: -300
     inFlows: 50
     outFlows: -50
-    percentChange: 0.0
+    percentChange: -100.0
     annualizedPercentChange: 0.0
     totalPayments: 0
     totalTransfers: 0
-    unaccounted: 0
+    unaccounted: -300
+    endBalance:
+      __type: GqlBalance
+      amount: 0
+      date: 2026-04-01
+      type: PROJECTED
     startBalance:
       __type: GqlBalance
       amount: 300

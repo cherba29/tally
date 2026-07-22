@@ -9,6 +9,7 @@ import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.statement.TransactionStatement
 
 class TransactionTableBuilder {
+  // TODO: turn this into more idiomatic builder pattern.
   fun buildTransactionStatementTable(
     months: MonthRange,
     leafToAccountMap: Map<TreeNode.Leaf, Account>,
@@ -41,6 +42,7 @@ class TransactionTableBuilder {
           addTransfer(transfer)
         }
       }
+      // TODO: maybe do not generate statement for closed account.
       for (month in months) {
         nextMonthStatement = transactionStatement {
           treeNode = leafTreeNode
