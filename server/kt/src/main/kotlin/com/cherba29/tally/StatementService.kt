@@ -1,6 +1,7 @@
 package com.cherba29.tally
 
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.schema.GqlStatement
 import com.cherba29.tally.schema.toGql
@@ -20,10 +21,11 @@ class StatementService(val loader: Loader) : Query {
       try {
         val payload = runBlocking { loader.budget() }
         val accountPath = account.split("/").filter { it.isNotEmpty() }
-        val accountName = accountPath.lastOrNull()
+        val accountNode = payload.tree[accountPath]
           ?: throw NotFoundException("Did not find account '$account'")
-        val accountNode = payload.getAccountNode(accountName)
-          ?: throw NotFoundException("Did not find account '$account'")
+        if (accountNode !is TreeNode.Leaf) {
+          throw NotFoundException("'$account' is not an account path")
+        }
         val statement: TransactionStatement = payload.nodeToStatement[accountNode]?.get(month) as? TransactionStatement
           ?: throw NotFoundException("Did not find statement for month '$month' for account '$account'")
         statement.toGql()
