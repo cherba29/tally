@@ -30,12 +30,11 @@ class StatementServiceTest : DescribeSpec({
 
       val exception = shouldThrow<NotFoundException> {
         StatementService(loader).statement(
-          owner = "john",
-          account = "test-account",
+          accountPath = "john/internal/test-account",
           month = MAR / 2026
         )
       }
-      exception.message shouldBe "Did not find account 'test-account'"
+      exception.message shouldBe "Did not find account 'john/internal/test-account'"
     }
 
     it("no given month") {
@@ -49,8 +48,7 @@ class StatementServiceTest : DescribeSpec({
 
       val exception = shouldThrow<NotFoundException> {
         StatementService(loader).statement(
-          owner = "john",
-          account = "john/internal/test-account1",
+          accountPath = "john/internal/test-account1",
           month = APR / 2026
         )
       }
@@ -68,8 +66,7 @@ class StatementServiceTest : DescribeSpec({
       }
 
       val result = StatementService(loader).statement(
-        owner = "john",
-        account = "john/internal/test-account",
+        accountPath = "john/internal/test-account",
         month = MAR / 2026
       )
       result shouldBe GqlStatement(
@@ -142,8 +139,7 @@ class StatementServiceTest : DescribeSpec({
       }
 
       val result = StatementService(loader).statement(
-        owner = "john",
-        account = "john/internal/test-account1",
+        accountPath = "john/internal/test-account1",
         month = MAR / 2026
       )
       result shouldBe GqlStatement(

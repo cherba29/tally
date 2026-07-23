@@ -16,26 +16,25 @@ import kotlinx.coroutines.runBlocking
 class SummaryService(val loader: Loader) : Query {
   /**
    * Computes summary data over range of months from provided monthly summaries.
-   * @param accountType path to summary, concatenated with / separator.
+   * @param accountPath path to summary, concatenated with / separator.
    * @param startMonth is optional when max back range is selected.
    * @param endMonth end month until which summary is computed.
    * @return gql formatted summary data over specified period.
    */
   @GraphQLDescription("Generates delta summary table between two months.")
-  // TODO: Remove unused owner.
-  fun summary(owner: String, accountType: String, startMonth: Month? = null, endMonth: Month): GqlSummaryData {
-    logger.info { "summary accountType=$accountType, startMonth=$startMonth, endMonth=$endMonth" }
+  fun summary(accountPath: String, startMonth: Month? = null, endMonth: Month): GqlSummaryData {
+    logger.info { "summary accountPath=$accountPath, startMonth=$startMonth, endMonth=$endMonth" }
     val (result, timeTaken) = measureTimedValue {
       try {
         val budget = runBlocking { loader.budget() }
-        val summaryPath = accountType.split("/").filter { it.isNotEmpty() }
+        val summaryPath = accountPath.split("/").filter { it.isNotEmpty() }
         val summaryNode = budget.tree[summaryPath]
-          ?: throw NotFoundException("Summary '$accountType' not found.")
+          ?: throw NotFoundException("Summary '$accountPath' not found.")
         val monthRange = startMonth..endMonth
         val summaryStatements = budget.nodeToStatement[summaryNode]!!.filter { it.key in monthRange }.mapValues { it.value as SummaryStatement }
         if (summaryStatements.isEmpty()) {
           throw NotFoundException(
-            "Summary '$accountType' for months [$startMonth, $endMonth] not found."
+            "Summary '$accountPath' for months [$startMonth, $endMonth] not found."
           )
         }
         val builder = MonthRangeSummaryStatementBuilder()
@@ -50,7 +49,7 @@ class SummaryService(val loader: Loader) : Query {
         builder.build(summaryNode).toGqlSummaryData()
       } catch (e: Exception) {
         logger.error(e) {
-          "Error while processing summary query accountType=$accountType " +
+          "Error while processing summary query accountType=$accountPath " +
               "startMont=$startMonth, endMonth=$endMonth"
         }
         throw e

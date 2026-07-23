@@ -14,23 +14,21 @@ import kotlinx.coroutines.runBlocking
 
 class StatementService(val loader: Loader) : Query {
   @GraphQLDescription("Returns a monthly statement for given account.")
-  // TODO: remove owner.
-  fun statement(owner:String, account: String, month: Month): GqlStatement {
-    logger.info { "statement account=$account, month=$month" }
+  fun statement(accountPath: String, month: Month): GqlStatement {
+    logger.info { "statement account=$accountPath, month=$month" }
     val (result, timeTaken) = measureTimedValue {
       try {
         val payload = runBlocking { loader.budget() }
-        val accountPath = account.split("/").filter { it.isNotEmpty() }
-        val accountNode = payload.tree[accountPath]
-          ?: throw NotFoundException("Did not find account '$account'")
+        val accountNode = payload.tree[accountPath.split("/").filter { it.isNotEmpty() }]
+          ?: throw NotFoundException("Did not find account '$accountPath'")
         if (accountNode !is TreeNode.Leaf) {
-          throw NotFoundException("'$account' is not an account path")
+          throw NotFoundException("'$accountPath' is not an account path")
         }
         val statement: TransactionStatement = payload.nodeToStatement[accountNode]?.get(month) as? TransactionStatement
-          ?: throw NotFoundException("Did not find statement for month '$month' for account '$account'")
+          ?: throw NotFoundException("Did not find statement for month '$month' for account '$accountPath'")
         statement.toGql()
       } catch (e: Exception) {
-        logger.error(e) { "Error while processing table query account=$account month=$month" }
+        logger.error(e) { "Error while processing table query account=$accountPath month=$month" }
         throw e
       }
     }

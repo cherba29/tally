@@ -179,7 +179,7 @@ export class TallyApp extends LitElement {
       };
     } else if (e.detail.month) {
       this.backendClient
-        .loadStatement(this.currentOwner ?? '', e.detail.rowId ?? '', e.detail.month ?? '')
+        .loadStatement(e.detail.rowId ?? '', e.detail.month ?? '')
         .then((result) => {
           console.log(`PopupData for ${e.detail}`, result);
           const statement = result.data!.statement;
@@ -211,7 +211,7 @@ export class TallyApp extends LitElement {
     endMonth: string
   ) {
     this.backendClient
-      .loadSummaryData(this.currentOwner ?? '', accountName, startMonth, endMonth)
+      .loadSummaryData(accountName, startMonth, endMonth)
       .then((result) => {
         console.log(`PopupData for ${accountName} ${startMonth}-${endMonth}`, result);
         const summaryStatement = result.data!.summary?.total;

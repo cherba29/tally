@@ -99,22 +99,19 @@ export class BackendClient {
    * @return promise of query result.
    */
   loadSummaryData(
-    owner: string,
-    accountType: string,
+    accountPath: string,
     startMonth: string | undefined,
     endMonth: string
   ): Promise<ApolloClient.QueryResult<Query>> {
     return this.gqlClient.query<Query>({
       query: gql`
         query summary(
-          $owner: String!
-          $accountType: String!
+          $accountPath: String!
           $startMonth: GqlMonth = null
           $endMonth: GqlMonth!
         ) {
           summary(
-            owner: $owner
-            accountType: $accountType
+            accountPath: $accountPath
             startMonth: $startMonth
             endMonth: $endMonth
           ) {
@@ -175,8 +172,7 @@ export class BackendClient {
         }
       `,
       variables: {
-        owner,
-        accountType,
+        accountPath,
         startMonth,
         endMonth,
       },
@@ -187,11 +183,11 @@ export class BackendClient {
    * Load data via gql client.
    * @return promise of query result.
    */
-  loadStatement(owner: string, account: string, month: string): Promise<ApolloClient.QueryResult<Query>> {
+  loadStatement(accountPath: string, month: string): Promise<ApolloClient.QueryResult<Query>> {
     return this.gqlClient.query<Query>({
       query: gql`
-        query statement($owner: String!, $account: String!, $month: GqlMonth!) {
-          statement(owner: $owner, account: $account, month: $month) {
+        query statement($accountPath: String!, $month: GqlMonth!) {
+          statement(accountPath: $accountPath, month: $month) {
             name
             month
             inFlows
@@ -234,8 +230,7 @@ export class BackendClient {
         }
       `,
       variables: {
-        owner,
-        account,
+        accountPath,
         month,
       },
     });

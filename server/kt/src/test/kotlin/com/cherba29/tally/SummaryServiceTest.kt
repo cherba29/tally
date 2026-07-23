@@ -29,10 +29,9 @@ class SummaryServiceTest : DescribeSpec({
 
       val exception = shouldThrow<NotFoundException> {
         SummaryService(loader).summary(
-          owner = "john",
           startMonth = APR / 2026,
           endMonth = APR / 2026,
-          accountType = "john/internal"
+          accountPath = "john/internal"
         )
       }
       exception.message shouldBe "Summary 'john/internal' for months [Apr2026, Apr2026] not found."
@@ -50,10 +49,9 @@ class SummaryServiceTest : DescribeSpec({
 
       val exception = shouldThrow<NotFoundException> {
         SummaryService(loader).summary(
-          owner = "john",
           startMonth = APR / 2026,
           endMonth = APR / 2026,
-          accountType = "john/internal"
+          accountPath = "john/internal"
         )
       }
       exception.message shouldBe "Summary 'john/internal' not found."
@@ -72,10 +70,9 @@ class SummaryServiceTest : DescribeSpec({
         }
       }
       val data = SummaryService(loader).summary(
-        owner = "john",
         startMonth = MAR / 2026,
         endMonth = MAR / 2026,
-        accountType = "john/internal"
+        accountPath = "john/internal"
       )
       expectSelfie(data.toSnapshot()).toMatchDisk()
     }
@@ -103,10 +100,9 @@ class SummaryServiceTest : DescribeSpec({
       }
 
       val data = SummaryService(loader).summary(
-        owner = "john",
         startMonth = MAR / 2026,
         endMonth = MAR / 2026,
-        accountType = "john/internal"
+        accountPath = "john/internal"
       )
       expectSelfie(data.toSnapshot()).toMatchDisk()
     }
@@ -134,10 +130,9 @@ class SummaryServiceTest : DescribeSpec({
         }
       }
       val data = SummaryService(loader).summary(
-        owner = "john",
         startMonth = MAR / 2026,
         endMonth = MAR / 2026,
-        accountType = "john/internal"
+        accountPath = "john/internal"
       )
       expectSelfie(data.toSnapshot()).toMatchDisk()
     }
@@ -178,10 +173,9 @@ class SummaryServiceTest : DescribeSpec({
       }
 
       val data = SummaryService(loader).summary(
-        owner = "john",
         startMonth = MAR / 2026,
         endMonth = APR / 2026,
-        accountType = "john/internal"
+        accountPath = "john/internal"
       )
       expectSelfie(data.toSnapshot()).toMatchDisk()
     }
@@ -221,10 +215,9 @@ class SummaryServiceTest : DescribeSpec({
         }
       }
       val data = SummaryService(loader).summary(
-        owner = "john",
         startMonth = null,
         endMonth = MAR / 2026,
-        accountType = "john/internal"
+        accountPath = "john/internal"
       )
       expectSelfie(data.toSnapshot()).toMatchDisk()
     }
@@ -264,10 +257,9 @@ class SummaryServiceTest : DescribeSpec({
         }
       }
       val data = SummaryService(loader).summary(
-        owner = "john",
         startMonth = MAR / 2026,
         endMonth = MAR / 2026,
-        accountType = "john/internal"
+        accountPath = "john/internal"
       )
       expectSelfie(data.toSnapshot()).toMatchDisk()
     }

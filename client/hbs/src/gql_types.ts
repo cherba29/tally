@@ -158,16 +158,14 @@ export type Query = {
 
 
 export type QueryStatementArgs = {
-  account: Scalars['String']['input'];
+  accountPath: Scalars['String']['input'];
   month: Scalars['GqlMonth']['input'];
-  owner: Scalars['String']['input'];
 };
 
 
 export type QuerySummaryArgs = {
-  accountType: Scalars['String']['input'];
+  accountPath: Scalars['String']['input'];
   endMonth: Scalars['GqlMonth']['input'];
-  owner: Scalars['String']['input'];
   startMonth?: InputMaybe<Scalars['GqlMonth']['input']>;
 };
 

@@ -156,9 +156,9 @@ type GqlTransaction {
 type Query {
   hello: String!
   "Returns a monthly statement for given account."
-  statement(account: String!, month: GqlMonth!, owner: String!): GqlStatement!
+  statement(accountPath: String!, month: GqlMonth!): GqlStatement!
   "Generates delta summary table between two months."
-  summary(accountType: String!, endMonth: GqlMonth!, owner: String!, startMonth: GqlMonth): GqlSummaryData!
+  summary(accountPath: String!, endMonth: GqlMonth!, startMonth: GqlMonth): GqlSummaryData!
   "Generates full tally table in given month range."
   table(endMonth: GqlMonth!, owner: String, startMonth: GqlMonth!): GqlTable!
 }
