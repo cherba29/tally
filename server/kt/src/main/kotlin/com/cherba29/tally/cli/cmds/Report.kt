@@ -2,8 +2,10 @@ package com.cherba29.tally.cli.cmds
 
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.data.Loader
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.convert
@@ -35,7 +37,10 @@ class Report : CliktCommand() {
     } else {
       payload.tree[accountPath]
     } ?: throw IllegalStateException("Account not found $account known accounts\n${payload.tree.toPrettyString()}")
-    val stmtAccount = payload.getAccount(accountNode)!!
+    if (accountNode !is TreeNode.Leaf) {
+      throw CliktError("'$account' does not exist ")
+    }
+    val stmtAccount = payload.leafToAccount[accountNode]!!
 
     val monthStatements = payload.nodeToStatement[accountNode] ?: mapOf()
     echo(HEADER_ROW.joinToString(","))

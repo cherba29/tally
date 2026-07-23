@@ -10,16 +10,6 @@
   - __type: GqlTableRow
     id: john
     title: john
-    account:
-      __type: GqlAccount
-      name: ""
-      path:
-      - ""
-      external: false
-      summary: true
-      openedOn: Jan2010
-      owners:
-      - john
     indent: 0
     isSpace: false
     isTotal: true
@@ -52,16 +42,6 @@
   - __type: GqlTableRow
     id: john/external
     title: external
-    account:
-      __type: GqlAccount
-      name: external
-      path:
-      - ""
-      external: true
-      summary: true
-      openedOn: Jan2010
-      owners:
-      - john
     indent: 1
     isSpace: false
     isTotal: true
@@ -132,16 +112,6 @@
   - __type: GqlTableRow
     id: john/internal
     title: internal
-    account:
-      __type: GqlAccount
-      name: internal
-      path:
-      - ""
-      external: false
-      summary: true
-      openedOn: Jan2010
-      owners:
-      - john
     indent: 1
     isSpace: false
     isTotal: true
@@ -224,16 +194,6 @@
   - __type: GqlTableRow
     id: john
     title: john
-    account:
-      __type: GqlAccount
-      name: ""
-      path:
-      - ""
-      external: false
-      summary: true
-      openedOn: Jan2010
-      owners:
-      - john
     indent: 0
     isSpace: false
     isTotal: true
@@ -253,16 +213,6 @@
   - __type: GqlTableRow
     id: john/internal
     title: internal
-    account:
-      __type: GqlAccount
-      name: internal
-      path:
-      - ""
-      external: false
-      summary: true
-      openedOn: Jan2010
-      owners:
-      - john
     indent: 1
     isSpace: false
     isTotal: true
@@ -320,16 +270,6 @@
   - __type: GqlTableRow
     id: john
     title: john
-    account:
-      __type: GqlAccount
-      name: ""
-      path:
-      - ""
-      external: false
-      summary: true
-      openedOn: Jan2010
-      owners:
-      - john
     indent: 0
     isSpace: false
     isTotal: true
@@ -349,16 +289,6 @@
   - __type: GqlTableRow
     id: john/internal
     title: internal
-    account:
-      __type: GqlAccount
-      name: internal
-      path:
-      - ""
-      external: false
-      summary: true
-      openedOn: Jan2010
-      owners:
-      - john
     indent: 1
     isSpace: false
     isTotal: true
@@ -416,16 +346,6 @@
   - __type: GqlTableRow
     id: john
     title: john
-    account:
-      __type: GqlAccount
-      name: ""
-      path:
-      - ""
-      external: false
-      summary: true
-      openedOn: Jan2010
-      owners:
-      - john
     indent: 0
     isSpace: false
     isTotal: true
@@ -445,16 +365,6 @@
   - __type: GqlTableRow
     id: john/external
     title: external
-    account:
-      __type: GqlAccount
-      name: external
-      path:
-      - ""
-      external: true
-      summary: true
-      openedOn: Jan2010
-      owners:
-      - john
     indent: 1
     isSpace: false
     isTotal: true

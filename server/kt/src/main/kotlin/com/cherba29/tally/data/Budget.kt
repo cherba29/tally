@@ -5,7 +5,6 @@ import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.statement.Statement
-import kotlin.collections.get
 
 /**
  * Data representing all accounts, their transactions and totals per month.
@@ -22,17 +21,4 @@ data class Budget(
   val nodeToStatement: Map<TreeNode, Map<Month, Statement>>,
 ) {
   fun getAccountNode(accountName: String) = leafToAccount.entries.find { it.value.name == accountName }?.key
-  fun getAccount(treeNode: TreeNode) = if (treeNode.children.isEmpty()) {
-      leafToAccount[treeNode]
-    } else {
-      // Summaries don't have associated account, create a dummy.
-      // TODO: instead of dummy return null.
-      val path = if (treeNode.path.size < 2) listOf() else treeNode.path.subList(1, treeNode.path.size)
-      Account(
-        path.lastOrNull() ?: "",
-        if (path.size > 1) path.subList(0, path.size-1) else listOf(""),
-        setOf(treeNode.path.first()),
-        openedOn = Month(2010, 0)
-      )
-    }
 }
