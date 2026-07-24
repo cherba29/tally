@@ -180,6 +180,45 @@ export class BackendClient {
   }
 
   /**
+   * Load summary (popup) data data via gql client.
+   * @return promise of query result.
+   */
+  loadTransferSummaryData(
+    accountPath: string,
+    startMonth: string | undefined,
+    endMonth: string
+  ): Promise<ApolloClient.QueryResult<Query>> {
+    return this.gqlClient.query<Query>({
+      query: gql`
+        query transfersSummary(
+          $accountPath: String!
+          $startMonth: GqlMonth = null
+          $endMonth: GqlMonth!
+        ) {
+          transfersSummary(
+            accountPath: $accountPath
+            startMonth: $startMonth
+            endMonth: $endMonth
+          ) {
+            months
+            data {
+              internalTransfers
+              externalTransfers
+              totalInternalTransfers
+              totalExternalTransfers
+            }
+          }
+        }
+      `,
+      variables: {
+        accountPath,
+        startMonth,
+        endMonth,
+      },
+    });
+  }
+
+  /**
    * Load data via gql client.
    * @return promise of query result.
    */

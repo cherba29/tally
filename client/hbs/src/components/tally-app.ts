@@ -1,13 +1,22 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {customElement} from 'lit/decorators.js';
 import {BackendClient} from '../api';
-import {type HeadingPopupData, type PopupData, type PopupMonthData, type PopupMonthSummaryData, type Rows} from '../utils';
+import {
+  type HeadingPopupData, 
+  type PopupData, 
+  type PopupMonthData, 
+  type PopupMonthSummaryData, 
+  type PopupTransferSummaryData,
+  type Rows
+} from '../utils';
 import {styleMap, type StyleInfo} from 'lit/directives/style-map.js';
 
 import './account-tooltip';
 import './balance-tooltip';
 import './balance-summary-tooltip';
 import './summary-table';
+import './transfers-summary-tooltip';
+
 import {type MonthRangeChange} from './balance-summary-tooltip';
 import {type CellClickEventData} from './summary-table';
 import {Month} from '@tally/lib/core/month';
@@ -97,6 +106,7 @@ export class TallyApp extends LitElement {
             style="font-size: 80%;"
             .months=${this.months}
             .rows=${rows}
+            @addSubCellClick=${this.onAddSubCellClick}
             @cellclick=${this.onCellClick}
           ></summary-table>
         </div>`;
@@ -121,6 +131,7 @@ export class TallyApp extends LitElement {
   }
 
   tooltipFragment() {
+    // TODO: think of better dispatch on popup type.
     if (!this.popupData) {
       return nothing;
     } else if ('summary' in this.popupData) {
@@ -147,6 +158,14 @@ export class TallyApp extends LitElement {
         @close=${this.closePopup}
       >
       </balance-tooltip>`;
+    } else if ('monthlyData' in this.popupData) {
+       return html`<transfers-summary-tooltip
+       .accountPath=${this.popupData.accountPath}
+       .months=${this.popupData.months}
+       .monthlyData=${this.popupData.monthlyData}
+        @close=${this.closePopup}
+      >
+      </transfers-summary-tooltip>`
     } else {
       throw new Error(`Unknown type of popup data ${this.popupData}.`);
     }
@@ -164,6 +183,27 @@ export class TallyApp extends LitElement {
       e.detail.startMonth?.toString(),
       e.detail.endMonth.toString()
     );
+  }
+
+  private onAddSubCellClick(e: CustomEvent<CellClickEventData>) {
+    console.log(e);
+    this.backendClient
+      .loadTransferSummaryData(e.detail.rowId ?? '', this.startMonth.toString(), e.detail.month ?? '')
+      .then((result) => {
+        console.log(`addSub data for ${e.detail}`, result);
+          const transfersSummary = result.data!.transfersSummary;
+          const popupData: PopupTransferSummaryData = {
+            accountPath: e.detail.rowId ?? '',
+            months: transfersSummary.months,
+            monthlyData: transfersSummary.data,
+          };
+        this.popupData = popupData;
+        this.popupOffset = {
+          top: e.detail.mouseEvent.pageY + 10,
+          left: e.detail.mouseEvent.pageX,
+        };
+        this.requestUpdate();
+      });
   }
 
   private onCellClick(e: CustomEvent<CellClickEventData>) {

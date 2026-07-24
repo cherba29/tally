@@ -130,6 +130,25 @@ export class SummaryTable extends LitElement {
     this.dispatchEvent(new CustomEvent('cellclick', options));
   }
 
+  onAddSubCellClick(
+    mouseEvent: MouseEvent,
+    rowId: string,
+    month: string,
+    isSummary: boolean
+  ) {
+    const options: CustomEventInit<CellClickEventData> = {
+      detail: {
+        mouseEvent,
+        rowId: rowId,
+        month,
+        isSummary,
+      },
+      bubbles: true,
+      composed: true,
+    };
+    this.dispatchEvent(new CustomEvent('addSubCellClick', options));
+  }
+
   onTitleCellClick(e: MouseEvent, rowId: string, account: GqlAccount | undefined | null) {
     const options: CustomEventInit<CellClickEventData> = {
       detail: {
@@ -265,7 +284,13 @@ export class SummaryTable extends LitElement {
                     ></td>`;
                   }
                   return html`
-                    <td class="add_sub">${currency(c.addSub)}</td>
+                    <td 
+                      @click="${(e: MouseEvent) =>
+                          this.onAddSubCellClick(e, r.id ?? r.account?.name ?? r.title, c.month, true)}"
+                      class="add_sub"
+                    >
+                      ${currency(c.addSub)}
+                    </td>
                     <td
                       @click="${(e: MouseEvent) =>
                         this.onCellClick(e, r.id ?? r.account?.name ?? r.title, c.month, true)}"
@@ -307,7 +332,12 @@ export class SummaryTable extends LitElement {
                       style="border-right:2px double #a00"
                     ></td>`;
                   }
-                  return html`<td class="add_sub">${currency(c.addSub)}</td>
+                  return html`<td
+                      @click="${(e: MouseEvent) => this.onAddSubCellClick(e, r.id ?? r.title, c.month, false)}"
+                      class="add_sub"
+                    >
+                      ${currency(c.addSub)}
+                    </td>
                     <td
                       @click="${(e: MouseEvent) => this.onCellClick(e, r.id ?? r.title, c.month, false)}"
                       class="balance ${classMap(projectedClass(c))}"
