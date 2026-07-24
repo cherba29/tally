@@ -4,6 +4,7 @@ import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.schema.GqlAccount
 import com.cherba29.tally.schema.GqlBalance
+import com.cherba29.tally.schema.GqlMonthTransferSummary
 import com.cherba29.tally.schema.GqlStatement
 import com.cherba29.tally.schema.GqlSummaryData
 import com.cherba29.tally.schema.GqlSummaryStatement
@@ -11,6 +12,7 @@ import com.cherba29.tally.schema.GqlTable
 import com.cherba29.tally.schema.GqlTableCell
 import com.cherba29.tally.schema.GqlTableRow
 import com.cherba29.tally.schema.GqlTransaction
+import com.cherba29.tally.schema.GqlTransfersSummary
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.statement.TransactionStatement
@@ -307,4 +309,18 @@ fun GqlSummaryData.toObjectNode(root: ObjectNode) {
   val statementsNode = root.putArray("statements")
   statements.forEach { it.toObjectNode(statementsNode.addObject()) }
   total.toObjectNode(root.putObject("total"))
+}
+
+fun GqlMonthTransferSummary.toObjectNode(root: ObjectNode) {
+  root.put("internalTransfers", internalTransfers)
+  root.put("externalTransfers", externalTransfers)
+  root.put("totalInternalTransfers", totalInternalTransfers)
+  root.put("totalExternalTransfers", totalExternalTransfers)
+}
+
+fun GqlTransfersSummary.toObjectNode(root: ObjectNode) {
+  val monthsNode = root.putArray("months")
+  months.forEach { monthsNode.add(it.toString()) }
+  val dataNode = root.putArray("data")
+  data.forEach { it.toObjectNode(dataNode.addObject()) }
 }

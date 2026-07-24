@@ -2,6 +2,7 @@ package com.cherba29.tally.testing
 
 import com.cherba29.tally.schema.GqlSummaryData
 import com.cherba29.tally.schema.GqlTable
+import com.cherba29.tally.schema.GqlTransfersSummary
 import com.cherba29.tally.statement.TransactionStatement
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
@@ -13,6 +14,7 @@ fun List<TransactionStatement>.toSnapshot() = toSnapshot { root ->
 }
 fun GqlSummaryData.toSnapshot() = toSnapshot { root -> toObjectNode(root.addObject()) }
 fun GqlTable.toSnapshot() = toSnapshot { root -> toObjectNode(root.addObject()) }
+fun GqlTransfersSummary.toSnapshot() = toSnapshot { root -> toObjectNode(root.addObject()) }
 
 fun toSnapshot(block: (root: ArrayNode)->Unit): String {
   val mapper = YAMLMapper.builder()

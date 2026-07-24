@@ -264,4 +264,36 @@ class SummaryServiceTest : DescribeSpec({
       expectSelfie(data.toSnapshot()).toMatchDisk()
     }
   }
+
+  describe("transfers summary") {
+    it("with single transaction statement") {
+      val account1 = Account("test-account1", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
+      val account2 = Account("test-account2", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
+      val loader = mockk<Loader> {
+        coEvery { budget() } returns budget {
+          setAccount(listOf("john", "internal", "test-account1"), account1)
+          setAccount(listOf("john", "internal", "test-account2"), account2)
+          setBalance(listOf("john", "internal", "test-account1"), MAR / 2026, Balance.confirmed(100, "2026-03-01"))
+          setBalance(listOf("john", "internal", "test-account2"), MAR / 2026, Balance.confirmed(200, "2026-03-01"))
+          addTransfer(
+            BudgetBuilder.TransferRecord(
+              fromAccountPath = listOf("john", "internal", "test-account1"),
+              toAccountName = "test-account2",
+              month = MAR / 2026,
+              balance = Balance.confirmed(50, "2026-03-02"),
+              description = "transfer from 1 to 2",
+              tags = listOf()
+            )
+          )
+        }
+      }
+
+      val data = SummaryService(loader).transfersSummary(
+        startMonth = MAR / 2026,
+        endMonth = MAR / 2026,
+        accountPath = "john/internal/test-account1"
+      )
+      expectSelfie(data.toSnapshot()).toMatchDisk()
+    }
+  }
 })

@@ -50,6 +50,19 @@ export type GqlBalance = {
   type: Scalars['String']['output'];
 };
 
+/** Sum of transfers for given month for given account or summary. */
+export type GqlMonthTransferSummary = {
+  __typename?: 'GqlMonthTransferSummary';
+  /** Sum of transfers from external accounts for this month. */
+  externalTransfers: Scalars['Long']['output'];
+  /** Sum of transfers from internal accounts for this month. */
+  internalTransfers: Scalars['Long']['output'];
+  /** Sum of all previous and current transfers from external accounts for this month. */
+  totalExternalTransfers: Scalars['Long']['output'];
+  /** Sum of all previous and current transfers from internal accounts for this month. */
+  totalInternalTransfers: Scalars['Long']['output'];
+};
+
 export type GqlStatement = {
   __typename?: 'GqlStatement';
   addSub: Scalars['Long']['output'];
@@ -145,6 +158,15 @@ export type GqlTransaction = {
   toAccountName: Scalars['String']['output'];
 };
 
+/** Return payload for transfersSummary query. */
+export type GqlTransfersSummary = {
+  __typename?: 'GqlTransfersSummary';
+  /** For each of the months internal/external summary of transfers. */
+  data: Array<GqlMonthTransferSummary>;
+  /** List of months this summary covers, sorted descending order. */
+  months: Array<Scalars['GqlMonth']['output']>;
+};
+
 export type Query = {
   __typename?: 'Query';
   hello: Scalars['String']['output'];
@@ -154,6 +176,8 @@ export type Query = {
   summary: GqlSummaryData;
   /** Generates full tally table in given month range. */
   table: GqlTable;
+  /** Generates sum of internal/external transfers for each month. */
+  transfersSummary: GqlTransfersSummary;
 };
 
 
@@ -174,4 +198,11 @@ export type QueryTableArgs = {
   endMonth: Scalars['GqlMonth']['input'];
   owner?: InputMaybe<Scalars['String']['input']>;
   startMonth: Scalars['GqlMonth']['input'];
+};
+
+
+export type QueryTransfersSummaryArgs = {
+  accountPath: Scalars['String']['input'];
+  endMonth: Scalars['GqlMonth']['input'];
+  startMonth?: InputMaybe<Scalars['GqlMonth']['input']>;
 };

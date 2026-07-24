@@ -254,6 +254,15 @@
       date: 2026-03-01
       type: CONFIRMED
 
+╔═ with single transaction statement ═╗
+- months:
+  - Mar2026
+  data:
+  - internalTransfers: -50
+    externalTransfers: 0
+    totalInternalTransfers: -50
+    totalExternalTransfers: 0
+
 ╔═ with transaction statement ═╗
 - statements:
   - __type: GqlStatement

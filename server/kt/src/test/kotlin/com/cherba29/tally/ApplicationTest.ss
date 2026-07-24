@@ -65,6 +65,18 @@ type GqlBalance {
   type: String!
 }
 
+"Sum of transfers for given month for given account or summary."
+type GqlMonthTransferSummary {
+  "Sum of transfers from external accounts for this month."
+  externalTransfers: Long!
+  "Sum of transfers from internal accounts for this month."
+  internalTransfers: Long!
+  "Sum of all previous and current transfers from external accounts for this month."
+  totalExternalTransfers: Long!
+  "Sum of all previous and current transfers from internal accounts for this month."
+  totalInternalTransfers: Long!
+}
+
 type GqlStatement {
   addSub: Long!
   annualizedPercentChange: Float!
@@ -153,6 +165,14 @@ type GqlTransaction {
   toAccountName: String!
 }
 
+"Return payload for transfersSummary query."
+type GqlTransfersSummary {
+  "For each of the months internal/external summary of transfers."
+  data: [GqlMonthTransferSummary!]!
+  "List of months this summary covers, sorted descending order."
+  months: [GqlMonth!]!
+}
+
 type Query {
   hello: String!
   "Returns a monthly statement for given account."
@@ -161,6 +181,8 @@ type Query {
   summary(accountPath: String!, endMonth: GqlMonth!, startMonth: GqlMonth): GqlSummaryData!
   "Generates full tally table in given month range."
   table(endMonth: GqlMonth!, owner: String, startMonth: GqlMonth!): GqlTable!
+  "Generates sum of internal/external transfers for each month."
+  transfersSummary(accountPath: String!, endMonth: GqlMonth!, startMonth: GqlMonth): GqlTransfersSummary!
 }
 
 "Date representation in YYYY-MM-DD format."

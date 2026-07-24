@@ -77,6 +77,26 @@ data class GqlSummaryStatement(
 
 data class GqlSummaryData(val statements: List<GqlStatement>, val total: GqlSummaryStatement)
 
+@GraphQLDescription("Sum of transfers for given month for given account or summary.")
+data class GqlMonthTransferSummary(
+  @param:GraphQLDescription("Sum of transfers from internal accounts for this month.")
+  val internalTransfers: Long,
+  @param:GraphQLDescription("Sum of transfers from external accounts for this month.")
+  val externalTransfers: Long,
+  @param:GraphQLDescription("Sum of all previous and current transfers from internal accounts for this month.")
+  val totalInternalTransfers: Long,
+  @param:GraphQLDescription("Sum of all previous and current transfers from external accounts for this month.")
+  val totalExternalTransfers: Long,
+)
+
+@GraphQLDescription("Return payload for transfersSummary query.")
+data class GqlTransfersSummary(
+  @param:GraphQLDescription("List of months this summary covers, sorted descending order.")
+  val months: List<Month>,
+  @param:GraphQLDescription("For each of the months internal/external summary of transfers.")
+  val data: List<GqlMonthTransferSummary>
+)
+
 data class GqlTableCell(
   val month: Month,
   val isClosed: Boolean,
