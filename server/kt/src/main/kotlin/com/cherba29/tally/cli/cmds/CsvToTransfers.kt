@@ -92,7 +92,17 @@ class CsvToTransfers : CliktCommand("csv-to-transfers") {
         debitField = "Debit",
         creditField = "Credit",
         negated = false,
-        amountFormat = "%8.2f",
+        amountFormat = "%7.2f",
+      ),
+      CsvMetadata(
+        name = "citi-double",
+        setOf("Status", "Date", "Description", "Debit", "Credit"),
+        dateField = "Date",
+        descriptionField = "Description",
+        debitField = "Debit",
+        creditField = "Credit",
+        negated = false,
+        amountFormat = "%7.2f",
       ),
       CsvMetadata(
         name = "chase_amazon",

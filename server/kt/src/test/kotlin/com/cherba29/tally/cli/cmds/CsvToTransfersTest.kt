@@ -62,7 +62,35 @@ class CsvToTransfersTest : DescribeSpec({
         {Status=Cleared, Date=07/17/2025, Description=COSTCO WHSE#5 JOHNSVILLECA, Debit=2.12, Credit=, Member Name=JOHN}
         Detected source: costco
         Detected month: Jul2025
-            - { grp: Jul2025, date: 2025-07-17, camt:     2.12, desc: "COSTCO WHSE#5 JOHNSVILLECA" }
+            - { grp: Jul2025, date: 2025-07-17, camt:    2.12, desc: "COSTCO WHSE#5 JOHNSVILLECA" }
+
+      """.trimIndent()
+      result.statusCode shouldBe 0
+    }
+
+    it("converts citi double") {
+      val csvPath = (tempdir("tally-", keepOnFailure = false).toPath()
+          / "transactions.csv").createFile()
+
+      csvPath.writeText(
+        """
+          Status,Date,Description,Debit,Credit
+          Cleared,07/17/2025,"WALMART#4 JOHNSVILLECA",2.12,
+        """.trimIndent()
+      )
+
+      val command = CsvToTransfers()
+
+      val result = command.test(
+        listOf("--csv-file=$csvPath")
+      )
+      result.stderr shouldBe ""
+      result.stdout shouldBe """
+        Converting csv '$csvPath' to transfers
+        {Status=Cleared, Date=07/17/2025, Description=WALMART#4 JOHNSVILLECA, Debit=2.12, Credit=}
+        Detected source: citi-double
+        Detected month: Jul2025
+            - { grp: Jul2025, date: 2025-07-17, camt:    2.12, desc: "WALMART#4 JOHNSVILLECA" }
 
       """.trimIndent()
       result.statusCode shouldBe 0
