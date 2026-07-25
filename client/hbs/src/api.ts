@@ -204,8 +204,15 @@ export class BackendClient {
             data {
               internalTransfers
               externalTransfers
+              totalMonthTransfers
               totalInternalTransfers
+              totalInternalTransfersPrct
+              totalInternalTransfersAnnualPrct
               totalExternalTransfers
+              totalExternalTransfersPrct
+              totalExternalTransfersAnnualPrct
+              totalTransfers
+              unaccounted
             }
           }
         }

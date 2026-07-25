@@ -22,21 +22,21 @@ describe('BalanceTooltip component', () => {
       totalExternalTransfersPrct: 0,
       totalInternalTransfersAnnualPrct: 0,
       totalInternalTransfersPrct: 0,
-      totalMonthTransfers: undefined,
-      totalTransfers: undefined,
-      unaccounted: undefined
+      totalMonthTransfers: 11,
+      totalTransfers: 160,
+      unaccounted: 15
     }, {
       externalTransfers: 101,
       internalTransfers: 51,
       totalExternalTransfers: 201,
       totalInternalTransfers: 301,
-      totalExternalTransfersAnnualPrct: 0,
-      totalExternalTransfersPrct: 0,
+      totalExternalTransfersAnnualPrct: 20,
+      totalExternalTransfersPrct: 0.1,
       totalInternalTransfersAnnualPrct: 0,
       totalInternalTransfersPrct: 0,
-      totalMonthTransfers: undefined,
-      totalTransfers: undefined,
-      unaccounted: undefined
+      totalMonthTransfers: 152,
+      totalTransfers: 152,
+      unaccounted: 10
     }];
     
     const element = await fixture<TransfersSummaryTooltip>(
@@ -57,13 +57,18 @@ describe('BalanceTooltip component', () => {
         <thead>
           <tr>
             <th style="min-width:20px"></th>
-            <th style="min-width:50px">Month</th>
+            <th style="min-width:40px">Month</th>
             <th style="min-width:50px">Internal</th>
             <th style="min-width:50px">External</th>
             <th style="min-width:50px">Total</th>
             <th style="min-width:60px">Tot Internal</th>
+            <th style="min-width:40px">Internal %</th>
+            <th style="min-width:40px">Internal Annl %</th>
             <th style="min-width:60px">Tot External</th>
+            <th style="min-width:40px">External %</th>
+            <th style="min-width:40px">External Annl %</th>
             <th style="min-width:60px">Total</th>
+            <th style="min-width:60px">Unaccounted</th>
            </tr>
         </thead>
         <tbody>
@@ -72,10 +77,15 @@ describe('BalanceTooltip component', () => {
             <td>Jul2026</td>
             <td align="right">0.50</td>
             <td align="right">1.00</td>
-            <td align="right">1.50</td>
+            <td align="right">0.11</td>
             <td align="right">3.00</td>
+            <td align="right">0</td>
+            <td align="right">0</td>
             <td align="right">2.00</td>
-            <td align="right">5.00</td>
+            <td align="right">0</td>
+            <td align="right">0</td>
+            <td align="right">1.60</td>
+            <td align="right">0.15</td>
           </tr>
           <tr class="highlight">
             <td align="middle">2</td>
@@ -84,8 +94,13 @@ describe('BalanceTooltip component', () => {
             <td align="right">1.01</td>
             <td align="right">1.52</td>
             <td align="right">3.01</td>
+            <td align="right">0</td>
+            <td align="right">0</td>
             <td align="right">2.01</td>
-            <td align="right">5.02</td>
+            <td align="right">0.1</td>
+            <td align="right">20</td>
+            <td align="right">1.52</td>
+            <td align="right">0.10</td>
           </tr>
         </tbody>
       </table>`
