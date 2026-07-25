@@ -83,10 +83,24 @@ data class GqlMonthTransferSummary(
   val internalTransfers: Long,
   @param:GraphQLDescription("Sum of transfers from external accounts for this month.")
   val externalTransfers: Long,
+  @param:GraphQLDescription("Sum of internal and external transfers.")
+  val totalMonthTransfers: Long,
   @param:GraphQLDescription("Sum of all previous and current transfers from internal accounts for this month.")
   val totalInternalTransfers: Long,
+  @param:GraphQLDescription("Total internal transfer as percentage of all transfers.")
+  val totalInternalTransfersPrct: Float,
+  @param:GraphQLDescription("Total internal transfer as annualized rate of external transfers.")
+  val totalInternalTransfersAnnualPrct: Float,
   @param:GraphQLDescription("Sum of all previous and current transfers from external accounts for this month.")
   val totalExternalTransfers: Long,
+  @param:GraphQLDescription("Total external transfer as percentage of all transfers.")
+  val totalExternalTransfersPrct: Float,
+  @param:GraphQLDescription("Total external transfer as annualized rate of internal transfers.")
+  val totalExternalTransfersAnnualPrct: Float,
+  @param:GraphQLDescription("Running total of all transfers including previous months.")
+  val totalTransfers: Long,
+  @param:GraphQLDescription("Difference between recorded balance and running totalTransfers.")
+  val unaccounted: Long,
 )
 
 @GraphQLDescription("Return payload for transfersSummary query.")

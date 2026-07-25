@@ -261,12 +261,26 @@
   data:
   - internalTransfers: 0
     externalTransfers: -50
+    totalMonthTransfers: -50
     totalInternalTransfers: 0
+    totalInternalTransfersPrct: -0.0
+    totalInternalTransfersAnnualPrct: 0.0
     totalExternalTransfers: -50
+    totalExternalTransfersPrct: 1.0
+    totalExternalTransfersAnnualPrct: 63.0
+    totalTransfers: -50
+    unaccounted: 150
   - internalTransfers: 0
     externalTransfers: 0
+    totalMonthTransfers: 0
     totalInternalTransfers: 0
+    totalInternalTransfersPrct: 0.0
+    totalInternalTransfersAnnualPrct: 0.0
     totalExternalTransfers: 0
+    totalExternalTransfersPrct: 0.0
+    totalExternalTransfersAnnualPrct: 0.0
+    totalTransfers: 0
+    unaccounted: 100
 
 ╔═ with single transaction statement ═╗
 - months:
@@ -274,8 +288,15 @@
   data:
   - internalTransfers: -50
     externalTransfers: 0
+    totalMonthTransfers: -50
     totalInternalTransfers: -50
+    totalInternalTransfersPrct: 1.0
+    totalInternalTransfersAnnualPrct: 4095.0
     totalExternalTransfers: 0
+    totalExternalTransfersPrct: -0.0
+    totalExternalTransfersAnnualPrct: 0.0
+    totalTransfers: -50
+    unaccounted: 150
 
 ╔═ with transaction statement ═╗
 - statements:

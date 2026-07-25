@@ -16,6 +16,7 @@ import com.expediagroup.graphql.server.operations.Query
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.time.measureTimedValue
 import kotlinx.coroutines.runBlocking
+import kotlin.math.pow
 
 class SummaryService(val loader: Loader) : Query {
   /**
@@ -80,15 +81,43 @@ class SummaryService(val loader: Loader) : Query {
         val summaries = mutableMapOf<Month, GqlMonthTransferSummary>()
         var totalInternalTransfers = 0L
         var totalExternalTransfers = 0L
+        val monthlyInternalPrctChange = mutableListOf<Double>()
+        val monthlyExternalPrctChange = mutableListOf<Double>()
         for (month in ascMonthList) {
           val statement = monthlyStatements[month] ?: continue
-          totalInternalTransfers += statement.totalTransfers
-          totalExternalTransfers += statement.income + statement.totalPayments
+          val internalTransfers = statement.totalTransfers
+          val externalTransfers = statement.income + statement.totalPayments
+          totalInternalTransfers += internalTransfers
+          totalExternalTransfers += externalTransfers
+          val totalTransfers = totalInternalTransfers + totalExternalTransfers
+
+          monthlyInternalPrctChange.add(1 + if (totalTransfers == 0L) 0.0 else internalTransfers.toDouble() / totalTransfers)
+          monthlyExternalPrctChange.add(1 + if (totalTransfers == 0L) 0.0 else externalTransfers.toDouble() / totalTransfers)
+          val totalInternalTransfersAnnualPrct
+            = monthlyInternalPrctChange
+              .reduce(Double::times)
+              .pow(12.toDouble() / monthlyInternalPrctChange.size)
+              .minus(1)
+              .toFloat()
+          val totalExternalTransfersAnnualPrct
+            = monthlyExternalPrctChange
+              .reduce(Double::times)
+              .pow(12.toDouble() / monthlyExternalPrctChange.size)
+              .minus(1)
+              .toFloat()
+
           summaries[month] = GqlMonthTransferSummary(
-            internalTransfers = statement.totalTransfers,
-            externalTransfers = statement.income + statement.totalPayments,
+            internalTransfers,
+            externalTransfers,
+            totalMonthTransfers = internalTransfers + externalTransfers,
             totalInternalTransfers,
-            totalExternalTransfers
+            totalInternalTransfersPrct = if (totalTransfers == 0L) 0.0f else totalInternalTransfers.toFloat() / totalTransfers,
+            totalInternalTransfersAnnualPrct,
+            totalExternalTransfers,
+            totalExternalTransfersPrct = if (totalTransfers == 0L) 0.0f else totalExternalTransfers.toFloat() / totalTransfers,
+            totalExternalTransfersAnnualPrct,
+            totalTransfers = totalTransfers,
+            unaccounted = (statement.startBalance?.amount ?: 0) - totalTransfers,
           )
         }
 

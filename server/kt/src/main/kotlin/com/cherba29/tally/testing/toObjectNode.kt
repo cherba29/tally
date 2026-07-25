@@ -314,8 +314,15 @@ fun GqlSummaryData.toObjectNode(root: ObjectNode) {
 fun GqlMonthTransferSummary.toObjectNode(root: ObjectNode) {
   root.put("internalTransfers", internalTransfers)
   root.put("externalTransfers", externalTransfers)
+  root.put("totalMonthTransfers", totalMonthTransfers)
   root.put("totalInternalTransfers", totalInternalTransfers)
+  root.put("totalInternalTransfersPrct", totalInternalTransfersPrct)
+  root.put("totalInternalTransfersAnnualPrct", totalInternalTransfersAnnualPrct)
   root.put("totalExternalTransfers", totalExternalTransfers)
+  root.put("totalExternalTransfersPrct", totalExternalTransfersPrct)
+  root.put("totalExternalTransfersAnnualPrct", totalExternalTransfersAnnualPrct)
+  root.put("totalTransfers", totalTransfers)
+  root.put("unaccounted", unaccounted)
 }
 
 fun GqlTransfersSummary.toObjectNode(root: ObjectNode) {

@@ -73,8 +73,22 @@ type GqlMonthTransferSummary {
   internalTransfers: Long!
   "Sum of all previous and current transfers from external accounts for this month."
   totalExternalTransfers: Long!
+  "Total external transfer as annualized rate of internal transfers."
+  totalExternalTransfersAnnualPrct: Float!
+  "Total external transfer as percentage of all transfers."
+  totalExternalTransfersPrct: Float!
   "Sum of all previous and current transfers from internal accounts for this month."
   totalInternalTransfers: Long!
+  "Total internal transfer as annualized rate of external transfers."
+  totalInternalTransfersAnnualPrct: Float!
+  "Total internal transfer as percentage of all transfers."
+  totalInternalTransfersPrct: Float!
+  "Sum of internal and external transfers."
+  totalMonthTransfers: Long!
+  "Running total of all transfers including previous months."
+  totalTransfers: Long!
+  "Difference between recorded balance and running totalTransfers."
+  unaccounted: Long!
 }
 
 type GqlStatement {

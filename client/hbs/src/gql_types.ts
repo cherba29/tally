@@ -59,8 +59,22 @@ export type GqlMonthTransferSummary = {
   internalTransfers: Scalars['Long']['output'];
   /** Sum of all previous and current transfers from external accounts for this month. */
   totalExternalTransfers: Scalars['Long']['output'];
+  /** Total external transfer as annualized rate of internal transfers. */
+  totalExternalTransfersAnnualPrct: Scalars['Float']['output'];
+  /** Total external transfer as percentage of all transfers. */
+  totalExternalTransfersPrct: Scalars['Float']['output'];
   /** Sum of all previous and current transfers from internal accounts for this month. */
   totalInternalTransfers: Scalars['Long']['output'];
+  /** Total internal transfer as annualized rate of external transfers. */
+  totalInternalTransfersAnnualPrct: Scalars['Float']['output'];
+  /** Total internal transfer as percentage of all transfers. */
+  totalInternalTransfersPrct: Scalars['Float']['output'];
+  /** Sum of internal and external transfers. */
+  totalMonthTransfers: Scalars['Long']['output'];
+  /** Running total of all transfers including previous months. */
+  totalTransfers: Scalars['Long']['output'];
+  /** Difference between recorded balance and running totalTransfers. */
+  unaccounted: Scalars['Long']['output'];
 };
 
 export type GqlStatement = {

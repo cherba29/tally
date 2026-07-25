@@ -17,12 +17,26 @@ describe('BalanceTooltip component', () => {
       externalTransfers: 100,
       internalTransfers: 50,
       totalExternalTransfers: 200,
-      totalInternalTransfers: 300
+      totalInternalTransfers: 300,
+      totalExternalTransfersAnnualPrct: 0,
+      totalExternalTransfersPrct: 0,
+      totalInternalTransfersAnnualPrct: 0,
+      totalInternalTransfersPrct: 0,
+      totalMonthTransfers: undefined,
+      totalTransfers: undefined,
+      unaccounted: undefined
     }, {
       externalTransfers: 101,
       internalTransfers: 51,
       totalExternalTransfers: 201,
-      totalInternalTransfers: 301
+      totalInternalTransfers: 301,
+      totalExternalTransfersAnnualPrct: 0,
+      totalExternalTransfersPrct: 0,
+      totalInternalTransfersAnnualPrct: 0,
+      totalInternalTransfersPrct: 0,
+      totalMonthTransfers: undefined,
+      totalTransfers: undefined,
+      unaccounted: undefined
     }];
     
     const element = await fixture<TransfersSummaryTooltip>(
