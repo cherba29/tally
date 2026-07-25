@@ -297,23 +297,35 @@ class SummaryServiceTest : DescribeSpec({
       expectSelfie(data.toSnapshot()).toMatchDisk()
     }
     it("transfers summary multiple months") {
-      val account1 = Account("test-account1", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
+      val account1 = Account("test-account1", owners = setOf("john"), path = listOf("internal"), openedOn = FEB / 2026)
       val account2 = Account("test-account2", owners = setOf("john"), path = listOf("external"), openedOn = MAR / 2026)
+      val account3 = Account("test-account3", owners = setOf("john"), path = listOf("internal"), openedOn = FEB / 2026)
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
           setAccount(listOf("john", "internal", "test-account1"), account1)
           setAccount(listOf("john", "external", "test-account2"), account2)
-          setBalance(listOf("john", "internal", "test-account1"), FEB / 2026, Balance.confirmed(100, "2026-02-01"))
+          setAccount(listOf("john", "internal", "test-account3"), account3)
+          setBalance(listOf("john", "internal", "test-account1"), FEB / 2026, Balance.confirmed(0, "2026-02-01"))
           setBalance(listOf("john", "internal", "test-account1"), MAR / 2026, Balance.confirmed(100, "2026-03-01"))
           setBalance(listOf("john", "external", "test-account2"), MAR / 2026, Balance.confirmed(200, "2026-03-01"))
           setBalance(listOf("john", "external", "test-account2"), APR / 2026, Balance.confirmed(200, "2026-04-01"))
           addTransfer(
             BudgetBuilder.TransferRecord(
-              fromAccountPath = listOf("john", "internal", "test-account1"),
-              toAccountName = "test-account2",
+              fromAccountPath = listOf("john", "internal", "test-account3"),
+              toAccountName = "test-account1",
+              month = FEB / 2026,
+              balance = Balance.confirmed(100, "2026-02-02"),
+              description = "initial",
+              tags = listOf()
+            )
+          )
+          addTransfer(
+            BudgetBuilder.TransferRecord(
+              fromAccountPath = listOf("john", "internal", "test-account3"),
+              toAccountName = "test-account1",
               month = MAR / 2026,
-              balance = Balance.confirmed(50, "2026-03-02"),
-              description = "transfer from 1 to 2",
+              balance = Balance.confirmed(10, "2026-03-02"),
+              description = "contribution",
               tags = listOf()
             )
           )
@@ -321,9 +333,9 @@ class SummaryServiceTest : DescribeSpec({
             BudgetBuilder.TransferRecord(
               fromAccountPath = listOf("john", "external", "test-account2"),
               toAccountName = "test-account1",
-              month = APR / 2026,
-              balance = Balance.confirmed(25, "2026-04-02"),
-              description = "transfer from 2 to 1",
+              month = MAR / 2026,
+              balance = Balance.confirmed(20, "2026-03-02"),
+              description = "gain",
               tags = listOf()
             )
           )

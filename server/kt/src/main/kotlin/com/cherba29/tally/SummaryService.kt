@@ -1,7 +1,6 @@
 package com.cherba29.tally
 
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.rangeTo
 import com.cherba29.tally.core.reduceTo
 import com.cherba29.tally.data.Loader
@@ -11,12 +10,14 @@ import com.cherba29.tally.schema.GqlSummaryData
 import com.cherba29.tally.schema.GqlTransfersSummary
 import com.cherba29.tally.schema.toGqlSummaryData
 import com.cherba29.tally.statement.SummaryStatement
+import com.cherba29.tally.utils.IrregularCashFlow
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.time.measureTimedValue
 import kotlinx.coroutines.runBlocking
 import kotlin.math.pow
+import kotlin.math.round
 
 class SummaryService(val loader: Loader) : Query {
   /**
@@ -77,47 +78,28 @@ class SummaryService(val loader: Loader) : Query {
 
         val monthlyStatements = budget.nodeToStatement[treeNode]
           ?: throw IllegalStateException("Could not find statements for $accountPath")
-        val ascMonthList = monthlyStatements.keys.sorted()
+        val ascMonthList = monthlyStatements.filterValues { !it.isClosed }.keys.sorted()
         val summaries = mutableMapOf<Month, GqlMonthTransferSummary>()
-        var totalInternalTransfers = 0L
-        var totalExternalTransfers = 0L
-        val monthlyInternalPrctChange = mutableListOf<Double>()
-        val monthlyExternalPrctChange = mutableListOf<Double>()
+
+        val cashFlow = IrregularCashFlow()
         for (month in ascMonthList) {
           val statement = monthlyStatements[month] ?: continue
           val internalTransfers = statement.totalTransfers
           val externalTransfers = statement.income + statement.totalPayments
-          totalInternalTransfers += internalTransfers
-          totalExternalTransfers += externalTransfers
-          val totalTransfers = totalInternalTransfers + totalExternalTransfers
-
-          monthlyInternalPrctChange.add(1 + if (totalTransfers == 0L) 0.0 else internalTransfers.toDouble() / totalTransfers)
-          monthlyExternalPrctChange.add(1 + if (totalTransfers == 0L) 0.0 else externalTransfers.toDouble() / totalTransfers)
-          val totalInternalTransfersAnnualPrct
-            = monthlyInternalPrctChange
-              .reduce(Double::times)
-              .pow(12.toDouble() / monthlyInternalPrctChange.size)
-              .minus(1)
-              .toFloat()
-          val totalExternalTransfersAnnualPrct
-            = monthlyExternalPrctChange
-              .reduce(Double::times)
-              .pow(12.toDouble() / monthlyExternalPrctChange.size)
-              .minus(1)
-              .toFloat()
+          cashFlow.add(internalTransfers, externalTransfers)
 
           summaries[month] = GqlMonthTransferSummary(
             internalTransfers,
             externalTransfers,
             totalMonthTransfers = internalTransfers + externalTransfers,
-            totalInternalTransfers,
-            totalInternalTransfersPrct = if (totalTransfers == 0L) 0.0f else totalInternalTransfers.toFloat() / totalTransfers,
-            totalInternalTransfersAnnualPrct,
-            totalExternalTransfers,
-            totalExternalTransfersPrct = if (totalTransfers == 0L) 0.0f else totalExternalTransfers.toFloat() / totalTransfers,
-            totalExternalTransfersAnnualPrct,
-            totalTransfers = totalTransfers,
-            unaccounted = (statement.startBalance?.amount ?: 0) - totalTransfers,
+            totalInternalTransfers = cashFlow.totalContributions,
+            totalInternalTransfersPrct = cashFlow.contributionFraction.asRoundedPercent(1),
+            totalInternalTransfersAnnualPrct = cashFlow.effectiveRateOfReturnOnContributions().asRoundedPercent(2),
+            totalExternalTransfers = cashFlow.totalGains,
+            totalExternalTransfersPrct = cashFlow.gainsFraction.asRoundedPercent(1),
+            totalExternalTransfersAnnualPrct = cashFlow.effectiveRateOfReturnOnGains().asRoundedPercent(2),
+            totalTransfers = cashFlow.total,
+            unaccounted = (statement.startBalance?.amount ?: 0) - cashFlow.total + internalTransfers + externalTransfers,
           )
         }
 
@@ -137,6 +119,11 @@ class SummaryService(val loader: Loader) : Query {
     }
     logger.info { "Computed transfer summary in ${timeTaken.inWholeMilliseconds}ms" }
     return result
+  }
+
+  fun Double.asRoundedPercent(decimalPlaces: Int): Float {
+    val roundingFactor = 10.0.pow(decimalPlaces)
+    return (round(100.0 * this * roundingFactor) / roundingFactor).toFloat()
   }
 
   companion object {

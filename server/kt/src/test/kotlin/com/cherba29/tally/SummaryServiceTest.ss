@@ -259,28 +259,28 @@
   - Mar2026
   - Feb2026
   data:
-  - internalTransfers: 0
-    externalTransfers: -50
-    totalMonthTransfers: -50
-    totalInternalTransfers: 0
-    totalInternalTransfersPrct: -0.0
-    totalInternalTransfersAnnualPrct: 0.0
-    totalExternalTransfers: -50
-    totalExternalTransfersPrct: 1.0
-    totalExternalTransfersAnnualPrct: 63.0
-    totalTransfers: -50
-    unaccounted: 150
-  - internalTransfers: 0
+  - internalTransfers: 10
+    externalTransfers: 20
+    totalMonthTransfers: 30
+    totalInternalTransfers: 110
+    totalInternalTransfersPrct: 84.6
+    totalInternalTransfersAnnualPrct: 642.35
+    totalExternalTransfers: 20
+    totalExternalTransfersPrct: 15.4
+    totalExternalTransfersAnnualPrct: 161.3
+    totalTransfers: 130
+    unaccounted: 0
+  - internalTransfers: 100
     externalTransfers: 0
-    totalMonthTransfers: 0
-    totalInternalTransfers: 0
-    totalInternalTransfersPrct: 0.0
+    totalMonthTransfers: 100
+    totalInternalTransfers: 100
+    totalInternalTransfersPrct: 100.0
     totalInternalTransfersAnnualPrct: 0.0
     totalExternalTransfers: 0
     totalExternalTransfersPrct: 0.0
     totalExternalTransfersAnnualPrct: 0.0
-    totalTransfers: 0
-    unaccounted: 100
+    totalTransfers: 100
+    unaccounted: 0
 
 ╔═ with single transaction statement ═╗
 - months:
@@ -290,13 +290,13 @@
     externalTransfers: 0
     totalMonthTransfers: -50
     totalInternalTransfers: -50
-    totalInternalTransfersPrct: 1.0
-    totalInternalTransfersAnnualPrct: 4095.0
+    totalInternalTransfersPrct: 100.0
+    totalInternalTransfersAnnualPrct: 0.0
     totalExternalTransfers: 0
     totalExternalTransfersPrct: -0.0
     totalExternalTransfersAnnualPrct: 0.0
     totalTransfers: -50
-    unaccounted: 150
+    unaccounted: 100
 
 ╔═ with transaction statement ═╗
 - statements:
