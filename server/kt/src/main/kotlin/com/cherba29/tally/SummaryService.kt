@@ -77,25 +77,26 @@ class SummaryService(val loader: Loader) : Query {
         val monthlyStatements = budget.nodeToStatement[treeNode]
           ?: throw IllegalStateException("Could not find statements for $accountPath")
         val ascMonthList = monthlyStatements.keys.sorted()
-        val limitMonths = (ascMonthList.first()..ascMonthList.last()).reduceTo(startMonth..endMonth)
-          ?: throw NotFoundException("Not statements for $accountPath for month range $startMonth..$endMonth")
-        val summaries = mutableListOf<GqlMonthTransferSummary>()
+        val summaries = mutableMapOf<Month, GqlMonthTransferSummary>()
         var totalInternalTransfers = 0L
         var totalExternalTransfers = 0L
         for (month in ascMonthList) {
           val statement = monthlyStatements[month] ?: continue
           totalInternalTransfers += statement.totalTransfers
-          totalExternalTransfers += statement.income
-          summaries.add(GqlMonthTransferSummary(
+          totalExternalTransfers += statement.income + statement.totalPayments
+          summaries[month] = GqlMonthTransferSummary(
             internalTransfers = statement.totalTransfers,
-            externalTransfers = statement.income,
+            externalTransfers = statement.income + statement.totalPayments,
             totalInternalTransfers,
             totalExternalTransfers
-          ))
+          )
         }
+
+        val limitMonths = (ascMonthList.first()..ascMonthList.last()).reduceTo(startMonth..endMonth)
+          ?: throw NotFoundException("Not statements for $accountPath for month range $startMonth..$endMonth")
         GqlTransfersSummary(
           months = limitMonths.reversed(),
-          data = summaries.asReversed().subList(0, limitMonths.size)
+          data = summaries.filterKeys { it in limitMonths }.toSortedMap().values.reversed()
         )
       } catch (e: Exception) {
         logger.error(e) {

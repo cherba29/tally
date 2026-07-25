@@ -254,6 +254,20 @@
       date: 2026-03-01
       type: CONFIRMED
 
+╔═ transfers summary multiple months ═╗
+- months:
+  - Mar2026
+  - Feb2026
+  data:
+  - internalTransfers: 0
+    externalTransfers: -50
+    totalInternalTransfers: 0
+    totalExternalTransfers: -50
+  - internalTransfers: 0
+    externalTransfers: 0
+    totalInternalTransfers: 0
+    totalExternalTransfers: 0
+
 ╔═ with single transaction statement ═╗
 - months:
   - Mar2026
