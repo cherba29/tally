@@ -1,4 +1,4 @@
-import {LitElement, css, html, nothing, type PropertyValues} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import { type StatementEntry } from '../utils';
 import {dateFormat, currency, isProjected} from '../format';
@@ -6,7 +6,6 @@ import {classMap, type ClassInfo} from 'lit/directives/class-map.js';
 import {type GqlBalance, type GqlSummaryStatement} from '../gql_types';
 import {Month} from '@tally/lib/core/month';
 
-import {mapViewToMonths} from './period-buttons';
 import './period-buttons';
 
 export interface MonthRangeChange {
@@ -65,9 +64,6 @@ export class BalanceSummaryTooltip extends LitElement {
     return this.__endMonth;
   }
 
-  @property({attribute: false})
-  period: string = '';
-
   @property()
   set statementEntries(value: StatementEntry[]) {
     const oldValue = this.__statementEntries;
@@ -88,27 +84,13 @@ export class BalanceSummaryTooltip extends LitElement {
     return this.__summary;
   }
 
-   protected override willUpdate(changedProperties: PropertyValues<this>) {
-    super.willUpdate(changedProperties);
-
-    if (changedProperties.has('startMonth') || changedProperties.has('endMonth')) {
-      const period = this.endMonth.distance(this.startMonth ?? this.endMonth) + 1;
-      const years = Math.floor(period / 12);
-      const months = period - 12 * years;
-      this.period = (years ? years + 'y' : '') + (months ? months + 'm' : '');
-    }
-  }
-
   switchView(e: CustomEvent) {
-    const numberOfMonths = mapViewToMonths(e.detail.period, this.endMonth);
-    const startMonth =
-      numberOfMonths !== undefined ? this.endMonth.previous(numberOfMonths - 1) : undefined;
     this.dispatchEvent(
       new CustomEvent<MonthRangeChange>('month-range-change', {
         detail: {
           accountName: this.accountName,
-          startMonth: startMonth ? startMonth : this.endMonth,
-          endMonth: this.endMonth,
+          startMonth: e.detail.startMonth,
+          endMonth: e.detail.endMonth,
         },
       })
     );
@@ -119,7 +101,6 @@ export class BalanceSummaryTooltip extends LitElement {
   }
 
   override render() {
-    console.log('### Render ...')
     const projectedClass = (b: GqlBalance | undefined | null): ClassInfo => {
       const projected = isProjected(b);
       return {
@@ -127,12 +108,11 @@ export class BalanceSummaryTooltip extends LitElement {
         confirmed: !projected,
       };
     };
-
     return html`
       <span @click="${this.onCloseButton}">XXX</span>
-      <period-buttons @button-click=${this.switchView}></period-buttons>
+      <period-buttons .currentMonth=${this.endMonth} @button-click=${this.switchView}></period-buttons>
       <span style="float:right;"
-        >${this.accountName} ${this.startMonth} - ${this.endMonth} (${this.period})</span
+        >${this.accountName} ${this.startMonth} - ${this.endMonth}</span
       >
       <table>
         <thead>

@@ -1,6 +1,6 @@
-import {LitElement, css, html} from 'lit';
-import {customElement} from 'lit/decorators.js';
-import {Month} from '@tally/lib/core/month';
+import { LitElement, css, html, type PropertyValues } from 'lit';
+import { customElement, state, property } from 'lit/decorators.js';
+import { Month } from '@tally/lib/core/month';
 
 export enum SummaryView {
   MONTH_1 = '1m',
@@ -59,15 +59,56 @@ export function mapViewToMonths(viewMonthRange: SummaryView, currentMonth: Month
 export class PeriodButtons extends LitElement {
   static override styles = css``;
 
-  onCloseButton() {
-    this.dispatchEvent(new CustomEvent('close'));
+  private __currentMonth!: Month;
+
+  @property()
+  set currentMonth(value: Month) {
+    const oldValue = this.__currentMonth;
+    this.__currentMonth = value;
+    this.requestUpdate('currentMonth', oldValue);
+  }
+  get currentMonth() {
+    return this.__currentMonth;
+  }
+
+  
+  @state()
+  private startMonth?: Month = undefined;
+  @state()
+  private period?: string = undefined;
+
+  protected override willUpdate(changedProperties: PropertyValues<this>) {
+    super.willUpdate(changedProperties);
+
+    if (changedProperties.has('currentMonth')) {
+      this.updatePeriod(1);
+    }
+  }
+
+
+  updatePeriod(numberOfMonths?: number) {
+    const startMonth =
+      numberOfMonths !== undefined ? this.currentMonth?.previous(numberOfMonths - 1) : undefined;
+
+    this.startMonth = startMonth ? startMonth : this.currentMonth;
+    const period = this.currentMonth.distance(startMonth ?? this.currentMonth) + 1;
+    const years = Math.floor(period / 12);
+    const months = period - 12 * years;
+    const oldPeriod = this.period;
+    this.period = (years ? years + 'y' : '') + (months ? months + 'm' : '');
+    this.requestUpdate('period', oldPeriod);
   }
 
   switchView(e: Event) {
     const viewType = (e.target as Element).getAttribute('key') as keyof typeof SummaryView;
+    const numberOfMonths = mapViewToMonths(SummaryView[viewType], this.currentMonth);
+
+    this.updatePeriod(numberOfMonths);
+
     this.dispatchEvent(new CustomEvent('button-click', {
       detail: {
-       period: SummaryView[viewType]
+       startMonth: this.startMonth,
+       endMonth: this.currentMonth,
       }
     }));
   }
@@ -80,6 +121,7 @@ export class PeriodButtons extends LitElement {
             ${SummaryView[key as keyof typeof SummaryView]}
           </button>`
       )}
+      <span>(${this.period})</span>
     `;
   }
 }

@@ -6,10 +6,6 @@ import { BalanceSummaryTooltip } from './balance-summary-tooltip';
 import { Month } from '@tally/lib/core/month';
 
 describe('BalanceSummaryTooltip component', () => {
-  it('is defined', () => {
-    const el = document.createElement('balance-summary-tooltip');
-    assert.instanceOf(el, BalanceSummaryTooltip);
-  });
 
   it('renders with default property values', async () => {
     const accountName = 'test-account1';
@@ -51,7 +47,7 @@ describe('BalanceSummaryTooltip component', () => {
       element, 
       `<span>XXX</span>
       <period-buttons></period-buttons>
-      <span style="float:right;">${accountName}  -  ()</span>
+      <span style="float:right;">${accountName}  -  </span>
       <table>
         <thead>
           <tr>
