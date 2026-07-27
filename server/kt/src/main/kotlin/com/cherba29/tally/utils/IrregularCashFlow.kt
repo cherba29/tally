@@ -16,7 +16,6 @@ class IrregularCashFlow {
   var total: Long = 0
     private set
 
-
   fun add(contribution: Long, gain: Long) {
     contributions.add(contribution)
     gains.add(gain)
@@ -29,16 +28,12 @@ class IrregularCashFlow {
     total += gain + contribution
   }
 
-  fun effectiveRateOfReturnOnContributions(): Double {
-    if (percentChangeOnContributions.size < 2) return 0.0
-    return percentChangeOnContributions
-      .reduce(Double::times)
-      .pow(12.0 / (percentChangeOnContributions.size - 1)) - 1
-  }
-  fun effectiveRateOfReturnOnGains(): Double {
-    if (percentChangeOnGains.size < 2) return 0.0
-    return percentChangeOnGains
-      .reduce(Double::times)
-      .pow(12.0 / (percentChangeOnGains.size - 1)) - 1
+  fun effectiveRateOfReturnOnContributions() = effectiveRateOfReturn(percentChangeOnContributions)
+  fun effectiveRateOfReturnOnGains() = effectiveRateOfReturn(percentChangeOnGains)
+
+  companion object {
+    fun effectiveRateOfReturn(rates: List<Double>): Double
+      = if (rates.size < 2) 0.0
+        else rates.reduce (Double::times).pow(12.0 / (rates.size - 1)) - 1
   }
 }
