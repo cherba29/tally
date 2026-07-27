@@ -49,21 +49,7 @@ describe('BalanceSummaryTooltip component', () => {
     assert.shadowDom.equal(
       element, 
       `<span>XXX</span>
-      <button key="MONTH_1">1m</button>
-      <button key="MONTH_3">3m</button>
-      <button key="MONTH_6">6m</button>
-      <button key="MONTH_9">9m</button>
-      <button key="YTD">ytd</button>
-      <button key="YEAR_1">1y</button>
-      <button key="YEAR_2">2y</button>
-      <button key="YEAR_3">3y</button>
-      <button key="YEAR_5">5y</button>
-      <button key="YEAR_7">7y</button>
-      <button key="YEAR_10">10y</button>
-      <button key="YEAR_15">15y</button>
-      <button key="YEAR_20">20y</button>
-      <button key="YEAR_30">30y</button>
-      <button key="YEAR_MAX">Max</button>
+      <period-buttons></period-buttons>
       <span style="float:right;">${accountName}  -  ()</span>
       <table>
         <thead>
