@@ -3,6 +3,7 @@ import { html, fixture, expect } from '@open-wc/testing';
 import { type StatementEntry } from '../utils';
 import { type GqlSummaryStatement } from '../gql_types';
 import { BalanceSummaryTooltip } from './balance-summary-tooltip';
+import { Month } from '@tally/lib/core/month';
 
 describe('BalanceSummaryTooltip component', () => {
   it('is defined', () => {
@@ -12,8 +13,8 @@ describe('BalanceSummaryTooltip component', () => {
 
   it('renders with default property values', async () => {
     const accountName = 'test-account1';
-    const startMonth = 'May2026';
-    const endMonth = 'Jul2026';
+    const startMonth = new Month(2026, 4);
+    const endMonth = new Month(2026, 6);
     const closePopup = () => {};
     const monthRangeChange = () => {};
     const summaryEntries: StatementEntry[] = [];

@@ -5,17 +5,19 @@ import {
   type GqlSummaryStatement, 
   type GqlTableRow
 } from './gql_types';
+import { Month } from '@tally/lib/core/month';
 
 export interface PopupMonthSummaryData {
   accountName: string;
-  month: string;
+  startMonth: Month;
+  endMonth: Month;
   summary?: GqlSummaryStatement;
   statements?: StatementEntry[];
 }
 
 export interface PopupTransferSummaryData {
   accountPath: string;
-  months: string[];
+  months: Month[];
   monthlyData: GqlMonthTransferSummary[];
 }
 
@@ -26,7 +28,7 @@ export interface StatementEntry {
 
 export interface PopupMonthData {
   accountName: string;
-  month: string;
+  month: Month;
   stmt: GqlStatement;
 }
 

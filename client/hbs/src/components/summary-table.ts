@@ -12,7 +12,7 @@ export type CellClickEventData = {
   mouseEvent: MouseEvent;
   rowId: string;
   account?: GqlAccount | null;
-  month?: string;
+  month?: Month;
   isSummary?: boolean;
 };
 
@@ -121,7 +121,7 @@ export class SummaryTable extends LitElement {
       detail: {
         mouseEvent,
         rowId: rowId,
-        month,
+        month: Month.fromString(month),
         isSummary,
       },
       bubbles: true,
@@ -140,7 +140,7 @@ export class SummaryTable extends LitElement {
       detail: {
         mouseEvent,
         rowId: rowId,
-        month,
+        month: Month.fromString(month),
         isSummary,
       },
       bubbles: true,
@@ -275,7 +275,7 @@ export class SummaryTable extends LitElement {
                     .fill(0)
                     .map((_) => html`&nbsp;`)}<b>${r.title}</b>
                 </td>
-                ${(r.cells ?? []).map((c) => {
+                ${(r.cells ?? []).map((c: GqlTableCell) => {
                   if (!c || c.isClosed) {
                     return html`<td
                       colspan="4"

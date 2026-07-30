@@ -137,8 +137,8 @@ export class TallyApp extends LitElement {
     } else if ('summary' in this.popupData) {
       return html` <balance-summary-tooltip
         .accountName=${this.popupData.accountName}
-        .startMonth=${this.popupData.month}
-        .endMonth=${this.popupData.month}
+        .startMonth=${this.popupData.startMonth}
+        .endMonth=${this.popupData.endMonth}
         .statementEntries=${this.popupData.statements || []}
         .summary=${this.popupData.summary}
         @close=${this.closePopup}
@@ -180,15 +180,15 @@ export class TallyApp extends LitElement {
     console.log('### popup month range change', e.detail.startMonth, '-->', e.detail.endMonth);
     this.reloadPopupSummaryStatement(
       e.detail.accountName,
-      e.detail.startMonth?.toString(),
-      e.detail.endMonth.toString()
+      e.detail.startMonth,
+      e.detail.endMonth
     );
   }
 
   private onAddSubCellClick(e: CustomEvent<CellClickEventData>) {
     console.log(e);
     this.backendClient
-      .loadTransferSummaryData(e.detail.rowId ?? '', this.startMonth.toString(), e.detail.month ?? '')
+      .loadTransferSummaryData(e.detail.rowId ?? '', this.startMonth.toString(), e.detail.month?.toString() ?? '')
       .then((result) => {
         console.log(`addSub data for ${e.detail}`, result);
           const transfersSummary = result.data!.transfersSummary;
@@ -210,8 +210,8 @@ export class TallyApp extends LitElement {
     if (e.detail.isSummary) {
       this.reloadPopupSummaryStatement(
         e.detail.rowId ?? '',
-        e.detail.month ?? '',
-        e.detail.month ?? ''
+        e.detail.month,
+        e.detail.month!
       );
       this.popupOffset = {
         top: e.detail.mouseEvent.pageY + 10,
@@ -219,13 +219,13 @@ export class TallyApp extends LitElement {
       };
     } else if (e.detail.month) {
       this.backendClient
-        .loadStatement(e.detail.rowId ?? '', e.detail.month ?? '')
+        .loadStatement(e.detail.rowId ?? '', e.detail.month?.toString() ?? '')
         .then((result) => {
           console.log(`PopupData for ${e.detail}`, result);
           const statement = result.data!.statement;
           const popupData: PopupMonthData = {
             accountName: e.detail.rowId ?? '',
-            month: e.detail.month ?? '',
+            month: e.detail.month!,
             stmt: statement!,
           };
           this.popupData = popupData;
@@ -247,18 +247,19 @@ export class TallyApp extends LitElement {
 
   private reloadPopupSummaryStatement(
     accountName: string,
-    startMonth: string | undefined,
-    endMonth: string
+    startMonth: Month | undefined,
+    endMonth: Month
   ) {
     this.backendClient
-      .loadSummaryData(accountName, startMonth, endMonth)
+      .loadSummaryData(accountName, startMonth?.toString(), endMonth.toString())
       .then((result) => {
         console.log(`PopupData for ${accountName} ${startMonth}-${endMonth}`, result);
         const summaryStatement = result.data!.summary?.total;
         const statements = result.data!.summary?.statements;
         const popupData: PopupMonthSummaryData = {
           accountName,
-          month: endMonth,
+          startMonth: startMonth ?? endMonth,
+          endMonth: endMonth,
           summary: summaryStatement ?? undefined,
           statements: (statements || []).map((stmt) => ({
             name: stmt?.name ?? '',

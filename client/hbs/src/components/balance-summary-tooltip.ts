@@ -37,8 +37,8 @@ export class BalanceSummaryTooltip extends LitElement {
     }
   `;
 
-  private __startMonth: string = '';
-  private __endMonth: string = '';
+  private __startMonth!: Month;
+  private __endMonth!: Month;
   private __statementEntries: StatementEntry[] = [];
   private __summary: GqlSummaryStatement | undefined = undefined;
 
@@ -46,7 +46,7 @@ export class BalanceSummaryTooltip extends LitElement {
   accountName: string = '';
 
   @property()
-  set startMonth(value: string) {
+  set startMonth(value: Month) {
     const oldValue = this.__startMonth;
     this.__startMonth = value;
     this.requestUpdate('startMonth', oldValue);
@@ -56,7 +56,7 @@ export class BalanceSummaryTooltip extends LitElement {
   }
 
   @property()
-  set endMonth(value: string) {
+  set endMonth(value: Month) {
     const oldValue = this.__endMonth;
     this.__endMonth = value;
     this.requestUpdate('endMonth', oldValue);
@@ -89,12 +89,11 @@ export class BalanceSummaryTooltip extends LitElement {
   }
 
   switchView(e: CustomEvent) {
-    const currentMonth = Month.fromString(this.endMonth);
-    const numberOfMonths = mapViewToMonths(e.detail.period, currentMonth);
+    const numberOfMonths = mapViewToMonths(e.detail.period, this.endMonth);
     const startMonth =
-      numberOfMonths !== undefined ? currentMonth.previous(numberOfMonths - 1) : undefined;
-    this.startMonth = startMonth ? startMonth.toString() : this.endMonth;
-    const period = currentMonth.distance(startMonth ?? currentMonth) + 1;
+      numberOfMonths !== undefined ? this.endMonth.previous(numberOfMonths - 1) : undefined;
+    this.startMonth = startMonth ? startMonth : this.endMonth;
+    const period = this.endMonth.distance(startMonth ?? this.endMonth) + 1;
     const years = Math.floor(period / 12);
     const months = period - 12 * years;
     this.period = (years ? years + 'y' : '') + (months ? months + 'm' : '');
@@ -103,7 +102,7 @@ export class BalanceSummaryTooltip extends LitElement {
         detail: {
           accountName: this.accountName,
           startMonth,
-          endMonth: currentMonth,
+          endMonth: this.endMonth,
         },
       })
     );
