@@ -1,4 +1,4 @@
-import {LitElement, css, html, nothing} from 'lit';
+import {LitElement, css, html, nothing, type PropertyValues} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import { type StatementEntry } from '../utils';
 import {dateFormat, currency, isProjected} from '../format';
@@ -88,20 +88,26 @@ export class BalanceSummaryTooltip extends LitElement {
     return this.__summary;
   }
 
+   protected override willUpdate(changedProperties: PropertyValues<this>) {
+    super.willUpdate(changedProperties);
+
+    if (changedProperties.has('startMonth') || changedProperties.has('endMonth')) {
+      const period = this.endMonth.distance(this.startMonth ?? this.endMonth) + 1;
+      const years = Math.floor(period / 12);
+      const months = period - 12 * years;
+      this.period = (years ? years + 'y' : '') + (months ? months + 'm' : '');
+    }
+  }
+
   switchView(e: CustomEvent) {
     const numberOfMonths = mapViewToMonths(e.detail.period, this.endMonth);
     const startMonth =
       numberOfMonths !== undefined ? this.endMonth.previous(numberOfMonths - 1) : undefined;
-    this.startMonth = startMonth ? startMonth : this.endMonth;
-    const period = this.endMonth.distance(startMonth ?? this.endMonth) + 1;
-    const years = Math.floor(period / 12);
-    const months = period - 12 * years;
-    this.period = (years ? years + 'y' : '') + (months ? months + 'm' : '');
     this.dispatchEvent(
       new CustomEvent<MonthRangeChange>('month-range-change', {
         detail: {
           accountName: this.accountName,
-          startMonth,
+          startMonth: startMonth ? startMonth : this.endMonth,
           endMonth: this.endMonth,
         },
       })
@@ -113,6 +119,7 @@ export class BalanceSummaryTooltip extends LitElement {
   }
 
   override render() {
+    console.log('### Render ...')
     const projectedClass = (b: GqlBalance | undefined | null): ClassInfo => {
       const projected = isProjected(b);
       return {
