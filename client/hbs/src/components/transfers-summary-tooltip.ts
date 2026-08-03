@@ -2,6 +2,16 @@ import { LitElement, css, html, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { currency } from '../format';
 import { type GqlMonthTransferSummary } from '../gql_types';
+import { Month } from '@tally/lib/core/month';
+
+import './period-buttons';
+
+export interface TransfersSummaryMonthRangeChange {
+  accountPath: string;
+  startMonth: Month | undefined;
+  endMonth: Month;
+}
+
 
 @customElement('transfers-summary-tooltip')
 export class TransfersSummaryTooltip extends LitElement {
@@ -17,14 +27,45 @@ export class TransfersSummaryTooltip extends LitElement {
   @property({attribute: false})
   accountPath: string = '';
 
-  @property({attribute: false})
-  months: string[] = [];
+  __months: string[] = [];
+  @property()
+  set months(value: string[]) {
+    const oldValue = this.__months;
+    this.__months = value;
+    this.requestUpdate('months', oldValue);
+  }
+  get months() {
+    return this.__months;
+  }
 
-  @property({attribute: false})
-  monthlyData: GqlMonthTransferSummary[] = [];
 
+  private __monthlyData: GqlMonthTransferSummary[] = [];
+
+  @property()
+  set monthlyData(value: GqlMonthTransferSummary[]) {
+    const oldValue = this.__monthlyData;
+    this.__monthlyData = value;
+    this.requestUpdate('monthlyData', oldValue);
+  }
+  get monthlyData() {
+    return this.__monthlyData;
+  }
+  
   onCloseButton() {
     this.dispatchEvent(new CustomEvent('close'));
+  }
+
+  switchView(e: CustomEvent) {
+    console.log(`### switchView changed month range ${e.detail.startMonth} - ${e.detail.endMonth}`);
+    this.dispatchEvent(
+      new CustomEvent<TransfersSummaryMonthRangeChange>('month-range-change', {
+        detail: {
+          accountPath: this.accountPath,
+          startMonth: e.detail.startMonth,
+          endMonth: e.detail.endMonth,
+        },
+      })
+    );
   }
 
   override render() {
@@ -33,6 +74,10 @@ export class TransfersSummaryTooltip extends LitElement {
     }
     return html`
       <span @click="${this.onCloseButton}">XXX</span>
+      <period-buttons
+        .currentMonth=${Month.fromString(this.months[0]!)}
+        @button-click=${this.switchView}
+      ></period-buttons>
       <span style="float:right;">${this.accountPath}</span>
       <table>
         <thead>

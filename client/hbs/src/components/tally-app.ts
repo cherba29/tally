@@ -18,6 +18,7 @@ import './summary-table';
 import './transfers-summary-tooltip';
 
 import {type MonthRangeChange} from './balance-summary-tooltip';
+import {type TransfersSummaryMonthRangeChange} from './transfers-summary-tooltip';
 import {type CellClickEventData} from './summary-table';
 import {Month} from '@tally/lib/core/month';
 
@@ -164,6 +165,7 @@ export class TallyApp extends LitElement {
        .months=${this.popupData.months}
        .monthlyData=${this.popupData.monthlyData}
         @close=${this.closePopup}
+        @month-range-change=${this.popupTransfersSummaryMonthRangeChange}
       >
       </transfers-summary-tooltip>`
     } else {
@@ -185,25 +187,22 @@ export class TallyApp extends LitElement {
     );
   }
 
+  private popupTransfersSummaryMonthRangeChange(e: CustomEvent<TransfersSummaryMonthRangeChange>) {
+    console.log('### popup transfers-summary month range change', e.detail.startMonth, '--', e.detail.endMonth);
+    this.reloadPopupTransfersSummary(
+      e.detail.accountPath,
+      e.detail.startMonth,
+      e.detail.endMonth
+    );
+  }
+
   private onAddSubCellClick(e: CustomEvent<CellClickEventData>) {
     console.log(e);
-    this.backendClient
-      .loadTransferSummaryData(e.detail.rowId ?? '', this.startMonth.toString(), e.detail.month?.toString() ?? '')
-      .then((result) => {
-        console.log(`addSub data for ${e.detail}`, result);
-          const transfersSummary = result.data!.transfersSummary;
-          const popupData: PopupTransferSummaryData = {
-            accountPath: e.detail.rowId ?? '',
-            months: transfersSummary.months,
-            monthlyData: transfersSummary.data,
-          };
-        this.popupData = popupData;
-        this.popupOffset = {
-          top: e.detail.mouseEvent.pageY + 10,
-          left: e.detail.mouseEvent.pageX,
-        };
-        this.requestUpdate();
-      });
+    this.reloadPopupTransfersSummary(e.detail.rowId, this.startMonth, e.detail.month!);
+    this.popupOffset = {
+      top: e.detail.mouseEvent.pageY + 10,
+      left: e.detail.mouseEvent.pageX,
+    };
   }
 
   private onCellClick(e: CustomEvent<CellClickEventData>) {
@@ -265,6 +264,26 @@ export class TallyApp extends LitElement {
             name: stmt?.name ?? '',
             stmt: stmt!,
           })),
+        };
+        this.popupData = popupData;
+        this.requestUpdate();
+      });
+  }
+
+  private reloadPopupTransfersSummary(
+    accountPath: string,
+    startMonth: Month | undefined,
+    endMonth: Month
+  ) {
+    this.backendClient
+      .loadTransferSummaryData(accountPath, startMonth?.toString(), endMonth.toString())
+      .then((result) => {
+        console.log(`addSub data for ${accountPath}`, result);
+        const transfersSummary = result.data!.transfersSummary;
+        const popupData: PopupTransferSummaryData = {
+          accountPath: accountPath,
+          months: transfersSummary.months,
+          monthlyData: transfersSummary.data,
         };
         this.popupData = popupData;
         this.requestUpdate();

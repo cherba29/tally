@@ -81,7 +81,9 @@ export class PeriodButtons extends LitElement {
     super.willUpdate(changedProperties);
 
     if (changedProperties.has('currentMonth')) {
-      this.updatePeriod(1);
+      if (!this.period) {
+        this.updatePeriod(1);
+      }
     }
   }
 

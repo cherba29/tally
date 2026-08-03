@@ -1,9 +1,9 @@
 import { assert } from '@esm-bundle/chai';
-import { html, fixture, expect } from '@open-wc/testing';
+import { html, fixture, expect, oneEvent } from '@open-wc/testing';
 import { type GqlMonthTransferSummary } from '../gql_types';
 import { TransfersSummaryTooltip } from './transfers-summary-tooltip';
 
-describe('BalanceTooltip component', () => {
+describe('TransferSummaryTooltip component', () => {
   it('is defined', () => {
     const el = document.createElement('transfers-summary-tooltip');
     assert.instanceOf(el, TransfersSummaryTooltip);
@@ -39,11 +39,14 @@ describe('BalanceTooltip component', () => {
       unaccounted: 10
     }];
     
+    const monthRangeChange = () => {};
+
     const element = await fixture<TransfersSummaryTooltip>(
       html`<transfers-summary-tooltip
         .accountPath=${accountPath}
         .months=${months}
         .monthlyData=${monthlyData}
+        @month-range-change=${monthRangeChange}
         @close=${closePopup}
       ></transfers-summary-tooltip>`
     );
@@ -52,6 +55,7 @@ describe('BalanceTooltip component', () => {
     assert.shadowDom.equal(
       element, 
       `<span>XXX</span>
+       <period-buttons></period-buttons>
        <span style="float:right;">john/internal/test-account1</span>
       <table>
         <thead>
@@ -105,5 +109,17 @@ describe('BalanceTooltip component', () => {
         </tbody>
       </table>`
     );
+    const buttons = element.shadowRoot!.querySelector('period-buttons');
+    expect(buttons).to.exist;
+    await buttons!.updateComplete;
+    const button = buttons!.shadowRoot!.querySelector('[key="MONTH_9"]') as HTMLElement;
+    expect(button).to.exist;
+    setTimeout(() => {
+      button.click();
+    });
+    const { detail } = await oneEvent(element, 'month-range-change');
+    // 9 months back from Jul2026 is Nov2025.
+    expect(detail.startMonth.toString()).to.equal('Nov2025');
+    expect(detail.endMonth.toString()).to.equal('Jul2026');
   });
 });
