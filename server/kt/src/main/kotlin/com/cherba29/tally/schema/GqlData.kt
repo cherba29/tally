@@ -99,6 +99,8 @@ data class GqlMonthTransferSummary(
   val totalExternalTransfersAnnualPrct: Float,
   @param:GraphQLDescription("Running total of all transfers including previous months.")
   val totalTransfers: Long,
+  @param:GraphQLDescription("Total annualized rate of return.")
+  val totalAnnualPrct: Float,
   @param:GraphQLDescription("Difference between recorded balance and running totalTransfers.")
   val unaccounted: Long,
 )

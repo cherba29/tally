@@ -71,6 +71,8 @@ type GqlMonthTransferSummary {
   externalTransfers: Long!
   "Sum of transfers from internal accounts for this month."
   internalTransfers: Long!
+  "Total annualized rate of return."
+  totalAnnualPrct: Float!
   "Sum of all previous and current transfers from external accounts for this month."
   totalExternalTransfers: Long!
   "Total external transfer as annualized rate of internal transfers."

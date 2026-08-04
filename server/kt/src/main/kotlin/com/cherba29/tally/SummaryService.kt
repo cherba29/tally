@@ -99,10 +99,13 @@ class SummaryService(val loader: Loader) : Query {
             totalExternalTransfersPrct = cashFlow.gainsFraction.asRoundedPercent(1),
             totalExternalTransfersAnnualPrct = cashFlow.effectiveRateOfReturnOnGains().asRoundedPercent(2),
             totalTransfers = cashFlow.total,
-            unaccounted = (statement.startBalance?.amount ?: 0) - cashFlow.total + internalTransfers + externalTransfers,
+            totalAnnualPrct = cashFlow.effectiveRateOfReturn().asRoundedPercent(2),
+            unaccounted = (statement.startBalance?.amount
+              ?: 0) - cashFlow.total + internalTransfers + externalTransfers,
           )
         }
 
+        // TODO: apply limiting months upfront using start balance.
         val limitMonths = (ascMonthList.first()..ascMonthList.last()).reduceTo(startMonth..endMonth)
           ?: throw NotFoundException("Not statements for $accountPath for month range $startMonth..$endMonth")
         GqlTransfersSummary(

@@ -269,6 +269,7 @@
     totalExternalTransfersPrct: 15.4
     totalExternalTransfersAnnualPrct: 161.3
     totalTransfers: 130
+    totalAnnualPrct: 2229.81
     unaccounted: 0
   - internalTransfers: 100
     externalTransfers: 0
@@ -280,6 +281,7 @@
     totalExternalTransfersPrct: 0.0
     totalExternalTransfersAnnualPrct: 0.0
     totalTransfers: 100
+    totalAnnualPrct: 0.0
     unaccounted: 0
 
 ╔═ with single transaction statement ═╗
@@ -296,6 +298,7 @@
     totalExternalTransfersPrct: -0.0
     totalExternalTransfersAnnualPrct: 0.0
     totalTransfers: -50
+    totalAnnualPrct: 0.0
     unaccounted: 100
 
 ╔═ with transaction statement ═╗

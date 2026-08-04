@@ -12,24 +12,28 @@ class IrregularCashFlowTest : DescribeSpec({
       val cashFlow = IrregularCashFlow()
       cashFlow.effectiveRateOfReturnOnContributions() shouldBe 0.0
       cashFlow.effectiveRateOfReturnOnGains() shouldBe 0.0
+      cashFlow.effectiveRateOfReturn() shouldBe 0.0
     }
     it("single contribution") {
       val cashFlow = IrregularCashFlow()
       cashFlow.add(100, 0)
       cashFlow.effectiveRateOfReturnOnContributions() shouldBe 0.0
       cashFlow.effectiveRateOfReturnOnGains() shouldBe 0.0
+      cashFlow.effectiveRateOfReturn() shouldBe 0.0
     }
     it("single gain") {
       val cashFlow = IrregularCashFlow()
       cashFlow.add(0, 100)
       cashFlow.effectiveRateOfReturnOnContributions() shouldBe 0.0
       cashFlow.effectiveRateOfReturnOnGains() shouldBe 0.0
+      cashFlow.effectiveRateOfReturn() shouldBe 0.0
     }
     it("one time gain and contribution") {
       val cashFlow = IrregularCashFlow()
       cashFlow.add(100, 50)
       cashFlow.effectiveRateOfReturnOnContributions() shouldBe (0.0 plusOrMinus 0.1)
       cashFlow.effectiveRateOfReturnOnGains() shouldBe (0.0 plusOrMinus 0.1)
+      cashFlow.effectiveRateOfReturn() shouldBe (0.0 plusOrMinus 0.1)
     }
   }
   describe("multi entry") {
@@ -41,6 +45,7 @@ class IrregularCashFlowTest : DescribeSpec({
       cashFlow.effectiveRateOfReturnOnContributions() shouldBe 0.0
       // 110 / 100 = 1.1 over 1 periods 1.1^(12/1)-1 = 2.138.
       cashFlow.effectiveRateOfReturnOnGains() shouldBe (2.138 plusOrMinus 0.001)
+      cashFlow.effectiveRateOfReturn() shouldBe (2.138 plusOrMinus 0.001)
     }
     it("initial with gain") {
       val cashFlow = IrregularCashFlow()
@@ -50,6 +55,8 @@ class IrregularCashFlowTest : DescribeSpec({
       cashFlow.effectiveRateOfReturnOnContributions() shouldBe (7.916 plusOrMinus 0.001)
       // 120/120 = 1
       cashFlow.effectiveRateOfReturnOnGains() shouldBe 0.0
+      // Same as on contributions since gains is zero.
+      cashFlow.effectiveRateOfReturn() shouldBe (7.916 plusOrMinus 0.001)
     }
     it("initial with contribution and gain") {
       val cashFlow = IrregularCashFlow()
@@ -59,6 +66,8 @@ class IrregularCashFlowTest : DescribeSpec({
       cashFlow.effectiveRateOfReturnOnContributions() shouldBe (6.423 plusOrMinus 0.001)
       // (130/120)^(12/1)-1 = 1.613
       cashFlow.effectiveRateOfReturnOnGains() shouldBe (1.613 plusOrMinus 0.001)
+      // (130/100)^(12/1)-1 = 1.613
+      cashFlow.effectiveRateOfReturn() shouldBe (22.298 plusOrMinus 0.001)
     }
   }
   describe("long") {
@@ -70,6 +79,7 @@ class IrregularCashFlowTest : DescribeSpec({
       cashFlow.add(100, 0)
       cashFlow.effectiveRateOfReturnOnContributions() shouldBe (0.0 plusOrMinus 0.001)
       cashFlow.effectiveRateOfReturnOnGains() shouldBe (255.0 plusOrMinus 0.001)
+      cashFlow.effectiveRateOfReturn() shouldBe (255.0 plusOrMinus 0.001)
     }
 
     it("contribution plus coupon") {

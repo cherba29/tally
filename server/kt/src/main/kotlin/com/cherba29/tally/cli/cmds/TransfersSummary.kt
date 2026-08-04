@@ -69,6 +69,7 @@ class TransfersSummary : CliktCommand() {
         totalExternalTransfersPrct = cashFlow.gainsFraction.asRoundedPercent(1),
         totalExternalTransfersAnnualPrct = cashFlow.effectiveRateOfReturnOnGains().asRoundedPercent(2),
         totalTransfers = cashFlow.total,
+        totalAnnualPrct = cashFlow.effectiveRateOfReturn().asRoundedPercent(2),
         unaccounted = (statement.startBalance?.amount ?: 0) - cashFlow.total + internalTransfers + externalTransfers,
       )
     }
@@ -88,7 +89,7 @@ class TransfersSummary : CliktCommand() {
           "Month",
           "Internal",
           "External",
-          "Total",
+          "Change",
           "Tot Int",
           "Int %",
           "Int A %",
@@ -96,6 +97,7 @@ class TransfersSummary : CliktCommand() {
           "Ext %",
           "Ext A %",
           "Total",
+          "Tot A %",
           "Unaccounted"
         )
       }
@@ -115,6 +117,7 @@ class TransfersSummary : CliktCommand() {
             summary.totalExternalTransfersPrct,
             summary.totalExternalTransfersAnnualPrct,
             summary.totalTransfers.asAmount(),
+            summary.totalAnnualPrct,
             summary.unaccounted.asAmount()
           )
         }

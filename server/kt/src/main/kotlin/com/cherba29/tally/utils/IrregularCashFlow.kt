@@ -7,6 +7,7 @@ class IrregularCashFlow {
   private val gains = mutableListOf<Long>()
   private val percentChangeOnContributions = mutableListOf<Double>()
   private val percentChangeOnGains = mutableListOf<Double>()
+  private val percentChange = mutableListOf<Double>()
   var totalContributions: Long = 0
     private set
   val contributionFraction: Double get() = if (total == 0L) 0.0 else totalContributions.toDouble() / total
@@ -25,11 +26,13 @@ class IrregularCashFlow {
     percentChangeOnContributions.add(1.0 + if (totalWithNewContribution == 0L) 0.0 else gain.toDouble() / totalWithNewContribution)
     val totalWithNewGain = total + gain
     percentChangeOnGains.add(1.0 + if (totalWithNewGain == 0L) 0.0 else contribution.toDouble() / totalWithNewGain)
+    percentChange.add(1.0 + if (total == 0L) 0.0 else (gain + contribution).toDouble() / total)
     total += gain + contribution
   }
 
   fun effectiveRateOfReturnOnContributions() = effectiveRateOfReturn(percentChangeOnContributions)
   fun effectiveRateOfReturnOnGains() = effectiveRateOfReturn(percentChangeOnGains)
+  fun effectiveRateOfReturn() = effectiveRateOfReturn(percentChange)
 
   companion object {
     fun effectiveRateOfReturn(rates: List<Double>): Double
