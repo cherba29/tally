@@ -57,6 +57,8 @@ export type GqlMonthTransferSummary = {
   externalTransfers: Scalars['Long']['output'];
   /** Sum of transfers from internal accounts for this month. */
   internalTransfers: Scalars['Long']['output'];
+  /** Total annualized rate of return. */
+  totalAnnualPrct: Scalars['Float']['output'];
   /** Sum of all previous and current transfers from external accounts for this month. */
   totalExternalTransfers: Scalars['Long']['output'];
   /** Total external transfer as annualized rate of internal transfers. */

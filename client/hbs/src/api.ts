@@ -213,6 +213,7 @@ export class BackendClient {
               totalExternalTransfersPrct
               totalExternalTransfersAnnualPrct
               totalTransfers
+              totalAnnualPrct
               unaccounted
             }
           }
