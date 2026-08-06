@@ -107,4 +107,38 @@ class IrregularCashFlowTest : DescribeSpec({
       cashFlow.effectiveRateOfReturnOnGains() shouldBeGreaterThan 10.0.pow(18)
     }
   }
+  describe("weighted age") {
+    it("empty is zero") {
+      val cashFlow = IrregularCashFlow()
+      cashFlow.weightedAverageAmountAge() shouldBe (0.0 plusOrMinus 0.001)
+    }
+
+    it("just made contribution is one month old") {
+      val cashFlow = IrregularCashFlow()
+      cashFlow.add(100, 0)
+      cashFlow.weightedAverageAmountAge() shouldBe (1.0 plusOrMinus 0.001)
+    }
+
+    it("two contributions split the age") {
+      val cashFlow = IrregularCashFlow()
+      cashFlow.add(100, 0)
+      cashFlow.add(100, 0)
+      cashFlow.weightedAverageAmountAge() shouldBe (1.5 plusOrMinus 0.001)
+    }
+
+    it("gains counted the same") {
+      val cashFlow = IrregularCashFlow()
+      cashFlow.add(100, 0)
+      cashFlow.add(0, 100)
+      cashFlow.weightedAverageAmountAge() shouldBe (1.5 plusOrMinus 0.001)
+    }
+
+    it("remaining retain age") {
+      val cashFlow = IrregularCashFlow()
+      cashFlow.add(100, 0)
+      cashFlow.add(0, -10)
+      cashFlow.add(0, -20)
+      cashFlow.weightedAverageAmountAge() shouldBe (3.0 plusOrMinus 0.001)
+    }
+  }
 })

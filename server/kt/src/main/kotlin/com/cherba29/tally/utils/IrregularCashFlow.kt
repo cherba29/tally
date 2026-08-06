@@ -34,6 +34,23 @@ class IrregularCashFlow {
   fun effectiveRateOfReturnOnGains() = effectiveRateOfReturn(percentChangeOnGains)
   fun effectiveRateOfReturn() = effectiveRateOfReturn(percentChange)
 
+  /**
+   * Average age of the amount = Sum age_i * amt_i / tot.
+   */
+  fun weightedAverageAmountAge(): Double {
+    if (total == 0L) return 0.0
+    var sum = 0.0
+    var runningAmount = 0L
+    for ((i, change) in contributions.zip(gains).reversed().withIndex()) {
+      runningAmount += change.first + change.second
+      if (runningAmount > 0) {
+        sum += (i + 1) * runningAmount
+        runningAmount = 0L
+      }
+    }
+    return sum / total
+  }
+
   companion object {
     fun effectiveRateOfReturn(rates: List<Double>): Double
       = if (rates.size < 2) 0.0
