@@ -101,6 +101,8 @@ data class GqlMonthTransferSummary(
   val totalTransfers: Long,
   @param:GraphQLDescription("Total annualized rate of return.")
   val totalAnnualPrct: Float,
+  @param:GraphQLDescription("Weighted age of the deposited amounts.")
+  val weightedAge: Float,
   @param:GraphQLDescription("Difference between recorded balance and running totalTransfers.")
   val unaccounted: Long,
 )

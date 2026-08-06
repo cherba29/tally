@@ -91,6 +91,8 @@ type GqlMonthTransferSummary {
   totalTransfers: Long!
   "Difference between recorded balance and running totalTransfers."
   unaccounted: Long!
+  "Weighted age of the deposited amounts."
+  weightedAge: Float!
 }
 
 type GqlStatement {

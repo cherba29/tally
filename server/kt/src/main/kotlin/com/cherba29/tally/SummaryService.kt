@@ -100,6 +100,7 @@ class SummaryService(val loader: Loader) : Query {
             totalExternalTransfersAnnualPrct = cashFlow.effectiveRateOfReturnOnGains().asRoundedPercent(2),
             totalTransfers = cashFlow.total,
             totalAnnualPrct = cashFlow.effectiveRateOfReturn().asRoundedPercent(2),
+            weightedAge = cashFlow.weightedAverageAmountAge().asRounded(2),
             unaccounted = (statement.startBalance?.amount
               ?: 0) - cashFlow.total + internalTransfers + externalTransfers,
           )
@@ -127,6 +128,10 @@ class SummaryService(val loader: Loader) : Query {
   fun Double.asRoundedPercent(decimalPlaces: Int): Float {
     val roundingFactor = 10.0.pow(decimalPlaces)
     return (round(100.0 * this * roundingFactor) / roundingFactor).toFloat()
+  }
+  fun Double.asRounded(decimalPlaces: Int): Float {
+    val roundingFactor = 10.0.pow(decimalPlaces)
+    return (round(this * roundingFactor) / roundingFactor).toFloat()
   }
 
   companion object {

@@ -70,6 +70,7 @@ class TransfersSummary : CliktCommand() {
         totalExternalTransfersAnnualPrct = cashFlow.effectiveRateOfReturnOnGains().asRoundedPercent(2),
         totalTransfers = cashFlow.total,
         totalAnnualPrct = cashFlow.effectiveRateOfReturn().asRoundedPercent(2),
+        weightedAge = cashFlow.weightedAverageAmountAge().toFloat(),
         unaccounted = (statement.startBalance?.amount ?: 0) - cashFlow.total + internalTransfers + externalTransfers,
       )
     }

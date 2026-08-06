@@ -323,6 +323,7 @@ fun GqlMonthTransferSummary.toObjectNode(root: ObjectNode) {
   root.put("totalExternalTransfersAnnualPrct", totalExternalTransfersAnnualPrct)
   root.put("totalTransfers", totalTransfers)
   root.put("totalAnnualPrct", totalAnnualPrct)
+  root.put("weightedAge", weightedAge)
   root.put("unaccounted", unaccounted)
 }
 
