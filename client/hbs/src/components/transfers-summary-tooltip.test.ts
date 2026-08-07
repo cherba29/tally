@@ -25,6 +25,7 @@ describe('TransferSummaryTooltip component', () => {
       totalMonthTransfers: 11,
       totalTransfers: 160,
       totalAnnualPrct: 1.2,
+      weightedAge: 2.2,
       unaccounted: 15
     }, {
       externalTransfers: 101,
@@ -38,6 +39,7 @@ describe('TransferSummaryTooltip component', () => {
       totalMonthTransfers: 152,
       totalTransfers: 152,
       totalAnnualPrct: 1.4,
+      weightedAge: 2.4,
       unaccounted: 10
     }];
     
@@ -75,6 +77,7 @@ describe('TransferSummaryTooltip component', () => {
             <th style="min-width:40px">External Annl %</th>
             <th style="min-width:60px">Total</th>
             <th style="min-width:40px">Tot Annl %</th>
+            <th style="min-width:40px">Wgt Age</th>
             <th style="min-width:60px">Unaccounted</th>
            </tr>
         </thead>
@@ -93,6 +96,7 @@ describe('TransferSummaryTooltip component', () => {
             <td align="right">0</td>
             <td align="right">1.60</td>
             <td align="right">1.2</td>
+            <td align="right">2.2</td>
             <td align="right">0.15</td>
           </tr>
           <tr class="highlight">
@@ -109,6 +113,7 @@ describe('TransferSummaryTooltip component', () => {
             <td align="right">20</td>
             <td align="right">1.52</td>
             <td align="right">1.4</td>
+            <td align="right">2.4</td>
             <td align="right">0.10</td>
           </tr>
         </tbody>

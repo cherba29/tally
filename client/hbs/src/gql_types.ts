@@ -77,6 +77,8 @@ export type GqlMonthTransferSummary = {
   totalTransfers: Scalars['Long']['output'];
   /** Difference between recorded balance and running totalTransfers. */
   unaccounted: Scalars['Long']['output'];
+  /** Weighted age of the deposited amounts. */
+  weightedAge: Scalars['Float']['output'];
 };
 
 export type GqlStatement = {

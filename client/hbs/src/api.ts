@@ -214,6 +214,7 @@ export class BackendClient {
               totalExternalTransfersAnnualPrct
               totalTransfers
               totalAnnualPrct
+              weightedAge
               unaccounted
             }
           }

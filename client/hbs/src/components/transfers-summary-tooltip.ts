@@ -94,6 +94,7 @@ export class TransfersSummaryTooltip extends LitElement {
           <th style="min-width:40px">External Annl %</th>
           <th style="min-width:60px">Total</th>
           <th style="min-width:40px">Tot Annl %</th>
+          <th style="min-width:40px">Wgt Age</th>
           <th style="min-width:60px">Unaccounted</th>
         </thead>
         <tbody>
@@ -113,6 +114,7 @@ export class TransfersSummaryTooltip extends LitElement {
               <td align="right">${data.totalExternalTransfersAnnualPrct}</td>
               <td align="right">${currency(data.totalTransfers)}</td>
               <td align="right">${data.totalAnnualPrct}</td>
+              <td align="right">${data.weightedAge}</td>
               <td align="right">${currency(data.unaccounted)}</td>
             </tr>`
         )}
