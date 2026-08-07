@@ -107,7 +107,7 @@ class IrregularCashFlowTest : DescribeSpec({
       cashFlow.effectiveRateOfReturnOnGains() shouldBeGreaterThan 10.0.pow(18)
     }
   }
-  describe("weighted age") {
+  describe("weighted total age") {
     it("empty is zero") {
       val cashFlow = IrregularCashFlow()
       cashFlow.weightedAverageAmountAge() shouldBe (0.0 plusOrMinus 0.001)
@@ -139,6 +139,74 @@ class IrregularCashFlowTest : DescribeSpec({
       cashFlow.add(0, -10)
       cashFlow.add(0, -20)
       cashFlow.weightedAverageAmountAge() shouldBe (3.0 plusOrMinus 0.001)
+    }
+  }
+  describe("weighted contribution age") {
+    it("empty contributions is zero") {
+      val cashFlow = IrregularCashFlow()
+      cashFlow.weightedContributionsAge() shouldBe (0.0 plusOrMinus 0.001)
+    }
+
+    it("contribution is one month old") {
+      val cashFlow = IrregularCashFlow()
+      cashFlow.add(100, 0)
+      cashFlow.weightedContributionsAge() shouldBe (1.0 plusOrMinus 0.001)
+    }
+
+    it("two contributions split the age") {
+      val cashFlow = IrregularCashFlow()
+      cashFlow.add(100, 0)
+      cashFlow.add(100, 0)
+      cashFlow.weightedContributionsAge() shouldBe (1.5 plusOrMinus 0.001)
+    }
+
+    it("gains are not counted") {
+      val cashFlow = IrregularCashFlow()
+      cashFlow.add(100, 0)
+      cashFlow.add(0, 100)
+      cashFlow.weightedContributionsAge() shouldBe (2.0 plusOrMinus 0.001)
+    }
+
+    it("remaining retain age") {
+      val cashFlow = IrregularCashFlow()
+      cashFlow.add(100, 0)
+      cashFlow.add(-10, 0)
+      cashFlow.add(-20, 0)
+      cashFlow.weightedContributionsAge() shouldBe (3.0 plusOrMinus 0.001)
+    }
+  }
+  describe("weighted gains age") {
+    it("empty gains is zero") {
+      val cashFlow = IrregularCashFlow()
+      cashFlow.weightedGainsAge() shouldBe (0.0 plusOrMinus 0.001)
+    }
+
+    it("gains is one month old") {
+      val cashFlow = IrregularCashFlow()
+      cashFlow.add(0, 100)
+      cashFlow.weightedGainsAge() shouldBe (1.0 plusOrMinus 0.001)
+    }
+
+    it("two gains split the age") {
+      val cashFlow = IrregularCashFlow()
+      cashFlow.add(0, 100)
+      cashFlow.add(0, 100)
+      cashFlow.weightedGainsAge() shouldBe (1.5 plusOrMinus 0.001)
+    }
+
+    it("gains are not counted") {
+      val cashFlow = IrregularCashFlow()
+      cashFlow.add(0, 100)
+      cashFlow.add(100, 0)
+      cashFlow.weightedGainsAge() shouldBe (2.0 plusOrMinus 0.001)
+    }
+
+    it("remaining retain age") {
+      val cashFlow = IrregularCashFlow()
+      cashFlow.add(0,100)
+      cashFlow.add(0, -10)
+      cashFlow.add(0, -20)
+      cashFlow.weightedGainsAge() shouldBe (3.0 plusOrMinus 0.001)
     }
   }
 })

@@ -51,6 +51,34 @@ class IrregularCashFlow {
     return sum / total
   }
 
+  fun weightedContributionsAge(): Double {
+    if (totalContributions <= 0L) return 0.0
+    var sum = 0.0
+    var runningAmount = 0L
+    for ((i, change) in contributions.reversed().withIndex()) {
+      runningAmount += change
+      if (runningAmount > 0) {
+        sum += (i + 1) * runningAmount
+        runningAmount = 0L
+      }
+    }
+    return sum / totalContributions
+  }
+
+  fun weightedGainsAge(): Double {
+    if (totalGains <= 0L) return 0.0
+    var sum = 0.0
+    var runningAmount = 0L
+    for ((i, change) in gains.reversed().withIndex()) {
+      runningAmount += change
+      if (runningAmount > 0) {
+        sum += (i + 1) * runningAmount
+        runningAmount = 0L
+      }
+    }
+    return sum / totalGains
+  }
+
   companion object {
     fun effectiveRateOfReturn(rates: List<Double>): Double
       = if (rates.size < 2) 0.0
