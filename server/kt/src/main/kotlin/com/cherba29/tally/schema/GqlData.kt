@@ -91,12 +91,16 @@ data class GqlMonthTransferSummary(
   val totalInternalTransfersPrct: Float,
   @param:GraphQLDescription("Total internal transfer as annualized rate of external transfers.")
   val totalInternalTransfersAnnualPrct: Float,
+  @param:GraphQLDescription("Weighted age of internal deposits.")
+  val weightedInternalAge: Float,
   @param:GraphQLDescription("Sum of all previous and current transfers from external accounts for this month.")
   val totalExternalTransfers: Long,
   @param:GraphQLDescription("Total external transfer as percentage of all transfers.")
   val totalExternalTransfersPrct: Float,
   @param:GraphQLDescription("Total external transfer as annualized rate of internal transfers.")
   val totalExternalTransfersAnnualPrct: Float,
+  @param:GraphQLDescription("Weighted age of external gains.")
+  val weightedExternalAge: Float,
   @param:GraphQLDescription("Running total of all transfers including previous months.")
   val totalTransfers: Long,
   @param:GraphQLDescription("Total annualized rate of return.")

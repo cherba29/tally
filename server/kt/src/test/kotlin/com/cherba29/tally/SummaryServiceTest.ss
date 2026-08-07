@@ -265,9 +265,11 @@
     totalInternalTransfers: 110
     totalInternalTransfersPrct: 84.6
     totalInternalTransfersAnnualPrct: 642.35
+    weightedInternalAge: 1.91
     totalExternalTransfers: 20
     totalExternalTransfersPrct: 15.4
     totalExternalTransfersAnnualPrct: 161.3
+    weightedExternalAge: 1.0
     totalTransfers: 130
     totalAnnualPrct: 2229.81
     weightedAge: 1.77
@@ -278,9 +280,11 @@
     totalInternalTransfers: 100
     totalInternalTransfersPrct: 100.0
     totalInternalTransfersAnnualPrct: 0.0
+    weightedInternalAge: 1.0
     totalExternalTransfers: 0
     totalExternalTransfersPrct: 0.0
     totalExternalTransfersAnnualPrct: 0.0
+    weightedExternalAge: 0.0
     totalTransfers: 100
     totalAnnualPrct: 0.0
     weightedAge: 1.0
@@ -296,9 +300,11 @@
     totalInternalTransfers: -50
     totalInternalTransfersPrct: 100.0
     totalInternalTransfersAnnualPrct: 0.0
+    weightedInternalAge: 0.0
     totalExternalTransfers: 0
     totalExternalTransfersPrct: -0.0
     totalExternalTransfersAnnualPrct: 0.0
+    weightedExternalAge: 0.0
     totalTransfers: -50
     totalAnnualPrct: 0.0
     weightedAge: -0.0

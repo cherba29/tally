@@ -93,6 +93,10 @@ type GqlMonthTransferSummary {
   unaccounted: Long!
   "Weighted age of the deposited amounts."
   weightedAge: Float!
+  "Weighted age of external gains."
+  weightedExternalAge: Float!
+  "Weighted age of internal deposits."
+  weightedInternalAge: Float!
 }
 
 type GqlStatement {
