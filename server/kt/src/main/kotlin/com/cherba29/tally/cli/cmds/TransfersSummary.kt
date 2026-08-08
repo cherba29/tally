@@ -7,6 +7,9 @@ import com.cherba29.tally.data.Loader
 import com.cherba29.tally.schema.GqlMonthTransferSummary
 import com.cherba29.tally.schema.GqlTransfersSummary
 import com.cherba29.tally.utils.IrregularCashFlow
+import com.cherba29.tally.utils.asAmount
+import com.cherba29.tally.utils.asRounded
+import com.cherba29.tally.utils.asRoundedPercent
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -65,14 +68,14 @@ class TransfersSummary : CliktCommand() {
         totalInternalTransfers = cashFlow.totalContributions,
         totalInternalTransfersPrct = cashFlow.contributionFraction.asRoundedPercent(1),
         totalInternalTransfersAnnualPrct = cashFlow.effectiveRateOfReturnOnContributions().asRoundedPercent(2),
-        weightedInternalAge = cashFlow.weightedContributionsAge().toFloat(),
+        weightedInternalAge = cashFlow.weightedContributionsAge().asRounded(2),
         totalExternalTransfers = cashFlow.totalGains,
         totalExternalTransfersPrct = cashFlow.gainsFraction.asRoundedPercent(1),
         totalExternalTransfersAnnualPrct = cashFlow.effectiveRateOfReturnOnGains().asRoundedPercent(2),
-        weightedExternalAge = cashFlow.weightedGainsAge().toFloat(),
+        weightedExternalAge = cashFlow.weightedGainsAge().asRounded(2),
         totalTransfers = cashFlow.total,
         totalAnnualPrct = cashFlow.effectiveRateOfReturn().asRoundedPercent(2),
-        weightedAge = cashFlow.weightedAverageAmountAge().toFloat(),
+        weightedAge = cashFlow.weightedAverageAmountAge().asRounded(2),
         unaccounted = (statement.startBalance?.amount ?: 0) - cashFlow.total + internalTransfers + externalTransfers,
       )
     }
@@ -127,16 +130,5 @@ class TransfersSummary : CliktCommand() {
       }
     }
     terminal.println(t)
-  }
-
-
-  companion object {
-    // TODO: collect these formatting utilities somewhere centrally so not to repeat.
-    private fun Long.asAmount(): String = "%.2f".format(this / 100.0)
-
-    fun Double.asRoundedPercent(decimalPlaces: Int): Float {
-      val roundingFactor = 10.0.pow(decimalPlaces)
-      return (round(100.0 * this * roundingFactor) / roundingFactor).toFloat()
-    }
   }
 }

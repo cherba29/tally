@@ -11,13 +11,13 @@ import com.cherba29.tally.schema.GqlTransfersSummary
 import com.cherba29.tally.schema.toGqlSummaryData
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.utils.IrregularCashFlow
+import com.cherba29.tally.utils.asRounded
+import com.cherba29.tally.utils.asRoundedPercent
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.time.measureTimedValue
 import kotlinx.coroutines.runBlocking
-import kotlin.math.pow
-import kotlin.math.round
 
 class SummaryService(val loader: Loader) : Query {
   /**
@@ -125,15 +125,6 @@ class SummaryService(val loader: Loader) : Query {
     }
     logger.info { "Computed transfer summary in ${timeTaken.inWholeMilliseconds}ms" }
     return result
-  }
-
-  fun Double.asRoundedPercent(decimalPlaces: Int): Float {
-    val roundingFactor = 10.0.pow(decimalPlaces)
-    return (round(100.0 * this * roundingFactor) / roundingFactor).toFloat()
-  }
-  fun Double.asRounded(decimalPlaces: Int): Float {
-    val roundingFactor = 10.0.pow(decimalPlaces)
-    return (round(this * roundingFactor) / roundingFactor).toFloat()
   }
 
   companion object {
