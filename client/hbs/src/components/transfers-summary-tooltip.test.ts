@@ -18,6 +18,8 @@ describe('TransferSummaryTooltip component', () => {
       internalTransfers: 50,
       totalExternalTransfers: 200,
       totalInternalTransfers: 300,
+      weightedInternalAge: 2.7,
+      weightedExternalAge: 1.7,
       totalExternalTransfersAnnualPrct: 0,
       totalExternalTransfersPrct: 0,
       totalInternalTransfersAnnualPrct: 0,
@@ -32,6 +34,8 @@ describe('TransferSummaryTooltip component', () => {
       internalTransfers: 51,
       totalExternalTransfers: 201,
       totalInternalTransfers: 301,
+      weightedInternalAge: 2.8,
+      weightedExternalAge: 1.8,
       totalExternalTransfersAnnualPrct: 20,
       totalExternalTransfersPrct: 0.1,
       totalInternalTransfersAnnualPrct: 0,
@@ -72,9 +76,11 @@ describe('TransferSummaryTooltip component', () => {
             <th style="min-width:60px">Tot Internal</th>
             <th style="min-width:40px">Internal %</th>
             <th style="min-width:40px">Internal Annl %</th>
+            <th style="min-width:40px">Wgt Int Age</th>
             <th style="min-width:60px">Tot External</th>
             <th style="min-width:40px">External %</th>
             <th style="min-width:40px">External Annl %</th>
+            <th style="min-width:40px">Wgt Ext Age</th>
             <th style="min-width:60px">Total</th>
             <th style="min-width:40px">Tot Annl %</th>
             <th style="min-width:40px">Wgt Age</th>
@@ -91,9 +97,11 @@ describe('TransferSummaryTooltip component', () => {
             <td align="right">3.00</td>
             <td align="right">0</td>
             <td align="right">0</td>
+            <td align="right">2.7</td>
             <td align="right">2.00</td>
             <td align="right">0</td>
             <td align="right">0</td>
+            <td align="right">1.7</td>
             <td align="right">1.60</td>
             <td align="right">1.2</td>
             <td align="right">2.2</td>
@@ -108,9 +116,11 @@ describe('TransferSummaryTooltip component', () => {
             <td align="right">3.01</td>
             <td align="right">0</td>
             <td align="right">0</td>
+            <td align="right">2.8</td>
             <td align="right">2.01</td>
             <td align="right">0.1</td>
             <td align="right">20</td>
+            <td align="right">1.8</td>
             <td align="right">1.52</td>
             <td align="right">1.4</td>
             <td align="right">2.4</td>

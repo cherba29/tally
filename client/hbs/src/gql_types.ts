@@ -79,6 +79,10 @@ export type GqlMonthTransferSummary = {
   unaccounted: Scalars['Long']['output'];
   /** Weighted age of the deposited amounts. */
   weightedAge: Scalars['Float']['output'];
+  /** Weighted age of external gains. */
+  weightedExternalAge: Scalars['Float']['output'];
+  /** Weighted age of internal deposits. */
+  weightedInternalAge: Scalars['Float']['output'];
 };
 
 export type GqlStatement = {

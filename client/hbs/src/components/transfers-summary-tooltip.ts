@@ -89,9 +89,11 @@ export class TransfersSummaryTooltip extends LitElement {
           <th style="min-width:60px">Tot Internal</th>
           <th style="min-width:40px">Internal %</th>
           <th style="min-width:40px">Internal Annl %</th>
+          <th style="min-width:40px">Wgt Int Age</th>
           <th style="min-width:60px">Tot External</th>
           <th style="min-width:40px">External %</th>
           <th style="min-width:40px">External Annl %</th>
+          <th style="min-width:40px">Wgt Ext Age</th>
           <th style="min-width:60px">Total</th>
           <th style="min-width:40px">Tot Annl %</th>
           <th style="min-width:40px">Wgt Age</th>
@@ -109,9 +111,11 @@ export class TransfersSummaryTooltip extends LitElement {
               <td align="right">${currency(data.totalInternalTransfers)}</td>
               <td align="right">${data.totalInternalTransfersPrct}</td>
               <td align="right">${data.totalInternalTransfersAnnualPrct}</td>
+              <td align="right">${data.weightedInternalAge}</td>
               <td align="right">${currency(data.totalExternalTransfers)}</td>
               <td align="right">${data.totalExternalTransfersPrct}</td>
               <td align="right">${data.totalExternalTransfersAnnualPrct}</td>
+              <td align="right">${data.weightedExternalAge}</td>
               <td align="right">${currency(data.totalTransfers)}</td>
               <td align="right">${data.totalAnnualPrct}</td>
               <td align="right">${data.weightedAge}</td>

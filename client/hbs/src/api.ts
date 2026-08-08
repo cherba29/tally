@@ -209,9 +209,11 @@ export class BackendClient {
               totalInternalTransfers
               totalInternalTransfersPrct
               totalInternalTransfersAnnualPrct
+              weightedInternalAge
               totalExternalTransfers
               totalExternalTransfersPrct
               totalExternalTransfersAnnualPrct
+              weightedExternalAge
               totalTransfers
               totalAnnualPrct
               weightedAge
