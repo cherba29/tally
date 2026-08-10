@@ -30,7 +30,7 @@ class TransactionTableBuilderTest : DescribeSpec({
         leafToMonthlyBalancesMap = mapOf(),
         leafToMonthlyTransfersMap = mapOf()
       )
-      transactionStatements shouldBe listOf()
+      transactionStatements shouldBe mapOf()
     }
   }
   describe("Build") {
@@ -66,7 +66,7 @@ class TransactionTableBuilderTest : DescribeSpec({
         leafToMonthlyTransfersMap = mapOf()
       )
       table.size shouldBe 1
-      val stmt = table.first()
+      val stmt = table[budget.tree[accountPath]]!![(DEC / 2019)]!!
       assertSoftly {
         stmt.treeNode.path shouldBe accountPath
         stmt.coversPrevious shouldBe false
@@ -157,7 +157,8 @@ class TransactionTableBuilderTest : DescribeSpec({
         balances,
         transfers
       )
-      table.size shouldBe 6
+      table.size shouldBe 2
+      table.map { it.value.size }.sum() shouldBe 6
 
       expectSelfie(table.toSnapshot()).toMatchDisk()
     }
@@ -224,7 +225,8 @@ class TransactionTableBuilderTest : DescribeSpec({
         balances,
         transfers
       )
-      table.size shouldBe 6
+      table.size shouldBe 2
+      table.map { it.value.size }.sum() shouldBe 6
 
       expectSelfie(table.toSnapshot()).toMatchDisk()
     }
@@ -285,19 +287,29 @@ class TransactionTableBuilderTest : DescribeSpec({
         balances,
         transfers
       )
-      table.size shouldBe 4 // Two transaction statements for the account
-      table[0].monthRange shouldBe DEC / 2019..DEC / 2019
-      table[0].isClosed shouldBe true
-      table[0].treeNode.path shouldBe node1.path
-      table[1].monthRange shouldBe NOV / 2019..NOV / 2019
-      table[1].isClosed shouldBe false
-      table[1].treeNode.path shouldBe node1.path
-      table[2].monthRange shouldBe DEC / 2019..DEC / 2019
-      table[2].isClosed shouldBe false
-      table[2].treeNode.path shouldBe node2.path
-      table[3].monthRange shouldBe NOV / 2019..NOV / 2019
-      table[3].isClosed shouldBe false
-      table[3].treeNode.path shouldBe node2.path
+      table.size shouldBe 2
+      // Two transaction statements for the account
+      table.map { it.value.size }.sum() shouldBe 4
+
+      val dec1Stmt = table[node1]!![DEC / 2019]!!
+      dec1Stmt.monthRange shouldBe DEC / 2019..DEC / 2019
+      dec1Stmt.isClosed shouldBe true
+      dec1Stmt.treeNode.path shouldBe node1.path
+
+      val nov1Stmt = table[node1]!![NOV / 2019]!!
+      nov1Stmt.monthRange shouldBe NOV / 2019..NOV / 2019
+      nov1Stmt.isClosed shouldBe false
+      nov1Stmt.treeNode.path shouldBe node1.path
+
+      val dec2Stmt = table[node2]!![DEC / 2019]!!
+      dec2Stmt.monthRange shouldBe DEC / 2019..DEC / 2019
+      dec2Stmt.isClosed shouldBe false
+      dec2Stmt.treeNode.path shouldBe node2.path
+
+      val nov2Stmt = table[node2]!![NOV / 2019]!!
+      nov2Stmt.monthRange shouldBe NOV / 2019..NOV / 2019
+      nov2Stmt.isClosed shouldBe false
+      nov2Stmt.treeNode.path shouldBe node2.path
     }
 
     it("get transaction type") {
@@ -380,20 +392,24 @@ class TransactionTableBuilderTest : DescribeSpec({
         transfers
       )
       table.size shouldBe 3 // 3 accounts
-      table[0].treeNode.path shouldBe path1
-      table[0].transactions.size shouldBe 2 // 2 transactions for account1
+      val stmt1 = table[node1]!![DEC / 2019]!!
+      stmt1.treeNode.path shouldBe path1
+      stmt1.transactions.size shouldBe 2 // 2 transactions for account1
       assertSoftly {
-        table[0].transactions[0].balance.amount shouldBe -1000L
-        table[0].transactions[1].balance.amount shouldBe -2000L
-        table[0].transactions[0].type shouldBe Transaction.Type.EXPENSE
-        table[0].transactions[1].type shouldBe Transaction.Type.TRANSFER
+        stmt1.transactions[0].balance.amount shouldBe -1000L
+        stmt1.transactions[1].balance.amount shouldBe -2000L
+        stmt1.transactions[0].type shouldBe Transaction.Type.EXPENSE
+        stmt1.transactions[1].type shouldBe Transaction.Type.TRANSFER
       }
-      table[1].treeNode.path shouldBe path2
-      table[1].transactions.size shouldBe 1 // 1 transaction for account2
-      table[1].transactions[0].type shouldBe Transaction.Type.TRANSFER
-      table[2].treeNode.path shouldBe path3
-      table[2].transactions.size shouldBe 1 // 1 transaction for account3
-      table[2].transactions[0].type shouldBe Transaction.Type.INCOME
+      val stmt2 = table[node2]!![DEC / 2019]!!
+      stmt2.treeNode.path shouldBe path2
+      stmt2.transactions.size shouldBe 1 // 1 transaction for account2
+      stmt2.transactions[0].type shouldBe Transaction.Type.TRANSFER
+
+      val stmt3 = table[node3]!![DEC / 2019]!!
+      stmt3.treeNode.path shouldBe path3
+      stmt3.transactions.size shouldBe 1 // 1 transaction for account3
+      stmt3.transactions[0].type shouldBe Transaction.Type.INCOME
     }
   }
 })

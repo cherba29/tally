@@ -10,7 +10,6 @@ import com.cherba29.tally.core.plus
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.statement.Statement
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlin.collections.iterator
 import kotlin.collections.set
 import kotlin.time.TimeSource
 import kotlin.time.measureTimedValue
@@ -116,7 +115,7 @@ class BudgetBuilder(
       treeRoot[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
     }
     val (transfers, elapsedBudgetTime) = timeSource.measureTimedValue { buildTransfers(treeRoot) }
-    val nodeToStatement: MutableMap<TreeNode, MutableMap<Month, Statement>> = mutableMapOf()
+    val nodeToStatement: MutableMap<TreeNode, Map<Month, Statement>> = mutableMapOf()
 
     val (transactionStatementTable, elapsedTransactionTime) = timeSource.measureTimedValue {
       val transactionStatementTable = TransactionTableBuilder().buildTransactionStatementTable(
@@ -125,22 +124,20 @@ class BudgetBuilder(
         leafToBalances,
         transfers
       )
-      for (stmt in transactionStatementTable) {
-        nodeToStatement.getOrPut(stmt.treeNode) { mutableMapOf() }[stmt.monthRange.first] = stmt
-      }
+      nodeToStatement.putAll(transactionStatementTable)
       transactionStatementTable
     }
 
     val (summaryNameMonthMap, elapsedBuildSummaryStatements) = timeSource.measureTimedValue {
       val summaryMapBuilder = SummaryMapBuilder()
-      for (statement in transactionStatementTable) {
-        summaryMapBuilder.addStatement(statement)
+      for (monthStatements in transactionStatementTable.values) {
+        for (statement in monthStatements.values) {
+          summaryMapBuilder.addStatement(statement)
+        }
       }
       summaryMapBuilder.build(treeRoot)
     }
-    for ((treeNode, monthToSummary) in summaryNameMonthMap) {
-      nodeToStatement.getOrPut(treeNode) { mutableMapOf() }.putAll(monthToSummary)
-    }
+    nodeToStatement.putAll(summaryNameMonthMap)
     val numSummaryStatements = summaryNameMonthMap.size
     logger.info {
         "Build ${leafToAccount.size} accounts, " +
