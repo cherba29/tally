@@ -12,8 +12,13 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
 import kotlin.collections.forEach
 
 fun Map<TreeNode, Map<Month, TransactionStatement>>.toSnapshot() = toSnapshot { root ->
-  // TODO: fix particular ordering of entries.
-  forEach { it.value.forEach { it.value.toObjectNode(root.addObject()) } }
+  entries.sortedBy { it.key.path.joinToString("/") }.forEach { (node, monthToStatementMap) ->
+    val nodeEntry = root.addObject()
+    val statementObject = nodeEntry.putObject(node.path.joinToString("/"))
+    for ((month,  statement) in monthToStatementMap.toSortedMap()) {
+      statement.toObjectNode(statementObject.putObject(month.toString()))
+    }
+  }
 }
 
 fun GqlSummaryData.toSnapshot() = toSnapshot { root -> toObjectNode(root.addObject()) }
