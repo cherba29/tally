@@ -10,6 +10,8 @@ import com.cherba29.tally.core.plus
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.statement.Statement
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlin.collections.component1
+import kotlin.collections.component2
 import kotlin.collections.set
 import kotlin.time.TimeSource
 import kotlin.time.measureTimedValue
@@ -107,6 +109,10 @@ class BudgetBuilder(
 
   fun build(): Budget {
     val months = monthRange ?: MonthRange.EMPTY
+    if (months.isEmpty()) {
+      throw IllegalArgumentException("Budget must have at least one month.")
+    }
+
     val treeRoot = groupTreeBuilder.build()
     val leafToAccount = pathToAccount.mapKeys {
       treeRoot[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
@@ -118,12 +124,15 @@ class BudgetBuilder(
     val nodeToStatement: MutableMap<TreeNode, Map<Month, Statement>> = mutableMapOf()
 
     val (transactionStatementTable, elapsedTransactionTime) = timeSource.measureTimedValue {
-      val transactionStatementTable = TransactionTableBuilder().buildTransactionStatementTable(
-        months,
-        leafToAccount,
-        leafToBalances,
-        transfers
-      )
+      val transactionStatementTable = leafToAccount.map { (leafTreeNode, account) ->
+        leafTreeNode to TransactionTableBuilder.buildAccountTransactionStatements(
+          leafTreeNode,
+          account,
+          months,
+          leafToBalances[leafTreeNode] ?: mapOf(),
+          transfers[leafTreeNode] ?: mapOf()
+        )
+      }.toMap()
       nodeToStatement.putAll(transactionStatementTable)
       transactionStatementTable
     }

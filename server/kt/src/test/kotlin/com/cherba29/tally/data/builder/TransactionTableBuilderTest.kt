@@ -15,38 +15,34 @@ import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.testing.toSnapshot
 import com.diffplug.selfie.coroutines.expectSelfie
 import io.kotest.assertions.assertSoftly
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
 class TransactionTableBuilderTest : DescribeSpec({
   describe("Creation") {
     it("empty") {
-      val builder = TransactionTableBuilder()
-      val testMonths = JUN / 2026..JUL / 2027
-      val transactionStatements = builder.buildTransactionStatementTable(
-        months = testMonths,
-        leafToAccountMap = mapOf(),
-        leafToMonthlyBalancesMap = mapOf(),
-        leafToMonthlyTransfersMap = mapOf()
+      val tree = root {
+        leaf("test-account1")
+      }
+      val account = Account(
+        name = "test-account1",
+        path = listOf("external"),
+        owners = setOf(),
+        openedOn = DEC / 2019
       )
-      transactionStatements shouldBe mapOf()
+
+      val testMonths = JUN / 2026..JUL / 2027
+      val transactionStatements = TransactionTableBuilder.buildAccountTransactionStatements(
+        tree[listOf("test-account1")] as TreeNode.Leaf,
+        account,
+        months = testMonths,
+        mapOf(),
+        mapOf(),
+      )
+      transactionStatements.keys shouldBe testMonths.toSet()
     }
   }
   describe("Build") {
-    it("no months") {
-      val builder = TransactionTableBuilder()
-      val exception = shouldThrow<IllegalArgumentException> {
-        builder.buildTransactionStatementTable(
-          months = DEC / 2019..NOV / 2019,
-          leafToAccountMap = mapOf(),
-          leafToMonthlyBalancesMap = mapOf(),
-          leafToMonthlyTransfersMap = mapOf()
-        )
-      }
-      exception.message shouldBe "Budget must have at least one month."
-    }
-
     it("single account no transfers") {
       val accountPath = listOf("john", "external", "test-account")
       val account = Account(
@@ -58,15 +54,15 @@ class TransactionTableBuilderTest : DescribeSpec({
       val budget = budget {
         setAccount(accountPath, account)
       }
-      val builder = TransactionTableBuilder()
-      val table = builder.buildTransactionStatementTable(
+      val table = TransactionTableBuilder.buildAccountTransactionStatements(
+        budget.tree[accountPath] as TreeNode.Leaf,
+        account,
         months = budget.months,
-        budget.leafToAccount,
-        leafToMonthlyBalancesMap = mapOf(),
-        leafToMonthlyTransfersMap = mapOf()
+        mapOf(),
+        mapOf()
       )
       table.size shouldBe 1
-      val stmt = table[budget.tree[accountPath]]!![(DEC / 2019)]!!
+      val stmt = table[(DEC / 2019)]!!
       assertSoftly {
         stmt.treeNode.path shouldBe accountPath
         stmt.coversPrevious shouldBe false
@@ -111,17 +107,14 @@ class TransactionTableBuilderTest : DescribeSpec({
       }
       val path1 = listOf("john", "external", "test-account1")
       val path2 = listOf("john", "external", "test-account2")
-      val accounts = mapOf(
-        tree[path1]!! as TreeNode.Leaf to account1,
-        tree[path2]!! as TreeNode.Leaf to account2
-      )
 
       val balances = mapOf(
         tree[path1]!! as TreeNode.Leaf to mapOf(
           DEC / 2019 to Balance.confirmed(10, "2019-12-01"),
           JAN / 2020 to Balance.confirmed(20, "2020-01-01"),
           FEB / 2020 to Balance.projected(30, "2020-02-01")
-        )
+        ),
+        tree[path2]!! as TreeNode.Leaf to mapOf()
       )
 
       val firstTransfer1to2 = Transfer(
@@ -150,17 +143,24 @@ class TransactionTableBuilderTest : DescribeSpec({
           DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)
         )
       )
-      val builder = TransactionTableBuilder()
-      val table = builder.buildTransactionStatementTable(
+      val table1 = TransactionTableBuilder.buildAccountTransactionStatements(
+        tree[path1]!! as TreeNode.Leaf,
+        account1,
         DEC / 2019..FEB / 2020,
-        accounts,
-        balances,
-        transfers
-      )
-      table.size shouldBe 2
-      table.map { it.value.size }.sum() shouldBe 6
+        balances[tree[path1]]!!,
+        transfers[tree[path1]]!!      )
+      table1.size shouldBe 3
 
-      expectSelfie(table.toSnapshot()).toMatchDisk()
+      val table2 = TransactionTableBuilder.buildAccountTransactionStatements(
+        tree[path2]!! as TreeNode.Leaf,
+        account2,
+        DEC / 2019..FEB / 2020,
+        balances[tree[path2]]!!,
+        transfers[tree[path2]]!!      )
+      table2.size shouldBe 3
+
+      expectSelfie(table1.toSnapshot()).toMatchDisk("table1")
+      expectSelfie(table2.toSnapshot()).toMatchDisk("table2")
     }
 
     it("two accounts with external transfer") {
@@ -186,16 +186,13 @@ class TransactionTableBuilderTest : DescribeSpec({
       }
       val node1 = tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf
       val node2 = tree[listOf("john", "external", "test-account2")] as TreeNode.Leaf
-      val accounts = mapOf(
-        node1 to account1,
-        node2 to account2
-      )
       val balances = mapOf(
         node1 to mapOf(
           DEC / 2019 to Balance.confirmed(10, "2019-12-01"),
           JAN / 2020 to Balance.confirmed(20, "2020-01-01"),
           FEB / 2020 to Balance.projected(30, "2020-02-01")
-        )
+        ),
+        node2 to mapOf()
       )
       val firstTransfer1to2 = Transfer(
         fromAccount = node1,
@@ -218,17 +215,26 @@ class TransactionTableBuilderTest : DescribeSpec({
         node1 to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
         node2 to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2))
       )
-      val builder = TransactionTableBuilder()
-      val table = builder.buildTransactionStatementTable(
+      val table1 = TransactionTableBuilder.buildAccountTransactionStatements(
+        node1,
+        account1,
         DEC / 2019..FEB / 2020,
-        accounts,
-        balances,
-        transfers
+        balances[node1]!!,
+        transfers[node1]!!
       )
-      table.size shouldBe 2
-      table.map { it.value.size }.sum() shouldBe 6
+      table1.size shouldBe 3
 
-      expectSelfie(table.toSnapshot()).toMatchDisk()
+      val table2 = TransactionTableBuilder.buildAccountTransactionStatements(
+        node2,
+        account2,
+        DEC / 2019..FEB / 2020,
+        balances[node2]!!,
+        transfers[node2]!!
+      )
+      table1.size shouldBe 3
+
+      expectSelfie(table1.toSnapshot()).toMatchDisk("table1")
+      expectSelfie(table2.toSnapshot()).toMatchDisk("table2")
     }
     
     it("transfer to closed account") {
@@ -255,15 +261,12 @@ class TransactionTableBuilderTest : DescribeSpec({
       }
       val node1 = tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf
       val node2 = tree[listOf("john", "external", "external")] as TreeNode.Leaf
-      val accounts = mapOf(
-        node1 to account1,
-        node2 to account2
-      )
 
       val balances = mapOf(
         node1 to mapOf(
           DEC / 2019 to Balance.confirmed(10, "2019-12-01")
-        )
+        ),
+        node2 to mapOf()
       )
       val transfers = mapOf(
         node1 to mapOf(
@@ -277,36 +280,48 @@ class TransactionTableBuilderTest : DescribeSpec({
               tags = listOf()
             )
           )
-        )
+        ),
+        node2 to mapOf()
       )
 
-      val builder = TransactionTableBuilder()
-      val table = builder.buildTransactionStatementTable(
+      val table1 = TransactionTableBuilder.buildAccountTransactionStatements(
+        node1,
+        account1,
         NOV / 2019..DEC / 2019,
-        accounts,
-        balances,
-        transfers
+        balances[node1]!!,
+        transfers[node1]!!
       )
-      table.size shouldBe 2
       // Two transaction statements for the account
-      table.map { it.value.size }.sum() shouldBe 4
+      table1.size shouldBe 2
 
-      val dec1Stmt = table[node1]!![DEC / 2019]!!
+      val table2 = TransactionTableBuilder.buildAccountTransactionStatements(
+        node2,
+        account2,
+        NOV / 2019..DEC / 2019,
+        balances[node2]!!,
+        transfers[node2]!!
+      )
+      // Two transaction statements for the account
+      table2.size shouldBe 2
+
+
+
+      val dec1Stmt = table1[DEC / 2019]!!
       dec1Stmt.monthRange shouldBe DEC / 2019..DEC / 2019
       dec1Stmt.isClosed shouldBe true
       dec1Stmt.treeNode.path shouldBe node1.path
 
-      val nov1Stmt = table[node1]!![NOV / 2019]!!
+      val nov1Stmt = table1[NOV / 2019]!!
       nov1Stmt.monthRange shouldBe NOV / 2019..NOV / 2019
       nov1Stmt.isClosed shouldBe false
       nov1Stmt.treeNode.path shouldBe node1.path
 
-      val dec2Stmt = table[node2]!![DEC / 2019]!!
+      val dec2Stmt = table2[DEC / 2019]!!
       dec2Stmt.monthRange shouldBe DEC / 2019..DEC / 2019
       dec2Stmt.isClosed shouldBe false
       dec2Stmt.treeNode.path shouldBe node2.path
 
-      val nov2Stmt = table[node2]!![NOV / 2019]!!
+      val nov2Stmt = table2[NOV / 2019]!!
       nov2Stmt.monthRange shouldBe NOV / 2019..NOV / 2019
       nov2Stmt.isClosed shouldBe false
       nov2Stmt.treeNode.path shouldBe node2.path
@@ -355,7 +370,6 @@ class TransactionTableBuilderTest : DescribeSpec({
       val node1 = tree[path1]!! as TreeNode.Leaf
       val node2 = tree[path2]!! as TreeNode.Leaf
       val node3 = tree[path3]!! as TreeNode.Leaf
-      val accounts = mapOf(node1 to account1, node2 to account2, node3 to account3)
 
       val balances = mapOf(
         node1 to mapOf(DEC / 2019 to Balance.confirmed(10, "2019-12-01")),
@@ -384,15 +398,34 @@ class TransactionTableBuilderTest : DescribeSpec({
         node3 to mapOf(DEC / 2019 to listOf(transfer1to3))
       )
 
-      val builder = TransactionTableBuilder()
-      val table = builder.buildTransactionStatementTable(
+      val table1 = TransactionTableBuilder.buildAccountTransactionStatements(
+        node1,
+        account1,
         DEC / 2019..DEC / 2019,
-        accounts,
-        balances,
-        transfers
+        balances[node1]!!,
+        transfers[node1]!!
       )
-      table.size shouldBe 3 // 3 accounts
-      val stmt1 = table[node1]!![DEC / 2019]!!
+      table1.size shouldBe 1
+
+      val table2 = TransactionTableBuilder.buildAccountTransactionStatements(
+        node2,
+        account2,
+        DEC / 2019..DEC / 2019,
+        balances[node2]!!,
+        transfers[node2]!!
+      )
+      table2.size shouldBe 1
+
+      val table3 = TransactionTableBuilder.buildAccountTransactionStatements(
+        node3,
+        account3,
+        DEC / 2019..DEC / 2019,
+        balances[node3]!!,
+        transfers[node3]!!
+      )
+      table3.size shouldBe 1
+
+      val stmt1 = table1[DEC / 2019]!!
       stmt1.treeNode.path shouldBe path1
       stmt1.transactions.size shouldBe 2 // 2 transactions for account1
       assertSoftly {
@@ -401,12 +434,12 @@ class TransactionTableBuilderTest : DescribeSpec({
         stmt1.transactions[0].type shouldBe Transaction.Type.EXPENSE
         stmt1.transactions[1].type shouldBe Transaction.Type.TRANSFER
       }
-      val stmt2 = table[node2]!![DEC / 2019]!!
+      val stmt2 = table2[DEC / 2019]!!
       stmt2.treeNode.path shouldBe path2
       stmt2.transactions.size shouldBe 1 // 1 transaction for account2
       stmt2.transactions[0].type shouldBe Transaction.Type.TRANSFER
 
-      val stmt3 = table[node3]!![DEC / 2019]!!
+      val stmt3 = table3[DEC / 2019]!!
       stmt3.treeNode.path shouldBe path3
       stmt3.transactions.size shouldBe 1 // 1 transaction for account3
       stmt3.transactions[0].type shouldBe Transaction.Type.INCOME

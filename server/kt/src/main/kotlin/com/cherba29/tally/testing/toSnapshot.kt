@@ -1,7 +1,6 @@
 package com.cherba29.tally.testing
 
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.schema.GqlSummaryData
 import com.cherba29.tally.schema.GqlTable
 import com.cherba29.tally.schema.GqlTransfersSummary
@@ -9,16 +8,12 @@ import com.cherba29.tally.statement.TransactionStatement
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
-import kotlin.collections.forEach
 
-fun Map<TreeNode, Map<Month, TransactionStatement>>.toSnapshot() = toSnapshot { root ->
-  entries.sortedBy { it.key.path.joinToString("/") }.forEach { (node, monthToStatementMap) ->
-    val nodeEntry = root.addObject()
-    val statementObject = nodeEntry.putObject(node.path.joinToString("/"))
-    for ((month,  statement) in monthToStatementMap.toSortedMap()) {
-      statement.toObjectNode(statementObject.putObject(month.toString()))
+fun Map<Month, TransactionStatement>.toSnapshot() = toSnapshot { root ->
+    val topEntry = root.addObject()
+    for ((month,  statement) in toSortedMap()) {
+      statement.toObjectNode(topEntry.putObject(month.toString()))
     }
-  }
 }
 
 fun GqlSummaryData.toSnapshot() = toSnapshot { root -> toObjectNode(root.addObject()) }
