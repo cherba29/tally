@@ -8,9 +8,9 @@ import com.cherba29.tally.core.Transfer
 import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.statement.TransactionStatement
 
-class TransactionTableBuilder {
+class MonthTransactionStatementBuilder {
   companion object {
-    fun buildAccountTransactionStatements(
+    fun make(
       leafTreeNode: TreeNode.Leaf,
       account: Account,
       months: MonthRange,

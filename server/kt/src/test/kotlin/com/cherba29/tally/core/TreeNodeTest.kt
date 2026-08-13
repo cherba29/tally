@@ -25,13 +25,13 @@ class TreeNodeTest : DescribeSpec({
 
   describe("Builder") {
     it("empty") {
-      val builder = TreeNode.Companion.Builder()
+      val builder = TreeNode.Builder()
       val tree = builder.build()
       tree shouldBe root {}
     }
 
     it("just leafs") {
-      val builder = TreeNode.Companion.Builder()
+      val builder = TreeNode.Builder()
       builder.addPath(listOf("child1"))
       builder.addPath(listOf("child2"))
       val tree = builder.build()
@@ -42,7 +42,7 @@ class TreeNodeTest : DescribeSpec({
     }
 
     it("single branch") {
-      val builder = TreeNode.Companion.Builder()
+      val builder = TreeNode.Builder()
       builder.addPath(listOf("branch1", "child1"))
       builder.addPath(listOf("branch1", "child2"))
       val tree = builder.build()
@@ -56,7 +56,7 @@ class TreeNodeTest : DescribeSpec({
     }
 
     it("branch as subpath") {
-      val builder = TreeNode.Companion.Builder()
+      val builder = TreeNode.Builder()
       builder.addPath(listOf("branch1", "child1"))
       builder.addPath(listOf("branch1"))
       val tree = builder.build()
@@ -69,7 +69,7 @@ class TreeNodeTest : DescribeSpec({
     }
 
     it("branch plus leaf") {
-      val builder = TreeNode.Companion.Builder()
+      val builder = TreeNode.Builder()
       builder.addPath(listOf("branch1", "child1"))
       builder.addPath(listOf("branch1", "child2"))
       builder.addPath(listOf("child3"))
@@ -85,7 +85,7 @@ class TreeNodeTest : DescribeSpec({
     }
 
     it("multiple branches") {
-      val builder = TreeNode.Companion.Builder()
+      val builder = TreeNode.Builder()
       builder.addPath(listOf("branch1", "child11"))
       builder.addPath(listOf("branch1", "child12"))
       builder.addPath(listOf("branch1", "branch11", "child113"))
@@ -396,12 +396,12 @@ class TreeNodeTest : DescribeSpec({
 
   describe("builder") {
     it("empty") {
-      val builder = TreeNode.Companion.Builder()
+      val builder = TreeNode.Builder()
       builder.build() shouldBe root {}
     }
 
     it("just leafs") {
-      val builder = TreeNode.Companion.Builder()
+      val builder = TreeNode.Builder()
       builder.addPath(listOf("external"))
       builder.addPath(listOf("internal"))
       builder.build() shouldBe root {
@@ -411,7 +411,7 @@ class TreeNodeTest : DescribeSpec({
     }
 
     it("branched") {
-      val builder = TreeNode.Companion.Builder()
+      val builder = TreeNode.Builder()
       builder.addPath(listOf("external", "child1"))
       builder.addPath(listOf("internal", "child2"))
 
@@ -426,7 +426,7 @@ class TreeNodeTest : DescribeSpec({
     }
 
     it("nested") {
-      val builder = TreeNode.Companion.Builder()
+      val builder = TreeNode.Builder()
       builder.addPath(listOf("branch1", "external", "child1"))
 
       builder.build() shouldBe root {
@@ -439,7 +439,7 @@ class TreeNodeTest : DescribeSpec({
     }
 
     it("sorted by name") {
-      val builder = TreeNode.Companion.Builder()
+      val builder = TreeNode.Builder()
       builder.addPath(listOf("child2"))
       builder.addPath(listOf("child1"))
       builder.build() shouldBe root {
@@ -449,7 +449,7 @@ class TreeNodeTest : DescribeSpec({
     }
 
     it("sorted by rank") {
-      val builder = TreeNode.Companion.Builder()
+      val builder = TreeNode.Builder()
       builder.addPath(listOf("child2"), 1)
       builder.addPath(listOf("child1"), 2)
       builder.build() shouldBe root {

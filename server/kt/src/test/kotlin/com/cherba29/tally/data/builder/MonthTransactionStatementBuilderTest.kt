@@ -18,7 +18,7 @@ import io.kotest.assertions.assertSoftly
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 
-class TransactionTableBuilderTest : DescribeSpec({
+class MonthTransactionStatementBuilderTest : DescribeSpec({
   describe("Creation") {
     it("empty") {
       val tree = root {
@@ -32,7 +32,7 @@ class TransactionTableBuilderTest : DescribeSpec({
       )
 
       val testMonths = JUN / 2026..JUL / 2027
-      val transactionStatements = TransactionTableBuilder.buildAccountTransactionStatements(
+      val transactionStatements = MonthTransactionStatementBuilder.make(
         tree[listOf("test-account1")] as TreeNode.Leaf,
         account,
         months = testMonths,
@@ -54,7 +54,7 @@ class TransactionTableBuilderTest : DescribeSpec({
       val budget = budget {
         setAccount(accountPath, account)
       }
-      val table = TransactionTableBuilder.buildAccountTransactionStatements(
+      val table = MonthTransactionStatementBuilder.make(
         budget.tree[accountPath] as TreeNode.Leaf,
         account,
         months = budget.months,
@@ -143,7 +143,7 @@ class TransactionTableBuilderTest : DescribeSpec({
           DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)
         )
       )
-      val table1 = TransactionTableBuilder.buildAccountTransactionStatements(
+      val table1 = MonthTransactionStatementBuilder.make(
         tree[path1]!! as TreeNode.Leaf,
         account1,
         DEC / 2019..FEB / 2020,
@@ -151,7 +151,7 @@ class TransactionTableBuilderTest : DescribeSpec({
         transfers[tree[path1]]!!      )
       table1.size shouldBe 3
 
-      val table2 = TransactionTableBuilder.buildAccountTransactionStatements(
+      val table2 = MonthTransactionStatementBuilder.make(
         tree[path2]!! as TreeNode.Leaf,
         account2,
         DEC / 2019..FEB / 2020,
@@ -215,7 +215,7 @@ class TransactionTableBuilderTest : DescribeSpec({
         node1 to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
         node2 to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2))
       )
-      val table1 = TransactionTableBuilder.buildAccountTransactionStatements(
+      val table1 = MonthTransactionStatementBuilder.make(
         node1,
         account1,
         DEC / 2019..FEB / 2020,
@@ -224,7 +224,7 @@ class TransactionTableBuilderTest : DescribeSpec({
       )
       table1.size shouldBe 3
 
-      val table2 = TransactionTableBuilder.buildAccountTransactionStatements(
+      val table2 = MonthTransactionStatementBuilder.make(
         node2,
         account2,
         DEC / 2019..FEB / 2020,
@@ -284,7 +284,7 @@ class TransactionTableBuilderTest : DescribeSpec({
         node2 to mapOf()
       )
 
-      val table1 = TransactionTableBuilder.buildAccountTransactionStatements(
+      val table1 = MonthTransactionStatementBuilder.make(
         node1,
         account1,
         NOV / 2019..DEC / 2019,
@@ -294,7 +294,7 @@ class TransactionTableBuilderTest : DescribeSpec({
       // Two transaction statements for the account
       table1.size shouldBe 2
 
-      val table2 = TransactionTableBuilder.buildAccountTransactionStatements(
+      val table2 = MonthTransactionStatementBuilder.make(
         node2,
         account2,
         NOV / 2019..DEC / 2019,
@@ -398,7 +398,7 @@ class TransactionTableBuilderTest : DescribeSpec({
         node3 to mapOf(DEC / 2019 to listOf(transfer1to3))
       )
 
-      val table1 = TransactionTableBuilder.buildAccountTransactionStatements(
+      val table1 = MonthTransactionStatementBuilder.make(
         node1,
         account1,
         DEC / 2019..DEC / 2019,
@@ -407,7 +407,7 @@ class TransactionTableBuilderTest : DescribeSpec({
       )
       table1.size shouldBe 1
 
-      val table2 = TransactionTableBuilder.buildAccountTransactionStatements(
+      val table2 = MonthTransactionStatementBuilder.make(
         node2,
         account2,
         DEC / 2019..DEC / 2019,
@@ -416,7 +416,7 @@ class TransactionTableBuilderTest : DescribeSpec({
       )
       table2.size shouldBe 1
 
-      val table3 = TransactionTableBuilder.buildAccountTransactionStatements(
+      val table3 = MonthTransactionStatementBuilder.make(
         node3,
         account3,
         DEC / 2019..DEC / 2019,

@@ -122,26 +122,23 @@ sealed class TreeNode: TreeNodeInterface<TreeNode> {
     }
   }
 
+  class Builder {
+    private val prefixTree = PrefixTree()
 
-  companion object {
-    class Builder {
-      private val prefixTree = PrefixTree()
+    /** Add path from which tree containing it can be built. */
+    fun addPath(path: List<String>, rank: Int? = null) = prefixTree.insert(path, rank ?: Int.MAX_VALUE)
 
-      /** Add path from which tree containing it can be built. */
-      fun addPath(path: List<String>, rank: Int? = null) = prefixTree.insert(path, rank ?: Int.MAX_VALUE)
+    fun build(): TreeNode = root { addChildren(prefixTree) }
 
-      fun build(): TreeNode = root { addChildren(prefixTree) }
-
-      companion object {
-        // Recursively build immutable tree nodes from prefix tree.
-        context(parentList: ParentList)
-        private fun addChildren(prefixTree: PrefixTree) {
-          for ((childName, childTree) in prefixTree.sortedEntries) {
-            if (childTree.isEmpty()) {
-              parentList.leaf(childName)
-            } else {
-              parentList.branch(childName) { addChildren(childTree) }
-            }
+    companion object {
+      // Recursively build immutable tree nodes from prefix tree.
+      context(parentList: ParentList)
+      private fun addChildren(prefixTree: PrefixTree) {
+        for ((childName, childTree) in prefixTree.sortedEntries) {
+          if (childTree.isEmpty()) {
+            parentList.leaf(childName)
+          } else {
+            parentList.branch(childName) { addChildren(childTree) }
           }
         }
       }
