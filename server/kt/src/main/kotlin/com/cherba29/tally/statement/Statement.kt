@@ -7,41 +7,55 @@ import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sign
 
+/**
+ * For given month represents a snapshot of starting and ending balances with summarized activity.
+ * Extensions of this specialize it over set of transactions or set of other statements.
+ */
 sealed class Statement(
   val treeNode: TreeNode,
 
-  // Period of time for the statement
+  /** Period of time for the statement. */
   val monthRange: MonthRange,
 
+  /** True if account was closed during this month range. */
   val isClosed: Boolean = false,
 
-  // Recorded start balance for the statement.
+  /** Recorded start balance for the statement. */
   val startBalance: Balance? = null,
 
-  // Recorded end balance for the statement.
+  /** Recorded end balance for the statement. */
   val endBalance: Balance? = null,
 
-  // Total transaction inflows.
+  /** Total transaction inflows. */
   val inFlows: Long = 0,
 
-  // Total transaction outflows.
+  /** Total transaction outflows. */
   val outFlows: Long = 0,
 
-  // Amount transferred to other accounts by same owner.
+  /** Amount transferred to other accounts by same owner. */
   val totalTransfers: Long = 0,
 
-  // Amount transferred to external entities.
+  /** Amount transferred to external entities. */
   val totalPayments: Long = 0,
 
-  // Amount transferred from external entities.
+  /** Amount transferred from external entities. */
   val income: Long = 0,
 ) {
+  /** Total known change based on transactions. */
   val addSub: Long = inFlows + outFlows
 
+  /** Total change based on starting and ending balance. */
   val change: Long? = startBalance?.let { s ->
     endBalance?.let { e -> e.amount - s.amount }
   }
 
+  /**
+   * Change should generally be same as addSub,
+   * any difference is considered to be unaccounted amount.
+   */
+  val unaccounted: Long? = change?.let { it - addSub }
+
+  /** Total change as a percentage of starting balance. */
   val percentChange: Double? = startBalance?.let {
     when (val changeAmount = change) {
       null -> null
@@ -50,6 +64,7 @@ sealed class Statement(
     }
   }
 
+  /** Same as percentChange but at annualized rate. */
   val annualizedPercentChange: Double? = run {
     val prctChange = percentChange ?: return@run null
     val numberOfMonths = monthRange.size
@@ -59,8 +74,7 @@ sealed class Statement(
     if (result < 10) 100 * prctChange.sign * result else null
   }
 
-  val unaccounted: Long? = change?.let { it - addSub }
-
+  /** Marker if there has been any activity of this month and account. */
   val isEmpty: Boolean =
     startBalance == null && endBalance == null && totalTransfers == 0L && income == 0L &&
         inFlows == 0L && outFlows == 0L && totalPayments == 0L

@@ -79,7 +79,7 @@ class Transactions : CliktCommand() {
         echo(
           "${t.balance.date},${amount.asAmount().padStart(8)}, ${
             accountName.padEnd(20)
-          },${t.treeNode.name},${t.description ?: ""}\n"
+          },${t.targetTreeNode.name},${t.description ?: ""}\n"
         )
       }
     }

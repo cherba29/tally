@@ -35,7 +35,7 @@ fun Balance.toGql(): GqlBalance = GqlBalance(
 )
 
 fun Transaction.toGql(): GqlTransaction = GqlTransaction(
-  toAccountName = treeNode.name,
+  toAccountName = targetTreeNode.name,
   isIncome = type == Transaction.Type.INCOME,
   isExpense = type == Transaction.Type.EXPENSE,
   balance = balance.toGql(),

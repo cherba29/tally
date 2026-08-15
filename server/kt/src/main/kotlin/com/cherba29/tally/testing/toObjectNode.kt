@@ -152,7 +152,7 @@ fun GqlBalance.toObjectNode(root: ObjectNode) {
 fun Transaction.toObjectNode(root: ObjectNode) {
   root.put("__type", this.javaClass.simpleName)
   val pathNode = root.putArray("path")
-  treeNode.path.forEach { pathNode.add(it) }
+  targetTreeNode.path.forEach { pathNode.add(it) }
 
   balance.toObjectNode(root.putObject("balance"))
   if (description != null) {

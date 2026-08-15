@@ -4,7 +4,9 @@ import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.MonthRange
 
-// Extension of Statement for transactions over an account.
+/**
+ * Extension of Statement for transactions for an account ie treeNode.
+ */
 class TransactionStatement(
   treeNode: TreeNode,
   monthRange: MonthRange,

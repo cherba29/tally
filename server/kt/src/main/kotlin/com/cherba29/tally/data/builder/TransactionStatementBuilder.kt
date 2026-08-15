@@ -87,7 +87,7 @@ class TransactionStatementBuilder {
       && firstTransaction.balance.date < startBalance!!.date) {
       throw IllegalStateException(
         "$month $startBalance for account $treeNode starts after its first " +
-            "transfer to ${firstTransaction.treeNode.path.joinToString("/")} " +
+            "transfer to ${firstTransaction.targetTreeNode.path.joinToString("/")} " +
             "for amount of ${firstTransaction.balance} desc '${firstTransaction.description}'"
       )
     }

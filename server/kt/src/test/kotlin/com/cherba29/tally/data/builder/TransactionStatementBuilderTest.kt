@@ -103,7 +103,7 @@ class TransactionStatementBuilderTest : DescribeSpec({
       transactionStatement.change shouldBe null
       transactionStatement.transactions shouldBe listOf(
         Transaction(
-          treeNode = testTreeLeafNode2,
+          targetTreeNode = testTreeLeafNode2,
           balance = -testTransferBalance,
           description = "test transfer",
           type = Transaction.Type.EXPENSE,
@@ -157,14 +157,14 @@ class TransactionStatementBuilderTest : DescribeSpec({
       transactionStatement.change shouldBe null
       transactionStatement.transactions shouldBe listOf(
         Transaction(
-          treeNode = testTreeLeafNode2,
+          targetTreeNode = testTreeLeafNode2,
           balance = testTransferBalance,
           description = "test transfer",
           type = Transaction.Type.INCOME,
           balanceFromStart = 1000
         ),
         Transaction(
-          treeNode = testTreeLeafNode2,
+          targetTreeNode = testTreeLeafNode2,
           balance = -testTransferBalance,
           description = "test transfer",
           type = Transaction.Type.EXPENSE,

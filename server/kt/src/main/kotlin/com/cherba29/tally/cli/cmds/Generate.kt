@@ -101,7 +101,7 @@ class Generate : CliktCommand() {
       if (showTransfers) {
         for (transfer in transfers) {
           lines.add(
-            "    $currentMonth $account --> ${transfer.treeNode.name} ${-transfer.balance}"
+            "    $currentMonth $account --> ${transfer.targetTreeNode.name} ${-transfer.balance}"
           )
         }
       }
