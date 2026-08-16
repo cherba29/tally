@@ -1,6 +1,5 @@
 package com.cherba29.tally.data.builder
 
-import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
@@ -12,8 +11,8 @@ class MonthTransactionStatementBuilder {
   companion object {
     fun make(
       leafTreeNode: TreeNode.Leaf,
-      account: Account,
       months: MonthRange,
+      monthToClosed: Map<Month, Boolean>,
       monthlyBalances: Map<Month, Balance>,
       monthlyTransfers: Map<Month, List<Transfer>>,
     ): Map<Month, TransactionStatement> {
@@ -22,15 +21,14 @@ class MonthTransactionStatementBuilder {
       // Make statement outside range so that its attributes relating to previous can be used.
       val nextMonth = months.last().next()
 
+      // Dummy future statement to help with endBalance and whether last month is covered.
+      // It's not included int the result.
       var nextMonthStatement = transactionStatement {
         treeNode = leafTreeNode
         month = nextMonth
-        isClosed = account.isClosed(nextMonth)
+        isClosed = false
         startBalance = monthlyBalances[nextMonth]
-
-        for (transfer in monthlyTransfers[nextMonth] ?: listOf()) {
-          addTransfer(transfer)
-        }
+        monthlyTransfers[nextMonth]?.forEach { addTransfer(it) }
       }
       // TODO: maybe do not generate statement for closed account.
       // Working backwards.
@@ -39,11 +37,9 @@ class MonthTransactionStatementBuilder {
         nextMonthStatement = transactionStatement {
           treeNode = leafTreeNode
           this.month = month
-          isClosed = account.isClosed(month)
+          isClosed = monthToClosed[month] ?: throw IllegalArgumentException("No isClosed value for $month")
           startBalance = monthlyBalances[month]
-          for (transfer in monthlyTransfers[month] ?: listOf()) {
-            addTransfer(transfer)
-          }
+          monthlyTransfers[month]?.forEach { addTransfer(it) }
           endBalance = nextMonthStatement.startBalance
           isCovered =
             endBalance == null || endBalance!!.amount >= 0 || nextMonthStatement.coversPrevious
@@ -52,8 +48,9 @@ class MonthTransactionStatementBuilder {
         areClosed = areClosed and nextMonthStatement.isClosed
         accountStatements[month] = nextMonthStatement
       }
-      // Do not include account if for all months it was closed.
-      return if (areClosed) mutableMapOf() else accountStatements
+      // Do not include internal account if for all months it was closed.
+      // Internal accounts are closed with zero balance, so are not interesting anymore.
+      return if (!leafTreeNode.isExternal and areClosed) mutableMapOf() else accountStatements
     }
   }
 }

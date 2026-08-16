@@ -154,12 +154,14 @@ class ParentList(
   private val children: MutableList<TreeNode> = mutableListOf()
 ) : List<TreeNode> by children {
 
+  private fun isExternal(name: String) = name == EXTERNAL_NAME || parent.isExternal
+
   fun branch(name: String, createChildren: ParentList.() -> Unit) {
-    children += TreeNode.Branch(name, createChildren, parent, name == EXTERNAL_NAME || parent.isExternal)
+    children += TreeNode.Branch(name, createChildren, parent, isExternal(name))
   }
 
   fun leaf(name: String) {
-    children += TreeNode.Leaf(name, parent, name == EXTERNAL_NAME || parent.isExternal)
+    children += TreeNode.Leaf(name, parent, isExternal(name))
   }
 
   // Since this class is member of TreeNode, which has equals override it here as well.
