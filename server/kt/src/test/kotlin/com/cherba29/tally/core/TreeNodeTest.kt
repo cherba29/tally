@@ -288,6 +288,58 @@ class TreeNodeTest : DescribeSpec({
     }
   }
 
+  describe("index path") {
+    it("on empty returns empty") {
+      val tree = root {}
+      tree.indexPath shouldBe listOf()
+    }
+
+    it("just leafs") {
+      val tree = root {
+        leaf("external")
+        leaf("internal")
+      }
+      tree.children[0].indexPath shouldBe listOf(0)
+      tree.children[1].indexPath shouldBe listOf(1)
+    }
+
+    it("branched") {
+      val tree = root {
+        branch("external") {
+          leaf("child1")
+        }
+        branch("internal") {
+          leaf("child2")
+        }
+      }
+      tree.children[0].indexPath shouldBe listOf(0)
+      tree.children[0].children[0].indexPath shouldBe listOf(0, 0)
+      tree.children[1].indexPath shouldBe listOf(1)
+      tree.children[1].children[0].indexPath shouldBe listOf(1, 0)
+    }
+
+    it("nested") {
+      val tree = root {
+        branch("branch1") {
+          branch("external") {
+            leaf("child1")
+            leaf("child2")
+          }
+        }
+      }
+      tree.children[0].indexPath shouldBe listOf(0)
+      tree.children[0].children[0].indexPath shouldBe listOf(0, 0)
+      tree.children[0]
+        .children[0]
+        .children[0]
+        .indexPath shouldBe listOf(0, 0, 0)
+      tree.children[0]
+        .children[0]
+        .children[1]
+        .indexPath shouldBe listOf(0, 0, 1)
+    }
+  }
+
   describe("traverse up") {
     it("empty") {
       val tree = root {}
@@ -495,6 +547,66 @@ class TreeNodeTest : DescribeSpec({
                     └── child1
         
         """.trimIndent()
+    }
+  }
+
+  describe("comparable") {
+    it("equal return zero") {
+      val tree = root {
+        leaf("child1")
+      }
+      tree.children[0].compareTo(tree.children[0]) shouldBe 0
+    }
+
+    it("lesser returns negative") {
+      val tree = root {
+        leaf("child1")
+        leaf("child2")
+      }
+      tree.children[0].compareTo(tree.children[1]) shouldBe -1
+    }
+
+    it("greater returns positive") {
+      val tree = root {
+        leaf("child1")
+        leaf("child2")
+      }
+      tree.children[1].compareTo(tree.children[0]) shouldBe 1
+    }
+
+    it("same path uses tie breaker") {
+      val tree = root {
+        branch("branch1") {
+          leaf("child1")
+        }
+      }
+      tree.children[0].compareTo(tree.children[0].children[0]) shouldBe -1
+    }
+
+    it("sorts correctly") {
+      val tree = root {
+        branch("branch1") {
+          leaf("child1")
+        }
+        branch("branch2") {
+          leaf("child2")
+        }
+        leaf("child3")
+      }
+      val unsortedList = listOf(
+        tree[listOf("branch1")]!!,
+        tree[listOf("branch2")]!!,
+        tree[listOf("child3")]!!,
+        tree[listOf("branch1", "child1")]!!,
+        tree[listOf("branch2", "child2")]!!,
+      )
+      unsortedList.sorted() shouldBe listOf(
+        tree[listOf("branch1")]!!,
+        tree[listOf("branch1", "child1")]!!,
+        tree[listOf("branch2")]!!,
+        tree[listOf("branch2", "child2")]!!,
+        tree[listOf("child3")]!!,
+      )
     }
   }
 })

@@ -126,7 +126,7 @@ fun SummaryStatement.toGql(summaryName: String): GqlSummaryStatement = GqlSummar
  * Converts summary statement as a summary data with substatements and a total.
  **/
 fun SummaryStatement.toGqlSummaryData(summaryName: String): GqlSummaryData =  GqlSummaryData(
-  statements = statements.map { (treeNode, stmt) ->
+  statements = statements.toSortedMap().map { (treeNode, stmt) ->
     when (stmt) {
       is SummaryStatement -> (stmt as Statement).toGql(treeNode.name)  // Treat it as regular statement.
       else -> stmt.toGql(treeNode.name)

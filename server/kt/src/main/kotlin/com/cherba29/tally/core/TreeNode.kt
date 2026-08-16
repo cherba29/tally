@@ -26,7 +26,7 @@ interface TreeNodeInterface<T> {
   val isExternal: Boolean
 }
 
-sealed class TreeNode: TreeNodeInterface<TreeNode> {
+sealed class TreeNode: TreeNodeInterface<TreeNode>, Comparable<TreeNode> {
   class Root(
     override val name: String = "",
     override val isExternal: Boolean = false,
@@ -122,6 +122,20 @@ sealed class TreeNode: TreeNodeInterface<TreeNode> {
     }
   }
 
+  val indexPath: List<Int> by lazy {
+    var currParent = parent
+    var childName = name
+    val path = mutableListOf<Int>()
+    while (currParent != null) {
+      path.add(currParent.children.indexOfFirst { it.name == childName })
+      childName = currParent.name
+      currParent = currParent.parent
+    }
+    path.reversed()
+  }
+
+  override fun compareTo(other: TreeNode): Int = indexPath.lexicographicCompareTo(other.indexPath)
+
   class Builder {
     private val prefixTree = PrefixTree()
 
@@ -144,6 +158,15 @@ sealed class TreeNode: TreeNodeInterface<TreeNode> {
       }
     }
   }
+}
+
+private fun <T : Comparable<T>> List<T>.lexicographicCompareTo(other: List<T>): Int {
+  val minSize = minOf(this.size, other.size)
+  for (i in 0 until minSize) {
+    val cmp = this[i].compareTo(other[i])
+    if (cmp != 0) return cmp
+  }
+  return this.size.compareTo(other.size)
 }
 
 private const val EXTERNAL_NAME = "external"
