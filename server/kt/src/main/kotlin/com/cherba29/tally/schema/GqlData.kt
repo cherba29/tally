@@ -60,7 +60,6 @@ data class GqlStatement(
 data class GqlSummaryStatement(
   val name: String,
   val month: Month,
-  val accounts: List<String>,
   val addSub: Long,
   val income: Long,
   val change: Long,

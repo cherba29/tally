@@ -24,8 +24,6 @@
     __type: GqlSummaryStatement
     name: internal
     month: Mar2026
-    accounts:
-    - test-account2
     addSub: 0
     income: 0
     change: 50
@@ -78,8 +76,6 @@
     __type: GqlSummaryStatement
     name: internal
     month: Mar2026
-    accounts:
-    - test-account1
     addSub: 25
     income: 75
     change: -100
@@ -130,8 +126,6 @@
     __type: GqlSummaryStatement
     name: internal
     month: Mar2026
-    accounts:
-    - test-account1
     addSub: -50
     income: 0
     change: 50
@@ -179,8 +173,6 @@
     __type: GqlSummaryStatement
     name: internal
     month: Mar2026
-    accounts:
-    - test-account1
     addSub: 0
     income: 0
     change: -100
@@ -231,8 +223,6 @@
     __type: GqlSummaryStatement
     name: internal
     month: Mar2026
-    accounts:
-    - test-account1
     addSub: -50
     income: 0
     change: -100
@@ -362,9 +352,6 @@
     __type: GqlSummaryStatement
     name: internal
     month: Mar2026
-    accounts:
-    - test-account1
-    - test-account2
     addSub: 0
     income: 0
     change: -300

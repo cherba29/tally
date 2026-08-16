@@ -108,7 +108,6 @@ fun Statement.toGqlTableCell() = when (this) {
 fun SummaryStatement.toGql(): GqlSummaryStatement = GqlSummaryStatement(
   name = treeNode.name,
   month = monthRange.first,
-  accounts = statements.map { it.treeNode.name }.sorted(),
   addSub = addSub,
   income = income,
   change = change ?: 0,

@@ -145,7 +145,6 @@ export class BackendClient {
               unaccounted
             }
             total {
-              accounts
               addSub
               change
               endBalance {

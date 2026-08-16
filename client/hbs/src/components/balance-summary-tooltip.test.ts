@@ -15,7 +15,6 @@ describe('BalanceSummaryTooltip component', () => {
     const monthRangeChange = () => {};
     const summaryEntries: StatementEntry[] = [];
     const summary: GqlSummaryStatement = {
-      accounts: [],
       addSub: undefined,
       annualizedPercentChange: 0,
       change: undefined,

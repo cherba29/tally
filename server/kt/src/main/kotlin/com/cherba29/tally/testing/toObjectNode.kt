@@ -193,10 +193,6 @@ fun GqlSummaryStatement.toObjectNode(root: ObjectNode) {
   root.put("__type", this.javaClass.simpleName)
   root.put("name", name)
   root.put("month", month.toString())
-  if (accounts.isNotEmpty()) {
-    val accountsNode = root.putArray("accounts")
-    accounts.forEach { accountsNode.add(it) }
-  }
   root.put("addSub", addSub)
   root.put("income", income)
   root.put("change", change)

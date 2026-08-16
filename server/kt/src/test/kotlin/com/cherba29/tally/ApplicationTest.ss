@@ -127,7 +127,6 @@ type GqlSummaryData {
 }
 
 type GqlSummaryStatement {
-  accounts: [String!]!
   addSub: Long!
   annualizedPercentChange: Float!
   change: Long!

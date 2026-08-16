@@ -116,7 +116,6 @@ export type GqlSummaryData = {
 
 export type GqlSummaryStatement = {
   __typename?: 'GqlSummaryStatement';
-  accounts: Array<Scalars['String']['output']>;
   addSub: Scalars['Long']['output'];
   annualizedPercentChange: Scalars['Float']['output'];
   change: Scalars['Long']['output'];
