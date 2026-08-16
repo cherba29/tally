@@ -1,14 +1,12 @@
 package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.MonthRange
 
 /**
  * Extension of Statement for transactions for an account ie treeNode.
  */
 class TransactionStatement(
-  treeNode: TreeNode,
   monthRange: MonthRange,
   isClosed: Boolean,
   startBalance: Balance?,
@@ -38,7 +36,6 @@ class TransactionStatement(
   val transactions: MutableList<Transaction> = mutableListOf()
 ) :
   Statement(
-    treeNode,
     monthRange,
     isClosed,
     startBalance,

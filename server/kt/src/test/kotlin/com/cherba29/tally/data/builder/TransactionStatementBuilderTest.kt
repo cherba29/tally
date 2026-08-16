@@ -20,12 +20,11 @@ class TransactionStatementBuilderTest : DescribeSpec({
       val testTreeLeafNode = testTree["test-account"] as TreeNode.Leaf
       val testMonthRange = JUL / 2026..JUL / 2026
       val builder = TransactionStatementBuilder()
-      builder.treeNode = testTreeLeafNode
+      builder.originTreeNode = testTreeLeafNode
       builder.month = testMonthRange.first
       builder.isClosed = false
 
       val transactionStatement = builder.build()
-      transactionStatement.treeNode shouldBe testTreeLeafNode
       transactionStatement.monthRange shouldBe testMonthRange
       transactionStatement.startBalance shouldBe null
       transactionStatement.endBalance shouldBe null
@@ -58,7 +57,7 @@ class TransactionStatementBuilderTest : DescribeSpec({
         tags = listOf()
       )
       val builder = TransactionStatementBuilder()
-      builder.treeNode = testTreeLeafNode3
+      builder.originTreeNode = testTreeLeafNode3
       builder.month = testMonthRange.first
       builder.isClosed = false
       val error = shouldThrow<IllegalStateException> {
@@ -91,12 +90,11 @@ class TransactionStatementBuilderTest : DescribeSpec({
         tags = listOf()
       )
       val builder = TransactionStatementBuilder()
-      builder.treeNode = testTreeLeafNode1
+      builder.originTreeNode = testTreeLeafNode1
       builder.month = testMonthRange.first
       builder.isClosed = false
       builder.addTransfer(testTransfer)
       val transactionStatement = builder.build()
-      transactionStatement.treeNode shouldBe testTreeLeafNode1
       transactionStatement.monthRange shouldBe testMonthRange
       transactionStatement.startBalance shouldBe null
       transactionStatement.endBalance shouldBe null
@@ -143,14 +141,13 @@ class TransactionStatementBuilderTest : DescribeSpec({
       )
       val testStartBalance = Balance(1000, LocalDate(2026, 7, 1), Balance.Type.PROJECTED)
       val builder = TransactionStatementBuilder()
-      builder.treeNode = testTreeLeafNode1
+      builder.originTreeNode = testTreeLeafNode1
       builder.month = testMonthRange.first
       builder.isClosed = false
       builder.startBalance = testStartBalance
       builder.addTransfer(testTransferFrom)
       builder.addTransfer(testTransferTo)
       val transactionStatement = builder.build()
-      transactionStatement.treeNode shouldBe testTreeLeafNode1
       transactionStatement.monthRange shouldBe testMonthRange
       transactionStatement.startBalance shouldBe testStartBalance
       transactionStatement.endBalance shouldBe null

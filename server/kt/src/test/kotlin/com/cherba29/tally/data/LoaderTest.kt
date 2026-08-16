@@ -49,7 +49,6 @@ class LoaderTest : DescribeSpec({
         val accountNode = result.tree[listOf("someone", "external", "test-account")]
         val tranStatement = result.nodeToStatement[accountNode]?.get(MAR / 2019)!!
         tranStatement.monthRange shouldBe MAR / 2019..MAR / 2019
-        tranStatement.treeNode.name shouldBe "test-account"
 
         tranStatement.startBalance shouldBe Balance(
           10000,
@@ -79,7 +78,6 @@ class LoaderTest : DescribeSpec({
         val tranStatement =
           result.nodeToStatement[result.tree[listOf("someone", "external", "test-account")]]?.get(MAR / 2019)!!
         tranStatement.monthRange shouldBe MAR / 2019..MAR / 2019
-        tranStatement.treeNode.name shouldBe "test-account"
 
         tranStatement.startBalance shouldBe Balance(
           10000,

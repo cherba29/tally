@@ -10,15 +10,12 @@ class SummaryMapBuilder {
   private val summaryStatements = mutableMapOf<TreeNode, MutableMap<Month, MonthSummaryStatementBuilder>>()
 
   // Adds statement to its immediate parent summary statement.
-  fun addStatement(statement: Statement) {
-    val parent = statement.treeNode.parent!!
-    summaryStatements.getOrPut(parent) {
+  fun addStatement(treeNode: TreeNode, month: Month, statement: Statement) {
+    summaryStatements.getOrPut(treeNode.parent!!) {
       mutableMapOf()
-    }.getOrPut(statement.monthRange.first) {
-      val builder = MonthSummaryStatementBuilder()
-      builder.treeNode = parent
-      builder
-    }.addStatement(statement)
+    }.getOrPut(month) {
+      MonthSummaryStatementBuilder()
+    }.addStatement(treeNode, statement)
   }
 
   // Make sure totals are computed for parent summary accounts up the path to the root.
@@ -38,6 +35,8 @@ class SummaryMapBuilder {
 
         for ((month, monthlyStatement) in monthlyStatements) {
           addStatement(
+            node,
+            month,
             try {
               monthlyStatement.build()
             } catch (e: Exception) {

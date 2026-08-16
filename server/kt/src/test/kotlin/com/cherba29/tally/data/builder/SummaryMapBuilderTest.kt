@@ -2,6 +2,7 @@ package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.MonthName.MAY
 import com.cherba29.tally.core.root
+import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -22,10 +23,12 @@ class SummaryMapBuilderTest : DescribeSpec({
           }
         }
       }
+      val node = tree[listOf("john", "internal", "test-account")]!!
       val builder = SummaryMapBuilder()
       builder.addStatement(
+        node,
+        MAY / 2026,
         statement = TransactionStatement(
-          tree[listOf("john", "internal", "test-account")]!!,
           monthRange = MAY / 2026..MAY / 2026,
           isClosed = false,
           startBalance = null
@@ -36,15 +39,10 @@ class SummaryMapBuilderTest : DescribeSpec({
       summaryStatements.keys.map { it.path }.toSet() shouldBe setOf(listOf("john", "internal"), listOf("john"))
       val treeNode = tree[listOf("john", "internal")]!!
       val stmt = summaryStatements[treeNode]!![MAY / 2026]!!
-      stmt.treeNode.path shouldBe listOf("john", "internal")
-      stmt.treeNode.isExternal shouldBe false
-      stmt.treeNode.children.isNotEmpty() shouldBe true
       stmt.monthRange shouldBe MAY / 2026..MAY / 2026
       stmt.statements.size shouldBe 1
-      val subStatement = stmt.statements.first()
-      subStatement.treeNode.name shouldBe "test-account"
+      val subStatement = stmt.statements[node] as TransactionStatement
       subStatement.monthRange shouldBe MAY / 2026..MAY / 2026
-      subStatement.treeNode.path shouldBe listOf("john", "internal", "test-account")
     }
 
     it("add single and propagate up") {
@@ -56,10 +54,12 @@ class SummaryMapBuilderTest : DescribeSpec({
         }
       }
 
+      val node = tree[listOf("john", "internal", "test-account")]!!
       val aggregator = SummaryMapBuilder()
       aggregator.addStatement(
+        node,
+        MAY / 2026,
         statement = TransactionStatement(
-          tree[listOf("john", "internal", "test-account")]!!,
           monthRange = MAY / 2026..MAY / 2026,
           isClosed = false,
           startBalance = null
@@ -71,23 +71,17 @@ class SummaryMapBuilderTest : DescribeSpec({
       summaryStatements.size shouldBe 2
       summaryStatements.keys.map { it.path }.toSet() shouldBe setOf(listOf("john", "internal"), listOf("john"))
       val stmt = summaryStatements[tree[listOf("john", "internal")]]!![MAY / 2026]!!
-      stmt.treeNode.isExternal shouldBe false
-      stmt.treeNode.children.isNotEmpty() shouldBe true
       stmt.monthRange shouldBe MAY / 2026..MAY / 2026
-      stmt.treeNode.path shouldBe listOf("john", "internal")
       stmt.statements.size shouldBe 1
-      val subStatement = stmt.statements.first()
+      val subStatement = stmt.statements[node] as TransactionStatement
       subStatement.monthRange shouldBe MAY / 2026..MAY / 2026
-      subStatement.treeNode.path shouldBe listOf("john", "internal", "test-account")
 
       val topStmt = summaryStatements[tree[listOf("john")]]!![MAY / 2026]!!
       topStmt.monthRange shouldBe MAY / 2026..MAY / 2026
-      topStmt.treeNode.path shouldBe listOf("john")
-      topStmt.statements.size shouldBe 1
+      topStmt.statements.keys shouldBe setOf(tree[listOf("john", "internal")])
 
-      val topSubStatement = topStmt.statements.first()
+      val topSubStatement = topStmt.statements[tree[listOf("john", "internal")]] as SummaryStatement
       topSubStatement.monthRange shouldBe MAY / 2026..MAY / 2026
-      topSubStatement.treeNode.path shouldBe listOf("john", "internal")
     }
   }
 
@@ -104,26 +98,32 @@ class SummaryMapBuilderTest : DescribeSpec({
       }
     }
 
+    val node1 = tree[listOf("john", "internal", "test-account1")]!!
+    val node2 = tree[listOf("john", "external", "test-account2")]!!
+    val node3 = tree[listOf("john", "external", "test-account3")]!!
     val aggregator = SummaryMapBuilder()
     aggregator.addStatement(
+      node1,
+      MAY / 2026,
       statement = TransactionStatement(
-        tree[listOf("john", "internal", "test-account1")]!!,
         monthRange = MAY / 2026..MAY / 2026,
         isClosed = false,
         startBalance = null
       )
     )
     aggregator.addStatement(
+      node2,
+      MAY / 2026,
       statement = TransactionStatement(
-        tree[listOf("john", "external", "test-account2")]!!,
         monthRange = MAY / 2026..MAY / 2026,
         isClosed = false,
         startBalance = null
       )
     )
     aggregator.addStatement(
+      node3,
+      MAY / 2026,
       statement = TransactionStatement(
-        tree[listOf("john", "external", "test-account3")]!!,
         monthRange = MAY / 2026..MAY / 2026,
         isClosed = false,
         startBalance = null
@@ -138,42 +138,29 @@ class SummaryMapBuilderTest : DescribeSpec({
       listOf("john", "external"),
       listOf("john")
     )
-    val stmtInternal = summaryStatements[tree[listOf("john", "internal")]]!![MAY / 2026]!!
-    stmtInternal.treeNode.isExternal shouldBe false
-    stmtInternal.treeNode.children.isNotEmpty() shouldBe true
-    stmtInternal.monthRange shouldBe MAY / 2026..MAY / 2026
-    stmtInternal.treeNode.path shouldBe listOf("john", "internal")
-    stmtInternal.statements.size shouldBe 1
-    val subStmtInternal = stmtInternal.statements.first()
-    subStmtInternal.monthRange shouldBe MAY / 2026..MAY / 2026
-    subStmtInternal.treeNode.path shouldBe listOf("john", "internal", "test-account1")
+    val stmtInternal = summaryStatements[tree[listOf("john", "internal")]]!!
+    val stmtInternalMay = stmtInternal[MAY / 2026]!!
+    stmtInternalMay.monthRange shouldBe MAY / 2026..MAY / 2026
+    stmtInternalMay.statements.keys shouldBe setOf(node1)
+    val subStmtInternalMay = stmtInternalMay.statements[node1] as TransactionStatement
+    subStmtInternalMay.monthRange shouldBe MAY / 2026..MAY / 2026
 
     val stmtExternal = summaryStatements[tree[listOf("john", "external")]]!![MAY / 2026]!!
-    stmtExternal.treeNode.isExternal shouldBe true
-    stmtExternal.treeNode.children.isNotEmpty() shouldBe true
     stmtExternal.monthRange shouldBe MAY / 2026..MAY / 2026
-    stmtExternal.treeNode.path shouldBe listOf("john", "external")
     stmtExternal.statements.size shouldBe 2
-    val subStmt1External = stmtExternal.statements[0]
+    val subStmt1External = stmtExternal.statements[node2] as TransactionStatement
     subStmt1External.monthRange shouldBe MAY / 2026..MAY / 2026
-    subStmt1External.treeNode.path shouldBe listOf("john", "external", "test-account2")
-    val subStmt2External = stmtExternal.statements[1]
+    val subStmt2External = stmtExternal.statements[node3] as TransactionStatement
     subStmt2External.monthRange shouldBe MAY / 2026..MAY / 2026
-    subStmt2External.treeNode.path shouldBe listOf("john", "external", "test-account3")
 
     val topStmt = summaryStatements[tree[listOf("john")]]!![MAY / 2026]!!
-    topStmt.treeNode.children.isNotEmpty() shouldBe true
-    topStmt.treeNode.isExternal shouldBe false
     topStmt.monthRange shouldBe MAY / 2026..MAY / 2026
-    topStmt.treeNode.path shouldBe listOf("john")
     topStmt.statements.size shouldBe 2
 
-    val topInternalSubStatement = topStmt.statements[0]
+    val topInternalSubStatement = topStmt.statements[tree[listOf("john", "internal")]] as SummaryStatement
     topInternalSubStatement.monthRange shouldBe MAY / 2026..MAY / 2026
-    topInternalSubStatement.treeNode.path shouldBe listOf("john", "internal")
 
-    val topExternalSubStatement = topStmt.statements[1]
+    val topExternalSubStatement = topStmt.statements[tree[listOf("john", "external")]] as SummaryStatement
     topExternalSubStatement.monthRange shouldBe MAY / 2026..MAY / 2026
-    topExternalSubStatement.treeNode.path shouldBe listOf("john", "external")
   }
 })

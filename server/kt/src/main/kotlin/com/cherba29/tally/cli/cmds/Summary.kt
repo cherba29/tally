@@ -52,13 +52,13 @@ class Summary : CliktCommand() {
       else {
         val builder = MonthRangeSummaryStatementBuilder()
         for (summaryStatement in summaryStatements.values) {
-          for (subStatement in summaryStatement.statements) {
-            builder.addStatement(subStatement)
+          for ((treeNode, subStatement) in summaryStatement.statements) {
+            builder.addStatement(treeNode, subStatement.monthRange.first(), subStatement)
           }
         }
-        builder.build(summaryNode)
+        builder.build()
       }
-    echo("name: ${summary.treeNode.path.joinToString("/")}")
+    echo("name: ${summaryNode.path.joinToString("/")}")
     echo("month: ${summary.monthRange}")
     echo("addSub: ${summary.addSub.asAmount()}")
     echo("income: ${summary.income.asAmount()}")

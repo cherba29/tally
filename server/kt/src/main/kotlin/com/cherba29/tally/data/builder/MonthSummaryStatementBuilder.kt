@@ -1,24 +1,22 @@
 package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.MonthRange
+import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.plus
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 
 class MonthSummaryStatementBuilder {
-  var treeNode: TreeNode? = null
-  private val statements: MutableList<Statement> = mutableListOf()
+  private val statements = mutableMapOf<TreeNode, Statement>()
 
-  fun addStatement(statement: Statement) {
-    statements.add(statement)
+  fun addStatement(treeNode: TreeNode, statement: Statement) {
+    statements[treeNode] = statement
   }
 
   fun build(): SummaryStatement {
-    require(treeNode != null) { "summary build failed: treeNode is not set"}
     require(statements.isNotEmpty()) { "summary build failed: no statements have been added"}
-    val monthRanges = statements.map { it.monthRange }.toSet()
+    val monthRanges = statements.values.map { it.monthRange }.toSet()
     require(monthRanges.size == 1) { "summary build failed: statements for different months provided"}
     val monthRange: MonthRange = monthRanges.first()
     var startBalance: Balance? = null
@@ -29,7 +27,7 @@ class MonthSummaryStatementBuilder {
     var totalPayments: Long = 0
     var income: Long = 0
 
-    for (statement in statements) {
+    for (statement in statements.values) {
       startBalance += statement.startBalance
       endBalance += statement.endBalance
       inFlows += statement.inFlows
@@ -40,9 +38,8 @@ class MonthSummaryStatementBuilder {
     }
 
     return SummaryStatement(
-      treeNode!!,
       monthRange,
-      statements.all { statement -> statement.isClosed },
+      statements.values.all { statement -> statement.isClosed },
       startBalance,
       endBalance,
       inFlows,

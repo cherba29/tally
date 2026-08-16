@@ -1,7 +1,6 @@
 package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.MonthRange
 import kotlin.math.absoluteValue
 import kotlin.math.pow
@@ -12,8 +11,6 @@ import kotlin.math.sign
  * Extensions of this specialize it over set of transactions or set of other statements.
  */
 sealed class Statement(
-  val treeNode: TreeNode,
-
   /** Period of time for the statement. */
   val monthRange: MonthRange,
 
@@ -80,15 +77,14 @@ sealed class Statement(
         inFlows == 0L && outFlows == 0L && totalPayments == 0L
 
   override fun toString(): String {
-    return "${treeNode.path.joinToString("/")} months=$monthRange isClosed=$isClosed startBalance=$startBalance endBalance=$endBalance inFlows=$inFlows outFlows=$outFlows"
+    return "months=$monthRange isClosed=$isClosed startBalance=$startBalance endBalance=$endBalance inFlows=$inFlows outFlows=$outFlows"
   }
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is Statement) return false
 
-    return treeNode == other.treeNode
-        && monthRange == other.monthRange
+    return monthRange == other.monthRange
         && isClosed == other.isClosed
         && startBalance == other.startBalance
         && endBalance == other.endBalance
@@ -100,8 +96,7 @@ sealed class Statement(
   }
 
   override fun hashCode(): Int {
-    var result = treeNode.hashCode()
-    result = 31 * result + monthRange.hashCode()
+    var result = monthRange.hashCode()
     result = 31 * result + isClosed.hashCode()
     result = 31 * result + startBalance.hashCode()
     result = 31 * result + endBalance.hashCode()

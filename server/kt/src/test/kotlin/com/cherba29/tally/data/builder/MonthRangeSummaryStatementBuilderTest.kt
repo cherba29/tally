@@ -18,7 +18,7 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
     it("empty") {
       val builder = MonthRangeSummaryStatementBuilder()
       val exception = shouldThrow<IllegalArgumentException> {
-        builder.build(root {})
+        builder.build()
       }
       exception.message shouldBe "summary build failed: no statements have been added"
     }
@@ -31,25 +31,22 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
         }
       }
       val testStatement = TransactionStatement(
-        tree[listOf("john", "external", "test-account1")]!!,
         APR / 2026..APR / 2026,
         isClosed = false,
         startBalance = null
       )
       val builder = MonthRangeSummaryStatementBuilder()
-      builder.addStatement(testStatement)
-      val result = builder.build(tree["john"]!!)
-      result.treeNode.path shouldBe listOf("john")
+      val accountNode = tree[listOf("john", "external", "test-account1")]!!
+      builder.addStatement(accountNode, APR / 2026, testStatement)
+      val result = builder.build()
       result.monthRange shouldBe APR / 2026..APR / 2026
       result.totalPayments shouldBe 0
       result.totalTransfers shouldBe 0
-      result.statements shouldBe listOf(
-        SummaryStatement(
-          tree[listOf("john", "external", "test-account1")]!!,
-          APR / 2026..APR / 2026,
-          startBalance = Balance(0, LocalDate(2026, 4, 1), Balance.Type.PROJECTED),
-          endBalance = Balance(0, LocalDate(2026, 5, 1), Balance.Type.PROJECTED)
-        )
+      result.statements.keys shouldBe setOf(accountNode)
+      result.statements[accountNode] shouldBe SummaryStatement(
+        APR / 2026..APR / 2026,
+        startBalance = Balance(0, LocalDate(2026, 4, 1), Balance.Type.PROJECTED),
+        endBalance = Balance(0, LocalDate(2026, 5, 1), Balance.Type.PROJECTED)
       )
     }
     it("two node statements with different months") {
@@ -64,30 +61,37 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
         }
       }
       val testStatement1 = TransactionStatement(
-        tree[listOf("john", "internal", "test-account1")]!!,
         APR / 2026..APR / 2026,
         isClosed = false,
         startBalance = null
       )
       val testStatement2 = TransactionStatement(
-        tree[listOf("john", "external", "test-account2")]!!,
         MAY / 2026..MAY / 2026,
         isClosed = false,
         startBalance = null
       )
+      val node1 = tree[listOf("john", "internal", "test-account1")]!!
+      val node2 = tree[listOf("john", "external", "test-account2")]!!
       val builder = MonthRangeSummaryStatementBuilder()
-      builder.addStatement(testStatement1)
-      builder.addStatement(testStatement2)
-      val result = builder.build(tree["john"]!!)
-      result.treeNode.path shouldBe listOf("john")
+      builder.addStatement(node1, APR / 2026, testStatement1)
+      builder.addStatement(node2, MAY / 2026, testStatement2)
+      val result = builder.build()
       result.monthRange shouldBe APR / 2026..MAY / 2026
       result.totalPayments shouldBe 0
       result.totalTransfers shouldBe 0
-      result.statements.size shouldBe 2
-      val firstStmt = result.statements[0]
-      firstStmt.treeNode.path shouldBe listOf("john", "internal", "test-account1")
-      val secondStmt = result.statements[1]
-      secondStmt.treeNode.path shouldBe listOf("john", "external", "test-account2")
+      result.statements.keys shouldBe setOf(node1, node2)
+      val firstStmt = result.statements[node1] as SummaryStatement
+      firstStmt shouldBe SummaryStatement(
+        APR / 2026..MAY / 2026,
+        startBalance = Balance(0, LocalDate(2026, 4, 1), Balance.Type.PROJECTED),
+        endBalance = Balance(0, LocalDate(2026, 6, 1), Balance.Type.PROJECTED)
+      )
+      val secondStmt = result.statements[node2] as SummaryStatement
+      secondStmt shouldBe SummaryStatement(
+        APR / 2026..MAY / 2026,
+        startBalance = Balance(0, LocalDate(2026, 4, 1), Balance.Type.PROJECTED),
+        endBalance = Balance(0, LocalDate(2026, 6, 1), Balance.Type.PROJECTED)
+      )
     }
     it("two node statements with substatements") {
       val tree = root {
@@ -97,27 +101,25 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
           }
         }
       }
-
+      val node1 = tree[listOf("john", "internal", "test-account1")]!!
+      val node2 = tree[listOf("john", "internal", "test-account1")]!!
       val startBalance1 = Balance(100, LocalDate(2026, 4, 1), Balance.Type.CONFIRMED)
       val stmt1 = TransactionStatement(
-        tree[listOf("john", "internal", "test-account1")]!!,
         monthRange = APR / 2026..APR / 2026,
         isClosed = false,
         startBalance = startBalance1
       )
       val startBalance2 = Balance(200, LocalDate(2026, 5, 1), Balance.Type.CONFIRMED)
       val stmt2 = TransactionStatement(
-        tree[listOf("john", "internal", "test-account1")]!!,
         monthRange = MAY / 2026..MAY / 2026,
         isClosed = false,
         startBalance = startBalance2
       )
 
       val builder = MonthRangeSummaryStatementBuilder()
-      builder.addStatement(stmt1)
-      builder.addStatement(stmt2)
-      val result = builder.build(tree["john"]!!)
-      result.treeNode.path shouldBe listOf("john")
+      builder.addStatement(node1, APR / 2026, stmt1)
+      builder.addStatement(node2, MAY / 2026, stmt2)
+      val result = builder.build()
       result.monthRange shouldBe APR / 2026..MAY / 2026
       result.totalPayments shouldBe 0
       result.totalTransfers shouldBe 0
@@ -125,9 +127,8 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
       result.startBalance shouldBe startBalance1
       result.endBalance shouldBe Balance(0, LocalDate(2026, 6, 1), Balance.Type.PROJECTED)
       result.change shouldBe -100
-      result.statements.size shouldBe 1
-      val statement = result.statements.first()
-      statement.treeNode.path shouldBe listOf("john", "internal", "test-account1")
+      result.statements.keys shouldBe setOf(node1)
+      val statement = result.statements[node1] as SummaryStatement
       statement.monthRange shouldBe APR / 2026..MAY / 2026
       statement.totalPayments shouldBe 0
       statement.totalTransfers shouldBe 0
@@ -138,16 +139,7 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
 
   describe("fromStatements") {
     it("from empty list of statements") {
-      val tree = root {
-        branch("john") {
-          branch("internal") {
-            leaf("test-account1")
-          }
-        }
-      }
-
       val combined = MonthRangeSummaryStatementBuilder.makeSummaryStatementFromSubstatements(
-        tree[listOf("john", "internal", "test-account1")]!!,
         JAN / 2026..MAR / 2026,
         statements = mapOf()
       )
@@ -158,17 +150,8 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
     }
 
     it("from single statement") {
-      val tree = root {
-        branch("john") {
-          branch("internal") {
-            leaf("test-account1")
-          }
-        }
-      }
-
       val startMonth = JAN / 2026
       val statement = TransactionStatement(
-        tree[listOf("john", "internal", "test-account1")]!!,
         startMonth..startMonth,
         isClosed = false,
         startBalance = Balance(
@@ -178,7 +161,6 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
         )
       )
       val combined = MonthRangeSummaryStatementBuilder.makeSummaryStatementFromSubstatements(
-        tree[listOf("john", "internal", "test-account1")]!!,
         startMonth..MAR / 2026,
         statements = mapOf(startMonth to statement)
       )

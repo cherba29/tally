@@ -3,10 +3,6 @@
     __type: TransactionStatement
     __base:
       __type: Statement
-      path:
-      - john
-      - external
-      - test-account1
       months: Dec2019..Dec2019
       startBalance:
         __type: Balance
@@ -57,10 +53,6 @@
     __type: TransactionStatement
     __base:
       __type: Statement
-      path:
-      - john
-      - external
-      - test-account1
       months: Jan2020..Jan2020
       startBalance:
         __type: Balance
@@ -82,10 +74,6 @@
     __type: TransactionStatement
     __base:
       __type: Statement
-      path:
-      - john
-      - external
-      - test-account1
       months: Feb2020..Feb2020
       startBalance:
         __type: Balance
@@ -104,10 +92,6 @@
     __type: TransactionStatement
     __base:
       __type: Statement
-      path:
-      - john
-      - external
-      - test-account2
       months: Dec2019..Dec2019
       inFlows: 3000
       income: 3000
@@ -146,10 +130,6 @@
     __type: TransactionStatement
     __base:
       __type: Statement
-      path:
-      - john
-      - external
-      - test-account2
       months: Jan2020..Jan2020
     coversPrevious: false
     coversProjectedPrevious: false
@@ -161,10 +141,6 @@
     __type: TransactionStatement
     __base:
       __type: Statement
-      path:
-      - john
-      - external
-      - test-account2
       months: Feb2020..Feb2020
     coversPrevious: false
     coversProjectedPrevious: false
@@ -178,10 +154,6 @@
     __type: TransactionStatement
     __base:
       __type: Statement
-      path:
-      - john
-      - external
-      - test-account1
       months: Dec2019..Dec2019
       startBalance:
         __type: Balance
@@ -232,10 +204,6 @@
     __type: TransactionStatement
     __base:
       __type: Statement
-      path:
-      - john
-      - external
-      - test-account1
       months: Jan2020..Jan2020
       startBalance:
         __type: Balance
@@ -257,10 +225,6 @@
     __type: TransactionStatement
     __base:
       __type: Statement
-      path:
-      - john
-      - external
-      - test-account1
       months: Feb2020..Feb2020
       startBalance:
         __type: Balance
@@ -279,10 +243,6 @@
     __type: TransactionStatement
     __base:
       __type: Statement
-      path:
-      - john
-      - external
-      - test-account2
       months: Dec2019..Dec2019
       inFlows: 3000
       income: 3000
@@ -321,10 +281,6 @@
     __type: TransactionStatement
     __base:
       __type: Statement
-      path:
-      - john
-      - external
-      - test-account2
       months: Jan2020..Jan2020
     coversPrevious: false
     coversProjectedPrevious: false
@@ -336,10 +292,6 @@
     __type: TransactionStatement
     __base:
       __type: Statement
-      path:
-      - john
-      - external
-      - test-account2
       months: Feb2020..Feb2020
     coversPrevious: false
     coversProjectedPrevious: false

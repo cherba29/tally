@@ -57,10 +57,10 @@ class Transactions : CliktCommand() {
         if (endMonth != null && endMonth!! < transactionStatement.monthRange.first) {
           continue
         }
-        var accountEntries = entries[transactionStatement.treeNode.name]
+        var accountEntries = entries[treeNode.name]
         if (accountEntries == null) {
           accountEntries = mutableListOf()
-          entries[transactionStatement.treeNode.name] = accountEntries
+          entries[treeNode.name] = accountEntries
         }
         accountEntries += (transactionStatement as TransactionStatement).transactions
       }

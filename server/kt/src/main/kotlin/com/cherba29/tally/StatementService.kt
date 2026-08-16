@@ -26,7 +26,7 @@ class StatementService(val loader: Loader) : Query {
         }
         val statement: TransactionStatement = payload.nodeToStatement[accountNode]?.get(month) as? TransactionStatement
           ?: throw NotFoundException("Did not find statement for month '$month' for account '$accountPath'")
-        statement.toGql()
+        statement.toGql(accountNode.name)
       } catch (e: Exception) {
         logger.error(e) { "Error while processing table query account=$accountPath month=$month" }
         throw e

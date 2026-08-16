@@ -9,7 +9,7 @@ import com.cherba29.tally.statement.TransactionStatement
 import java.lang.IllegalArgumentException
 
 class TransactionStatementBuilder {
-  var treeNode: TreeNode.Leaf? = null
+  var originTreeNode: TreeNode.Leaf? = null
   var month: Month? = null
   var isClosed: Boolean = false
   var startBalance: Balance? = null
@@ -27,7 +27,7 @@ class TransactionStatementBuilder {
   private var transactions = mutableListOf<Transaction>()
 
   fun addTransfer(transfer: Transfer) {
-    val leafTreeNode = treeNode ?: throw IllegalArgumentException("TreeNode must be set before adding transfer")
+    val leafTreeNode = originTreeNode ?: throw IllegalArgumentException("TreeNode must be set before adding transfer")
     hasProjectedTransfer = hasProjectedTransfer || transfer.balance.type == Balance.Type.PROJECTED
 
     var otherAccount: TreeNode
@@ -86,7 +86,7 @@ class TransactionStatementBuilder {
       && startBalance != null
       && firstTransaction.balance.date < startBalance!!.date) {
       throw IllegalStateException(
-        "$month $startBalance for account $treeNode starts after its first " +
+        "$month $startBalance for account $originTreeNode starts after its first " +
             "transfer to ${firstTransaction.targetTreeNode.path.joinToString("/")} " +
             "for amount of ${firstTransaction.balance} desc '${firstTransaction.description}'"
       )
@@ -102,7 +102,6 @@ class TransactionStatementBuilder {
     updatedTransactions.reverse()
 
     return TransactionStatement(
-      treeNode!!,
       month!!..month!!,
       isClosed,
       startBalance,

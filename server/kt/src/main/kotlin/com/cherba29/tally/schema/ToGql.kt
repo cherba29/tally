@@ -48,8 +48,8 @@ private fun Double?.round2Float(): Float {
   return ((this * 100.0).roundToInt() / 100.0).toFloat()
 }
 
-fun TransactionStatement.toGql(): GqlStatement = GqlStatement(
-  name = treeNode.name,
+fun TransactionStatement.toGql(accountName: String): GqlStatement = GqlStatement(
+  name = accountName,
   month = monthRange.first,
   isClosed = isClosed,
   isCovered = isCovered,
@@ -105,8 +105,8 @@ fun Statement.toGqlTableCell() = when (this) {
   is SummaryStatement -> toGqlTableCell()
 }
 
-fun SummaryStatement.toGql(): GqlSummaryStatement = GqlSummaryStatement(
-  name = treeNode.name,
+fun SummaryStatement.toGql(summaryName: String): GqlSummaryStatement = GqlSummaryStatement(
+  name = summaryName,
   month = monthRange.first,
   addSub = addSub,
   income = income,
@@ -125,21 +125,19 @@ fun SummaryStatement.toGql(): GqlSummaryStatement = GqlSummaryStatement(
 /**
  * Converts summary statement as a summary data with substatements and a total.
  **/
-fun SummaryStatement.toGqlSummaryData(): GqlSummaryData =  GqlSummaryData(
-  statements = statements.sortedWith { a, b ->
-    if (a.treeNode.name < b.treeNode.name) -1 else 1
-  }.map { stmt ->
+fun SummaryStatement.toGqlSummaryData(summaryName: String): GqlSummaryData =  GqlSummaryData(
+  statements = statements.map { (treeNode, stmt) ->
     when (stmt) {
-      is SummaryStatement -> (stmt as Statement).toGql()  // Treat it as regular statement.
-      else -> stmt.toGql()
+      is SummaryStatement -> (stmt as Statement).toGql(treeNode.name)  // Treat it as regular statement.
+      else -> stmt.toGql(treeNode.name)
     }
   },
-  total = toGql()
+  total = toGql(summaryName)
 )
 
 
-fun Statement.toGql(): GqlStatement = GqlStatement(
-  name = treeNode.name,
+fun Statement.toGql(statementName: String): GqlStatement = GqlStatement(
+  name = statementName,
   month = monthRange.first,
   isClosed = isClosed,
   isCovered = true,

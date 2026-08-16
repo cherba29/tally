@@ -7,7 +7,7 @@ import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.plus
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
-import kotlin.collections.iterator
+import kotlin.collections.component1
 
 /**
  * Creates parent summary statement containing all provided summary statements
@@ -16,32 +16,34 @@ class MonthRangeSummaryStatementBuilder {
   // Map of 'treeNode' -> month -> 'summary statement'.
   val nodeMonthStatementMap = mutableMapOf<TreeNode, MutableMap<Month, Statement>>()
 
-  fun addStatement(stmt: Statement) {
-    val prevEntry = nodeMonthStatementMap.getOrPut(stmt.treeNode) {
+  fun addStatement(treeNode: TreeNode, month: Month, stmt: Statement) {
+    val prevEntry = nodeMonthStatementMap.getOrPut(treeNode) {
       mutableMapOf()
-    }.putIfAbsent(stmt.monthRange.first, stmt)
+    }.putIfAbsent(month, stmt)
     if (prevEntry != null) {
-      throw IllegalArgumentException("Duplicate month statement for ${stmt.treeNode.name} for ${stmt.monthRange}")
+      throw IllegalArgumentException("Duplicate month statement for ${treeNode.name} for ${stmt.monthRange}")
     }
   }
 
-  fun build(summaryTreeNode: TreeNode): SummaryStatement {
-    val accumulatedMonthRange: MonthRange? = nodeMonthStatementMap.values.map { it.keys }.flatten().fold(null as MonthRange?) {
-      acc, elem -> acc + elem
-    }
+  fun build(): SummaryStatement {
+    val accumulatedMonthRange: MonthRange? = nodeMonthStatementMap.values
+      .map { it.keys }
+      .flatten()
+      .fold(null as MonthRange?) { acc, elem -> acc + elem }
     return MonthSummaryStatementBuilder.builder {
-      treeNode = summaryTreeNode
       for ((stmtTreeNode, monthStatementMap) in nodeMonthStatementMap) {
         // Combine all statements for a given account over all months in the range.
-        val stmt = makeSummaryStatementFromSubstatements(stmtTreeNode, accumulatedMonthRange!!,monthStatementMap)
-        addStatement(stmt)
+        val stmt = makeSummaryStatementFromSubstatements(
+          monthRange = accumulatedMonthRange!!,
+          statements = monthStatementMap
+        )
+        addStatement(stmtTreeNode, stmt)
       }
     }
   }
 
   companion object {
     internal fun makeSummaryStatementFromSubstatements(
-      treeNode: TreeNode,
       monthRange: MonthRange,
       statements: Map<Month, Statement>
     ): Statement {
@@ -72,7 +74,6 @@ class MonthRangeSummaryStatementBuilder {
         isClosed = isClosed && stmt.isClosed
       }
       return SummaryStatement(
-        treeNode,
         monthRange,
         isClosed,
         startBalance,

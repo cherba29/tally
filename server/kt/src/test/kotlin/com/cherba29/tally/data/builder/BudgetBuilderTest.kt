@@ -328,8 +328,9 @@ class BudgetBuilderTest : DescribeSpec({
         setAccount(path1, account1)
         setBalance(path1, MAR / 2021, testStartBalance)
       }
+      val node1 = budget.tree[path1] as TreeNode.Leaf
       val tranStmt = transactionStatement {
-        treeNode = budget.tree[path1] as TreeNode.Leaf
+        originTreeNode = node1
         month = MAR / 2021
         isClosed = false
         startBalance = testStartBalance
@@ -356,7 +357,6 @@ class BudgetBuilderTest : DescribeSpec({
       }
       val treeNode1 = budget.tree[listOf("john", "external")]!!
       val stmt1 = statements[treeNode1]!![MAR / 2021]!! as SummaryStatement
-      stmt1.treeNode.path shouldBe listOf("john", "external")
       withClue("statement: $stmt1") {
         stmt1.startBalance shouldBe testStartBalance
         stmt1.endBalance shouldBe null
@@ -364,21 +364,22 @@ class BudgetBuilderTest : DescribeSpec({
         stmt1.income shouldBe 0
         stmt1.monthRange shouldBe MAR / 2021..MAR / 2021
         stmt1.outFlows shouldBe 0
-        stmt1.statements shouldBe listOf(tranStmt)
+        stmt1.statements.keys shouldBe setOf(node1)
+        stmt1.statements[node1] shouldBe tranStmt
         stmt1.totalPayments shouldBe 0
         stmt1.totalTransfers shouldBe 0
       }
 
       val treeNode2 = budget.tree["john"]!!
       val stmt2 = statements[treeNode2]!![MAR / 2021]!! as SummaryStatement
-      stmt2.treeNode.path shouldBe listOf("john")
       stmt2.startBalance shouldBe testStartBalance
       stmt2.endBalance shouldBe null
       stmt2.inFlows shouldBe 0
       stmt2.income shouldBe 0
       stmt2.monthRange shouldBe MAR / 2021..MAR / 2021
       stmt2.outFlows shouldBe 0
-      stmt2.statements shouldBe listOf(stmt1)
+      stmt2.statements.keys shouldBe setOf(treeNode1)
+      stmt2.statements[treeNode1] shouldBe stmt1
       stmt2.totalPayments shouldBe 0
       stmt2.totalTransfers shouldBe 0
     }
@@ -414,7 +415,6 @@ class BudgetBuilderTest : DescribeSpec({
 
       val treeNode = budget.tree["john"]
       val stmt = statements[treeNode]!![MAR / 2021]!! as SummaryStatement
-      stmt.treeNode.path shouldBe listOf("john")
       val externalTreeNode = budget.tree[listOf("john", "external")]
       stmt.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       stmt.endBalance shouldBe null
@@ -422,7 +422,8 @@ class BudgetBuilderTest : DescribeSpec({
       stmt.income shouldBe 0
       stmt.monthRange shouldBe MAR / 2021..MAR / 2021
       stmt.outFlows shouldBe 0
-      stmt.statements shouldBe listOf(statements[externalTreeNode]!![MAR / 2021]!!)
+      stmt.statements.keys shouldBe setOf(externalTreeNode)
+      stmt.statements[externalTreeNode] shouldBe statements[externalTreeNode]!![MAR / 2021]!!
       stmt.totalPayments shouldBe 0
       stmt.totalTransfers shouldBe 0
     }
@@ -451,8 +452,9 @@ class BudgetBuilderTest : DescribeSpec({
           }
         }
       }
+      val node1 = budget.tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf
       val tranStmt = transactionStatement {
-        treeNode = budget.tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf
+        originTreeNode = node1
         month = MAR / 2021
         isClosed = false
         isCovered = true
@@ -461,8 +463,6 @@ class BudgetBuilderTest : DescribeSpec({
       }
 
       val statements = budget.nodeToStatement
-      statements.isEmpty() shouldBe false
-      statements.size shouldBe 3
       statements.keys shouldBe setOf(
         budget.tree[listOf("john", "external", "test-account1")],
         budget.tree[listOf("john", "external")],
@@ -471,27 +471,27 @@ class BudgetBuilderTest : DescribeSpec({
 
       val externalTreeNode = budget.tree[listOf("john", "external")]
       val stmt1 = statements[externalTreeNode]!![MAR / 2021]!! as SummaryStatement
-      stmt1.treeNode.path shouldBe listOf("john", "external")
       stmt1.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       stmt1.endBalance shouldBe null
       stmt1.inFlows shouldBe 0
       stmt1.income shouldBe 0
       stmt1.monthRange shouldBe MAR / 2021..MAR / 2021
       stmt1.outFlows shouldBe 0
-      stmt1.statements shouldBe listOf(tranStmt)
+      stmt1.statements.keys shouldBe setOf(node1)
+      stmt1.statements[node1] shouldBe tranStmt
       stmt1.totalPayments shouldBe 0
       stmt1.totalTransfers shouldBe 0
 
       val ownerTreeNode = budget.tree["john"]
       val stmt2 = statements[ownerTreeNode]!![MAR / 2021]!! as SummaryStatement
-      stmt2.treeNode.path shouldBe listOf("john")
       stmt2.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       stmt2.endBalance shouldBe null
       stmt2.inFlows shouldBe 0
       stmt2.income shouldBe 0
       stmt2.monthRange shouldBe MAR / 2021..MAR / 2021
       stmt2.outFlows shouldBe 0
-      stmt2.statements shouldBe listOf(stmt1)
+      stmt2.statements.keys shouldBe setOf(externalTreeNode)
+      stmt2.statements[externalTreeNode] shouldBe stmt1
       stmt2.totalPayments shouldBe 0
       stmt2.totalTransfers shouldBe 0
     }
@@ -557,8 +557,9 @@ class BudgetBuilderTest : DescribeSpec({
           leaf("test-account3")
         }
       }
+      val node = budget.tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf
       val tranStmt1 = transactionStatement {
-        treeNode = budget.tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf
+        originTreeNode = node
         month = MAR / 2021
         isClosed = false
         startBalance = balance1
@@ -572,28 +573,29 @@ class BudgetBuilderTest : DescribeSpec({
 
       val externalTreeNode = budget.tree[listOf("john", "external")]
       val stmt1 = budget.nodeToStatement[externalTreeNode]!![MAR / 2021]!! as SummaryStatement
-      stmt1.treeNode.path shouldBe listOf("john", "external")
       stmt1.startBalance shouldBe Balance(100, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       stmt1.endBalance shouldBe null
       stmt1.inFlows shouldBe 0
       stmt1.income shouldBe 0
       stmt1.monthRange shouldBe MAR / 2021..MAR / 2021
       stmt1.outFlows shouldBe 0
-      stmt1.statements shouldBe listOf(tranStmt1)
+      stmt1.statements.keys shouldBe setOf(node)
+      stmt1.statements[node] shouldBe tranStmt1
       stmt1.totalPayments shouldBe 0
       stmt1.totalTransfers shouldBe 0
 
       val treeNode3 = budget.tree[listOf("john", "test-account3")]
       val stmt3 = budget.nodeToStatement[treeNode3]!![MAR / 2021]!! as TransactionStatement
       val stmt2 = statements[MAR / 2021]!! as SummaryStatement
-      stmt2.treeNode.path shouldBe listOf("john")
       stmt2.startBalance shouldBe Balance(600, LocalDate(2023, 12, 2), Balance.Type.CONFIRMED)
       stmt2.endBalance shouldBe null
       stmt2.inFlows shouldBe 0
       stmt2.income shouldBe 0
       stmt2.monthRange shouldBe MAR / 2021..MAR / 2021
       stmt2.outFlows shouldBe 0
-      stmt2.statements shouldBe listOf(stmt3, stmt1)
+      stmt2.statements.keys shouldBe setOf(externalTreeNode, treeNode3)
+      stmt2.statements[externalTreeNode] shouldBe stmt1
+      stmt2.statements[treeNode3] shouldBe stmt3
       stmt2.totalPayments shouldBe 0
       stmt2.totalTransfers shouldBe 0
     }

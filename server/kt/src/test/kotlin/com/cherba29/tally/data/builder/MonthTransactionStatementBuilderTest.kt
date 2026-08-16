@@ -57,7 +57,6 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
       table.size shouldBe 1
       val stmt = table[(DEC / 2019)]!!
       assertSoftly {
-        stmt.treeNode.path shouldBe accountPath
         stmt.coversPrevious shouldBe false
         stmt.coversProjectedPrevious shouldBe false
         stmt.endBalance shouldBe null
@@ -312,22 +311,18 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
       val dec1Stmt = table1[DEC / 2019]!!
       dec1Stmt.monthRange shouldBe DEC / 2019..DEC / 2019
       dec1Stmt.isClosed shouldBe true
-      dec1Stmt.treeNode.path shouldBe node1.path
 
       val nov1Stmt = table1[NOV / 2019]!!
       nov1Stmt.monthRange shouldBe NOV / 2019..NOV / 2019
       nov1Stmt.isClosed shouldBe false
-      nov1Stmt.treeNode.path shouldBe node1.path
 
       val dec2Stmt = table2[DEC / 2019]!!
       dec2Stmt.monthRange shouldBe DEC / 2019..DEC / 2019
       dec2Stmt.isClosed shouldBe false
-      dec2Stmt.treeNode.path shouldBe node2.path
 
       val nov2Stmt = table2[NOV / 2019]!!
       nov2Stmt.monthRange shouldBe NOV / 2019..NOV / 2019
       nov2Stmt.isClosed shouldBe false
-      nov2Stmt.treeNode.path shouldBe node2.path
     }
 
     it("get transaction type") {
@@ -410,7 +405,6 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
       table3.size shouldBe 1
 
       val stmt1 = table1[DEC / 2019]!!
-      stmt1.treeNode.path shouldBe path1
       stmt1.transactions.size shouldBe 2 // 2 transactions for account1
       assertSoftly {
         stmt1.transactions[0].balance.amount shouldBe -1000L
@@ -419,12 +413,10 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
         stmt1.transactions[1].type shouldBe Transaction.Type.TRANSFER
       }
       val stmt2 = table2[DEC / 2019]!!
-      stmt2.treeNode.path shouldBe path2
       stmt2.transactions.size shouldBe 1 // 1 transaction for account2
       stmt2.transactions[0].type shouldBe Transaction.Type.TRANSFER
 
       val stmt3 = table3[DEC / 2019]!!
-      stmt3.treeNode.path shouldBe path3
       stmt3.transactions.size shouldBe 1 // 1 transaction for account3
       stmt3.transactions[0].type shouldBe Transaction.Type.INCOME
     }

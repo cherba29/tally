@@ -11,18 +11,9 @@ import kotlinx.datetime.LocalDate
 
 class MonthSummaryStatementBuilderTest : DescribeSpec({
   describe("basic") {
-    it("error when no treeNode set") {
-      val error = shouldThrow<IllegalArgumentException> {
-        MonthSummaryStatementBuilder.builder {}
-      }
-      error.message shouldBe "summary build failed: treeNode is not set"
-    }
-
     it("error when no month range is set") {
       val error = shouldThrow<IllegalArgumentException> {
-        MonthSummaryStatementBuilder.builder {
-          treeNode = root { }
-        }
+        MonthSummaryStatementBuilder.builder { }
       }
       error.message shouldBe "summary build failed: no statements have been added"
     }
@@ -30,15 +21,14 @@ class MonthSummaryStatementBuilderTest : DescribeSpec({
     it("with single zero statements") {
       val testTree = root { }
       val testMonthRange = JUL / 2026..JUL / 2026
-      val testStatement = TransactionStatement(testTree, testMonthRange, isClosed = false, startBalance = null)
+      val testStatement = TransactionStatement(testMonthRange, isClosed = false, startBalance = null)
       val summary = MonthSummaryStatementBuilder.builder {
-        treeNode = testTree
-        addStatement(testStatement)
+        addStatement(testTree, testStatement)
       }
 
-      summary.treeNode shouldBe testTree
       summary.monthRange shouldBe testMonthRange
-      summary.statements shouldBe listOf(testStatement)
+      summary.statements.keys shouldBe setOf(testTree)
+      summary.statements[testTree] shouldBe testStatement
       summary.startBalance shouldBe null
       summary.endBalance shouldBe null
       summary.inFlows shouldBe 0
@@ -54,7 +44,6 @@ class MonthSummaryStatementBuilderTest : DescribeSpec({
       val testStartBalance = Balance(100, LocalDate(2026, 7, 4), Balance.Type.CONFIRMED)
       val testEndBalance = Balance(200, LocalDate(2026, 8, 1), Balance.Type.PROJECTED)
       val testStatement = TransactionStatement(
-        testTree,
         testMonthRange,
         isClosed = false,
         startBalance = testStartBalance,
@@ -66,13 +55,12 @@ class MonthSummaryStatementBuilderTest : DescribeSpec({
         income = 30
       )
       val summary = MonthSummaryStatementBuilder.builder {
-        treeNode = testTree
-        addStatement(testStatement)
+        addStatement(testTree, testStatement)
       }
 
-      summary.treeNode shouldBe testTree
       summary.monthRange shouldBe testMonthRange
-      summary.statements shouldBe listOf(testStatement)
+      summary.statements.keys shouldBe setOf(testTree)
+      summary.statements[testTree] shouldBe testStatement
       summary.startBalance shouldBe testStartBalance
       summary.endBalance shouldBe testEndBalance
       summary.inFlows shouldBe 10

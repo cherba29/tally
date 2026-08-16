@@ -45,14 +45,14 @@ class SummaryService(val loader: Loader) : Query {
         }
         val builder = MonthRangeSummaryStatementBuilder()
         for (summaryStatement in summaryStatements.values) {
-          for (subStatement in summaryStatement.statements) {
+          for ((treeNode, subStatement) in summaryStatement.statements) {
             // Do not include closed statements in the summary.
             if (!subStatement.isClosed) {
-              builder.addStatement(subStatement)
+              builder.addStatement(treeNode,subStatement.monthRange.first, subStatement)
             }
           }
         }
-        builder.build(summaryNode).toGqlSummaryData()
+        builder.build().toGqlSummaryData(summaryNode.name)
       } catch (e: Exception) {
         logger.error(e) {
           "Error while processing summary query accountType=$accountPath " +

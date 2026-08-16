@@ -60,9 +60,6 @@ fun Account.toObjectNode(root: ObjectNode) {
 
 fun Statement.toObjectNode(root: ObjectNode) {
   root.put("__type", "Statement")
-  val pathNode = root.putArray("path")
-  treeNode.path.forEach { pathNode.add(it) }
-
   root.put("months", monthRange.toString())
   startBalance?.toObjectNode(root.putObject("startBalance"))
   endBalance?.toObjectNode(root.putObject("endBalance"))
