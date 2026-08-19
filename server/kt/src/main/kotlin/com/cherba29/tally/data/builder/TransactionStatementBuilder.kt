@@ -6,10 +6,8 @@ import com.cherba29.tally.core.Transfer
 import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.statement.TransactionStatement
-import java.lang.IllegalArgumentException
 
 class TransactionStatementBuilder {
-  var originTreeNode: TreeNode.Leaf? = null
   var month: Month? = null
   var isClosed: Boolean = false
   var startBalance: Balance? = null
@@ -27,50 +25,31 @@ class TransactionStatementBuilder {
   private var transactions = mutableListOf<Transaction>()
 
   fun addTransfer(transfer: Transfer) {
-    val leafTreeNode = originTreeNode ?: throw IllegalArgumentException("TreeNode must be set before adding transfer")
     hasProjectedTransfer = hasProjectedTransfer || transfer.balance.type == Balance.Type.PROJECTED
 
-    var otherAccount: TreeNode
-    var balance: Balance
-    var transactionType: Transaction.Type
-    if (transfer.toAccount.name == leafTreeNode.name) {
-      balance = transfer.balance
-      otherAccount = transfer.fromAccount
-      transactionType = getTransactionType(fromAccount = otherAccount, toAccount = leafTreeNode, balance.amount)
-    } else if (transfer.fromAccount.name == leafTreeNode.name) {
-      balance = -transfer.balance
-      otherAccount = transfer.toAccount
-      transactionType = getTransactionType(fromAccount = leafTreeNode, toAccount = otherAccount, balance.amount)
+    val amount = -transfer.balance.amount
+    val transactionType = getTransactionType(transfer.fromAccount, transfer.toAccount, amount)
+    if (amount > 0) {
+      inFlows += amount
     } else {
-      // This should never occur since budget should have been validated by now.
-      throw IllegalStateException(
-        "Setting transfer from (${transfer.fromAccount} to ${transfer.toAccount}) for '${leafTreeNode.name}' account statement!"
-      )
-    }
-
-    if (balance.amount > 0) {
-      inFlows += balance.amount
-    } else {
-      outFlows += balance.amount
+      outFlows += amount
     }
     when (transactionType) {
-      Transaction.Type.EXPENSE -> totalPayments += balance.amount
-      Transaction.Type.INCOME -> income += balance.amount
+      Transaction.Type.EXPENSE -> totalPayments += amount
+      Transaction.Type.INCOME -> income += amount
       Transaction.Type.UNKNOWN -> {}
-      Transaction.Type.TRANSFER -> totalTransfers += balance.amount
+      Transaction.Type.TRANSFER -> totalTransfers += amount
     }
-    if (!coversPrevious
-      && balance.amount > 0
-      && transfer.fromAccount.top.name == leafTreeNode.top.name) {
+    if (!coversPrevious && amount > 0) {
       coversProjectedPrevious = true
-      if (balance.type != Balance.Type.PROJECTED) {
+      if (transfer.balance.type != Balance.Type.PROJECTED) {
         coversPrevious = true
       }
     }
     transactions.add(
       Transaction(
-        otherAccount,
-        balance,
+        transfer.toAccount,
+        -transfer.balance,
         transfer.description,
         transactionType,
         balanceFromStart = null
@@ -86,7 +65,7 @@ class TransactionStatementBuilder {
       && startBalance != null
       && firstTransaction.balance.date < startBalance!!.date) {
       throw IllegalStateException(
-        "$month $startBalance for account $originTreeNode starts after its first " +
+        "$month $startBalance starts after its first " +
             "transfer to ${firstTransaction.targetTreeNode.path.joinToString("/")} " +
             "for amount of ${firstTransaction.balance} desc '${firstTransaction.description}'"
       )

@@ -122,8 +122,8 @@ class StatementServiceTest : DescribeSpec({
           )
           addTransfer(
             BudgetBuilder.TransferRecord(
-              "test-account1",
-              listOf("john", "internal", "test-account2"),
+              toAccountName = "test-account1",
+              fromAccountPath = listOf("john", "internal", "test-account2"),
               MAR / 2026,
               Balance(
                 amount = 200,

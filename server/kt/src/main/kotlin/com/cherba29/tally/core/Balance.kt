@@ -35,7 +35,7 @@ data class Balance(
     Type.combineTypes(type, other.type)
   )
 
-  operator fun unaryMinus() = Balance(-amount, date, type)
+  operator fun unaryMinus() = Balance(-amount, date, type, description)
 
   override fun compareTo(other: Balance): Int {
     val dateDiff = date.compareTo(other.date)

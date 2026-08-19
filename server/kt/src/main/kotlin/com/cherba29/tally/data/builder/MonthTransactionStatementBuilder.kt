@@ -24,7 +24,6 @@ class MonthTransactionStatementBuilder {
       // Dummy future statement to help with endBalance and whether last month is covered.
       // It's not included int the result.
       var nextMonthStatement = transactionStatement {
-        originTreeNode = leafTreeNode
         month = nextMonth
         isClosed = false
         startBalance = monthlyBalances[nextMonth]
@@ -35,7 +34,6 @@ class MonthTransactionStatementBuilder {
       var areClosed = true
       for (month in months.reversed()) {
         nextMonthStatement = transactionStatement {
-          originTreeNode = leafTreeNode
           this.month = month
           isClosed = monthToClosed[month] ?: throw IllegalArgumentException("No isClosed value for $month")
           startBalance = monthlyBalances[month]

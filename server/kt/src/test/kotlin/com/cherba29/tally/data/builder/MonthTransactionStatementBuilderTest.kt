@@ -165,7 +165,18 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
           DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)
         ),
         tree[path2]!! as TreeNode.Leaf to mapOf(
-          DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)
+          DEC / 2019 to listOf(
+            firstTransfer1to2.copy(
+              fromAccount = firstTransfer1to2.toAccount,
+              toAccount = firstTransfer1to2.fromAccount,
+              balance=-firstTransfer1to2.balance
+            ),
+            secondTransfer1to2.copy(
+              fromAccount = secondTransfer1to2.toAccount,
+              toAccount = secondTransfer1to2.fromAccount,
+              balance=-secondTransfer1to2.balance
+            )
+          )
         )
       )
       val months = DEC / 2019..FEB / 2020
@@ -227,7 +238,18 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
 
       val transfers = mapOf(
         node1 to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
-        node2 to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2))
+        node2 to mapOf(DEC / 2019 to listOf(
+          firstTransfer1to2.copy(
+            toAccount = firstTransfer1to2.fromAccount,
+            fromAccount = firstTransfer1to2.toAccount,
+            balance=-firstTransfer1to2.balance
+          ),
+          secondTransfer1to2.copy(
+            toAccount = secondTransfer1to2.fromAccount,
+            fromAccount = secondTransfer1to2.toAccount,
+            balance=-secondTransfer1to2.balance
+          )
+        ))
       )
       val months = DEC / 2019..FEB / 2020
       val table1 = MonthTransactionStatementBuilder.make(
@@ -373,8 +395,8 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
       )
       val transfers = mapOf(
         node1 to mapOf(DEC / 2019 to listOf(transfer1to2, transfer1to3)),
-        node2 to mapOf(DEC / 2019 to listOf(transfer1to2)),
-        node3 to mapOf(DEC / 2019 to listOf(transfer1to3))
+        node2 to mapOf(DEC / 2019 to listOf(transfer1to2.copy(balance=-transfer1to2.balance))),
+        node3 to mapOf(DEC / 2019 to listOf(transfer1to3.copy(balance=-transfer1to3.balance)))
       )
       val months = DEC / 2019..DEC / 2019
       val table1 = MonthTransactionStatementBuilder.make(

@@ -305,8 +305,8 @@ class BudgetBuilderTest : DescribeSpec({
             }
           }
         exception.message shouldBe "Dec2019 Balance { amount: 10.00, date: 2019-12-01, type: CONFIRMED } " +
-            "for account test-account1 starts after its first transfer to john/external/test-account1 " +
-            "for amount of Balance { amount: 20.00, date: 2019-11-25, type: PROJECTED } desc 'First transfer'"
+            "starts after its first transfer to john/external/test-account1 " +
+            "for amount of Balance { amount: -20.00, date: 2019-11-25, type: PROJECTED } desc 'First transfer'"
       }
     }
   }
@@ -330,7 +330,6 @@ class BudgetBuilderTest : DescribeSpec({
       }
       val node1 = budget.tree[path1] as TreeNode.Leaf
       val tranStmt = transactionStatement {
-        originTreeNode = node1
         month = MAR / 2021
         isClosed = false
         startBalance = testStartBalance
@@ -454,7 +453,6 @@ class BudgetBuilderTest : DescribeSpec({
       }
       val node1 = budget.tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf
       val tranStmt = transactionStatement {
-        originTreeNode = node1
         month = MAR / 2021
         isClosed = false
         isCovered = true
@@ -559,7 +557,6 @@ class BudgetBuilderTest : DescribeSpec({
       }
       val node = budget.tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf
       val tranStmt1 = transactionStatement {
-        originTreeNode = node
         month = MAR / 2021
         isClosed = false
         startBalance = balance1

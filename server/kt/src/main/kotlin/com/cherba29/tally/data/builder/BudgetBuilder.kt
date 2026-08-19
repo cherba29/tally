@@ -93,7 +93,7 @@ class BudgetBuilder {
         }
       }
 
-      val transfer = Transfer(
+      val transferTo = Transfer(
         fromAccount,
         toAccount,
         transferRecord.month,
@@ -101,8 +101,16 @@ class BudgetBuilder {
         transferRecord.description,
         transferRecord.tags,
       )
-      budgetTransfers.get(toAccount, transferRecord.month).add(transfer)
-      budgetTransfers.get(fromAccount, transferRecord.month).add(transfer)
+      val transferFrom = Transfer(
+        toAccount,
+        fromAccount,
+        transferRecord.month,
+        -transferRecord.balance,
+        transferRecord.description,
+        transferRecord.tags,
+      )
+      budgetTransfers.get(toAccount, transferRecord.month).add(transferFrom)
+      budgetTransfers.get(fromAccount, transferRecord.month).add(transferTo)
     }
     return budgetTransfers
   }
