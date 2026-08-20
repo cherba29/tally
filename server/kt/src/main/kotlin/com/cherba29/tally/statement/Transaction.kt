@@ -53,4 +53,14 @@ data class Transaction(
      */
     EXPENSE,
   }
+
+  companion object {
+    fun typeOf(fromAccount: TreeNode, toAccount: TreeNode, amount: Long): Type
+      = if ((toAccount.path.first() == fromAccount.path.first())
+            && !toAccount.isExternal && !fromAccount.isExternal) {
+        Type.TRANSFER
+      } else {
+        if (amount > 0) Type.INCOME else Type.EXPENSE
+      }
+  }
 }

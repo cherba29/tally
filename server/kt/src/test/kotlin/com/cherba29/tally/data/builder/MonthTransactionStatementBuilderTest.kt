@@ -8,7 +8,6 @@ import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.JUL
 import com.cherba29.tally.core.MonthName.JUN
 import com.cherba29.tally.core.MonthName.NOV
-import com.cherba29.tally.core.Transfer
 import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.root
 import com.cherba29.tally.statement.Transaction
@@ -132,68 +131,68 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
       }
       val path1 = listOf("john", "external", "test-account1")
       val path2 = listOf("john", "external", "test-account2")
+      val node1 = tree[path1]!! as TreeNode.Leaf
+      val node2 = tree[path2]!! as TreeNode.Leaf
 
       val balances = mapOf(
-        tree[path1]!! as TreeNode.Leaf to mapOf(
+        node1 to mapOf(
           DEC / 2019 to Balance.confirmed(10, "2019-12-01"),
           JAN / 2020 to Balance.confirmed(20, "2020-01-01"),
           FEB / 2020 to Balance.projected(30, "2020-02-01")
         ),
-        tree[path2]!! as TreeNode.Leaf to mapOf()
+        node2 to mapOf()
       )
 
-      val firstTransfer1to2 = Transfer(
-        fromAccount = tree[path1] as TreeNode.Leaf,
-        toAccount = tree[path2] as TreeNode.Leaf,
-        month = DEC / 2019,
+      val firstTransfer1to2 = Transaction(
+        targetTreeNode = node2,
         description = "First transfer",
-        balance = Balance.projected(2000, "2019-12-05"),
-        tags = listOf()
+        balance = Balance.projected(-2000, "2019-12-05"),
+        type = Transaction.Type.EXPENSE
       )
 
-      val secondTransfer1to2 = Transfer(
-        fromAccount = tree[path1] as TreeNode.Leaf,
-        toAccount = tree[path2] as TreeNode.Leaf,
-        month = DEC / 2019,
+      val secondTransfer1to2 = Transaction(
+        targetTreeNode = node2,
         description = "Second transfer",
-        balance = Balance.projected(1000, "2019-12-05"),
-        tags = listOf()
+        balance = Balance.projected(-1000, "2019-12-05"),
+        type = Transaction.Type.EXPENSE
       )
 
       val transfers = mapOf(
-        tree[path1]!! as TreeNode.Leaf to mapOf(
+        node1 to mapOf(
           DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)
         ),
-        tree[path2]!! as TreeNode.Leaf to mapOf(
+        node2 to mapOf(
           DEC / 2019 to listOf(
             firstTransfer1to2.copy(
-              fromAccount = firstTransfer1to2.toAccount,
-              toAccount = firstTransfer1to2.fromAccount,
-              balance=-firstTransfer1to2.balance
+              targetTreeNode = node1,
+              balance=-firstTransfer1to2.balance,
+              type = Transaction.Type.INCOME
             ),
             secondTransfer1to2.copy(
-              fromAccount = secondTransfer1to2.toAccount,
-              toAccount = secondTransfer1to2.fromAccount,
-              balance=-secondTransfer1to2.balance
+              targetTreeNode = node1,
+              balance=-secondTransfer1to2.balance,
+              type = Transaction.Type.INCOME
             )
           )
         )
       )
       val months = DEC / 2019..FEB / 2020
       val table1 = MonthTransactionStatementBuilder.make(
-        tree[path1]!! as TreeNode.Leaf,
+        node1,
         months,
         months.associateWith { false },
-        balances[tree[path1]]!!,
-        transfers[tree[path1]]!!      )
+        balances[node1]!!,
+        transfers[node1]!!
+      )
       table1.size shouldBe 3
 
       val table2 = MonthTransactionStatementBuilder.make(
-        tree[path2]!! as TreeNode.Leaf,
+        node2,
         months,
         months.associateWith { false },
-        balances[tree[path2]]!!,
-        transfers[tree[path2]]!!      )
+        balances[node2]!!,
+        transfers[node2]!!
+      )
       table2.size shouldBe 3
 
       expectSelfie(table1.toSnapshot()).toMatchDisk("table1")
@@ -219,35 +218,31 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
         ),
         node2 to mapOf()
       )
-      val firstTransfer1to2 = Transfer(
-        fromAccount = node1,
-        toAccount = node2,
-        month = DEC / 2019,
+      val firstTransfer1to2 = Transaction(
+        targetTreeNode = node2,
         description = "First transfer",
-        balance = Balance.projected(2000, "2019-12-05"),
-        tags = listOf()
+        balance = Balance.projected(-2000, "2019-12-05"),
+        type = Transaction.Type.EXPENSE
       )
-      val secondTransfer1to2 = Transfer(
-        fromAccount = node1,
-        toAccount = node2,
-        month = DEC / 2019,
+      val secondTransfer1to2 = Transaction(
+        targetTreeNode = node2,
         description = "Second transfer",
-        balance = Balance.projected(1000, "2019-12-05"),
-        tags = listOf()
+        balance = Balance.projected(-1000, "2019-12-05"),
+        type = Transaction.Type.EXPENSE
       )
 
       val transfers = mapOf(
         node1 to mapOf(DEC / 2019 to listOf(firstTransfer1to2, secondTransfer1to2)),
         node2 to mapOf(DEC / 2019 to listOf(
           firstTransfer1to2.copy(
-            toAccount = firstTransfer1to2.fromAccount,
-            fromAccount = firstTransfer1to2.toAccount,
-            balance=-firstTransfer1to2.balance
+            targetTreeNode = node1,
+            balance = -firstTransfer1to2.balance,
+            type = Transaction.Type.INCOME
           ),
           secondTransfer1to2.copy(
-            toAccount = secondTransfer1to2.fromAccount,
-            fromAccount = secondTransfer1to2.toAccount,
-            balance=-secondTransfer1to2.balance
+            targetTreeNode = node1,
+            balance = -secondTransfer1to2.balance,
+            type = Transaction.Type.INCOME
           )
         ))
       )
@@ -295,13 +290,11 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
       val transfers = mapOf(
         node1 to mapOf(
           DEC / 2019 to listOf(
-            Transfer(
-              fromAccount = node1,
-              toAccount = node2,
-              month = DEC / 2019,
+            Transaction(
+              targetTreeNode = node2,
               description = "First transfer",
               balance = Balance.projected(2000, "2019-12-05"),
-              tags = listOf()
+              type = Transaction.Type.TRANSFER
             )
           )
         ),
@@ -327,8 +320,6 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
       )
       // Two transaction statements for the account
       table2.size shouldBe 2
-
-
 
       val dec1Stmt = table1[DEC / 2019]!!
       dec1Stmt.monthRange shouldBe DEC / 2019..DEC / 2019
@@ -377,26 +368,22 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
         node2 to mapOf(DEC / 2019 to Balance.confirmed(10, "2019-12-01")),
         node3 to mapOf(DEC / 2019 to Balance.confirmed(10, "2019-12-01"))
       )
-      val transfer1to2 = Transfer(
-        fromAccount = node1,
-        toAccount = node2,
-        month = DEC / 2019,
+      val transfer1to2 = Transaction(
+        targetTreeNode = node2,
         description = "First transfer",
         balance = Balance.projected(2000, "2019-12-05"),
-        tags = listOf()
+        type = Transaction.Type.TRANSFER
       )
-      val transfer1to3 = Transfer(
-        fromAccount = node1,
-        toAccount = node3,
-        month = DEC / 2019,
+      val transfer1to3 = Transaction(
+        targetTreeNode = node3,
         description = "Second transfer",
         balance = Balance.projected(1000, "2019-12-05"),
-        tags = listOf()
+        type = Transaction.Type.EXPENSE
       )
       val transfers = mapOf(
         node1 to mapOf(DEC / 2019 to listOf(transfer1to2, transfer1to3)),
-        node2 to mapOf(DEC / 2019 to listOf(transfer1to2.copy(balance=-transfer1to2.balance))),
-        node3 to mapOf(DEC / 2019 to listOf(transfer1to3.copy(balance=-transfer1to3.balance)))
+        node2 to mapOf(DEC / 2019 to listOf(transfer1to2.copy(targetTreeNode = node1, balance=-transfer1to2.balance))),
+        node3 to mapOf(DEC / 2019 to listOf(transfer1to3.copy(targetTreeNode = node1, balance=-transfer1to3.balance)))
       )
       val months = DEC / 2019..DEC / 2019
       val table1 = MonthTransactionStatementBuilder.make(
@@ -408,6 +395,13 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
       )
       table1.size shouldBe 1
 
+      val stmt1 = table1[DEC / 2019]!!
+      stmt1.transactions.size shouldBe 2 // 2 transactions for account1
+      assertSoftly {
+        stmt1.transactions[0] shouldBe transfer1to2
+        stmt1.transactions[1] shouldBe transfer1to3
+      }
+
       val table2 = MonthTransactionStatementBuilder.make(
         node2,
         months,
@@ -416,6 +410,10 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
         transfers[node2]!!
       )
       table2.size shouldBe 1
+
+      val stmt2 = table2[DEC / 2019]!!
+      stmt2.transactions.size shouldBe 1 // 1 transaction for account2
+      stmt2.transactions[0].type shouldBe Transaction.Type.TRANSFER
 
       val table3 = MonthTransactionStatementBuilder.make(
         node3,
@@ -426,21 +424,9 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
       )
       table3.size shouldBe 1
 
-      val stmt1 = table1[DEC / 2019]!!
-      stmt1.transactions.size shouldBe 2 // 2 transactions for account1
-      assertSoftly {
-        stmt1.transactions[0].balance.amount shouldBe -1000L
-        stmt1.transactions[1].balance.amount shouldBe -2000L
-        stmt1.transactions[0].type shouldBe Transaction.Type.EXPENSE
-        stmt1.transactions[1].type shouldBe Transaction.Type.TRANSFER
-      }
-      val stmt2 = table2[DEC / 2019]!!
-      stmt2.transactions.size shouldBe 1 // 1 transaction for account2
-      stmt2.transactions[0].type shouldBe Transaction.Type.TRANSFER
-
       val stmt3 = table3[DEC / 2019]!!
       stmt3.transactions.size shouldBe 1 // 1 transaction for account3
-      stmt3.transactions[0].type shouldBe Transaction.Type.INCOME
+      stmt3.transactions[0] shouldBe transfer1to3.copy(targetTreeNode = node1, balance=-transfer1to3.balance)
     }
   }
 })

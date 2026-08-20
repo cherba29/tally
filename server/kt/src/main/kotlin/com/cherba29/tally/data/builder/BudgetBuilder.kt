@@ -5,10 +5,10 @@ import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
-import com.cherba29.tally.core.Transfer
 import com.cherba29.tally.core.plus
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.statement.Statement
+import com.cherba29.tally.statement.Transaction
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -61,8 +61,8 @@ class BudgetBuilder {
     monthRange += record.month
   }
 
-  private fun buildTransfers(treeRoot: TreeNode): MutableMap<TreeNode.Leaf, MutableMap<Month, MutableList<Transfer>>> {
-    val budgetTransfers = mutableMapOf<TreeNode.Leaf, MutableMap<Month, MutableList<Transfer>>>()
+  private fun buildTransfers(treeRoot: TreeNode): MutableMap<TreeNode.Leaf, MutableMap<Month, MutableList<Transaction>>> {
+    val budgetTransfers = mutableMapOf<TreeNode.Leaf, MutableMap<Month, MutableList<Transaction>>>()
     for (transferRecord in transferRecordList) {
       val toAccounts = pathToAccount.keys.filter { it.last() == transferRecord.toAccountName }
       if (toAccounts.isEmpty()) {
@@ -93,24 +93,20 @@ class BudgetBuilder {
         }
       }
 
-      val transferTo = Transfer(
-        fromAccount,
-        toAccount,
-        transferRecord.month,
-        transferRecord.balance,
-        transferRecord.description,
-        transferRecord.tags,
+      val transactionTo = Transaction(
+        targetTreeNode = toAccount,
+        balance = -transferRecord.balance,
+        description = transferRecord.description,
+        type = Transaction.typeOf(fromAccount, toAccount, -transferRecord.balance.amount)
       )
-      val transferFrom = Transfer(
-        toAccount,
-        fromAccount,
-        transferRecord.month,
-        -transferRecord.balance,
-        transferRecord.description,
-        transferRecord.tags,
+      val transactionFrom = Transaction(
+        targetTreeNode = fromAccount,
+        balance = transferRecord.balance,
+        description = transferRecord.description,
+        type = Transaction.typeOf(toAccount, fromAccount, transferRecord.balance.amount)
       )
-      budgetTransfers.get(toAccount, transferRecord.month).add(transferFrom)
-      budgetTransfers.get(fromAccount, transferRecord.month).add(transferTo)
+      budgetTransfers.get(toAccount, transferRecord.month).add(transactionFrom)
+      budgetTransfers.get(fromAccount, transferRecord.month).add(transactionTo)
     }
     return budgetTransfers
   }

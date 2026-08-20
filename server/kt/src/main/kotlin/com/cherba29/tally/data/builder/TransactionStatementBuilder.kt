@@ -2,8 +2,6 @@ package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.core.Transfer
-import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.statement.TransactionStatement
 
@@ -24,17 +22,16 @@ class TransactionStatementBuilder {
   private var coversProjectedPrevious: Boolean = false
   private var transactions = mutableListOf<Transaction>()
 
-  fun addTransfer(transfer: Transfer) {
+  fun addTransfer(transfer: Transaction) {
     hasProjectedTransfer = hasProjectedTransfer || transfer.balance.type == Balance.Type.PROJECTED
 
-    val amount = -transfer.balance.amount
-    val transactionType = getTransactionType(transfer.fromAccount, transfer.toAccount, amount)
+    val amount = transfer.balance.amount
     if (amount > 0) {
       inFlows += amount
     } else {
       outFlows += amount
     }
-    when (transactionType) {
+    when (transfer.type) {
       Transaction.Type.EXPENSE -> totalPayments += amount
       Transaction.Type.INCOME -> income += amount
       Transaction.Type.UNKNOWN -> {}
@@ -46,14 +43,7 @@ class TransactionStatementBuilder {
         coversPrevious = true
       }
     }
-    transactions.add(
-      Transaction(
-        transfer.toAccount,
-        -transfer.balance,
-        transfer.description,
-        transactionType
-      )
-    )
+    transactions.add(transfer)
   }
 
   fun build(): TransactionStatement {
@@ -93,14 +83,6 @@ class TransactionStatementBuilder {
       transactions.asReversed(),
       balanceFromStart.asReversed()
     )
-  }
-
-  private fun getTransactionType(fromAccount: TreeNode, toAccount: TreeNode, amount: Long): Transaction.Type {
-    return if ((toAccount.path.first() == fromAccount.path.first()) && !toAccount.isExternal && !fromAccount.isExternal) {
-      Transaction.Type.TRANSFER
-    } else {
-      if (amount > 0) Transaction.Type.INCOME else Transaction.Type.EXPENSE
-    }
   }
 }
 

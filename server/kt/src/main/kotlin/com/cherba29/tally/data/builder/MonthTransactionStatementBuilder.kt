@@ -3,10 +3,13 @@ package com.cherba29.tally.data.builder
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
-import com.cherba29.tally.core.Transfer
 import com.cherba29.tally.core.TreeNode
+import com.cherba29.tally.statement.Transaction
 import com.cherba29.tally.statement.TransactionStatement
 
+/**
+ * Builds transaction statements for particular account over a sequence of months.
+ */
 class MonthTransactionStatementBuilder {
   companion object {
     fun make(
@@ -14,7 +17,7 @@ class MonthTransactionStatementBuilder {
       months: MonthRange,
       monthToClosed: Map<Month, Boolean>,
       monthlyBalances: Map<Month, Balance>,
-      monthlyTransfers: Map<Month, List<Transfer>>,
+      monthlyTransfers: Map<Month, List<Transaction>>,
     ): Map<Month, TransactionStatement> {
       val accountStatements = mutableMapOf<Month, TransactionStatement>()
 
