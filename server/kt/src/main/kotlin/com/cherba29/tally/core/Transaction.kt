@@ -1,7 +1,4 @@
-package com.cherba29.tally.statement
-
-import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.TreeNode
+package com.cherba29.tally.core
 
 /**
  * For given account captures transaction entry within transaction statement.

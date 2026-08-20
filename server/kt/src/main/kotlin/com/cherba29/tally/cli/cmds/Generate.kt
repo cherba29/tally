@@ -3,7 +3,7 @@ package com.cherba29.tally.cli.cmds
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.data.Loader
-import com.cherba29.tally.statement.Transaction
+import com.cherba29.tally.core.Transaction
 import com.cherba29.tally.statement.TransactionStatement
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context

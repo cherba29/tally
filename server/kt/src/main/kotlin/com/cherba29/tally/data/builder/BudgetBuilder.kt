@@ -8,7 +8,7 @@ import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.plus
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.statement.Statement
-import com.cherba29.tally.statement.Transaction
+import com.cherba29.tally.core.Transaction
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.collections.component1
 import kotlin.collections.component2

@@ -12,7 +12,7 @@ import com.cherba29.tally.data.builder.budget
 import com.cherba29.tally.data.yaml.BalanceYamlData
 import com.cherba29.tally.data.yaml.TransferYamlData
 import com.cherba29.tally.data.yaml.YamlData
-import com.cherba29.tally.statement.Transaction
+import com.cherba29.tally.core.Transaction
 import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec

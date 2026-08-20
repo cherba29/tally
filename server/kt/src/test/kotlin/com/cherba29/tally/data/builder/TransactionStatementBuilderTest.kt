@@ -4,7 +4,7 @@ import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.JUL
 import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.root
-import com.cherba29.tally.statement.Transaction
+import com.cherba29.tally.core.Transaction
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate

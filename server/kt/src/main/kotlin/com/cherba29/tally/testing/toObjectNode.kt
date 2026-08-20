@@ -14,7 +14,7 @@ import com.cherba29.tally.schema.GqlTableRow
 import com.cherba29.tally.schema.GqlTransaction
 import com.cherba29.tally.schema.GqlTransfersSummary
 import com.cherba29.tally.statement.Statement
-import com.cherba29.tally.statement.Transaction
+import com.cherba29.tally.core.Transaction
 import com.cherba29.tally.statement.TransactionStatement
 import com.fasterxml.jackson.databind.node.ObjectNode
 import kotlin.math.absoluteValue

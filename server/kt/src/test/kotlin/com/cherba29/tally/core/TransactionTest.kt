@@ -1,7 +1,5 @@
-package com.cherba29.tally.statement
+package com.cherba29.tally.core
 
-import com.cherba29.tally.core.Account
-import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.DEC
 import com.cherba29.tally.data.builder.BudgetBuilder
 import com.cherba29.tally.data.builder.budget

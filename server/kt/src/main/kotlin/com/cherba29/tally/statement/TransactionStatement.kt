@@ -2,6 +2,7 @@ package com.cherba29.tally.statement
 
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthRange
+import com.cherba29.tally.core.Transaction
 
 /**
  * Extension of Statement for transactions for an account ie treeNode.
