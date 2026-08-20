@@ -33,7 +33,10 @@ class TransactionStatement(
   val isProjectedCovered: Boolean = false,
 
   // List of transaction in this statement.
-  val transactions: MutableList<Transaction> = mutableListOf()
+  val transactions: List<Transaction> = listOf(),
+
+  /** Balance after each transaction. */
+  val balanceFromStart: List<Long?> = listOf()
 ) :
   Statement(
     monthRange,

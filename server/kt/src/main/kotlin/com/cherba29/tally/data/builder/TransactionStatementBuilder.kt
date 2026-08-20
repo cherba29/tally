@@ -51,8 +51,7 @@ class TransactionStatementBuilder {
         transfer.toAccount,
         -transfer.balance,
         transfer.description,
-        transactionType,
-        balanceFromStart = null
+        transactionType
       )
     )
   }
@@ -71,14 +70,9 @@ class TransactionStatementBuilder {
       )
     }
 
-    val updatedTransactions = mutableListOf<Transaction>()
-    var prevBalance = startBalance?.amount
-    for (t in transactions) {
-      prevBalance = prevBalance?.plus(t.balance.amount)
-      updatedTransactions.add(t.copy(balanceFromStart = prevBalance))
-    }
-    // Transactions are displayed last at the top.
-    updatedTransactions.reverse()
+    val balanceFromStart = transactions.runningFold(startBalance?.amount) { total, element->
+      total?.plus(element.balance.amount)
+    }.drop(1)
 
     return TransactionStatement(
       month!!..month!!,
@@ -95,7 +89,9 @@ class TransactionStatementBuilder {
       hasProjectedTransfer,
       isCovered,
       isProjectedCovered,
-      transactions = updatedTransactions
+      // Transactions are displayed last at the top.
+      transactions.asReversed(),
+      balanceFromStart.asReversed()
     )
   }
 

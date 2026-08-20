@@ -274,17 +274,16 @@ class LoadYamlTest : DescribeSpec({
           targetTreeNode = budget.tree[listOf("someone", "external", "external")]!!,
           balance = Balance(-3750, LocalDate.parse("2020-01-17"), Balance.Type.PROJECTED),
           description = null,
-          type = Transaction.Type.EXPENSE,
-          balanceFromStart = -1502
+          type = Transaction.Type.EXPENSE
         ),
         Transaction(
           targetTreeNode = budget.tree[listOf("someone", "external", "external")]!!,
           balance = Balance(2248, LocalDate.parse("2020-01-15"), Balance.Type.CONFIRMED),
           description = null,
-          type = Transaction.Type.INCOME,
-          balanceFromStart = 2248
+          type = Transaction.Type.INCOME
         )
       )
+      testAccountStatement.balanceFromStart shouldBe listOf(-1502, 2248)
       val externalAccountNode = budget.tree[listOf("someone", "external", "external")]
       val externalAccountMonthlyStatements = budget.nodeToStatement[externalAccountNode]!!
       externalAccountMonthlyStatements.size shouldBe 2
@@ -295,14 +294,12 @@ class LoadYamlTest : DescribeSpec({
           balance = Balance(3750, LocalDate.parse("2020-01-17"), Balance.Type.PROJECTED),
           description = null,
           type = Transaction.Type.INCOME,
-          balanceFromStart = null
         ),
         Transaction(
           targetTreeNode = budget.tree[listOf("someone", "external", "test-account")]!!,
           balance = Balance(-2248, LocalDate.parse("2020-01-15"), Balance.Type.CONFIRMED),
           description = null,
           type = Transaction.Type.EXPENSE,
-          balanceFromStart = null
         )
       )
     }

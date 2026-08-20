@@ -35,7 +35,6 @@
         type: PROJECTED
       description: Second transfer
       type: EXPENSE
-      balanceFromStart: -2990
     - __type: Transaction
       path:
       - john
@@ -48,7 +47,9 @@
         type: PROJECTED
       description: First transfer
       type: EXPENSE
-      balanceFromStart: -1990
+    balanceFromStart:
+    - -2990
+    - -1990
   Jan2020:
     __type: TransactionStatement
     __base:
@@ -126,6 +127,9 @@
         type: PROJECTED
       description: Second transfer
       type: INCOME
+    balanceFromStart:
+    - null
+    - null
   Jan2020:
     __type: TransactionStatement
     __base:
@@ -186,7 +190,6 @@
         type: PROJECTED
       description: Second transfer
       type: EXPENSE
-      balanceFromStart: -2990
     - __type: Transaction
       path:
       - john
@@ -199,7 +202,9 @@
         type: PROJECTED
       description: First transfer
       type: EXPENSE
-      balanceFromStart: -1990
+    balanceFromStart:
+    - -2990
+    - -1990
   Jan2020:
     __type: TransactionStatement
     __base:
@@ -277,6 +282,9 @@
         type: PROJECTED
       description: Second transfer
       type: INCOME
+    balanceFromStart:
+    - null
+    - null
   Jan2020:
     __type: TransactionStatement
     __base:

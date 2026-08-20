@@ -156,9 +156,6 @@ fun Transaction.toObjectNode(root: ObjectNode) {
     root.put("description", description)
   }
   root.put("type", type.toString())
-  if (balanceFromStart != null) {
-    root.put("balanceFromStart", balanceFromStart)
-  }
 }
 
 fun GqlTransaction.toObjectNode(root: ObjectNode) {
@@ -183,6 +180,10 @@ fun TransactionStatement.toObjectNode(root: ObjectNode) {
   if (transactions.isNotEmpty()) {
     val transactionsNode = root.putArray("transactions")
     transactions.forEach { it.toObjectNode(transactionsNode.addObject()) }
+  }
+  if (balanceFromStart.isNotEmpty()) {
+    val balanceFromStartNode = root.putArray("balanceFromStart")
+    balanceFromStart.forEach { balanceFromStartNode.add(it) }
   }
 }
 

@@ -34,7 +34,7 @@ fun Balance.toGql(): GqlBalance = GqlBalance(
   desc = description,
 )
 
-fun Transaction.toGql(): GqlTransaction = GqlTransaction(
+fun Transaction.toGql(balanceFromStart: Long?): GqlTransaction = GqlTransaction(
   toAccountName = targetTreeNode.name,
   isIncome = type == Transaction.Type.INCOME,
   isExpense = type == Transaction.Type.EXPENSE,
@@ -67,7 +67,7 @@ fun TransactionStatement.toGql(accountName: String): GqlStatement = GqlStatement
   percentChange = percentChange.round2Float(),
   annualizedPercentChange = annualizedPercentChange.round2Float(),
   unaccounted = unaccounted ?: 0,
-  transactions = transactions.map { it.toGql() }
+  transactions = transactions.zip(balanceFromStart).map { it.first.toGql(it.second) }
 )
 
 fun TransactionStatement.toGqlTableCell(): GqlTableCell = GqlTableCell(

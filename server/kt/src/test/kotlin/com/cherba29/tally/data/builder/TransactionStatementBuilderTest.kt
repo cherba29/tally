@@ -6,7 +6,6 @@ import com.cherba29.tally.core.Transfer
 import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.root
 import com.cherba29.tally.statement.Transaction
-import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate
@@ -63,8 +62,7 @@ class TransactionStatementBuilderTest : DescribeSpec({
           targetTreeNode = testTreeLeafNode2,
           balance = -testTransferBalance,
           description = "test transfer",
-          type = Transaction.Type.EXPENSE,
-          balanceFromStart = null
+          type = Transaction.Type.EXPENSE
         )
       )
     }
@@ -115,17 +113,16 @@ class TransactionStatementBuilderTest : DescribeSpec({
           targetTreeNode = testTreeLeafNode2,
           balance = -testTransferBalance,
           description = "test transfer 1->2",
-          type = Transaction.Type.EXPENSE,
-          balanceFromStart = 800
+          type = Transaction.Type.EXPENSE
         ),
         Transaction(
           targetTreeNode = testTreeLeafNode1,
           balance = -testTransferBalance,
           description = "test transfer 2->1",
-          type = Transaction.Type.EXPENSE,
-          balanceFromStart = 900
+          type = Transaction.Type.EXPENSE
         )
       )
+      transactionStatement.balanceFromStart shouldBe listOf(800, 900)
     }
   }
 })

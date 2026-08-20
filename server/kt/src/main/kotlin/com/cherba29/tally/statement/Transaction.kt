@@ -11,7 +11,6 @@ data class Transaction(
   val balance: Balance,
   val description: String?,
   val type: Type,
-  val balanceFromStart: Long?
 )  : Comparable<Transaction> {
   /**
    * Order transactions by balance amount.
