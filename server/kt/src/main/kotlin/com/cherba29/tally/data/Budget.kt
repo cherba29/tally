@@ -20,5 +20,22 @@ data class Budget(
   // Parent nodes map to SummaryStatement and leaf nodes to TransactionStatement.
   val nodeToStatement: Map<TreeNode, Map<Month, Statement>>,
 ) {
+  private val isClosedCache = mutableMapOf<TreeNode, MutableMap<Month, Boolean>>()
+
   fun getAccountNode(accountName: String) = leafToAccount.entries.find { it.value.name == accountName }?.key
+
+  /**
+   * Checks if node is closed.
+   * It is closed if its corresponding account is closed, or all its children are closed.
+   */
+  fun isClosed(treeNode: TreeNode, month: Month): Boolean
+    = isClosedCache.getOrPut(treeNode) { mutableMapOf() }.getOrPut(month) {
+    !treeNode.isExternal && when (treeNode) {
+      is TreeNode.Leaf -> leafToAccount[treeNode]?.isClosed(month) ?: throw IllegalStateException("No matching account for $treeNode")
+      is TreeNode.Root,
+      is TreeNode.Branch -> {
+        treeNode.children.all { isClosed(it, month) }
+      }
+    }
+  }
 }
