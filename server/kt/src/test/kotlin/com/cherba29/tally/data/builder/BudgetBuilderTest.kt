@@ -331,7 +331,6 @@ class BudgetBuilderTest : DescribeSpec({
       val node1 = budget.tree[path1] as TreeNode.Leaf
       val tranStmt = transactionStatement {
         month = MAR / 2021
-        isClosed = false
         startBalance = testStartBalance
         // There no other transactions and balance is positive.
         isCovered = true
@@ -454,7 +453,6 @@ class BudgetBuilderTest : DescribeSpec({
       val node1 = budget.tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf
       val tranStmt = transactionStatement {
         month = MAR / 2021
-        isClosed = false
         isCovered = true
         isProjectedCovered = true
         startBalance = balance1
@@ -558,7 +556,6 @@ class BudgetBuilderTest : DescribeSpec({
       val node = budget.tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf
       val tranStmt1 = transactionStatement {
         month = MAR / 2021
-        isClosed = false
         startBalance = balance1
         isCovered = true
         isProjectedCovered = true

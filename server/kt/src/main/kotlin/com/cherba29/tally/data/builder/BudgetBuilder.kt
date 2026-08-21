@@ -128,16 +128,13 @@ class BudgetBuilder {
 
     val nodeToStatement: MutableMap<TreeNode, Map<Month, Statement>> = mutableMapOf()
     val (transactionStatementTable, elapsedTransactionTime) = timeSource.measureTimedValue {
-      val transactionStatementTable = leafToAccount.map { (leafTreeNode, account) ->
-        val monthToClosed = months.associateWith { account.isClosed(it) }
-        leafTreeNode to MonthTransactionStatementBuilder.make(
-          leafTreeNode,
+      val transactionStatementTable = leafToAccount.keys.associateWith { leafTreeNode ->
+        MonthTransactionStatementBuilder.make(
           months,
-          monthToClosed,
           leafToBalances[leafTreeNode] ?: mapOf(),
           transfers[leafTreeNode] ?: mapOf()
-        )
-      }.toMap()
+          )
+      }
       nodeToStatement.putAll(transactionStatementTable)
       transactionStatementTable
     }

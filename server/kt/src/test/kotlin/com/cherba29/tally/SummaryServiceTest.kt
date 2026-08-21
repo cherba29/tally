@@ -257,7 +257,8 @@ class SummaryServiceTest : DescribeSpec({
           )
         }
       }
-      val data = SummaryService(loader).summary(
+      val service = SummaryService(loader)
+      val data = service.summary(
         startMonth = MAR / 2026,
         endMonth = MAR / 2026,
         accountPath = "john/internal"

@@ -7,7 +7,6 @@ import com.cherba29.tally.statement.TransactionStatement
 
 class TransactionStatementBuilder {
   var month: Month? = null
-  var isClosed: Boolean = false
   var startBalance: Balance? = null
   var endBalance: Balance? = null
   var isCovered: Boolean = false
@@ -66,7 +65,6 @@ class TransactionStatementBuilder {
 
     return TransactionStatement(
       month!!..month!!,
-      isClosed,
       startBalance,
       endBalance,
       inFlows,

@@ -14,9 +14,6 @@ sealed class Statement(
   /** Period of time for the statement. */
   val monthRange: MonthRange,
 
-  /** True if account was closed during this month range. */
-  val isClosed: Boolean = false,
-
   /** Recorded start balance for the statement. */
   val startBalance: Balance? = null,
 
@@ -77,7 +74,7 @@ sealed class Statement(
         inFlows == 0L && outFlows == 0L && totalPayments == 0L
 
   override fun toString(): String {
-    return "months=$monthRange isClosed=$isClosed startBalance=$startBalance endBalance=$endBalance inFlows=$inFlows outFlows=$outFlows"
+    return "months=$monthRange startBalance=$startBalance endBalance=$endBalance inFlows=$inFlows outFlows=$outFlows"
   }
 
   override fun equals(other: Any?): Boolean {
@@ -85,7 +82,6 @@ sealed class Statement(
     if (other !is Statement) return false
 
     return monthRange == other.monthRange
-        && isClosed == other.isClosed
         && startBalance == other.startBalance
         && endBalance == other.endBalance
         && inFlows == other.inFlows
@@ -97,7 +93,6 @@ sealed class Statement(
 
   override fun hashCode(): Int {
     var result = monthRange.hashCode()
-    result = 31 * result + isClosed.hashCode()
     result = 31 * result + startBalance.hashCode()
     result = 31 * result + endBalance.hashCode()
     result = 31 * result + inFlows.hashCode()

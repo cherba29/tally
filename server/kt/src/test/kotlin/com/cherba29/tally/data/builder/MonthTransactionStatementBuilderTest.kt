@@ -20,14 +20,9 @@ import io.kotest.matchers.shouldBe
 class MonthTransactionStatementBuilderTest : DescribeSpec({
   describe("Creation") {
     it("empty") {
-      val tree = root {
-        leaf("test-account1")
-      }
       val testMonths = JUN / 2026..JUL / 2027
       val transactionStatements = MonthTransactionStatementBuilder.make(
-        tree[listOf("test-account1")] as TreeNode.Leaf,
         months = testMonths,
-        testMonths.associateWith { false },
         mapOf(),
         mapOf(),
       )
@@ -47,9 +42,7 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
         setAccount(accountPath, account)
       }
       val table = MonthTransactionStatementBuilder.make(
-        budget.tree[accountPath] as TreeNode.Leaf,
         months = budget.months,
-        budget.months.associateWith { false },
         mapOf(),
         mapOf()
       )
@@ -70,50 +63,23 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
         stmt.totalPayments shouldBe 0L
         stmt.totalTransfers shouldBe 0L
         stmt.transactions shouldBe listOf()
-        stmt.isClosed shouldBe false
       }
     }
 
     it("closed internal accounts do not produce statements") {
-      val accountPath = listOf("john", "internal", "test-account")
-      val account = Account(
-        name = "test-account",
-        path = listOf("internal"),
-        owners = setOf("john"),
-        openedOn = DEC / 2019,
-        closedOn = JAN / 2020,
-      )
-      val budget = budget {
-        setAccount(accountPath, account)
-      }
       val months = JUN / 2020 .. JUN / 2020
       val table = MonthTransactionStatementBuilder.make(
-        budget.tree[accountPath] as TreeNode.Leaf,
         months,
-        months.associateWith { true },
         mapOf(),
         mapOf()
       )
-      table.size shouldBe 0
+      table.size shouldBe 1
     }
 
     it("closed external accounts still produce statements") {
-      val accountPath = listOf("john", "external", "test-account")
-      val account = Account(
-        name = "test-account",
-        path = listOf("external"),
-        owners = setOf("john"),
-        openedOn = DEC / 2019,
-        closedOn = JAN / 2020,
-      )
-      val budget = budget {
-        setAccount(accountPath, account)
-      }
       val months = JUN / 2020 .. JUN / 2020
       val table = MonthTransactionStatementBuilder.make(
-        budget.tree[accountPath] as TreeNode.Leaf,
         months,
-        months.associateWith { true },
         mapOf(),
         mapOf()
       )
@@ -178,25 +144,21 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
       )
       val months = DEC / 2019..FEB / 2020
       val table1 = MonthTransactionStatementBuilder.make(
-        node1,
         months,
-        months.associateWith { false },
         balances[node1]!!,
         transfers[node1]!!
       )
       table1.size shouldBe 3
 
       val table2 = MonthTransactionStatementBuilder.make(
-        node2,
         months,
-        months.associateWith { false },
         balances[node2]!!,
         transfers[node2]!!
       )
       table2.size shouldBe 3
 
-      expectSelfie(table1.toSnapshot()).toMatchDisk("table1")
-      expectSelfie(table2.toSnapshot()).toMatchDisk("table2")
+      expectSelfie(table1.toSnapshot { false }).toMatchDisk("table1")
+      expectSelfie(table2.toSnapshot { false }).toMatchDisk("table2")
     }
 
     it("two accounts with external transfer") {
@@ -248,25 +210,21 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
       )
       val months = DEC / 2019..FEB / 2020
       val table1 = MonthTransactionStatementBuilder.make(
-        node1,
         months,
-        months.associateWith { false },
         balances[node1]!!,
         transfers[node1]!!
       )
       table1.size shouldBe 3
 
       val table2 = MonthTransactionStatementBuilder.make(
-        node2,
         months,
-        months.associateWith { false },
         balances[node2]!!,
         transfers[node2]!!
       )
       table1.size shouldBe 3
 
-      expectSelfie(table1.toSnapshot()).toMatchDisk("table1")
-      expectSelfie(table2.toSnapshot()).toMatchDisk("table2")
+      expectSelfie(table1.toSnapshot { false }).toMatchDisk("table1")
+      expectSelfie(table2.toSnapshot { false }).toMatchDisk("table2")
     }
     
     it("transfer to closed account") {
@@ -302,9 +260,7 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
       )
       val months = NOV / 2019..DEC / 2019
       val table1 = MonthTransactionStatementBuilder.make(
-        node1,
         months,
-        mapOf(NOV / 2019 to false, DEC / 2019 to true),
         balances[node1]!!,
         transfers[node1]!!
       )
@@ -312,9 +268,7 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
       table1.size shouldBe 2
 
       val table2 = MonthTransactionStatementBuilder.make(
-        node2,
         months,
-        months.associateWith { false },
         balances[node2]!!,
         transfers[node2]!!
       )
@@ -323,19 +277,15 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
 
       val dec1Stmt = table1[DEC / 2019]!!
       dec1Stmt.monthRange shouldBe DEC / 2019..DEC / 2019
-      dec1Stmt.isClosed shouldBe true
 
       val nov1Stmt = table1[NOV / 2019]!!
       nov1Stmt.monthRange shouldBe NOV / 2019..NOV / 2019
-      nov1Stmt.isClosed shouldBe false
 
       val dec2Stmt = table2[DEC / 2019]!!
       dec2Stmt.monthRange shouldBe DEC / 2019..DEC / 2019
-      dec2Stmt.isClosed shouldBe false
 
       val nov2Stmt = table2[NOV / 2019]!!
       nov2Stmt.monthRange shouldBe NOV / 2019..NOV / 2019
-      nov2Stmt.isClosed shouldBe false
     }
 
     it("get transaction type") {
@@ -387,9 +337,7 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
       )
       val months = DEC / 2019..DEC / 2019
       val table1 = MonthTransactionStatementBuilder.make(
-        node1,
         months,
-        months.associateWith { false },
         balances[node1]!!,
         transfers[node1]!!
       )
@@ -403,9 +351,7 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
       }
 
       val table2 = MonthTransactionStatementBuilder.make(
-        node2,
         months,
-        months.associateWith { false },
         balances[node2]!!,
         transfers[node2]!!
       )
@@ -416,9 +362,7 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
       stmt2.transactions[0].type shouldBe Transaction.Type.TRANSFER
 
       val table3 = MonthTransactionStatementBuilder.make(
-        node3,
         months,
-        months.associateWith { false },
         balances[node3]!!,
         transfers[node3]!!
       )

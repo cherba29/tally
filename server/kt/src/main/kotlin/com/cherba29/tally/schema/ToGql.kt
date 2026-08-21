@@ -5,7 +5,9 @@ import com.cherba29.tally.core.Balance
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.core.Transaction
+import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.statement.TransactionStatement
+import java.lang.IllegalStateException
 import kotlin.math.roundToInt
 
 fun Account.toGql(isExternal: Boolean, isSummary: Boolean): GqlAccount = GqlAccount(
@@ -48,7 +50,7 @@ private fun Double?.round2Float(): Float {
   return ((this * 100.0).roundToInt() / 100.0).toFloat()
 }
 
-fun TransactionStatement.toGql(accountName: String): GqlStatement = GqlStatement(
+fun TransactionStatement.toGql(accountName: String, isClosed: Boolean): GqlStatement = GqlStatement(
   name = accountName,
   month = monthRange.first,
   isClosed = isClosed,
@@ -70,7 +72,7 @@ fun TransactionStatement.toGql(accountName: String): GqlStatement = GqlStatement
   transactions = transactions.zip(balanceFromStart).map { it.first.toGql(it.second) }
 )
 
-fun TransactionStatement.toGqlTableCell(): GqlTableCell = GqlTableCell(
+fun TransactionStatement.toGqlTableCell(isClosed: Boolean): GqlTableCell = GqlTableCell(
   month = monthRange.first,
   isClosed = isClosed,
   addSub = addSub,
@@ -85,7 +87,7 @@ fun TransactionStatement.toGqlTableCell(): GqlTableCell = GqlTableCell(
   balanced = unaccounted == null || unaccounted == 0L
 )
 
-fun SummaryStatement.toGqlTableCell(): GqlTableCell = GqlTableCell(
+fun SummaryStatement.toGqlTableCell(isClosed: Boolean): GqlTableCell = GqlTableCell(
   month = monthRange.first,
   isClosed = isClosed,
   addSub = addSub,
@@ -100,9 +102,9 @@ fun SummaryStatement.toGqlTableCell(): GqlTableCell = GqlTableCell(
   balanced = unaccounted == null || unaccounted == 0L
 )
 
-fun Statement.toGqlTableCell() = when (this) {
-  is TransactionStatement -> toGqlTableCell()
-  is SummaryStatement -> toGqlTableCell()
+fun Statement.toGqlTableCell(isClosed: Boolean) = when (this) {
+  is TransactionStatement -> toGqlTableCell(isClosed)
+  is SummaryStatement -> toGqlTableCell(isClosed)
 }
 
 fun SummaryStatement.toGql(summaryName: String): GqlSummaryStatement = GqlSummaryStatement(
@@ -125,18 +127,19 @@ fun SummaryStatement.toGql(summaryName: String): GqlSummaryStatement = GqlSummar
 /**
  * Converts summary statement as a summary data with substatements and a total.
  **/
-fun SummaryStatement.toGqlSummaryData(summaryName: String): GqlSummaryData =  GqlSummaryData(
+fun SummaryStatement.toGqlSummaryData(summaryName: String, leafToAccount: Map<TreeNode.Leaf, Account>): GqlSummaryData =  GqlSummaryData(
   statements = statements.toSortedMap().map { (treeNode, stmt) ->
+    val account = leafToAccount[treeNode] ?: throw IllegalStateException("No matching account for $treeNode")
     when (stmt) {
-      is SummaryStatement -> (stmt as Statement).toGql(treeNode.name)  // Treat it as regular statement.
-      else -> stmt.toGql(treeNode.name)
+      is SummaryStatement -> (stmt as Statement).toGql(treeNode.name, account.isClosed(stmt.monthRange.first))  // Treat it as regular statement.
+      else -> stmt.toGql(treeNode.name, account.isClosed(stmt.monthRange.first))
     }
   },
   total = toGql(summaryName)
 )
 
 
-fun Statement.toGql(statementName: String): GqlStatement = GqlStatement(
+fun Statement.toGql(statementName: String, isClosed: Boolean): GqlStatement = GqlStatement(
   name = statementName,
   month = monthRange.first,
   isClosed = isClosed,

@@ -1,5 +1,6 @@
 package com.cherba29.tally.testing
 
+import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.schema.GqlSummaryData
 import com.cherba29.tally.schema.GqlTable
@@ -9,11 +10,11 @@ import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper
 
-fun Map<Month, TransactionStatement>.toSnapshot() = toSnapshot { root ->
-    val topEntry = root.addObject()
-    for ((month,  statement) in toSortedMap()) {
-      statement.toObjectNode(topEntry.putObject(month.toString()))
-    }
+fun Map<Month, TransactionStatement>.toSnapshot(isClosed: (Month)->Boolean) = toSnapshot { root: ArrayNode ->
+  val topEntry = root.addObject()
+  for ((month,  statement) in toSortedMap()) {
+    statement.toObjectNode(topEntry.putObject(month.toString()), isClosed(month))
+  }
 }
 
 fun GqlSummaryData.toSnapshot() = toSnapshot { root -> toObjectNode(root.addObject()) }

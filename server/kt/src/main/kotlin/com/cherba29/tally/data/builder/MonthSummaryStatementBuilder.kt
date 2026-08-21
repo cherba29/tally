@@ -39,7 +39,6 @@ class MonthSummaryStatementBuilder {
 
     return SummaryStatement(
       monthRange,
-      statements.values.all { statement -> statement.isClosed },
       startBalance,
       endBalance,
       inFlows,

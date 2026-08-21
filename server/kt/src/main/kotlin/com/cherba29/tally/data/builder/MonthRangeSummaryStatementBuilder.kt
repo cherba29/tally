@@ -62,7 +62,6 @@ class MonthRangeSummaryStatementBuilder {
       var totalTransfers = 0L
       var totalPayments = 0L
       var income = 0L
-      var isClosed = true
 
       for (currentMonth in monthRange) {
         val stmt = statements[currentMonth] ?: continue
@@ -71,11 +70,9 @@ class MonthRangeSummaryStatementBuilder {
         totalTransfers += stmt.totalTransfers
         totalPayments += stmt.totalPayments
         income += stmt.income
-        isClosed = isClosed && stmt.isClosed
       }
       return SummaryStatement(
         monthRange,
-        isClosed,
         startBalance,
         endBalance,
         inFlows,

@@ -4,6 +4,7 @@
     __base:
       __type: Statement
       months: Dec2019..Dec2019
+      isClosed: false
       startBalance:
         __type: Balance
         amount: 10
@@ -21,7 +22,6 @@
     hasProjectedTransfer: true
     isCovered: true
     isProjectedCovered: true
-    isClosed: false
     transactions:
     - __type: Transaction
       path:
@@ -55,6 +55,7 @@
     __base:
       __type: Statement
       months: Jan2020..Jan2020
+      isClosed: false
       startBalance:
         __type: Balance
         amount: 20
@@ -70,12 +71,12 @@
     hasProjectedTransfer: false
     isCovered: true
     isProjectedCovered: true
-    isClosed: false
   Feb2020:
     __type: TransactionStatement
     __base:
       __type: Statement
       months: Feb2020..Feb2020
+      isClosed: false
       startBalance:
         __type: Balance
         amount: 30
@@ -86,7 +87,6 @@
     hasProjectedTransfer: false
     isCovered: true
     isProjectedCovered: true
-    isClosed: false
 
 ╔═ two accounts with common owner and transfers/table2 ═╗
 - Dec2019:
@@ -94,6 +94,7 @@
     __base:
       __type: Statement
       months: Dec2019..Dec2019
+      isClosed: false
       inFlows: 3000
       income: 3000
     coversPrevious: false
@@ -101,7 +102,6 @@
     hasProjectedTransfer: true
     isCovered: true
     isProjectedCovered: true
-    isClosed: false
     transactions:
     - __type: Transaction
       path:
@@ -135,23 +135,23 @@
     __base:
       __type: Statement
       months: Jan2020..Jan2020
+      isClosed: false
     coversPrevious: false
     coversProjectedPrevious: false
     hasProjectedTransfer: false
     isCovered: true
     isProjectedCovered: true
-    isClosed: false
   Feb2020:
     __type: TransactionStatement
     __base:
       __type: Statement
       months: Feb2020..Feb2020
+      isClosed: false
     coversPrevious: false
     coversProjectedPrevious: false
     hasProjectedTransfer: false
     isCovered: true
     isProjectedCovered: true
-    isClosed: false
 
 ╔═ two accounts with external transfer/table1 ═╗
 - Dec2019:
@@ -159,6 +159,7 @@
     __base:
       __type: Statement
       months: Dec2019..Dec2019
+      isClosed: false
       startBalance:
         __type: Balance
         amount: 10
@@ -176,7 +177,6 @@
     hasProjectedTransfer: true
     isCovered: true
     isProjectedCovered: true
-    isClosed: false
     transactions:
     - __type: Transaction
       path:
@@ -210,6 +210,7 @@
     __base:
       __type: Statement
       months: Jan2020..Jan2020
+      isClosed: false
       startBalance:
         __type: Balance
         amount: 20
@@ -225,12 +226,12 @@
     hasProjectedTransfer: false
     isCovered: true
     isProjectedCovered: true
-    isClosed: false
   Feb2020:
     __type: TransactionStatement
     __base:
       __type: Statement
       months: Feb2020..Feb2020
+      isClosed: false
       startBalance:
         __type: Balance
         amount: 30
@@ -241,7 +242,6 @@
     hasProjectedTransfer: false
     isCovered: true
     isProjectedCovered: true
-    isClosed: false
 
 ╔═ two accounts with external transfer/table2 ═╗
 - Dec2019:
@@ -249,6 +249,7 @@
     __base:
       __type: Statement
       months: Dec2019..Dec2019
+      isClosed: false
       inFlows: 3000
       income: 3000
     coversPrevious: false
@@ -256,7 +257,6 @@
     hasProjectedTransfer: true
     isCovered: true
     isProjectedCovered: true
-    isClosed: false
     transactions:
     - __type: Transaction
       path:
@@ -290,22 +290,22 @@
     __base:
       __type: Statement
       months: Jan2020..Jan2020
+      isClosed: false
     coversPrevious: false
     coversProjectedPrevious: false
     hasProjectedTransfer: false
     isCovered: true
     isProjectedCovered: true
-    isClosed: false
   Feb2020:
     __type: TransactionStatement
     __base:
       __type: Statement
       months: Feb2020..Feb2020
+      isClosed: false
     coversPrevious: false
     coversProjectedPrevious: false
     hasProjectedTransfer: false
     isCovered: true
     isProjectedCovered: true
-    isClosed: false
 
 ╔═ [end of file] ═╗

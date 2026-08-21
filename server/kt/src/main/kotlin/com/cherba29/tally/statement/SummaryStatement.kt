@@ -9,7 +9,6 @@ import com.cherba29.tally.core.TreeNode
  */
 class SummaryStatement(
   monthRange: MonthRange,
-  isClosed: Boolean = false,
   startBalance: Balance? = null,
   endBalance: Balance? = null,
   inFlows: Long = 0,
@@ -21,7 +20,6 @@ class SummaryStatement(
   val statements: Map<TreeNode, Statement> = mapOf()
 ) : Statement(
   monthRange,
-  isClosed,
   startBalance,
   endBalance,
   inFlows,

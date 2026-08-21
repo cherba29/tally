@@ -32,7 +32,6 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
       }
       val testStatement = TransactionStatement(
         APR / 2026..APR / 2026,
-        isClosed = false,
         startBalance = null
       )
       val builder = MonthRangeSummaryStatementBuilder()
@@ -62,12 +61,10 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
       }
       val testStatement1 = TransactionStatement(
         APR / 2026..APR / 2026,
-        isClosed = false,
         startBalance = null
       )
       val testStatement2 = TransactionStatement(
         MAY / 2026..MAY / 2026,
-        isClosed = false,
         startBalance = null
       )
       val node1 = tree[listOf("john", "internal", "test-account1")]!!
@@ -106,13 +103,11 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
       val startBalance1 = Balance(100, LocalDate(2026, 4, 1), Balance.Type.CONFIRMED)
       val stmt1 = TransactionStatement(
         monthRange = APR / 2026..APR / 2026,
-        isClosed = false,
         startBalance = startBalance1
       )
       val startBalance2 = Balance(200, LocalDate(2026, 5, 1), Balance.Type.CONFIRMED)
       val stmt2 = TransactionStatement(
         monthRange = MAY / 2026..MAY / 2026,
-        isClosed = false,
         startBalance = startBalance2
       )
 
@@ -143,7 +138,6 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
         JAN / 2026..MAR / 2026,
         statements = mapOf()
       )
-      combined.isClosed shouldBe true
       combined.change shouldBe 0
       combined.percentChange shouldBe 0.0
       combined.annualizedPercentChange shouldBe 0.0
@@ -153,7 +147,6 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
       val startMonth = JAN / 2026
       val statement = TransactionStatement(
         startMonth..startMonth,
-        isClosed = false,
         startBalance = Balance(
           100,
           date = LocalDate(2026, 1, 1),
@@ -164,7 +157,6 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
         startMonth..MAR / 2026,
         statements = mapOf(startMonth to statement)
       )
-      combined.isClosed shouldBe false
       combined.change shouldBe -100
       combined.percentChange shouldBe -100.0
       combined.annualizedPercentChange shouldBe null

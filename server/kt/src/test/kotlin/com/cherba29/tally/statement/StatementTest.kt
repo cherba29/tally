@@ -50,7 +50,6 @@ class StatementTest : DescribeSpec({
     val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     val stmt = SummaryStatement(
       MAR / 2021..MAR / 2021,
-      false,
       startBalance,
       endBalance,
       inFlows = 110,
@@ -100,7 +99,6 @@ class StatementTest : DescribeSpec({
     val startBalance = Balance(1000, LocalDate.parse("2020-01-01"), Balance.Type.PROJECTED)
     val stmt = SummaryStatement(
       MAR / 2021..MAR / 2021,
-      false,
       startBalance,
       inFlows = 110,
       outFlows = -40
@@ -115,7 +113,6 @@ class StatementTest : DescribeSpec({
     val endBalance = Balance(2000, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     val stmt = SummaryStatement(
       MAR / 2021..MAR / 2021,
-      false,
       null,
       endBalance,
       inFlows = 110,
@@ -133,7 +130,6 @@ class StatementTest : DescribeSpec({
 
     val stmt = SummaryStatement(
       MAR / 2021..MAR / 2021,
-      false,
       startBalance,
       endBalance,
       inFlows = 110,
@@ -148,7 +144,6 @@ class StatementTest : DescribeSpec({
     val endBalance = Balance(1020, LocalDate.parse("2020-02-01"), Balance.Type.PROJECTED)
     val stmt = SummaryStatement(
       MAR / 2021..MAR / 2021,
-      false,
       startBalance,
       endBalance,
       inFlows = 110,

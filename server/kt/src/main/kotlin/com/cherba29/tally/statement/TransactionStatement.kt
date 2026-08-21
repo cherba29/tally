@@ -9,7 +9,6 @@ import com.cherba29.tally.core.Transaction
  */
 class TransactionStatement(
   monthRange: MonthRange,
-  isClosed: Boolean,
   startBalance: Balance?,
   endBalance: Balance? = null,
   inFlows: Long = 0L,
@@ -41,7 +40,6 @@ class TransactionStatement(
 ) :
   Statement(
     monthRange,
-    isClosed,
     startBalance,
     endBalance,
     inFlows,

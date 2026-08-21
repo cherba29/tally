@@ -30,7 +30,6 @@ class SummaryMapBuilderTest : DescribeSpec({
         MAY / 2026,
         statement = TransactionStatement(
           monthRange = MAY / 2026..MAY / 2026,
-          isClosed = false,
           startBalance = null
         )
       )
@@ -61,7 +60,6 @@ class SummaryMapBuilderTest : DescribeSpec({
         MAY / 2026,
         statement = TransactionStatement(
           monthRange = MAY / 2026..MAY / 2026,
-          isClosed = false,
           startBalance = null
         )
       )
@@ -107,7 +105,6 @@ class SummaryMapBuilderTest : DescribeSpec({
       MAY / 2026,
       statement = TransactionStatement(
         monthRange = MAY / 2026..MAY / 2026,
-        isClosed = false,
         startBalance = null
       )
     )
@@ -116,7 +113,6 @@ class SummaryMapBuilderTest : DescribeSpec({
       MAY / 2026,
       statement = TransactionStatement(
         monthRange = MAY / 2026..MAY / 2026,
-        isClosed = false,
         startBalance = null
       )
     )
@@ -125,7 +121,6 @@ class SummaryMapBuilderTest : DescribeSpec({
       MAY / 2026,
       statement = TransactionStatement(
         monthRange = MAY / 2026..MAY / 2026,
-        isClosed = false,
         startBalance = null
       )
     )

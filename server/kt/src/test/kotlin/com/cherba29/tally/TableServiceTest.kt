@@ -168,7 +168,8 @@ class TableServiceTest : DescribeSpec({
         )
       }
       val loader = mockk<Loader> { coEvery { budget() } returns payload }
-      val table = TableService(loader).table(
+      val service = TableService(loader)
+      val table = service.table(
         "john",
         startMonth = DEC / 2025,
         endMonth = MAR / 2026

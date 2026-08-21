@@ -21,7 +21,7 @@ class MonthSummaryStatementBuilderTest : DescribeSpec({
     it("with single zero statements") {
       val testTree = root { }
       val testMonthRange = JUL / 2026..JUL / 2026
-      val testStatement = TransactionStatement(testMonthRange, isClosed = false, startBalance = null)
+      val testStatement = TransactionStatement(testMonthRange, startBalance = null)
       val summary = MonthSummaryStatementBuilder.builder {
         addStatement(testTree, testStatement)
       }
@@ -45,7 +45,6 @@ class MonthSummaryStatementBuilderTest : DescribeSpec({
       val testEndBalance = Balance(200, LocalDate(2026, 8, 1), Balance.Type.PROJECTED)
       val testStatement = TransactionStatement(
         testMonthRange,
-        isClosed = false,
         startBalance = testStartBalance,
         endBalance = testEndBalance,
         inFlows = 10,

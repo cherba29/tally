@@ -58,9 +58,10 @@ fun Account.toObjectNode(root: ObjectNode) {
   }
 }
 
-fun Statement.toObjectNode(root: ObjectNode) {
+fun Statement.toObjectNode(root: ObjectNode, isClosed: Boolean) {
   root.put("__type", "Statement")
   root.put("months", monthRange.toString())
+  root.put("isClosed", isClosed)
   startBalance?.toObjectNode(root.putObject("startBalance"))
   endBalance?.toObjectNode(root.putObject("endBalance"))
   if (inFlows != 0L) {
@@ -168,15 +169,14 @@ fun GqlTransaction.toObjectNode(root: ObjectNode) {
   root.put("description", description)
 }
 
-fun TransactionStatement.toObjectNode(root: ObjectNode) {
+fun TransactionStatement.toObjectNode(root: ObjectNode, isClosed: Boolean) {
   root.put("__type", this.javaClass.simpleName)
-  (this as Statement).toObjectNode(root.putObject("__base"))
+  (this as Statement).toObjectNode(root.putObject("__base"), isClosed)
   root.put("coversPrevious", coversPrevious)
   root.put("coversProjectedPrevious", coversProjectedPrevious)
   root.put("hasProjectedTransfer", hasProjectedTransfer)
   root.put("isCovered", isCovered)
   root.put("isProjectedCovered", isProjectedCovered)
-  root.put("isClosed", isClosed)
   if (transactions.isNotEmpty()) {
     val transactionsNode = root.putArray("transactions")
     transactions.forEach { it.toObjectNode(transactionsNode.addObject()) }

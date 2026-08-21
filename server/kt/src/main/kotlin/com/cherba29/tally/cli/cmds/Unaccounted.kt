@@ -16,6 +16,7 @@ import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.boolean
 import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.path
+import java.lang.IllegalStateException
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -58,8 +59,10 @@ class Unaccounted : CliktCommand() {
       if (account != null && treeNode.name != account) {
         continue
       }
-      for (transactionStatement in monthTransactionStatements.values) {
-        if (transactionStatement.isClosed) {
+      val accountRecord = budget.leafToAccount[treeNode]
+        ?: throw IllegalStateException("No matching account for $treeNode")
+      for ((month, transactionStatement) in monthTransactionStatements) {
+        if (accountRecord.isClosed(month)) {
           continue
         }
         if (startMonth != null && transactionStatement.monthRange.last < startMonth!!) {

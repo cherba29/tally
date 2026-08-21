@@ -47,12 +47,14 @@ class SummaryService(val loader: Loader) : Query {
         for (summaryStatement in summaryStatements.values) {
           for ((treeNode, subStatement) in summaryStatement.statements) {
             // Do not include closed statements in the summary.
-            if (!subStatement.isClosed) {
+            val account = budget.leafToAccount[treeNode]
+                ?: throw IllegalStateException("No matching account for $treeNode")
+            if (!account.isClosed(subStatement.monthRange.first)) {
               builder.addStatement(treeNode,subStatement.monthRange.first, subStatement)
             }
           }
         }
-        builder.build().toGqlSummaryData(summaryNode.name)
+        builder.build().toGqlSummaryData(summaryNode.name, budget.leafToAccount)
       } catch (e: Exception) {
         logger.error(e) {
           "Error while processing summary query accountType=$accountPath " +
@@ -76,9 +78,11 @@ class SummaryService(val loader: Loader) : Query {
         val treeNode = budget.tree[treePath]
           ?: throw NotFoundException("'$accountPath' not found.")
 
+        val account = budget.leafToAccount[treeNode]
+          ?: throw IllegalStateException("Could not find account for $accountPath")
         val monthlyStatements = budget.nodeToStatement[treeNode]
           ?: throw IllegalStateException("Could not find statements for $accountPath")
-        val ascMonthList = monthlyStatements.filterValues { !it.isClosed }.keys.sorted()
+        val ascMonthList = monthlyStatements.filter { !account.isClosed(it.key) }.keys.sorted()
         val summaries = mutableMapOf<Month, GqlMonthTransferSummary>()
 
         val cashFlow = IrregularCashFlow()

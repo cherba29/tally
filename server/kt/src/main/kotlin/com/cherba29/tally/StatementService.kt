@@ -11,6 +11,7 @@ import com.expediagroup.graphql.server.operations.Query
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.time.measureTimedValue
 import kotlinx.coroutines.runBlocking
+import java.lang.IllegalStateException
 
 class StatementService(val loader: Loader) : Query {
   @GraphQLDescription("Returns a monthly statement for given account.")
@@ -24,9 +25,11 @@ class StatementService(val loader: Loader) : Query {
         if (accountNode !is TreeNode.Leaf) {
           throw NotFoundException("'$accountPath' is not an account path")
         }
+        val account = payload.leafToAccount[accountNode]
+          ?: throw IllegalStateException("No corresponding account for $accountNode")
         val statement: TransactionStatement = payload.nodeToStatement[accountNode]?.get(month) as? TransactionStatement
           ?: throw NotFoundException("Did not find statement for month '$month' for account '$accountPath'")
-        statement.toGql(accountNode.name)
+        statement.toGql(accountNode.name, account.isClosed(statement.monthRange.first))
       } catch (e: Exception) {
         logger.error(e) { "Error while processing table query account=$accountPath month=$month" }
         throw e

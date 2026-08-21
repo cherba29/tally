@@ -1,6 +1,7 @@
 package com.cherba29.tally
 
 import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.reduceTo
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.data.Loader
@@ -8,6 +9,8 @@ import com.cherba29.tally.schema.GqlTable
 import com.cherba29.tally.schema.GqlTableRow
 import com.cherba29.tally.schema.toGql
 import com.cherba29.tally.schema.toGqlTableCell
+import com.cherba29.tally.statement.Statement
+import com.cherba29.tally.statement.SummaryStatement
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -61,7 +64,7 @@ class TableService(val loader: Loader) : Query {
           )
 
         val cells = requestedMonths.map { month ->
-          monthMap[month]?.toGqlTableCell()
+          monthMap[month]?.toGqlTableCell(payload.isClosed(treeNode, month))
             ?: throw IllegalStateException(
               "Missing statement for ${treeNode.path.joinToString("/")} for month $month, " +
                   "only available ${monthMap.keys}")

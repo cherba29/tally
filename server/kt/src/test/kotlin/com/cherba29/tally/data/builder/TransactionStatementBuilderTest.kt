@@ -15,7 +15,6 @@ class TransactionStatementBuilderTest : DescribeSpec({
       val testMonthRange = JUL / 2026..JUL / 2026
       val builder = TransactionStatementBuilder()
       builder.month = testMonthRange.first
-      builder.isClosed = false
 
       val transactionStatement = builder.build()
       transactionStatement.monthRange shouldBe testMonthRange
@@ -46,7 +45,6 @@ class TransactionStatementBuilderTest : DescribeSpec({
       )
       val builder = TransactionStatementBuilder()
       builder.month = testMonthRange.first
-      builder.isClosed = false
       builder.addTransfer(testTransfer)
       val transactionStatement = builder.build()
       transactionStatement.monthRange shouldBe testMonthRange
@@ -90,7 +88,6 @@ class TransactionStatementBuilderTest : DescribeSpec({
       val testStartBalance = Balance(1000, LocalDate(2026, 7, 1), Balance.Type.PROJECTED)
       val builder = TransactionStatementBuilder()
       builder.month = testMonthRange.first
-      builder.isClosed = false
       builder.startBalance = testStartBalance
       builder.addTransfer(testTransferFrom)
       builder.addTransfer(testTransferTo)

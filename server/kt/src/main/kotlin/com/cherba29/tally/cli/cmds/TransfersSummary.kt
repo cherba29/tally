@@ -21,8 +21,6 @@ import com.github.ajalt.mordant.rendering.TextAlign
 import com.github.ajalt.mordant.table.Borders
 import com.github.ajalt.mordant.table.table
 import com.github.ajalt.mordant.terminal.Terminal
-import kotlin.math.pow
-import kotlin.math.round
 
 class TransfersSummary : CliktCommand() {
   override fun help(context: Context) = "List of transactions within given period."
@@ -47,9 +45,11 @@ class TransfersSummary : CliktCommand() {
     val treeNode = budget.tree[treePath]
       ?: throw NotFoundException("'$accountPath' not found.")
 
+    val account = budget.leafToAccount[treeNode]
+      ?: throw IllegalStateException("Could not find account for $accountPath")
     val monthlyStatements = budget.nodeToStatement[treeNode]
       ?: throw IllegalStateException("Could not find statements for $accountPath")
-    val ascMonthList = monthlyStatements.filterValues { !it.isClosed }.keys.sorted()
+    val ascMonthList = monthlyStatements.filter { !account.isClosed(it.key) }.keys.sorted()
     val summaries = mutableMapOf<Month, GqlMonthTransferSummary>()
 
     // TODO: Unify this logic with SummaryService.
