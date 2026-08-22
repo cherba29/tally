@@ -8,7 +8,7 @@ import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.plus
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.statement.Statement
-import com.cherba29.tally.core.Transaction
+import com.cherba29.tally.statement.TransactionStatement
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -61,15 +61,29 @@ class BudgetBuilder {
     monthRange += record.month
   }
 
-  private fun buildTransfers(treeRoot: TreeNode): MutableMap<TreeNode.Leaf, MutableMap<Month, MutableList<Transaction>>> {
-    val budgetTransfers = mutableMapOf<TreeNode.Leaf, MutableMap<Month, MutableList<Transaction>>>()
+  private fun buildTransactionStatements(treeRoot: TreeNode, leafToAccount:  Map<TreeNode.Leaf, Account>): Map<TreeNode.Leaf, Map<Month, TransactionStatement>> {
+    val leafToBalances = balances.mapKeys {
+      treeRoot[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
+    }
+
+    val statementBuilders = mutableMapOf<TreeNode.Leaf, MonthTransactionStatementBuilder>()
+
+    statementBuilders.putAll(
+      leafToAccount.keys.associateWith {
+        val builder = MonthTransactionStatementBuilder()
+        builder.months = monthRange!!
+        builder.monthlyBalances = leafToBalances[it] ?: mapOf()
+        builder
+      }
+    )
+
     for (transferRecord in transferRecordList) {
       val toAccounts = pathToAccount.keys.filter { it.last() == transferRecord.toAccountName }
       if (toAccounts.isEmpty()) {
         throw IllegalArgumentException(
           "Unknown to account ${transferRecord.toAccountName} in " +
               "${transferRecord.fromAccountPath.joinToString("/")}, " +
-            "known accounts\n${treeRoot.toPrettyString()}")
+              "known accounts\n${treeRoot.toPrettyString()}")
       } else if (toAccounts.size > 1) {
         throw IllegalArgumentException(
           "Ambiguous transfer from ${transferRecord.fromAccountPath.joinToString("/")} to ${transferRecord.toAccountName}, " +
@@ -93,27 +107,16 @@ class BudgetBuilder {
         }
       }
 
-      val transactionTo = Transaction(
-        targetTreeNode = toAccount,
-        balance = -transferRecord.balance,
-        description = transferRecord.description,
-        type = Transaction.typeOf(fromAccount, toAccount, -transferRecord.balance.amount)
-      )
-      val transactionFrom = Transaction(
-        targetTreeNode = fromAccount,
-        balance = transferRecord.balance,
-        description = transferRecord.description,
-        type = Transaction.typeOf(toAccount, fromAccount, transferRecord.balance.amount)
-      )
-      budgetTransfers.get(toAccount, transferRecord.month).add(transactionFrom)
-      budgetTransfers.get(fromAccount, transferRecord.month).add(transactionTo)
+      (statementBuilders[fromAccount]?: throw IllegalStateException())
+        .addTransfer(fromAccount, toAccount,  transferRecord.month, -transferRecord.balance, transferRecord.description)
+      (statementBuilders[toAccount]?: throw IllegalStateException())
+        .addTransfer(toAccount, fromAccount, transferRecord.month, transferRecord.balance, transferRecord.description)
     }
-    return budgetTransfers
+    return statementBuilders.mapValues { it.value.build() }
   }
 
   fun build(): Budget {
-    val months = monthRange ?: MonthRange.EMPTY
-    if (months.isEmpty()) {
+    if (monthRange?.isEmpty() ?: true) {
       throw IllegalArgumentException("Budget must have at least one month.")
     }
 
@@ -121,23 +124,12 @@ class BudgetBuilder {
     val leafToAccount = pathToAccount.mapKeys {
       treeRoot[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
     }
-    val leafToBalances = balances.mapKeys {
-      treeRoot[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
-    }
-    val (transfers, elapsedBudgetTime) = timeSource.measureTimedValue { buildTransfers(treeRoot) }
 
     val nodeToStatement: MutableMap<TreeNode, Map<Month, Statement>> = mutableMapOf()
     val (transactionStatementTable, elapsedTransactionTime) = timeSource.measureTimedValue {
-      val transactionStatementTable = leafToAccount.keys.associateWith { leafTreeNode ->
-        MonthTransactionStatementBuilder.make(
-          months,
-          leafToBalances[leafTreeNode] ?: mapOf(),
-          transfers[leafTreeNode] ?: mapOf()
-          )
-      }
-      nodeToStatement.putAll(transactionStatementTable)
-      transactionStatementTable
+      buildTransactionStatements(treeRoot, leafToAccount)
     }
+    nodeToStatement.putAll(transactionStatementTable)
 
     val (summaryNameMonthMap, elapsedBuildSummaryStatements) = timeSource.measureTimedValue {
       val summaryMapBuilder = SummaryMapBuilder()
@@ -152,14 +144,13 @@ class BudgetBuilder {
     val numSummaryStatements = summaryNameMonthMap.size
     logger.info {
         "Build ${leafToAccount.size} accounts, " +
-        "transfers in $elapsedBudgetTime, " +
         "${transactionStatementTable.size} transactions in $elapsedTransactionTime, " +
         "$numSummaryStatements summaries in $elapsedBuildSummaryStatements, " +
-        "total in ${elapsedBudgetTime + elapsedTransactionTime + elapsedBuildSummaryStatements}"
+        "total in ${elapsedTransactionTime + elapsedBuildSummaryStatements}"
     }
 
     return Budget(
-      months,
+      monthRange!!,
       treeRoot,
       leafToAccount,
       nodeToStatement,
@@ -169,10 +160,6 @@ class BudgetBuilder {
   companion object {
     private val logger = KotlinLogging.logger {}
   }
-}
-
-private fun <K1, K2, V> MutableMap<K1, MutableMap<K2, MutableList<V>>>.get(k1: K1, k2: K2): MutableList<V> {
-  return getOrPut(k1) { mutableMapOf() }.getOrPut(k2) { mutableListOf() }
 }
 
 fun budget(block: BudgetBuilder.()->Unit): Budget {
