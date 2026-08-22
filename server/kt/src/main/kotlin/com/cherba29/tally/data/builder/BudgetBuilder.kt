@@ -10,8 +10,6 @@ import com.cherba29.tally.data.Budget
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.TransactionStatement
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlin.collections.component1
-import kotlin.collections.component2
 import kotlin.collections.set
 import kotlin.time.TimeSource
 import kotlin.time.measureTimedValue
@@ -125,27 +123,24 @@ class BudgetBuilder {
       treeRoot[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
     }
 
-    val nodeToStatement: MutableMap<TreeNode, Map<Month, Statement>> = mutableMapOf()
-    val (transactionStatementTable, elapsedTransactionTime) = timeSource.measureTimedValue {
-      buildTransactionStatements(treeRoot, leafToAccount)
+    val nodeToStatement = mutableMapOf<TreeNode, Map<Month, Statement>>()
+    val (numTransactions, elapsedTransactionTime) = timeSource.measureTimedValue {
+      val transactionStatements = buildTransactionStatements(treeRoot, leafToAccount)
+      nodeToStatement.putAll(transactionStatements)
+      transactionStatements.values.sumOf { it.values.sumOf { stmt -> stmt.transactions.size } }
     }
-    nodeToStatement.putAll(transactionStatementTable)
 
     val (summaryNameMonthMap, elapsedBuildSummaryStatements) = timeSource.measureTimedValue {
       val summaryMapBuilder = SummaryMapBuilder()
-      for ((treeNode, monthStatements) in transactionStatementTable) {
-        for ((month, statement) in monthStatements) {
-          summaryMapBuilder.addStatement(treeNode, month, statement)
-        }
-      }
+      summaryMapBuilder.addAll(nodeToStatement)
       summaryMapBuilder.build(treeRoot)
     }
     nodeToStatement.putAll(summaryNameMonthMap)
-    val numSummaryStatements = summaryNameMonthMap.size
+
     logger.info {
         "Build ${leafToAccount.size} accounts, " +
-        "${transactionStatementTable.size} transactions in $elapsedTransactionTime, " +
-        "$numSummaryStatements summaries in $elapsedBuildSummaryStatements, " +
+        "$numTransactions transactions in $elapsedTransactionTime, " +
+        "${summaryNameMonthMap.size} summaries in $elapsedBuildSummaryStatements, " +
         "total in ${elapsedTransactionTime + elapsedBuildSummaryStatements}"
     }
 

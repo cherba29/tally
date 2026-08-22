@@ -4,10 +4,22 @@ import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.iterator
+import kotlin.collections.mutableMapOf
 
 class SummaryMapBuilder {
   // Map of owner -> 'summary name' -> month -> 'summary statement'.
   private val summaryStatements = mutableMapOf<TreeNode, MutableMap<Month, MonthSummaryStatementBuilder>>()
+
+  fun addAll(nodeToStatement: Map<TreeNode, Map<Month, Statement>>) {
+    for ((treeNode, monthStatements) in nodeToStatement) {
+      for ((month, statement) in monthStatements) {
+        addStatement(treeNode, month, statement)
+      }
+    }
+  }
 
   // Adds statement to its immediate parent summary statement.
   fun addStatement(treeNode: TreeNode, month: Month, statement: Statement) {
