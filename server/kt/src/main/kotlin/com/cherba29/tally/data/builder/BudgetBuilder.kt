@@ -1,16 +1,10 @@
 package com.cherba29.tally.data.builder
 
-import com.cherba29.tally.core.Account
-import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.TreeNode
-import com.cherba29.tally.core.Month
-import com.cherba29.tally.core.MonthRange
-import com.cherba29.tally.core.plus
+import com.cherba29.tally.core.*
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.TransactionStatement
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlin.collections.set
 import kotlin.time.TimeSource
 import kotlin.time.measureTimedValue
 
@@ -21,6 +15,7 @@ class BudgetBuilder {
   private val timeSource: TimeSource = TimeSource.Monotonic
 
   private var monthRange: MonthRange? = null
+
   data class TransferRecord(
     val toAccountName: String,  // Full path is unknown at time of record.
     val fromAccountPath: List<String>,
@@ -45,7 +40,8 @@ class BudgetBuilder {
     val accountBalances = balances.getOrPut(accountPath) { mutableMapOf() }
     if (accountBalances.put(month, balance) != null) {
       throw IllegalArgumentException(
-        "Balance for '${accountPath.joinToString("/")}' '$month' is already set to $balance")
+        "Balance for '${accountPath.joinToString("/")}' '$month' is already set to $balance"
+      )
     }
     monthRange += month
     return this
@@ -59,7 +55,10 @@ class BudgetBuilder {
     monthRange += record.month
   }
 
-  private fun buildTransactionStatements(treeRoot: TreeNode, leafToAccount:  Map<TreeNode.Leaf, Account>): Map<TreeNode.Leaf, Map<Month, TransactionStatement>> {
+  private fun buildTransactionStatements(
+    treeRoot: TreeNode,
+    leafToAccount: Map<TreeNode.Leaf, Account>
+  ): Map<TreeNode.Leaf, Map<Month, TransactionStatement>> {
     val leafToBalances = balances.mapKeys {
       treeRoot[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
     }
@@ -72,25 +71,29 @@ class BudgetBuilder {
         builder.months = monthRange!!
         builder.monthlyBalances = leafToBalances[it] ?: mapOf()
         builder
-      }
-    )
+      })
+
+    val cachedNameToTreenodeMap = mutableMapOf<String, TreeNode.Leaf>()
 
     for (transferRecord in transferRecordList) {
-      val toAccounts = pathToAccount.keys.filter { it.last() == transferRecord.toAccountName }
-      if (toAccounts.isEmpty()) {
-        throw IllegalArgumentException(
-          "Unknown to account ${transferRecord.toAccountName} in " +
-              "${transferRecord.fromAccountPath.joinToString("/")}, " +
-              "known accounts\n${treeRoot.toPrettyString()}")
-      } else if (toAccounts.size > 1) {
-        throw IllegalArgumentException(
-          "Ambiguous transfer from ${transferRecord.fromAccountPath.joinToString("/")} to ${transferRecord.toAccountName}, " +
-              "found multiple candidate accounts " + toAccounts.joinToString { it.joinToString("/") })
+      val toAccount = cachedNameToTreenodeMap.getOrPut(transferRecord.toAccountName) {
+        val toAccounts = pathToAccount.keys.filter { it.last() == transferRecord.toAccountName }
+        if (toAccounts.isEmpty()) {
+          throw IllegalArgumentException(
+            "Unknown to account ${transferRecord.toAccountName} in " +
+                "${transferRecord.fromAccountPath.joinToString("/")}, " +
+                "known accounts\n${treeRoot.toPrettyString()}"
+          )
+        } else if (toAccounts.size > 1) {
+          throw IllegalArgumentException(
+            "Ambiguous transfer from ${transferRecord.fromAccountPath.joinToString("/")} to " +
+                "${transferRecord.toAccountName}, found multiple candidate accounts " +
+                toAccounts.joinToString { it.joinToString("/") })
+        }
+
+        treeRoot[toAccounts.first()] as? TreeNode.Leaf
+          ?: throw IllegalStateException("Unknown account path ${toAccounts.first().joinToString("/")}")
       }
-
-      val toAccount = treeRoot[toAccounts.first()] as? TreeNode.Leaf
-        ?: throw IllegalStateException("Unknown account path ${toAccounts.first().joinToString("/")}")
-
       val fromAccount = treeRoot[transferRecord.fromAccountPath] as? TreeNode.Leaf ?: throw IllegalArgumentException(
         "Unknown account ${transferRecord.fromAccountPath.joinToString("/")}"
       )
@@ -105,10 +108,20 @@ class BudgetBuilder {
         }
       }
 
-      (statementBuilders[fromAccount]?: throw IllegalStateException())
-        .addTransfer(fromAccount, toAccount,  transferRecord.month, -transferRecord.balance, transferRecord.description)
-      (statementBuilders[toAccount]?: throw IllegalStateException())
-        .addTransfer(toAccount, fromAccount, transferRecord.month, transferRecord.balance, transferRecord.description)
+      (statementBuilders[fromAccount] ?: throw IllegalStateException()).addTransfer(
+          fromAccount,
+          toAccount,
+          transferRecord.month,
+          -transferRecord.balance,
+          transferRecord.description
+        )
+      (statementBuilders[toAccount] ?: throw IllegalStateException()).addTransfer(
+          toAccount,
+          fromAccount,
+          transferRecord.month,
+          transferRecord.balance,
+          transferRecord.description
+        )
     }
     return statementBuilders.mapValues { it.value.build() }
   }
@@ -157,7 +170,7 @@ class BudgetBuilder {
   }
 }
 
-fun budget(block: BudgetBuilder.()->Unit): Budget {
+fun budget(block: BudgetBuilder.() -> Unit): Budget {
   val builder = BudgetBuilder()
   block(builder)
   return builder.build()
