@@ -4,7 +4,6 @@ import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.data.builder.BudgetBuilder
-import com.cherba29.tally.data.builder.BudgetBuilder.TransferRecord
 import com.cherba29.tally.data.yaml.BalanceYamlData
 import com.cherba29.tally.data.yaml.YamlData
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -51,11 +50,7 @@ private fun YamlData.toAccount(): Account? {
 }
 
 private fun BalanceYamlData.toBalance(name: String): Balance {
-  if (grp == null) {
-    throw IllegalArgumentException(
-      "For $name account balance entry with date '$date' and desc '$desc' has no grp setting"
-    )
-  }
+  requireNotNull(grp)
   var amount: Long
   var balanceType: Balance.Type
   if (camt != null) {
@@ -72,6 +67,7 @@ private fun BalanceYamlData.toBalance(name: String): Balance {
   }
   val balance =  Balance(amount, date, balanceType, desc ?: "")
   val balanceMonthDiff = abs(balance.date.year * 12 + balance.date.month.ordinal - grp.year * 12 - grp.month)
+  // TODO: move logical inconsistency checks into budget builder.
   if (balanceMonthDiff > 2) {
     throw IllegalArgumentException(
       "For $name account $balance and month $grp are $balanceMonthDiff months apart (2 max)"
@@ -86,20 +82,25 @@ private fun BalanceYamlData.toBalance(name: String): Balance {
 private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
   // Ignore data which dont represent account.
   val account = data.toAccount() ?: return false
-  val convertedBalances = data.balances?.map { it.grp to it.toBalance(account.name) } ?: listOf()
-  val convertedTransfers = mutableListOf<TransferRecord>()
+  val convertedBalances = data.balances?.associate {
+    (it.grp ?: throw IllegalArgumentException(
+      "For ${account.name} account balance entry with date '${it.date}' and desc '${it.desc}' has no grp setting"
+    )) to it.toBalance(account.name) } ?: mapOf()
+
+  budgetBuilder.addAccount(account, convertedBalances)
+
   if (data.transfersTo != null) {
-    for ((accountName, transfers) in data.transfersTo.entries) {
+    for ((toAccountName, transfers) in data.transfersTo.entries) {
       if (transfers == null) continue
       for (transferData in transfers) {
         if (transferData.grp == null) {
           throw IllegalArgumentException(
-            "For account '${account.name}' transfer to '$accountName' does not have 'grp' field"
+            "For account '${account.name}' transfer to '$toAccountName' does not have 'grp' field"
           )
         }
         if (transferData.date == null) {
           throw IllegalArgumentException(
-            "For account '${account.name}' transfer to '$accountName' does not have a valid 'date' field"
+            "For account '${account.name}' transfer to '$toAccountName' does not have a valid 'date' field"
           )
         }
         var balance: Balance? = null
@@ -118,48 +119,31 @@ private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boole
         }
         if (balance == null) {
           throw IllegalArgumentException(
-            "For account '${account.name}' transfer to '$accountName' " +
+            "For account '${account.name}' transfer to '$toAccountName' " +
                 "for ${transferData.grp} ${transferData.date} " +
                 "does not have 'pamt' or 'camt' field"
           )
         }
 
+        // TODO: move logical inconsistency checks into budget builder.
         val transferMonth = transferData.grp
         val balanceMonth = Month.fromDate(balance.date)
         if (abs(balanceMonth - transferMonth) > 2) {
           throw IllegalArgumentException(
-            "For account '${account.name}' transfer to '${accountName}' " +
+            "For account '${account.name}' transfer to '${toAccountName}' " +
                 "for $transferMonth date ${balance.date} (${balanceMonth}) are too far apart"
           )
         }
-        for (owner in account.owners) {
-          val fullPath = listOf(owner) + account.path + listOf(account.name)
-
-          convertedTransfers.add(
-            TransferRecord(
-              toAccountName = accountName,
-              fromAccountPath = fullPath,
-              month = transferMonth,
-              balance = balance,
-              description = transferData.desc,
-              tags = transferData.tags ?: listOf()
-            )
-          )
-        }
+        budgetBuilder.addAccountTransfer(
+          account,
+          toAccountName,
+          transferMonth,
+          balance,
+          transferData.desc,
+          transferData.tags ?: listOf()
+        )
       }
     }
-  }
-
-  for (owner in account.owners) {
-    val fullPath = listOf(owner) + account.path + listOf(account.name)
-    budgetBuilder.setAccount(fullPath, account)
-    for ((month, balance) in convertedBalances) {
-      budgetBuilder.setBalance(fullPath, month!!, balance)
-    }
-  }
-
-  for (transfer in convertedTransfers) {
-    budgetBuilder.addTransfer(transfer)
   }
   return true
 }

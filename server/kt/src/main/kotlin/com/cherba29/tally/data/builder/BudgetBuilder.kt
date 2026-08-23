@@ -5,6 +5,9 @@ import com.cherba29.tally.data.Budget
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.TransactionStatement
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.iterator
 import kotlin.time.TimeSource
 import kotlin.time.measureTimedValue
 
@@ -28,6 +31,16 @@ class BudgetBuilder {
   private val treeNodeBuilder = TreeNode.Builder()
   private val pathToAccount = mutableMapOf<List<String>, Account>()
 
+  fun addAccount(account: Account, accountBalances: Map<Month, Balance>) {
+    for (owner in account.owners) {
+      val fullPath = listOf(owner) + account.path + listOf(account.name)
+      setAccount(fullPath, account)
+      for ((month, balance) in accountBalances) {
+        setBalance(fullPath, month, balance)
+      }
+    }
+  }
+
   fun setAccount(fullPath: List<String>, account: Account): BudgetBuilder {
     treeNodeBuilder.addPath(fullPath, account.rank)
     pathToAccount[fullPath] = account
@@ -45,6 +58,20 @@ class BudgetBuilder {
     }
     monthRange += month
     return this
+  }
+
+  fun addAccountTransfer(
+    fromAccount: Account,
+    toAccountName: String,
+    month: Month,
+    balance: Balance,
+    description: String? = null,
+    tags: List<String> = listOf()
+  ) {
+    for (owner in fromAccount.owners) {
+      val fromAccountPath = listOf(owner) + fromAccount.path + listOf(fromAccount.name)
+      addTransfer(TransferRecord(toAccountName, fromAccountPath, month, balance, description, tags))
+    }
   }
 
   /**
