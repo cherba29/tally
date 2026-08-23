@@ -1,6 +1,7 @@
 package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.DEC
 import com.cherba29.tally.core.MonthName.FEB
 import com.cherba29.tally.core.MonthName.JAN
@@ -77,7 +78,17 @@ class LoadYamlTest : DescribeSpec({
       val budget = budget {
         loadYamlFile(this, accountData, relativeFilePath)
       }
-      budget.leafToAccount.size shouldBe 1
+      budget.tree shouldBe root {
+        branch("arthur") {
+          branch("external") {
+            branch("inactive") {
+              leaf("_test-account")
+            }
+            leaf("test-account")
+          }
+        }
+      }
+      budget.leafToAccount.size shouldBe 2
 
       val account = budget.leafToAccount[budget.tree[listOf("arthur", "external", "test-account")]]!!
       account.name shouldBe "test-account"
@@ -93,21 +104,15 @@ class LoadYamlTest : DescribeSpec({
       account.openedOn shouldBe NOV / 2019
       account.closedOn shouldBe MAR / 2020
 
-      budget.tree shouldBe root { branch("arthur") { branch("external") { leaf("test-account") } } }
-      budget.nodeToStatement.size shouldBe 3
+      budget.nodeToStatement.size shouldBe 5
       val monthlyStatements = budget.nodeToStatement[budget.tree[listOf("arthur", "external", "test-account")]]!!
-      monthlyStatements.size shouldBe 5
-      monthlyStatements.values.count { it.startBalance != null } shouldBe 0
-      budget.months.size shouldBe 5
-      budget.tree shouldBe root {
-        branch("arthur") {
-          branch("external") {
-            leaf("test-account")
-          }
-        }
-      }
+      monthlyStatements.keys shouldBe (NOV / 2019..APR / 2020).toSet()
+      monthlyStatements.values.count { it.startBalance != null } shouldBe 1
+      budget.months.size shouldBe 6
       budget.nodeToStatement.keys shouldBe setOf(
+        budget.tree[listOf("arthur", "external", "inactive", "_test-account")],
         budget.tree[listOf("arthur", "external", "test-account")],
+        budget.tree[listOf("arthur", "external", "inactive")],
         budget.tree[listOf("arthur", "external")],
         budget.tree[listOf("arthur")]
       )

@@ -19,6 +19,7 @@ interface TreeNodeInterface<T> {
 
   val path: List<String>
 
+  // TODO: Make TreeNode carry generic payload, to reduce usage of map lookups.
   /**
    * Nodes are divided into external and non-external (internal).
    * That is any node named "external" and all of its descendants are considered to be external.
@@ -93,7 +94,8 @@ sealed class TreeNode: TreeNodeInterface<TreeNode>, Comparable<TreeNode> {
     if (path.isEmpty()) this else get(path.first())?.get(path.subList(1, path.size))
   override val top: TreeNode get () = if (parent?.parent == null) this else parent!!.top
 
-  override val path: List<String> get() = if (parent == null || name.isEmpty()) listOf() else parent!!.path + name
+  override val path: List<String> by lazy { if (parent == null || name.isEmpty()) listOf() else parent!!.path + name }
+  val pathString: String by lazy { path.joinToString("/") }
 
   fun traverseBottomUp(): Sequence<TreeNode> = sequence {
     for (child in children) {
@@ -169,7 +171,7 @@ private fun <T : Comparable<T>> List<T>.lexicographicCompareTo(other: List<T>): 
   return this.size.compareTo(other.size)
 }
 
-private const val EXTERNAL_NAME = "external"
+internal const val EXTERNAL_NAME = "external"
 
 /** Context class for tree DSL. */
 class ParentList(

@@ -30,7 +30,7 @@ data class Budget(
    */
   fun isClosed(treeNode: TreeNode, month: Month): Boolean
     = isClosedCache.getOrPut(treeNode) { mutableMapOf() }.getOrPut(month) {
-    !treeNode.isExternal && when (treeNode) {
+    when (treeNode) {
       is TreeNode.Leaf -> leafToAccount[treeNode]?.isClosed(month) ?: throw IllegalStateException("No matching account for $treeNode")
       is TreeNode.Root,
       is TreeNode.Branch -> {

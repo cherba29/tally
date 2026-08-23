@@ -285,7 +285,7 @@ class BudgetBuilderTest : DescribeSpec({
           name = "test-account1",
           path = listOf("external"),
           owners = setOf("john"),
-          openedOn = DEC / 2021
+          openedOn = DEC / 2019
         )
         val exception =
           shouldThrow<IllegalStateException> {
@@ -307,6 +307,41 @@ class BudgetBuilderTest : DescribeSpec({
         exception.message shouldBe "Dec2019 Balance { amount: 10.00, date: 2019-12-01, type: CONFIRMED } " +
             "starts after its first transfer to john/external/test-account1 " +
             "for amount of Balance { amount: -20.00, date: 2019-11-25, type: PROJECTED } desc 'First transfer'"
+      }
+      it("transfer during closed month") {
+        val path1 = listOf("john", "external", "test-account1")
+        val account1 = Account(
+          name = "test-account1",
+          path = listOf("external"),
+          owners = setOf("john"),
+          openedOn = DEC / 2021
+        )
+        val path2 = listOf("john", "external", "test-account2")
+        val account2 = Account(
+          name = "test-account2",
+          path = listOf("external"),
+          owners = setOf("john"),
+          openedOn = DEC / 2021
+        )
+        val exception =
+          shouldThrow<IllegalArgumentException> {
+            budget {
+              setAccount(path1, account1)
+              setAccount(path2, account2)
+              setBalance(path1, DEC / 2019, Balance.confirmed(1000, "2019-12-01"))
+              addTransfer(
+                BudgetBuilder.TransferRecord(
+                  fromAccountPath = path1,
+                  toAccountName = "test-account2",
+                  month = DEC / 2019,
+                  balance = Balance.projected(2000, "2019-11-25"),
+                  description = "First transfer",
+                  tags = listOf()
+                )
+              )
+            }
+          }
+        exception.message shouldBe "Account john/external/test-account1 has transfer during closed month Dec2019 to john/external/test-account2"
       }
     }
   }

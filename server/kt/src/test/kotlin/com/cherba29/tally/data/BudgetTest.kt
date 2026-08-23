@@ -79,12 +79,12 @@ class BudgetTest : DescribeSpec({
         DEC / 2026 to false
       )
       (JUL / 2026..DEC / 2026).associateWith { budget.isClosed(node2, it) } shouldBe mapOf(
-        JUL / 2026 to false,
+        JUL / 2026 to true,
         AUG / 2026 to false,
-        SEP / 2026 to false,
-        OCT / 2026 to false,
-        NOV / 2026 to false,
-        DEC / 2026 to false
+        SEP / 2026 to true,
+        OCT / 2026 to true,
+        NOV / 2026 to true,
+        DEC / 2026 to true
       )
       (JUL / 2026..DEC / 2026).associateWith { budget.isClosed(node3, it) } shouldBe mapOf(
         JUL / 2026 to true,
@@ -103,15 +103,15 @@ class BudgetTest : DescribeSpec({
         DEC / 2026 to false
       )
       (JUL / 2026..DEC / 2026).associateWith { budget.isClosed(externalNode, it) } shouldBe mapOf(
-        JUL / 2026 to false,
+        JUL / 2026 to true,
         AUG / 2026 to false,
-        SEP / 2026 to false,
-        OCT / 2026 to false,
-        NOV / 2026 to false,
-        DEC / 2026 to false
+        SEP / 2026 to true,
+        OCT / 2026 to true,
+        NOV / 2026 to true,
+        DEC / 2026 to true
       )
       (JUL / 2026..DEC / 2026).associateWith { budget.isClosed(tree, it) } shouldBe mapOf(
-        JUL / 2026 to false,
+        JUL / 2026 to true,
         AUG / 2026 to false,
         SEP / 2026 to false,
         OCT / 2026 to false,
