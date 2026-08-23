@@ -76,4 +76,37 @@ class AccountTest : DescribeSpec({
       account.toString() shouldBe "Account testAccount /internal/tax Closed Mar2026"
     }
   }
+
+  describe("cloneInactive") {
+    it("empty path") {
+      val account = Account(
+        name = "testAccount",
+        path = listOf(),
+        owners = setOf("bob"),
+        openedOn = JAN / 2021,
+        closedOn = JAN / 2022
+      )
+      account.cloneInactive() shouldBe Account(
+        name = "_testAccount",
+        path = listOf("inactive"),
+        owners = setOf("bob"),
+        openedOn = JAN / 2022
+      )
+    }
+    it("with path") {
+      val account = Account(
+        name = "testAccount",
+        path = listOf("external", "expenses"),
+        owners = setOf("bob"),
+        openedOn = JAN / 2021,
+        closedOn = JAN / 2022
+      )
+      account.cloneInactive() shouldBe Account(
+        name = "_testAccount",
+        path = listOf("external", "expenses", "inactive"),
+        owners = setOf("bob"),
+        openedOn = JAN / 2022
+      )
+    }
+  }
 })

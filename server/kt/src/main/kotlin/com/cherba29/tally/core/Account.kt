@@ -34,9 +34,23 @@ data class Account(
 ) {
   override fun toString(): String = "Account $name /${path.joinToString("/")}${if (closedOn == null) "" else " Closed $closedOn"}"
 
+  val isExternal = path.contains(EXTERNAL_NAME)
+  val isInactive = path.contains(INACTIVE_NAME)
+
   fun isClosed(month: Month): Boolean {
     return (closedOn != null) && (closedOn < month) || // After closed.
            (month < openedOn) // Before or on open.
   }
-}
 
+  fun cloneInactive(): Account =
+    copy(
+      name = "_$name",
+      path = path + INACTIVE_NAME,
+      openedOn = closedOn!!,
+      closedOn = null
+    )
+
+  companion object {
+    private const val INACTIVE_NAME = "inactive"
+  }
+}
