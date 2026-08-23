@@ -195,7 +195,11 @@ class GenerateTest : DescribeSpec({
           - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
         transfers_to:
           test-account2:
-            - { grp: Mar2019, date: 2019-03-25, camt: 345.00, desc: "spent" }
+            - { grp: May2019, date: 2019-04-27, camt:   70.00, desc: "spent" }
+            - { grp: May2019, date: 2019-04-25, camt:   50.00, desc: "spent" }
+            - { grp: Apr2019, date: 2019-03-30, camt:  -45.00, desc: "spent" }
+            - { grp: Apr2019, date: 2019-03-29, camt: -100.00, desc: "spent" }
+            - { grp: Mar2019, date: 2019-03-25, camt:  345.00, desc: "spent" }
         """.trimIndent()
       )
       (tallyPath / "file2.yaml").createFile().writeText(
@@ -216,7 +220,9 @@ class GenerateTest : DescribeSpec({
       )
       result.stderr shouldBe ""
       result.stdout shouldBe "Generating balances for test-account1 starting from Mar2019 for $tallyPath\n" +
-        "  - { grp: Apr2019, date: 2019-04-01, camt: -245.00 }\n" +
+        "  - { grp: Jun2019, date: 2019-05-25, camt: -220.00 }\n" +
+        "  - { grp: May2019, date: 2019-04-25, camt: -100.00 }\n" +
+        "  - { grp: Apr2019, date: 2019-03-29, camt: -245.00 }\n" +
         "  - { grp: Mar2019, date: 2019-03-01, camt:  100.00 }\n"
       result.statusCode shouldBe 0
     }

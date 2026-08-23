@@ -108,7 +108,7 @@ class Generate : CliktCommand() {
       // Find first date of next month transaction, our predicated balance cannot be older.
       val nextStmt = acctStmts[currentMonth.next()]
       val minDateNextMonthTransfer: LocalDate? = if (nextStmt?.transactions?.isNotEmpty() ?: false) {
-        nextStmt.transactions.maxBy { it.balance.date }.balance.date
+        nextStmt.transactions.minBy { it.balance.date }.balance.date
       } else null
       if (withAnnualFlush && currentMonth.month == 0) {
         val amtValue = currentBalance.amount.asAmount().padStart(padAmtLength)
