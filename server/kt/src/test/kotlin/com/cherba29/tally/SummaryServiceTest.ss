@@ -1,7 +1,7 @@
 ╔═ closed accounts excluded ═╗
 - statements:
   - __type: GqlStatement
-    name: test-account2
+    name: subcategory
     month: Mar2026
     isClosed: false
     isCovered: true

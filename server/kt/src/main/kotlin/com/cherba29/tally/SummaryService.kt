@@ -47,14 +47,12 @@ class SummaryService(val loader: Loader) : Query {
         for (summaryStatement in summaryStatements.values) {
           for ((treeNode, subStatement) in summaryStatement.statements) {
             // Do not include closed statements in the summary.
-            val account = budget.leafToAccount[treeNode]
-                ?: throw IllegalStateException("No matching account for $treeNode")
-            if (!account.isClosed(subStatement.monthRange.first)) {
+            if (!budget.isClosed(treeNode, subStatement.monthRange.first)) {
               builder.addStatement(treeNode,subStatement.monthRange.first, subStatement)
             }
           }
         }
-        builder.build().toGqlSummaryData(summaryNode.name, budget.leafToAccount)
+        builder.build().toGqlSummaryData(summaryNode.name, budget::isClosed)
       } catch (e: Exception) {
         logger.error(e) {
           "Error while processing summary query accountType=$accountPath " +

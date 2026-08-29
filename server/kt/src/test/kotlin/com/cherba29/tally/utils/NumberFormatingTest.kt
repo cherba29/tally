@@ -1,7 +1,6 @@
 package com.cherba29.tally.utils
 
 import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.floats.plusOrMinus
 import io.kotest.matchers.shouldBe
 

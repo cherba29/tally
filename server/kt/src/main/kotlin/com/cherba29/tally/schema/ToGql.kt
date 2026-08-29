@@ -2,6 +2,7 @@ package com.cherba29.tally.schema
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.Month
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.core.Transaction
@@ -127,12 +128,11 @@ fun SummaryStatement.toGql(summaryName: String): GqlSummaryStatement = GqlSummar
 /**
  * Converts summary statement as a summary data with substatements and a total.
  **/
-fun SummaryStatement.toGqlSummaryData(summaryName: String, leafToAccount: Map<TreeNode.Leaf, Account>): GqlSummaryData =  GqlSummaryData(
+fun SummaryStatement.toGqlSummaryData(summaryName: String, isClosed: (TreeNode, Month)->Boolean): GqlSummaryData =  GqlSummaryData(
   statements = statements.toSortedMap().map { (treeNode, stmt) ->
-    val account = leafToAccount[treeNode] ?: throw IllegalStateException("No matching account for $treeNode")
     when (stmt) {
-      is SummaryStatement -> (stmt as Statement).toGql(treeNode.name, account.isClosed(stmt.monthRange.first))  // Treat it as regular statement.
-      else -> stmt.toGql(treeNode.name, account.isClosed(stmt.monthRange.first))
+      is SummaryStatement -> (stmt as Statement).toGql(treeNode.name, isClosed(treeNode, stmt.monthRange.first))  // Treat it as regular statement.
+      else -> stmt.toGql(treeNode.name, isClosed(treeNode, stmt.monthRange.first))
     }
   },
   total = toGql(summaryName)

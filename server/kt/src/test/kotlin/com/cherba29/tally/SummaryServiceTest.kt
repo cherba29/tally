@@ -227,17 +227,20 @@ class SummaryServiceTest : DescribeSpec({
       val account1 = Account("test-account1", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2025, closedOn = APR / 2025)
       val account2 = Account("test-account2", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2025)
 
+      val path1 = listOf("john", "internal", "test-account1")
+      // Test with subcategory so it passes closed test.
+      val path2 = listOf("john", "internal", "subcategory", "test-account2")
       val loader = mockk<Loader> {
         coEvery { budget() } returns budget {
-          setAccount(listOf("john", "internal", "test-account1"), account1)
-          setAccount(listOf("john", "internal", "test-account2"), account2)
-          setBalance(listOf("john", "internal", "test-account1"), MAR / 2025, Balance.confirmed(100, "2026-03-01"))
-          setBalance(listOf("john", "internal", "test-account2"), MAR / 2026, Balance.confirmed(200, "2026-03-01"))
-          setBalance(listOf("john", "internal", "test-account1"), APR / 2025, Balance.confirmed(150, "2026-04-01"))
-          setBalance(listOf("john", "internal", "test-account2"), APR / 2026, Balance.confirmed(250, "2026-04-01"))
+          setAccount(path1, account1)
+          setAccount(path2, account2)
+          setBalance(path1, MAR / 2025, Balance.confirmed(100, "2026-03-01"))
+          setBalance(path2, MAR / 2026, Balance.confirmed(200, "2026-03-01"))
+          setBalance(path1, APR / 2025, Balance.confirmed(150, "2026-04-01"))
+          setBalance(path2, APR / 2026, Balance.confirmed(250, "2026-04-01"))
           addTransfer(
             BudgetBuilder.TransferRecord(
-              fromAccountPath = listOf("john", "internal", "test-account1"),
+              fromAccountPath = path1,
               toAccountName = "test-account2",
               month = MAR / 2025,
               balance = Balance.confirmed(50, "2026-03-02"),
@@ -247,7 +250,7 @@ class SummaryServiceTest : DescribeSpec({
           )
           addTransfer(
             BudgetBuilder.TransferRecord(
-              fromAccountPath = listOf("john", "internal", "test-account2"),
+              fromAccountPath = path2,
               toAccountName = "test-account1",
               month = APR / 2025,
               balance = Balance.confirmed(75, "2026-04-02"),
