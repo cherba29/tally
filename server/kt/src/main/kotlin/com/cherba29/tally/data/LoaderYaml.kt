@@ -2,6 +2,7 @@ package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.DayInMonth
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.data.builder.BudgetBuilder
 import com.cherba29.tally.data.yaml.BalanceYamlData
@@ -41,6 +42,7 @@ private fun YamlData.toAccount(): Account? {
     number = number,
     openedOn = openedOn,
     closedOn = closedOn,
+    statementCloseDate = DayInMonth.fromString(statementCloseDay),
     url = url,
     phone = phone,
     address = address,

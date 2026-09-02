@@ -61,6 +61,7 @@ export class BackendClient {
                 summary
                 userName
                 password
+                statementCloseDay
                 phone
                 url
               }

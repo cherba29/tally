@@ -37,6 +37,8 @@ export type GqlAccount = {
   /** Replacement for type, so that accounts are grouped. */
   path: Array<Scalars['String']['output']>;
   phone: Scalars['String']['output'];
+  /** Day of the month when usually statement for this account close. */
+  statementCloseDay?: Maybe<Scalars['String']['output']>;
   summary: Scalars['Boolean']['output'];
   url: Scalars['String']['output'];
   userName: Scalars['String']['output'];

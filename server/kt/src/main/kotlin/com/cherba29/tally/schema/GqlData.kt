@@ -26,6 +26,8 @@ data class GqlAccount(
   val userName: String,
   val password: String,
   val phone: String,
+  @param:GraphQLDescription("Day of the month when usually statement for this account close.")
+  val statementCloseDay: String?,
 )
 
 data class GqlBalance(

@@ -35,6 +35,8 @@ data class YamlData(
   @param:JsonProperty("closed_on")
   val closedOn: Month? = null,
   val owner: List<String>? = null,
+  @param:JsonProperty("statement_close_day")
+  val statementCloseDay: String? = null,
   val url: String? = null,
   val phone: String? = null,
   val address: String? = null,

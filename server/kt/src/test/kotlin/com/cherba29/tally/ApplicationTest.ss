@@ -53,6 +53,8 @@ type GqlAccount {
   "Replacement for type, so that accounts are grouped."
   path: [String!]!
   phone: String!
+  "Day of the month when usually statement for this account close."
+  statementCloseDay: String
   summary: Boolean!
   url: String!
   userName: String!

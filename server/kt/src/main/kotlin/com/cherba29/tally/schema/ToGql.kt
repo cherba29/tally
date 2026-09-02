@@ -2,13 +2,13 @@ package com.cherba29.tally.schema
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.DayInMonth
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.core.Transaction
 import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.statement.TransactionStatement
-import java.lang.IllegalStateException
 import kotlin.math.roundToInt
 
 fun Account.toGql(isExternal: Boolean, isSummary: Boolean): GqlAccount = GqlAccount(
@@ -26,6 +26,11 @@ fun Account.toGql(isExternal: Boolean, isSummary: Boolean): GqlAccount = GqlAcco
   userName = userName ?: "",
   password = password ?: "",
   phone = phone ?: "",
+  statementCloseDay = when (statementCloseDate) {
+    is DayInMonth.Unknown -> null
+    is DayInMonth.AbsoluteDay -> statementCloseDate.value.toString()
+    is DayInMonth.RelativeDay -> statementCloseDate.value.toString()
+  }
 )
 
 fun Balance.Type.toGql() = id

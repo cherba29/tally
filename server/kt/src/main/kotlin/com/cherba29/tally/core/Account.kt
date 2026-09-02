@@ -31,6 +31,8 @@ data class Account(
   // Username/password to use to login to the account.
   val userName: String? = null,
   val password: String? = null,
+  // Day when statement closes for this account.
+  val statementCloseDate: DayInMonth = DayInMonth.Unknown()
 ) {
   override fun toString(): String = "Account $name /${path.joinToString("/")}${if (closedOn == null) "" else " Closed $closedOn"}"
 

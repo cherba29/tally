@@ -62,6 +62,10 @@ export class AccountTooltip extends LitElement {
           <td>Address</td>
           <td>${this.account.address}</td>
         </tr>
+        <tr>
+          <td>Statement Closes</td>
+          <td>${this.account.statementCloseDay}</td>
+        </tr>
       </table>
     `;
   }
