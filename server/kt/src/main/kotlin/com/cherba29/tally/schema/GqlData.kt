@@ -144,6 +144,8 @@ data class GqlTableRow(
   val isSpace: Boolean,
   val isTotal: Boolean,
   val isNormal: Boolean,
+  @param:GraphQLDescription("Summary rows of inactive accounts is also inactive.")
+  val isInactive: Boolean,
   val cells: List<GqlTableCell>
 )
 

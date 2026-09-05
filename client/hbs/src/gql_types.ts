@@ -165,6 +165,8 @@ export type GqlTableRow = {
   cells: Array<GqlTableCell>;
   id: Scalars['String']['output'];
   indent: Scalars['Int']['output'];
+  /** Summary rows of inactive accounts is also inactive. */
+  isInactive: Scalars['Boolean']['output'];
   isNormal: Scalars['Boolean']['output'];
   isSpace: Scalars['Boolean']['output'];
   isTotal: Scalars['Boolean']['output'];

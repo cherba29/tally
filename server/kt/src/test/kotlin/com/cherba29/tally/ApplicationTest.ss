@@ -173,6 +173,8 @@ type GqlTableRow {
   cells: [GqlTableCell!]!
   id: String!
   indent: Int!
+  "Summary rows of inactive accounts is also inactive."
+  isInactive: Boolean!
   isNormal: Boolean!
   isSpace: Boolean!
   isTotal: Boolean!

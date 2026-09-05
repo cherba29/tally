@@ -51,8 +51,4 @@ data class Account(
       openedOn = closedOn!!,
       closedOn = null
     )
-
-  companion object {
-    private const val INACTIVE_NAME = "inactive"
-  }
 }

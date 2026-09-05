@@ -25,12 +25,14 @@ interface TreeNodeInterface<T> {
    * That is any node named "external" and all of its descendants are considered to be external.
    **/
   val isExternal: Boolean
+  val isInactive: Boolean
 }
 
 sealed class TreeNode: TreeNodeInterface<TreeNode>, Comparable<TreeNode> {
   class Root(
     override val name: String = "",
     override val isExternal: Boolean = false,
+    override val isInactive: Boolean = false,
     createChildren: ParentList.() -> Unit
   ) : TreeNode() {
     override val parent: TreeNode? = null
@@ -54,7 +56,8 @@ sealed class TreeNode: TreeNodeInterface<TreeNode>, Comparable<TreeNode> {
     override val name: String,
     createChildren: ParentList.() -> Unit,
     override val parent: TreeNode,
-    override val isExternal: Boolean = parent.isExternal
+    override val isExternal: Boolean = parent.isExternal,
+    override val isInactive: Boolean = parent.isInactive
   ) : TreeNode() {
     override val children: List<TreeNode> = ParentList(this).apply(createChildren)
     override fun get(id: String): TreeNode? = children.firstOrNull { it.name == id }
@@ -75,7 +78,8 @@ sealed class TreeNode: TreeNodeInterface<TreeNode>, Comparable<TreeNode> {
   data class Leaf(
     override val name: String,
     override val parent: TreeNode,
-    override val isExternal: Boolean = parent.isExternal
+    override val isExternal: Boolean = parent.isExternal,
+    override val isInactive: Boolean = parent.isInactive
   ) : TreeNode() {
     override val children: List<TreeNode> = listOf()
     override fun get(id: String): TreeNode? = null
@@ -172,6 +176,7 @@ private fun <T : Comparable<T>> List<T>.lexicographicCompareTo(other: List<T>): 
 }
 
 internal const val EXTERNAL_NAME = "external"
+internal const val INACTIVE_NAME = "inactive"
 
 /** Context class for tree DSL. */
 class ParentList(
@@ -180,13 +185,14 @@ class ParentList(
 ) : List<TreeNode> by children {
 
   private fun isExternal(name: String) = name == EXTERNAL_NAME || parent.isExternal
+  private fun isInactive(name: String) = name == INACTIVE_NAME || parent.isInactive
 
   fun branch(name: String, createChildren: ParentList.() -> Unit) {
-    children += TreeNode.Branch(name, createChildren, parent, isExternal(name))
+    children += TreeNode.Branch(name, createChildren, parent, isExternal(name), isInactive(name))
   }
 
   fun leaf(name: String) {
-    children += TreeNode.Leaf(name, parent, isExternal(name))
+    children += TreeNode.Leaf(name, parent, isExternal(name), isInactive(name))
   }
 
   // Since this class is member of TreeNode, which has equals override it here as well.

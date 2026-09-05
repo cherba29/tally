@@ -269,6 +269,7 @@ export class SummaryTable extends LitElement {
               return html`<tr id="row-${rowIdx}" bgcolor="#ffd">
                 <td>
                   <expand-button
+                    .expanded="${!r.isInactive}"
                     @toggle="${(e: CustomEvent) => this.toggleChildRows(rowIdx, e.detail.expanded)}"
                   ></expand-button>
                   ${Array(r.indent ?? 0)
@@ -312,7 +313,7 @@ export class SummaryTable extends LitElement {
               </tr>`;
             } else if (r.isNormal) {
               const account = r.account!;
-              return html`<tr id="row-${rowIdx}">
+              return html`<tr id="row-${rowIdx}" ?hidden=${r.isInactive}>
                 <td
                   id="${account.name}"
                   @click="${(e: MouseEvent) => this.onTitleCellClick(e, r.id, r.account)}"

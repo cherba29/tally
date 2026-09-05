@@ -69,6 +69,7 @@ export class BackendClient {
               isSpace
               isTotal
               isNormal
+              isInactive
               cells {
                 month
                 isClosed
