@@ -73,11 +73,11 @@ class TableService(val loader: Loader) : Query {
               id = treeNode.path.joinToString("/"),
               title = treeNode.name,
               indent = treeNode.path.size - 1,
-              account = account?.toGql(treeNode.isExternal, treeNode.children.isNotEmpty()),
+              account = account?.toGql(treeNode.data.isExternal, treeNode.children.isNotEmpty()),
               isTotal = treeNode.children.isNotEmpty(),
               cells = cells,
               isSpace = false,
-              isInactive = treeNode.isInactive,
+              isInactive = treeNode.data.isInactive,
               isNormal = treeNode.children.isEmpty(),
             )
           )

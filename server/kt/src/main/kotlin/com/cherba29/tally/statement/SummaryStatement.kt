@@ -3,6 +3,7 @@ package com.cherba29.tally.statement
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.TreeNode
+import com.cherba29.tally.data.Profile
 
 /**
  * Extension of Statement which represents collection of statements.
@@ -17,7 +18,7 @@ class SummaryStatement(
   totalPayments: Long = 0,
   income: Long = 0,
   /** Constituent statements making up this summary. */
-  val statements: Map<TreeNode, Statement> = mapOf()
+  val statements: Map<TreeNode<Profile>, Statement> = mapOf()
 ) : Statement(
   monthRange,
   startBalance,

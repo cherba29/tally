@@ -54,7 +54,7 @@ class Report : CliktCommand() {
         stmtAccount.path.joinToString("/"),
         stmtAccount.openedOn.toString(),
         stmtAccount.closedOn?.toString() ?: "",
-        if (accountNode.isExternal) "T" else "F",
+        if (accountNode.data.isExternal) "T" else "F",
         if (!stmtAccount.isClosed(month)) "T" else "F",
         month.year.toString(),
         (month.month + 1).toString(),

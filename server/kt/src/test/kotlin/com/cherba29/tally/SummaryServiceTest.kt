@@ -8,6 +8,7 @@ import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.root
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.data.Loader
+import com.cherba29.tally.data.Profile
 import com.cherba29.tally.data.builder.BudgetBuilder
 import com.cherba29.tally.data.builder.budget
 import com.cherba29.tally.testing.toSnapshot
@@ -42,7 +43,7 @@ class SummaryServiceTest : DescribeSpec({
       val loader = mockk<Loader> {
         coEvery { budget() } returns Budget(
           months = MAR / 2026..MAR / 2026,
-          tree = root {},
+          tree = root(Profile()) {},
           leafToAccount = mapOf(),
           nodeToStatement = mapOf()
         )

@@ -106,7 +106,7 @@ class LoaderTest : DescribeSpec({
           every { reProcess() } answers { mockLoadedOn = startTime.elapsedNow() }
           every { dataPayload } answers {
             mockk<Budget> {
-              every { tree } returns root { leaf("testAccount${count++}") }
+              every { tree } returns root(Profile()) { leaf("testAccount${count++}", Profile()) }
             }
           }
         }
@@ -116,7 +116,7 @@ class LoaderTest : DescribeSpec({
           channel.trySend(WatchResult(rootPath, null, WatchResult.Action.REPROCESS)).isSuccess shouldBe true
 
           val result1 = loader.budget()
-          result1.tree shouldBe root { leaf("testAccount1") }
+          result1.tree shouldBe root(Profile()) { leaf("testAccount1", Profile()) }
           val loadedOn = loader.loadedOn
           loader.loadedOn shouldBe 50.seconds
 
@@ -132,7 +132,7 @@ class LoaderTest : DescribeSpec({
           loader.loadedOn shouldBe 70.seconds
 
           val result2 = loader.budget()
-          result2.tree shouldBe root { leaf("testAccount2") }
+          result2.tree shouldBe root(Profile()) { leaf("testAccount2", Profile()) }
 
           verify { processedBudget.addFile(rootPath, relativePath) }
           verify(exactly = 2) { processedBudget.reProcess() }
@@ -156,7 +156,7 @@ class LoaderTest : DescribeSpec({
           every { reProcess() } answers { mockLoadedOn = startTime.elapsedNow() }
           every { dataPayload } answers {
             mockk<Budget> {
-              every { tree } returns root { leaf("testAccount${count++}") }
+              every { tree } returns root(Profile()) { leaf("testAccount${count++}", Profile()) }
             }
           }
         }
@@ -166,7 +166,7 @@ class LoaderTest : DescribeSpec({
           channel.trySend(WatchResult(rootPath, null, WatchResult.Action.REPROCESS)).isSuccess shouldBe true
 
           val result1 = loader.budget()
-          result1.tree shouldBe root { leaf("testAccount1") }
+          result1.tree shouldBe root(Profile()) { leaf("testAccount1", Profile()) }
           val loadedOn = loader.loadedOn
           loader.loadedOn shouldBe 50.seconds
 
@@ -182,7 +182,7 @@ class LoaderTest : DescribeSpec({
           loader.loadedOn shouldBe 70.seconds
 
           val result2 = loader.budget()
-          result2.tree shouldBe root { leaf("testAccount2") }
+          result2.tree shouldBe root(Profile()) { leaf("testAccount2", Profile()) }
 
           verify { processedBudget.addFile(rootPath, relativePath) }
           verify(exactly = 2) { processedBudget.reProcess() }
@@ -207,7 +207,7 @@ class LoaderTest : DescribeSpec({
           every { reProcess() } answers { mockLoadedOn = startTime.elapsedNow() }
           every { dataPayload } answers {
             mockk<Budget> {
-              every { tree } returns root { leaf("testAccount${count++}") }
+              every { tree } returns root(Profile()) { leaf("testAccount${count++}", Profile()) }
             }
           }
         }
@@ -217,7 +217,7 @@ class LoaderTest : DescribeSpec({
           testTimeSource += 100.seconds
 
           val result1 = loader.budget()
-          result1.tree shouldBe root { leaf("testAccount1") }
+          result1.tree shouldBe root(Profile()) { leaf("testAccount1", Profile()) }
           loader.loadedOn shouldBe 150.seconds
 
           testTimeSource += 100.seconds
@@ -227,7 +227,7 @@ class LoaderTest : DescribeSpec({
           loader.loadedOn shouldBe 150.seconds // Should not change since add file fails.
 
           val result2 = loader.budget()
-          result2.tree shouldBe root { leaf("testAccount1") }
+          result2.tree shouldBe root(Profile()) { leaf("testAccount1", Profile()) }
           channel.close() shouldBe true
 
           verify { processedBudget.addFile(rootPath, relativePath) }
@@ -254,7 +254,7 @@ class LoaderTest : DescribeSpec({
           }
           every { dataPayload } answers {
             mockk<Budget> {
-              every { tree } returns root { leaf("testAccount${count++}") }
+              every { tree } returns root(Profile()) { leaf("testAccount${count++}", Profile()) }
             }
           }
         }
@@ -264,7 +264,7 @@ class LoaderTest : DescribeSpec({
           testTimeSource += 100.seconds
 
           val result1 = loader.budget()
-          result1.tree shouldBe root { leaf("testAccount1") }
+          result1.tree shouldBe root(Profile()) { leaf("testAccount1", Profile()) }
           loader.loadedOn shouldBe 150.seconds
 
           testTimeSource += 100.seconds
@@ -274,7 +274,7 @@ class LoaderTest : DescribeSpec({
           loader.loadedOn shouldBe 150.seconds // Should not change since reprocess fails.
 
           val result2 = loader.budget()
-          result2.tree shouldBe root { leaf("testAccount1") }
+          result2.tree shouldBe root(Profile()) { leaf("testAccount1", Profile()) }
           channel.close() shouldBe true
 
           verify(exactly = 2) { processedBudget.addFile(rootPath, relativePath) }

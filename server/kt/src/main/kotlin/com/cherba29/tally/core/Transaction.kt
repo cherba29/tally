@@ -1,10 +1,12 @@
 package com.cherba29.tally.core
 
+import com.cherba29.tally.data.Profile
+
 /**
  * For given account captures transaction entry within transaction statement.
  */
 data class Transaction(
-  val targetTreeNode: TreeNode,
+  val targetTreeNode: TreeNode<Profile>,
   val balance: Balance,
   val description: String?,
   val type: Type,
@@ -52,9 +54,9 @@ data class Transaction(
   }
 
   companion object {
-    fun typeOf(fromAccount: TreeNode, toAccount: TreeNode, amount: Long): Type
+    fun typeOf(fromAccount: TreeNode<Profile>, toAccount: TreeNode<Profile>, amount: Long): Type
       = if ((toAccount.path.first() == fromAccount.path.first())
-            && !toAccount.isExternal && !fromAccount.isExternal) {
+            && !toAccount.data.isExternal && !fromAccount.data.isExternal) {
         Type.TRANSFER
       } else {
         if (amount > 0) Type.INCOME else Type.EXPENSE

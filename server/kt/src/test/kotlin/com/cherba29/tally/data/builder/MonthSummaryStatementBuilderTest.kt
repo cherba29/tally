@@ -3,6 +3,7 @@ package com.cherba29.tally.data.builder
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.JUL
 import com.cherba29.tally.core.root
+import com.cherba29.tally.data.Profile
 import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
@@ -19,7 +20,7 @@ class MonthSummaryStatementBuilderTest : DescribeSpec({
     }
 
     it("with single zero statements") {
-      val testTree = root { }
+      val testTree = root(Profile()) { }
       val testMonthRange = JUL / 2026..JUL / 2026
       val testStatement = TransactionStatement(testMonthRange, startBalance = null)
       val summary = MonthSummaryStatementBuilder.builder {
@@ -39,7 +40,7 @@ class MonthSummaryStatementBuilderTest : DescribeSpec({
     }
 
     it("with single non-zero statements") {
-      val testTree = root { }
+      val testTree = root(Profile()) { }
       val testMonthRange = JUL / 2026..JUL / 2026
       val testStartBalance = Balance(100, LocalDate(2026, 7, 4), Balance.Type.CONFIRMED)
       val testEndBalance = Balance(200, LocalDate(2026, 8, 1), Balance.Type.PROJECTED)

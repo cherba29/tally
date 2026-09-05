@@ -10,6 +10,7 @@ import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthName.NOV
 import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.root
+import com.cherba29.tally.data.Profile
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.assertions.throwables.shouldThrow
@@ -84,12 +85,12 @@ class BudgetBuilderTest : DescribeSpec({
       }
     } shouldBe 4
     budget.months shouldBe NOV / 2019..DEC / 2019
-    budget.tree shouldBe root {
-      branch("john") {
-        branch("internal") {
-          leaf("test-account1")
-          leaf("test-account2")
-          leaf("test-account3")
+    budget.tree shouldBe root(Profile()) {
+      branch("john", Profile()) {
+        branch("internal", Profile()) {
+          leaf("test-account1", Profile())
+          leaf("test-account2", Profile())
+          leaf("test-account3", Profile())
         }
       }
     }
@@ -371,10 +372,10 @@ class BudgetBuilderTest : DescribeSpec({
         isCovered = true
         isProjectedCovered = true
       }
-      budget.tree shouldBe root {
-        branch("john") {
-          branch("external") {
-            leaf("test-account1")
+      budget.tree shouldBe root(Profile()) {
+        branch("john", Profile()) {
+          branch("external", Profile(isExternal = true)) {
+            leaf("test-account1", Profile(isExternal = true))
           }
         }
       }
@@ -431,10 +432,10 @@ class BudgetBuilderTest : DescribeSpec({
         setBalance(path1, MAR / 2021, balance1)
       }
 
-      budget.tree shouldBe root {
-        branch("john") {
-          branch("external") {
-            leaf("test-account1")
+      budget.tree shouldBe root(Profile()) {
+        branch("john", Profile()) {
+          branch("external", Profile(isExternal = true)) {
+            leaf("test-account1", Profile(isExternal = true))
           }
         }
       }
@@ -478,10 +479,10 @@ class BudgetBuilderTest : DescribeSpec({
         setAccount(path1, account1)
         setBalance(path1, MAR / 2021, balance1)
       }
-      budget.tree shouldBe root {
-        branch("john") {
-          branch("external") {
-            leaf("test-account1")
+      budget.tree shouldBe root(Profile()) {
+        branch("john", Profile()) {
+          branch("external", Profile(isExternal = true)) {
+            leaf("test-account1", Profile(isExternal = true))
           }
         }
       }
@@ -575,17 +576,17 @@ class BudgetBuilderTest : DescribeSpec({
         setBalance(path2, MAR / 2021, balance2)
         setBalance(path3, MAR / 2021, balance3)
       }
-      budget.tree shouldBe root {
-        branch("bob") {
-          branch("external") {
-            leaf("test-account2")
+      budget.tree shouldBe root(Profile()) {
+        branch("bob", Profile()) {
+          branch("external", Profile(isExternal = true)) {
+            leaf("test-account2", Profile(isExternal = true))
           }
         }
-        branch("john") {
-          branch("external") {
-            leaf("test-account1")
+        branch("john", Profile()) {
+          branch("external", Profile(isExternal = true)) {
+            leaf("test-account1", Profile(isExternal = true))
           }
-          leaf("test-account3")
+          leaf("test-account3", Profile())
         }
       }
       val node = budget.tree[listOf("john", "external", "test-account1")] as TreeNode.Leaf

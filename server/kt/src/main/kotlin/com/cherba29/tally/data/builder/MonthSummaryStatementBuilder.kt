@@ -4,13 +4,14 @@ import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.plus
+import com.cherba29.tally.data.Profile
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 
 class MonthSummaryStatementBuilder {
-  private val statements = mutableMapOf<TreeNode, Statement>()
+  private val statements = mutableMapOf<TreeNode<Profile>, Statement>()
 
-  fun addStatement(treeNode: TreeNode, statement: Statement) {
+  fun addStatement(treeNode: TreeNode<Profile>, statement: Statement) {
     statements[treeNode] = statement
   }
 

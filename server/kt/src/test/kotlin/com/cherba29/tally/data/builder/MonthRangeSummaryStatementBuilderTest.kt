@@ -6,6 +6,7 @@ import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthName.MAY
 import com.cherba29.tally.core.root
+import com.cherba29.tally.data.Profile
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.assertions.throwables.shouldThrow
@@ -23,10 +24,10 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
       exception.message shouldBe "summary build failed: no statements have been added"
     }
     it("single") {
-      val tree = root {
-        branch("john") {
-          branch("external") {
-            leaf("test-account1")
+      val tree = root(Profile()) {
+        branch("john", Profile()) {
+          branch("external", Profile(isExternal = true)) {
+            leaf("test-account1", Profile(isExternal = true))
           }
         }
       }
@@ -49,13 +50,13 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
       )
     }
     it("two node statements with different months") {
-      val tree = root {
-        branch("john") {
-          branch("internal") {
-            leaf("test-account1")
+      val tree = root(Profile()) {
+        branch("john", Profile()) {
+          branch("internal", Profile()) {
+            leaf("test-account1", Profile())
           }
-          branch("external") {
-            leaf("test-account2")
+          branch("external", Profile(isExternal = true)) {
+            leaf("test-account2", Profile(isExternal = true))
           }
         }
       }
@@ -91,10 +92,10 @@ class MonthRangeSummaryStatementBuilderTest : DescribeSpec({
       )
     }
     it("two node statements with substatements") {
-      val tree = root {
-        branch("john") {
-          branch("internal") {
-            leaf("test-account1")
+      val tree = root(Profile()) {
+        branch("john", Profile()) {
+          branch("internal", Profile()) {
+            leaf("test-account1", Profile())
           }
         }
       }

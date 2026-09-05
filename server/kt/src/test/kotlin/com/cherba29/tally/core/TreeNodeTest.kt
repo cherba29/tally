@@ -6,15 +6,15 @@ import io.kotest.matchers.shouldBe
 class TreeNodeTest : DescribeSpec({
   describe("Creation") {
     it("single root") {
-      val tree = root { }
+      val tree = root("test") { }
       tree.name shouldBe ""
       tree.children.isEmpty() shouldBe true
     }
 
     it("root with children") {
-      val tree = root {
-        leaf("child1")
-        leaf("child2")
+      val tree = root("test") {
+        leaf("child1", "test1")
+        leaf("child2", "test2")
       }
       tree.name shouldBe ""
       tree.children.map { it.name } shouldBe listOf("child1", "child2")
@@ -25,83 +25,87 @@ class TreeNodeTest : DescribeSpec({
 
   describe("Builder") {
     it("empty") {
-      val builder = TreeNode.Builder()
+      val builder = TreeNode.Builder<String>()
+      builder.addPath(listOf(), "test")
       val tree = builder.build()
-      tree shouldBe root {}
+      tree shouldBe root("test") {}
     }
 
     it("just leafs") {
-      val builder = TreeNode.Builder()
-      builder.addPath(listOf("child1"))
-      builder.addPath(listOf("child2"))
+      val builder = TreeNode.Builder<String>()
+      builder.addPath(listOf("child1"), "test1")
+      builder.addPath(listOf("child2"), "test2")
       val tree = builder.build()
-      tree shouldBe root {
-        leaf("child1")
-        leaf("child2")
+      tree shouldBe root("test") {
+        leaf("child1", "test1")
+        leaf("child2", "test2")
       }
     }
 
     it("single branch") {
-      val builder = TreeNode.Builder()
-      builder.addPath(listOf("branch1", "child1"))
-      builder.addPath(listOf("branch1", "child2"))
+      val builder = TreeNode.Builder<String>()
+      builder.addPath(listOf("branch1", "child1"), "test1")
+      builder.addPath(listOf("branch1", "child2"), "test2")
+      builder.addPath(listOf(), "test")
       val tree = builder.build()
 
-      tree shouldBe root {
-        branch("branch1") {
-          leaf("child1")
-          leaf("child2")
+      tree shouldBe root("test") {
+        branch("branch1", "test1") {
+          leaf("child1", "test1")
+          leaf("child2", "test2")
         }
       }
     }
 
     it("branch as subpath") {
-      val builder = TreeNode.Builder()
-      builder.addPath(listOf("branch1", "child1"))
-      builder.addPath(listOf("branch1"))
+      val builder = TreeNode.Builder<String>()
+      builder.addPath(listOf("branch1", "child1"), "test11")
+      builder.addPath(listOf("branch1"), "test1")
+      builder.addPath(listOf(), "test")
       val tree = builder.build()
 
-      tree shouldBe root {
-        branch("branch1") {
-          leaf("child1")
+      tree shouldBe root("test") {
+        branch("branch1", "test1") {
+          leaf("child1", "test11")
         }
       }
     }
 
     it("branch plus leaf") {
-      val builder = TreeNode.Builder()
-      builder.addPath(listOf("branch1", "child1"))
-      builder.addPath(listOf("branch1", "child2"))
-      builder.addPath(listOf("child3"))
+      val builder = TreeNode.Builder<String>()
+      builder.addPath(listOf("branch1", "child1"), "test11")
+      builder.addPath(listOf("branch1", "child2"), "test12")
+      builder.addPath(listOf("child3"), "test3")
       val tree = builder.build()
 
-      tree shouldBe root {
-        branch("branch1") {
-          leaf("child1")
-          leaf("child2")
+      tree shouldBe root("test") {
+        branch("branch1", "test1") {
+          leaf("child1", "test11")
+          leaf("child2", "test12")
         }
-        leaf("child3")
+        leaf("child3", "test3")
       }
     }
 
     it("multiple branches") {
-      val builder = TreeNode.Builder()
-      builder.addPath(listOf("branch1", "child11"))
-      builder.addPath(listOf("branch1", "child12"))
-      builder.addPath(listOf("branch1", "branch11", "child113"))
-      builder.addPath(listOf("branch2", "child23"))
+      val builder = TreeNode.Builder<String>()
+      builder.addPath(listOf("branch1", "child11"), "test11")
+      builder.addPath(listOf("branch1", "child12"), "test12")
+      builder.addPath(listOf("branch1", "branch11", "child113"), "test113")
+      builder.addPath(listOf("branch2", "child23"), "test23")
+      builder.addPath(listOf(), "test")
       val tree = builder.build()
 
-      tree shouldBe root {
-        branch("branch1") {
-          branch("branch11") {
-            leaf("child113")
+      tree shouldBe root("test") {
+        branch("branch1", "test1") {
+          branch("branch11", "test11") {
+            leaf("child113", "test113")
           }
-          leaf("child11")
-          leaf("child12")
+          leaf("child11", "test11")
+          leaf("child12", "test12")
         }
-        branch("branch2") {
-          leaf("child23")
+        branch("branch2", "test2") {
+          leaf("child23", "test23")
         }
       }
     }
@@ -109,112 +113,112 @@ class TreeNodeTest : DescribeSpec({
 
   describe("get") {
     it("empty") {
-      val tree = root {}
+      val tree = root("test") {}
       tree["branch"] shouldBe null
     }
 
     it("just leafs") {
-      val tree = root {
-        leaf("child1")
-        leaf("child2")
+      val tree = root("test") {
+        leaf("child1", "test1")
+        leaf("child2", "test2")
       }
       tree["child1"]?.name shouldBe "child1"
       tree[listOf("child1")]?.name shouldBe "child1"
     }
 
     it("path via branch to get leaf") {
-      val tree = root {
-        branch("branch1") {
-          leaf("child1")
+      val tree = root("test") {
+        branch("branch1", "test1") {
+          leaf("child1", "test11")
         }
-        leaf("child2")
+        leaf("child2", "test2")
       }
       tree[listOf("branch1", "child1")]?.name shouldBe "child1"
     }
 
     it("path via branch to get branch") {
-      val tree = root {
-        branch("branch1") {
-          branch("branch11") {
-            leaf("child1")
+      val tree = root("test") {
+        branch("branch1", "test1") {
+          branch("branch11", "test11") {
+            leaf("child1", "test111")
           }
         }
-        leaf("child2")
+        leaf("child2", "test2")
       }
       tree[listOf("branch1", "branch11")]?.name shouldBe "branch11"
     }
   }
 
-  describe("isExternal") {
+  describe("data") {
     it("empty") {
-      val tree = root {}
-      tree.isExternal shouldBe false
+      val tree = root("test") {}
+      tree.data shouldBe "test"
     }
 
     it("just leafs") {
-      val tree = root {
-        leaf("external")
-        leaf("internal")
+      val tree = root("test") {
+        leaf("external", "test-external")
+        leaf("internal", "test-internal")
       }
-      tree.children[0].isExternal shouldBe true
-      tree.children[1].isExternal shouldBe false
+      tree.children[0].data shouldBe "test-external"
+      tree.children[1].data shouldBe "test-internal"
     }
 
     it("branched") {
-      val tree = root {
-        branch("external") {
-          leaf("child1")
+      val tree = root("test") {
+        branch("external", "test-external") {
+          leaf("child1", "test1")
         }
-        branch("internal") {
-          leaf("child2")
+        branch("internal", "test-internal") {
+          leaf("child2", "test2")
         }
       }
-      tree.children[0].isExternal shouldBe true
+      tree.children[0].data shouldBe "test-external"
       tree.children[0].children[0].name shouldBe "child1"
-      tree.children[0].children[0].isExternal shouldBe true
-      tree.children[1].isExternal shouldBe false
-      tree.children[1].children[0].isExternal shouldBe false
+      tree.children[0].children[0].data shouldBe "test1"
+      tree.children[1].data shouldBe "test-internal"
+      tree.children[1].children[0].data shouldBe "test2"
     }
 
     it("nested") {
-      val tree = root {
-        branch("branch1") {
-          branch("external") {
-            leaf("child1")
+      val tree = root("test") {
+        branch("branch1", "test1") {
+          branch("external", "test-external") {
+            leaf("child1", "test1")
           }
         }
       }
-      tree.children[0].isExternal shouldBe false
-      tree.children[0].children[0].isExternal shouldBe true
+      tree.children[0].data shouldBe "test1"
+      tree.children[0].children[0].data shouldBe "test-external"
       tree.children[0]
         .children[0]
         .children[0]
-        .isExternal shouldBe true
+        .data shouldBe "test1"
     }
   }
 
   describe("top") {
     it("empty") {
-      val tree = root {}
+      val tree = root("test") {}
       tree.top shouldBe tree
     }
 
     it("just leafs") {
-      val tree = root {
-        leaf("external")
-        leaf("internal")
+      val tree = root("test") {
+        leaf("external", "test-external")
+        leaf("internal", "test-internal")
       }
       tree.children[0].top shouldBe tree.children[0]
       tree.children[1].top shouldBe tree.children[1]
     }
 
     it("branched") {
-      val tree = root {
-        branch("external") {
-          leaf("child1")
+      val tree = root("test") {
+        branch("external", "test-external") {
+          leaf("child1", "test1")
         }
-        branch("internal") {
-          leaf("child2")
+        branch("internal", "test-internal") {
+          leaf("child2", "test2")
         }
       }
       tree.children[0].top shouldBe tree.children[0]
@@ -224,10 +228,10 @@ class TreeNodeTest : DescribeSpec({
     }
 
     it("nested") {
-      val tree = root {
-        branch("branch1") {
-          branch("external") {
-            leaf("child1")
+      val tree = root("test") {
+        branch("branch1", "test1") {
+          branch("external", "test1-external") {
+            leaf("child1", "test1-external1")
           }
         }
       }
@@ -242,14 +246,14 @@ class TreeNodeTest : DescribeSpec({
 
   describe("path") {
     it("empty") {
-      val tree = root {}
+      val tree = root("test") {}
       tree.path shouldBe listOf()
     }
 
     it("just leafs") {
-      val tree = root {
-        leaf("external")
-        leaf("internal")
+      val tree = root("test") {
+        leaf("external", "test-external")
+        leaf("internal", "test-internal")
       }
       tree.children[0].name shouldBe "external"
       tree.children[0].path shouldBe listOf("external")
@@ -257,12 +261,12 @@ class TreeNodeTest : DescribeSpec({
     }
 
     it("branched") {
-      val tree = root {
-        branch("external") {
-          leaf("child1")
+      val tree = root("test") {
+        branch("external", "test-external") {
+          leaf("child1", "test1")
         }
-        branch("internal") {
-          leaf("child2")
+        branch("internal", "test-internal") {
+          leaf("child2", "test2")
         }
       }
       tree.children[0].path shouldBe listOf("external")
@@ -272,10 +276,10 @@ class TreeNodeTest : DescribeSpec({
     }
 
     it("nested") {
-      val tree = root {
-        branch("branch1") {
-          branch("external") {
-            leaf("child1")
+      val tree = root("test") {
+        branch("branch1", "test1") {
+          branch("external", "test1-external") {
+            leaf("child1", "test11")
           }
         }
       }
@@ -290,26 +294,26 @@ class TreeNodeTest : DescribeSpec({
 
   describe("index path") {
     it("on empty returns empty") {
-      val tree = root {}
+      val tree = root("test") {}
       tree.indexPath shouldBe listOf()
     }
 
     it("just leafs") {
-      val tree = root {
-        leaf("external")
-        leaf("internal")
+      val tree = root("test") {
+        leaf("external", "test-external")
+        leaf("internal", "test-internal")
       }
       tree.children[0].indexPath shouldBe listOf(0)
       tree.children[1].indexPath shouldBe listOf(1)
     }
 
     it("branched") {
-      val tree = root {
-        branch("external") {
-          leaf("child1")
+      val tree = root("test") {
+        branch("external", "test-external") {
+          leaf("child1", "test1")
         }
-        branch("internal") {
-          leaf("child2")
+        branch("internal", "test-internal") {
+          leaf("child2", "test2")
         }
       }
       tree.children[0].indexPath shouldBe listOf(0)
@@ -319,11 +323,11 @@ class TreeNodeTest : DescribeSpec({
     }
 
     it("nested") {
-      val tree = root {
-        branch("branch1") {
-          branch("external") {
-            leaf("child1")
-            leaf("child2")
+      val tree = root("test") {
+        branch("branch1", "test1") {
+          branch("external", "test1-external") {
+            leaf("child1", "test11")
+            leaf("child2", "test12")
           }
         }
       }
@@ -342,14 +346,14 @@ class TreeNodeTest : DescribeSpec({
 
   describe("traverse up") {
     it("empty") {
-      val tree = root {}
+      val tree = root("test") {}
       tree.traverseBottomUp().toList() shouldBe listOf(tree)
     }
 
     it("just leafs") {
-      val tree = root {
-        leaf("external")
-        leaf("internal")
+      val tree = root("test") {
+        leaf("external", "test-external")
+        leaf("internal", "test-internal")
       }
       tree.traverseBottomUp().toList() shouldBe listOf(
         tree.children[0],
@@ -359,12 +363,12 @@ class TreeNodeTest : DescribeSpec({
     }
 
     it("branched") {
-      val tree = root {
-        branch("external") {
-          leaf("child1")
+      val tree = root("test") {
+        branch("external", "test-external") {
+          leaf("child1", "test11")
         }
-        branch("internal") {
-          leaf("child2")
+        branch("internal", "test-internal") {
+          leaf("child2", "test22")
         }
       }
       tree.traverseBottomUp().toList() shouldBe listOf(
@@ -377,10 +381,10 @@ class TreeNodeTest : DescribeSpec({
     }
 
     it("nested") {
-      val tree = root {
-        branch("branch1") {
-          branch("external") {
-            leaf("child1")
+      val tree = root("test") {
+        branch("branch1", "test1") {
+          branch("external", "test1-external") {
+            leaf("child1", "test11")
           }
         }
       }
@@ -395,14 +399,14 @@ class TreeNodeTest : DescribeSpec({
 
   describe("traverse down") {
     it("empty") {
-      val tree = root {}
+      val tree = root("test") {}
       tree.traverseDepthDown().toList() shouldBe listOf(tree)
     }
 
     it("just leafs") {
-      val tree = root {
-        leaf("external")
-        leaf("internal")
+      val tree = root("test") {
+        leaf("external", "test-external")
+        leaf("internal", "test-internal")
       }
       tree.traverseDepthDown().toList() shouldBe listOf(
         tree,
@@ -412,12 +416,12 @@ class TreeNodeTest : DescribeSpec({
     }
 
     it("branched") {
-      val tree = root {
-        branch("external") {
-          leaf("child1")
+      val tree = root("test") {
+        branch("external", "test-external") {
+          leaf("child1", "test1")
         }
-        branch("internal") {
-          leaf("child2")
+        branch("internal", "test-internal") {
+          leaf("child2", "test")
         }
       }
       tree.traverseDepthDown().toList() shouldBe listOf(
@@ -430,10 +434,10 @@ class TreeNodeTest : DescribeSpec({
     }
 
     it("nested") {
-      val tree = root {
-        branch("branch1") {
-          branch("external") {
-            leaf("child1")
+      val tree = root("test") {
+        branch("branch1", "test1") {
+          branch("external", "test1-external") {
+            leaf("child1", "test11")
           }
         }
       }
@@ -448,79 +452,84 @@ class TreeNodeTest : DescribeSpec({
 
   describe("builder") {
     it("empty") {
-      val builder = TreeNode.Builder()
-      builder.build() shouldBe root {}
+      val builder = TreeNode.Builder<String>()
+      builder.addPath(listOf(), "test")
+      builder.build() shouldBe root("test") {}
     }
 
     it("just leafs") {
-      val builder = TreeNode.Builder()
-      builder.addPath(listOf("external"))
-      builder.addPath(listOf("internal"))
-      builder.build() shouldBe root {
-        leaf("external")
-        leaf("internal")
+      val builder = TreeNode.Builder<String>()
+      builder.addPath(listOf("external"), "test-external")
+      builder.addPath(listOf("internal"), "test-internal")
+      builder.build() shouldBe root("test") {
+        leaf("external", "test-external")
+        leaf("internal", "test-internal")
       }
     }
 
     it("branched") {
-      val builder = TreeNode.Builder()
-      builder.addPath(listOf("external", "child1"))
-      builder.addPath(listOf("internal", "child2"))
+      val builder = TreeNode.Builder<String>()
+      builder.addPath(listOf("external", "child1"), "test1")
+      builder.addPath(listOf("internal", "child2"), "test2")
+      builder.addPath(listOf(), "test")
 
-      builder.build() shouldBe root {
-        branch("external") {
-          leaf("child1")
+      builder.build() shouldBe root("test") {
+        branch("external", "test-external") {
+          leaf("child1", "test1")
         }
-        branch("internal") {
-          leaf("child2")
+        branch("internal", "test-internal") {
+          leaf("child2", "test")
         }
       }
     }
 
     it("nested") {
-      val builder = TreeNode.Builder()
-      builder.addPath(listOf("branch1", "external", "child1"))
+      val builder = TreeNode.Builder<String>()
+      builder.addPath(listOf("branch1", "external", "child1"), "test11")
+      builder.addPath(listOf("branch1", "external"), "test1-external")
+      builder.addPath(listOf("branch1"), "test1")
+      builder.addPath(listOf(), "test")
 
-      builder.build() shouldBe root {
-        branch("branch1") {
-          branch("external") {
-            leaf("child1")
+      builder.build() shouldBe root("test") {
+        branch("branch1", "test1") {
+          branch("external", "test1-external") {
+            leaf("child1", "test11")
           }
         }
       }
     }
 
     it("sorted by name") {
-      val builder = TreeNode.Builder()
-      builder.addPath(listOf("child2"))
-      builder.addPath(listOf("child1"))
-      builder.build() shouldBe root {
-        leaf("child1")
-        leaf("child2")
+      val builder = TreeNode.Builder<String>()
+      builder.addPath(listOf("child2"), "test2")
+      builder.addPath(listOf("child1"), "test1")
+      builder.build() shouldBe root("test") {
+        leaf("child1", "test1")
+        leaf("child2", "test2")
       }
     }
 
     it("sorted by rank") {
-      val builder = TreeNode.Builder()
-      builder.addPath(listOf("child2"), 1)
-      builder.addPath(listOf("child1"), 2)
-      builder.build() shouldBe root {
-        leaf("child2")
-        leaf("child1")
+      val builder = TreeNode.Builder<String>()
+      builder.addPath(listOf("child2"), "test2", 1)
+      builder.addPath(listOf("child1"), "test1", 2)
+      builder.build() shouldBe root("test") {
+        leaf("child2", "test2")
+        leaf("child1", "test1")
       }
     }
   }
 
   describe("pretty string") {
     it("single root") {
-      val tree = root { }
+      val tree = root("test") { }
       tree.toPrettyString() shouldBe "└── \n"
     }
 
     it("root with children") {
-      val tree = root {
-        leaf("child1")
-        leaf("child2")
+      val tree = root("test") {
+        leaf("child1", "test1")
+        leaf("child2", "test2")
       }
       tree.toPrettyString() shouldBe
         """
@@ -532,10 +541,10 @@ class TreeNodeTest : DescribeSpec({
     }
 
     it("nested") {
-      val tree = root {
-        branch("branch1") {
-          branch("external") {
-            leaf("child1")
+      val tree = root("test") {
+        branch("branch1", "test1") {
+          branch("external", "test1-external") {
+            leaf("child1", "test11")
           }
         }
       }
@@ -552,46 +561,46 @@ class TreeNodeTest : DescribeSpec({
 
   describe("comparable") {
     it("equal return zero") {
-      val tree = root {
-        leaf("child1")
+      val tree = root("test") {
+        leaf("child1", "test1")
       }
       tree.children[0].compareTo(tree.children[0]) shouldBe 0
     }
 
     it("lesser returns negative") {
-      val tree = root {
-        leaf("child1")
-        leaf("child2")
+      val tree = root("test") {
+        leaf("child1", "test1")
+        leaf("child2", "test2")
       }
       tree.children[0].compareTo(tree.children[1]) shouldBe -1
     }
 
     it("greater returns positive") {
-      val tree = root {
-        leaf("child1")
-        leaf("child2")
+      val tree = root("test") {
+        leaf("child1", "test1")
+        leaf("child2", "test2")
       }
       tree.children[1].compareTo(tree.children[0]) shouldBe 1
     }
 
     it("same path uses tie breaker") {
-      val tree = root {
-        branch("branch1") {
-          leaf("child1")
+      val tree = root("test") {
+        branch("branch1", "test1") {
+          leaf("child1", "test11")
         }
       }
       tree.children[0].compareTo(tree.children[0].children[0]) shouldBe -1
     }
 
     it("sorts correctly") {
-      val tree = root {
-        branch("branch1") {
-          leaf("child1")
+      val tree = root("test") {
+        branch("branch1", "test1") {
+          leaf("child1", "test11")
         }
-        branch("branch2") {
-          leaf("child2")
+        branch("branch2", "test21") {
+          leaf("child2", "test22")
         }
-        leaf("child3")
+        leaf("child3", "test3")
       }
       val unsortedList = listOf(
         tree[listOf("branch1")]!!,

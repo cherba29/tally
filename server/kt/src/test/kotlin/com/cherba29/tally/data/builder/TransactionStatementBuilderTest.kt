@@ -5,6 +5,7 @@ import com.cherba29.tally.core.MonthName.JUL
 import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.root
 import com.cherba29.tally.core.Transaction
+import com.cherba29.tally.data.Profile
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate
@@ -25,9 +26,9 @@ class TransactionStatementBuilderTest : DescribeSpec({
     }
 
     it("single transfer") {
-      val testTree = root {
-        leaf("test-account1")
-        leaf("test-account2")
+      val testTree = root(Profile()) {
+        leaf("test-account1", Profile())
+        leaf("test-account2", Profile())
       }
       val testTreeLeafNode2 = testTree["test-account2"] as TreeNode.Leaf
       val testMonthRange = JUL / 2026..JUL / 2026
@@ -61,9 +62,9 @@ class TransactionStatementBuilderTest : DescribeSpec({
       )
     }
     it("to and from transfers") {
-      val testTree = root {
-        leaf("test-account1")
-        leaf("test-account2")
+      val testTree = root(Profile()) {
+        leaf("test-account1", Profile())
+        leaf("test-account2", Profile())
       }
       val testTreeLeafNode2 = testTree["test-account2"] as TreeNode.Leaf
       val testMonthRange = JUL / 2026..JUL / 2026

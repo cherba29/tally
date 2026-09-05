@@ -5,6 +5,7 @@ import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.Transaction
 import com.cherba29.tally.core.TreeNode
+import com.cherba29.tally.data.Profile
 import com.cherba29.tally.statement.TransactionStatement
 
 /**
@@ -15,8 +16,8 @@ class MonthTransactionStatementBuilder {
   var monthlyBalances: Map<Month, Balance> = mutableMapOf()
   private val monthlyTransfers = mutableMapOf<Month, MutableList<Transaction>>()
   fun addTransfer(
-    fromAccount: TreeNode.Leaf,
-    toAccount: TreeNode.Leaf,
+    fromAccount: TreeNode.Leaf<Profile>,
+    toAccount: TreeNode.Leaf<Profile>,
     month: Month,
     balance: Balance,
     description: String?

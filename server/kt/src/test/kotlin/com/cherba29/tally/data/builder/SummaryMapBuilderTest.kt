@@ -2,6 +2,7 @@ package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.MonthName.MAY
 import com.cherba29.tally.core.root
+import com.cherba29.tally.data.Profile
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
 import io.kotest.core.spec.style.DescribeSpec
@@ -11,15 +12,15 @@ class SummaryMapBuilderTest : DescribeSpec({
   describe("Creation") {
     it("basic") {
       val builder = SummaryMapBuilder()
-      builder.build(root {}).isEmpty() shouldBe true
+      builder.build(root(Profile()) {}).isEmpty() shouldBe true
     }
   }
   describe("statements") {
     it("add single") {
-      val tree = root {
-        branch("john") {
-          branch("internal") {
-            leaf("test-account")
+      val tree = root(Profile()) {
+        branch("john", Profile()) {
+          branch("internal", Profile()) {
+            leaf("test-account", Profile())
           }
         }
       }
@@ -45,10 +46,10 @@ class SummaryMapBuilderTest : DescribeSpec({
     }
 
     it("add single and propagate up") {
-      val tree = root {
-        branch("john") {
-          branch("internal") {
-            leaf("test-account")
+      val tree = root(Profile()) {
+        branch("john", Profile()) {
+          branch("internal", Profile()) {
+            leaf("test-account", Profile())
           }
         }
       }
@@ -84,14 +85,14 @@ class SummaryMapBuilderTest : DescribeSpec({
   }
 
   it("multiple propagate up") {
-    val tree = root {
-      branch("john") {
-        branch("internal") {
-          leaf("test-account1")
+    val tree = root(Profile()) {
+      branch("john", Profile()) {
+        branch("internal", Profile()) {
+          leaf("test-account1", Profile())
         }
-        branch("external") {
-          leaf("test-account2")
-          leaf("test-account3")
+        branch("external", Profile(isExternal = true)) {
+          leaf("test-account2", Profile(isExternal = true))
+          leaf("test-account3", Profile(isExternal = true))
         }
       }
     }

@@ -5,6 +5,7 @@ import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.plus
+import com.cherba29.tally.data.Profile
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 import kotlin.collections.component1
@@ -14,9 +15,9 @@ import kotlin.collections.component1
  */
 class MonthRangeSummaryStatementBuilder {
   // Map of 'treeNode' -> month -> 'summary statement'.
-  val nodeMonthStatementMap = mutableMapOf<TreeNode, MutableMap<Month, Statement>>()
+  val nodeMonthStatementMap = mutableMapOf<TreeNode<Profile>, MutableMap<Month, Statement>>()
 
-  fun addStatement(treeNode: TreeNode, month: Month, stmt: Statement) {
+  fun addStatement(treeNode: TreeNode<Profile>, month: Month, stmt: Statement) {
     val prevEntry = nodeMonthStatementMap.getOrPut(treeNode) {
       mutableMapOf()
     }.putIfAbsent(month, stmt)

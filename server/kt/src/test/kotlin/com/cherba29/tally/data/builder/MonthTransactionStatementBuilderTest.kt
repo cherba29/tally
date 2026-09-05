@@ -11,6 +11,7 @@ import com.cherba29.tally.core.MonthName.NOV
 import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.root
 import com.cherba29.tally.core.Transaction
+import com.cherba29.tally.data.Profile
 import com.cherba29.tally.testing.toSnapshot
 import com.diffplug.selfie.coroutines.expectSelfie
 import io.kotest.assertions.assertSoftly
@@ -79,11 +80,11 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
     }
 
     it("two accounts with common owner and transfers") {
-      val tree = root {
-        branch("john") {
-          branch("external") {
-            leaf("test-account1")
-            leaf("test-account2")
+      val tree = root(Profile()) {
+        branch("john", Profile()) {
+          branch("external", Profile(isExternal = true)) {
+            leaf("test-account1", Profile(isExternal = true))
+            leaf("test-account2", Profile(isExternal = true))
           }
         }
       }
@@ -142,11 +143,11 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
     }
 
     it("two accounts with external transfer") {
-      val tree = root {
-        branch("john") {
-          branch("external") {
-            leaf("test-account1")
-            leaf("test-account2")
+      val tree = root(Profile()) {
+        branch("john", Profile()) {
+          branch("external", Profile(isExternal = true)) {
+            leaf("test-account1", Profile(isExternal = true))
+            leaf("test-account2", Profile(isExternal = true))
           }
         }
       }
@@ -202,11 +203,11 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
     }
     
     it("transfer to closed account") {
-      val tree = root {
-        branch("john") {
-          branch("external") {
-            leaf("external")
-            leaf("test-account1")
+      val tree = root(Profile()) {
+        branch("john", Profile()) {
+          branch("external", Profile(isExternal = true)) {
+            leaf("external", Profile(isExternal = true))
+            leaf("test-account1", Profile(isExternal = true))
           }
         }
       }
@@ -259,19 +260,19 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
     }
 
     it("get transaction type") {
-      val tree = root {
-        branch("john") {
-          branch("internal") {
-            branch("checking") {
-              leaf("test-account1")
+      val tree = root(Profile()) {
+        branch("john", Profile()) {
+          branch("internal", Profile()) {
+            branch("checking", Profile()) {
+              leaf("test-account1", Profile())
             }
-            branch("credit") {
-              leaf("test-account2")
+            branch("credit", Profile()) {
+              leaf("test-account2", Profile())
             }
           }
-          branch("external") {
-            branch("expense") {
-              leaf("test-account3")
+          branch("external", Profile(isExternal = true)) {
+            branch("expense", Profile(isExternal = true)) {
+              leaf("test-account3", Profile(isExternal = true))
             }
           }
         }

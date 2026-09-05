@@ -8,6 +8,7 @@ import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.core.Transaction
 import com.cherba29.tally.core.TreeNode
+import com.cherba29.tally.data.Profile
 import com.cherba29.tally.statement.TransactionStatement
 import kotlin.math.roundToInt
 
@@ -133,7 +134,7 @@ fun SummaryStatement.toGql(summaryName: String): GqlSummaryStatement = GqlSummar
 /**
  * Converts summary statement as a summary data with substatements and a total.
  **/
-fun SummaryStatement.toGqlSummaryData(summaryName: String, isClosed: (TreeNode, Month)->Boolean): GqlSummaryData =  GqlSummaryData(
+fun SummaryStatement.toGqlSummaryData(summaryName: String, isClosed: (TreeNode<Profile>, Month)->Boolean): GqlSummaryData =  GqlSummaryData(
   statements = statements.toSortedMap().map { (treeNode, stmt) ->
     when (stmt) {
       is SummaryStatement -> (stmt as Statement).toGql(treeNode.name, isClosed(treeNode, stmt.monthRange.first))  // Treat it as regular statement.

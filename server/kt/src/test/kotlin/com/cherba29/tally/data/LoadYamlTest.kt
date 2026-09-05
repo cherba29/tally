@@ -78,13 +78,13 @@ class LoadYamlTest : DescribeSpec({
       val budget = budget {
         loadYamlFile(this, accountData, relativeFilePath)
       }
-      budget.tree shouldBe root {
-        branch("arthur") {
-          branch("external") {
-            branch("inactive") {
-              leaf("_test-account")
+      budget.tree shouldBe root(Profile()) {
+        branch("arthur", Profile()) {
+          branch("external", Profile(isExternal = true)) {
+            branch("inactive", Profile(isExternal = true, isInactive = true)) {
+              leaf("_test-account", Profile(isExternal = true, isInactive = true))
             }
-            leaf("test-account")
+            leaf("test-account", Profile(isExternal = true))
           }
         }
       }
@@ -133,7 +133,13 @@ class LoadYamlTest : DescribeSpec({
       val budget = budget {
         loadYamlFile(this, accountData, relativeFilePath)
       }
-      budget.tree shouldBe root { branch("someone") { branch("external") { leaf("test-account") } } }
+      budget.tree shouldBe root(Profile()) {
+        branch("someone", Profile()) {
+          branch("external", Profile(isExternal = true)) {
+            leaf("test-account", Profile(isExternal = true))
+          }
+        }
+      }
       budget.leafToAccount.size shouldBe 1
       budget.nodeToStatement.size shouldBe 3
       budget.months.size shouldBe 2
@@ -249,11 +255,11 @@ class LoadYamlTest : DescribeSpec({
       }
       budget.months.size shouldBe 2
       budget.leafToAccount.size shouldBe 2
-      budget.tree shouldBe root {
-        branch("someone") {
-          branch("external") {
-            leaf("external")
-            leaf("test-account")
+      budget.tree shouldBe root(Profile()) {
+        branch("someone", Profile()) {
+          branch("external", Profile(isExternal = true)) {
+            leaf("external", Profile(isExternal = true))
+            leaf("test-account", Profile(isExternal = true))
           }
         }
       }

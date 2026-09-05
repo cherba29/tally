@@ -4,6 +4,7 @@ import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.TreeNode
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.data.Loader
+import com.cherba29.tally.data.Profile
 import com.cherba29.tally.statement.TransactionStatement
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
@@ -105,7 +106,7 @@ class Unaccounted : CliktCommand() {
   companion object {
     private fun Long.asAmount(): String = "%.2f".format(this / 100.0)
     data class UnaccountedEntry(
-      val treeNode: TreeNode,
+      val treeNode: TreeNode<Profile>,
       val statement: TransactionStatement
     )
   }

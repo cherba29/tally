@@ -10,7 +10,7 @@ import io.kotest.matchers.shouldBe
 class BudgetTest : DescribeSpec({
   describe("isClosed") {
     it("empty budget all accounts are closed") {
-      val tree = root { }
+      val tree = root(Profile()) { }
       val budget = Budget(
         months = AUG / 2026..SEP / 2026, tree = tree, leafToAccount = mapOf(), nodeToStatement = mapOf()
       )
@@ -18,8 +18,8 @@ class BudgetTest : DescribeSpec({
     }
 
     it("single open account") {
-      val tree = root {
-        leaf("test-account")
+      val tree = root(Profile()) {
+        leaf("test-account", Profile())
       }
       val node = tree["test-account"] as TreeNode.Leaf
       val budget = Budget(
@@ -37,14 +37,14 @@ class BudgetTest : DescribeSpec({
     }
 
     it("nested open - closed accounts") {
-      val tree = root {
-        branch("internal") {
-          leaf("test-account1")
+      val tree = root(Profile()) {
+        branch("internal", Profile()) {
+          leaf("test-account1", Profile())
         }
-        branch("external") {
-          leaf("test-account2")
+        branch("external", Profile(isExternal = true)) {
+          leaf("test-account2", Profile(isExternal = true))
         }
-        leaf("test-account3")
+        leaf("test-account3", Profile())
       }
       val node1 = tree[listOf("internal", "test-account1")] as TreeNode.Leaf
       val internalNode = tree[listOf("internal")] as TreeNode.Branch

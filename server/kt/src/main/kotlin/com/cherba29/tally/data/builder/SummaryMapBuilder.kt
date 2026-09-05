@@ -2,6 +2,7 @@ package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.TreeNode
+import com.cherba29.tally.data.Profile
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 import kotlin.collections.component1
@@ -11,9 +12,9 @@ import kotlin.collections.mutableMapOf
 
 class SummaryMapBuilder {
   // Map of owner -> 'summary name' -> month -> 'summary statement'.
-  private val summaryStatements = mutableMapOf<TreeNode, MutableMap<Month, MonthSummaryStatementBuilder>>()
+  private val summaryStatements = mutableMapOf<TreeNode<Profile>, MutableMap<Month, MonthSummaryStatementBuilder>>()
 
-  fun addAll(nodeToStatement: Map<TreeNode, Map<Month, Statement>>) {
+  fun addAll(nodeToStatement: Map<TreeNode<Profile>, Map<Month, Statement>>) {
     for ((treeNode, monthStatements) in nodeToStatement) {
       for ((month, statement) in monthStatements) {
         addStatement(treeNode, month, statement)
@@ -22,7 +23,7 @@ class SummaryMapBuilder {
   }
 
   // Adds statement to its immediate parent summary statement.
-  fun addStatement(treeNode: TreeNode, month: Month, statement: Statement) {
+  fun addStatement(treeNode: TreeNode<Profile>, month: Month, statement: Statement) {
     summaryStatements.getOrPut(treeNode.parent!!) {
       mutableMapOf()
     }.getOrPut(month) {
@@ -31,7 +32,7 @@ class SummaryMapBuilder {
   }
 
   // Make sure totals are computed for parent summary accounts up the path to the root.
-  fun build(tree: TreeNode): Map<TreeNode, Map<Month, SummaryStatement>> {
+  fun build(tree: TreeNode<Profile>): Map<TreeNode<Profile>, Map<Month, SummaryStatement>> {
     // For each owner bottom up, build up summaries.
     for (ownerRoot in tree.children) {
       for (node in ownerRoot.traverseBottomUp()) {

@@ -1,7 +1,15 @@
 package com.cherba29.tally.data.builder
 
-import com.cherba29.tally.core.*
+import com.cherba29.tally.core.Account
+import com.cherba29.tally.core.Account.Companion.EXTERNAL_NAME
+import com.cherba29.tally.core.Account.Companion.INACTIVE_NAME
+import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.Month
+import com.cherba29.tally.core.MonthRange
+import com.cherba29.tally.core.TreeNode
+import com.cherba29.tally.core.plus
 import com.cherba29.tally.data.Budget
+import com.cherba29.tally.data.Profile
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.TransactionStatement
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -28,7 +36,7 @@ class BudgetBuilder {
     val tags: List<String>,
   )
 
-  private val treeNodeBuilder = TreeNode.Builder()
+  private val treeNodeBuilder = TreeNode.Builder<Profile>()
   private val pathToAccount = mutableMapOf<List<String>, Account>()
 
   fun addAccount(account: Account, accountBalances: Map<Month, Balance>) {
@@ -76,8 +84,24 @@ class BudgetBuilder {
     }
   }
 
+  private val processedPath = mutableSetOf<List<String>>()
   fun setAccount(fullPath: List<String>, account: Account): BudgetBuilder {
-    treeNodeBuilder.addPath(fullPath, account.rank)
+    for (i in 0..fullPath.lastIndex-1) {
+      val subPath = fullPath.subList(0, i)
+      if (processedPath.add(subPath)) {
+        treeNodeBuilder.addPath(
+          subPath, Profile(
+            isExternal = subPath.contains(EXTERNAL_NAME),
+            isInactive = subPath.contains(INACTIVE_NAME)
+          )
+        )
+      }
+    }
+    treeNodeBuilder.addPath(fullPath, Profile(
+      isExternal = fullPath.contains(EXTERNAL_NAME),
+      isInactive = fullPath.contains(INACTIVE_NAME)
+    ), account.rank)
+
     pathToAccount[fullPath] = account
     monthRange += account.openedOn
     monthRange += account.closedOn
@@ -118,9 +142,9 @@ class BudgetBuilder {
   }
 
   private fun buildTransactionStatements(
-    treeRoot: TreeNode,
-    leafToAccount: Map<TreeNode.Leaf, Account>
-  ): Map<TreeNode.Leaf, Map<Month, TransactionStatement>> {
+    treeRoot: TreeNode<Profile>,
+    leafToAccount: Map<TreeNode.Leaf<Profile>, Account>
+  ): Map<TreeNode.Leaf<Profile>, Map<Month, TransactionStatement>> {
     // Backfill external inactive account balances.
     for ((accountNode, account) in leafToAccount) {
       if (account.isInactive) {
@@ -142,7 +166,7 @@ class BudgetBuilder {
       treeRoot[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
     }
 
-    val statementBuilders = mutableMapOf<TreeNode.Leaf, MonthTransactionStatementBuilder>()
+    val statementBuilders = mutableMapOf<TreeNode.Leaf<Profile>, MonthTransactionStatementBuilder>()
 
     statementBuilders.putAll(
       leafToAccount.keys.associateWith {
@@ -152,7 +176,7 @@ class BudgetBuilder {
         builder
       })
 
-    val cachedNameToTreenodeMap = mutableMapOf<String, TreeNode.Leaf>()
+    val cachedNameToTreenodeMap = mutableMapOf<String, TreeNode.Leaf<Profile>>()
 
     for (transferRecord in transferRecordList) {
       val toAccountNode = cachedNameToTreenodeMap.getOrPut(transferRecord.toAccountName) {
@@ -239,7 +263,7 @@ class BudgetBuilder {
       treeRoot[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
     }
 
-    val nodeToStatement = mutableMapOf<TreeNode, Map<Month, Statement>>()
+    val nodeToStatement = mutableMapOf<TreeNode<Profile>, Map<Month, Statement>>()
     val (numTransactions, elapsedTransactionTime) = timeSource.measureTimedValue {
       val transactionStatements = buildTransactionStatements(treeRoot, leafToAccount)
       nodeToStatement.putAll(transactionStatements)

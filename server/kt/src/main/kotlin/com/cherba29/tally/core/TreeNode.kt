@@ -3,45 +3,36 @@ package com.cherba29.tally.core
 import com.cherba29.tally.utils.PrefixTree
 import kotlin.sequences.sequence
 
-interface TreeNodeInterface<T> {
+interface TreeNodeInterface<P, T> {
   val name: String
   val parent: T?
   val children: List<T>
-
+  val data: P
   /**
    * Returns a child by name.
    */
-  operator fun get(id: String): TreeNodeInterface<T>?
+  operator fun get(id: String): TreeNodeInterface<P, T>?
 
-  operator fun get(path: List<String>): TreeNodeInterface<T>?
+  operator fun get(path: List<String>): TreeNodeInterface<P, T>?
 
-  val top: TreeNodeInterface<T>
+  val top: TreeNodeInterface<P, T>
 
   val path: List<String>
-
-  // TODO: Make TreeNode carry generic payload, to reduce usage of map lookups.
-  /**
-   * Nodes are divided into external and non-external (internal).
-   * That is any node named "external" and all of its descendants are considered to be external.
-   **/
-  val isExternal: Boolean
-  val isInactive: Boolean
 }
 
-sealed class TreeNode: TreeNodeInterface<TreeNode>, Comparable<TreeNode> {
-  class Root(
+sealed class TreeNode<P>: TreeNodeInterface<P, TreeNode<P>>, Comparable<TreeNode<*>> {
+  class Root<P>(
     override val name: String = "",
-    override val isExternal: Boolean = false,
-    override val isInactive: Boolean = false,
-    createChildren: ParentList.() -> Unit
-  ) : TreeNode() {
-    override val parent: TreeNode? = null
-    override val children: List<TreeNode> = ParentList(this).apply(createChildren)
-    override fun get(id: String): TreeNode? = children.firstOrNull { it.name == id }
+    override val data: P,
+    createChildren: ParentList<P>.() -> Unit
+  ) : TreeNode<P>() {
+    override val parent: TreeNode<P>? = null
+    override val children: List<TreeNode<P>> = ParentList(this).apply(createChildren)
+    override fun get(id: String): TreeNode<P>? = children.firstOrNull { it.name == id }
 
     override fun equals(other: Any?): Boolean {
       if (this === other) return true // Referential check
-      if (other !is Root) return false // Type check
+      if (other !is Root<P>) return false // Type check
       return children == other.children
     }
 
@@ -52,19 +43,18 @@ sealed class TreeNode: TreeNodeInterface<TreeNode>, Comparable<TreeNode> {
     }
   }
 
-  class Branch(
+  class Branch<P>(
     override val name: String,
-    createChildren: ParentList.() -> Unit,
-    override val parent: TreeNode,
-    override val isExternal: Boolean = parent.isExternal,
-    override val isInactive: Boolean = parent.isInactive
-  ) : TreeNode() {
-    override val children: List<TreeNode> = ParentList(this).apply(createChildren)
-    override fun get(id: String): TreeNode? = children.firstOrNull { it.name == id }
+    createChildren: ParentList<P>.() -> Unit,
+    override val parent: TreeNode<P>,
+    override val data: P,
+  ) : TreeNode<P>() {
+    override val children: List<TreeNode<P>> = ParentList(this).apply(createChildren)
+    override fun get(id: String): TreeNode<P>? = children.firstOrNull { it.name == id }
 
     override fun equals(other: Any?): Boolean {
       if (this === other) return true // Referential check
-      if (other !is TreeNode) return false // Type check
+      if (other !is Branch<P>) return false // Type check
       return name == other.name && children == other.children
     }
 
@@ -75,40 +65,39 @@ sealed class TreeNode: TreeNodeInterface<TreeNode>, Comparable<TreeNode> {
     }
   }
 
-  data class Leaf(
+  data class Leaf<P>(
     override val name: String,
-    override val parent: TreeNode,
-    override val isExternal: Boolean = parent.isExternal,
-    override val isInactive: Boolean = parent.isInactive
-  ) : TreeNode() {
-    override val children: List<TreeNode> = listOf()
-    override fun get(id: String): TreeNode? = null
+    override val parent: TreeNode<P>,
+    override val data: P,
+  ) : TreeNode<P>() {
+    override val children: List<TreeNode<P>> = listOf()
+    override fun get(id: String): TreeNode<P>? = null
     override fun toString() = name
 
     override fun equals(other: Any?): Boolean {
       if (this === other) return true // Referential check
-      if (other !is Leaf) return false // Type check
+      if (other !is Leaf<P>) return false // Type check
       return name == other.name
     }
     override fun hashCode(): Int = name.hashCode()
   }
 
-  abstract override fun get(id: String): TreeNode?
-  override operator fun get(path: List<String>): TreeNode? =
+  abstract override fun get(id: String): TreeNode<P>?
+  override operator fun get(path: List<String>): TreeNode<P>? =
     if (path.isEmpty()) this else get(path.first())?.get(path.subList(1, path.size))
-  override val top: TreeNode get () = if (parent?.parent == null) this else parent!!.top
+  override val top: TreeNode<P> get () = if (parent?.parent == null) this else parent!!.top
 
   override val path: List<String> by lazy { if (parent == null || name.isEmpty()) listOf() else parent!!.path + name }
   val pathString: String by lazy { path.joinToString("/") }
 
-  fun traverseBottomUp(): Sequence<TreeNode> = sequence {
+  fun traverseBottomUp(): Sequence<TreeNode<P>> = sequence {
     for (child in children) {
       yieldAll(child.traverseBottomUp())
     }
     yield(this@TreeNode)
   }
 
-  fun traverseDepthDown(): Sequence<TreeNode> = sequence {
+  fun traverseDepthDown(): Sequence<TreeNode<P>> = sequence {
     yield(this@TreeNode)
     for (child in children) {
       yieldAll(child.traverseDepthDown())
@@ -140,25 +129,28 @@ sealed class TreeNode: TreeNodeInterface<TreeNode>, Comparable<TreeNode> {
     path.reversed()
   }
 
-  override fun compareTo(other: TreeNode): Int = indexPath.lexicographicCompareTo(other.indexPath)
+  override fun compareTo(other: TreeNode<*>): Int = indexPath.lexicographicCompareTo(other.indexPath)
 
-  class Builder {
-    private val prefixTree = PrefixTree()
+  class Builder<P> {
+    private val prefixTree = PrefixTree<P>()
 
     /** Add path from which tree containing it can be built. */
-    fun addPath(path: List<String>, rank: Int? = null) = prefixTree.insert(path, rank ?: Int.MAX_VALUE)
+    fun addPath(path: List<String>, data: P?, rank: Int? = null) = prefixTree.insert(path, data, rank ?: Int.MAX_VALUE)
 
-    fun build(): TreeNode = root { addChildren(prefixTree) }
+    fun build(): TreeNode<P> = root(
+      prefixTree.data ?: throw IllegalArgumentException("Data is not set for prefixTree root.")
+    ) { addChildren(prefixTree) }
 
     companion object {
       // Recursively build immutable tree nodes from prefix tree.
-      context(parentList: ParentList)
-      private fun addChildren(prefixTree: PrefixTree) {
+      context(parentList: ParentList<P>)
+      private fun <P> addChildren(prefixTree: PrefixTree<P>) {
         for ((childName, childTree) in prefixTree.sortedEntries) {
+          val childData = childTree.data ?: throw IllegalArgumentException("Data is not set for '$childName'")
           if (childTree.isEmpty()) {
-            parentList.leaf(childName)
+            parentList.leaf(childName, childData)
           } else {
-            parentList.branch(childName) { addChildren(childTree) }
+            parentList.branch(childName, childData) { addChildren(childTree) }
           }
         }
       }
@@ -175,24 +167,18 @@ private fun <T : Comparable<T>> List<T>.lexicographicCompareTo(other: List<T>): 
   return this.size.compareTo(other.size)
 }
 
-internal const val EXTERNAL_NAME = "external"
-internal const val INACTIVE_NAME = "inactive"
-
 /** Context class for tree DSL. */
-class ParentList(
-  val parent: TreeNode,
-  private val children: MutableList<TreeNode> = mutableListOf()
-) : List<TreeNode> by children {
+class ParentList<P>(
+  val parent: TreeNode<P>,
+  private val children: MutableList<TreeNode<P>> = mutableListOf()
+) : List<TreeNode<P>> by children {
 
-  private fun isExternal(name: String) = name == EXTERNAL_NAME || parent.isExternal
-  private fun isInactive(name: String) = name == INACTIVE_NAME || parent.isInactive
-
-  fun branch(name: String, createChildren: ParentList.() -> Unit) {
-    children += TreeNode.Branch(name, createChildren, parent, isExternal(name), isInactive(name))
+  fun branch(name: String, data: P, createChildren: ParentList<P>.() -> Unit) {
+    children += TreeNode.Branch(name, createChildren, parent, data)
   }
 
-  fun leaf(name: String) {
-    children += TreeNode.Leaf(name, parent, isExternal(name), isInactive(name))
+  fun leaf(name: String, data: P) {
+    children += TreeNode.Leaf(name, parent, data)
   }
 
   // Since this class is member of TreeNode, which has equals override it here as well.
@@ -204,4 +190,4 @@ class ParentList(
   override fun hashCode(): Int = children.hashCode()
 }
 
-fun root(createChildren: ParentList.() -> Unit) = TreeNode.Root(createChildren = createChildren)
+fun <P> root(data: P, createChildren: ParentList<P>.() -> Unit) = TreeNode.Root(data = data, createChildren = createChildren)

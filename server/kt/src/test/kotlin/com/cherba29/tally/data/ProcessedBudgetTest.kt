@@ -44,10 +44,10 @@ class ProcessedBudgetTest : DescribeSpec({
       )
       processedBudget.reProcess()
       val budget = processedBudget.budget!!
-      budget.tree shouldBe root {
-        branch("john") {
-          branch("external") {
-            leaf("test-account")
+      budget.tree shouldBe root(Profile()) {
+        branch("john", Profile()) {
+          branch("external", Profile(isExternal = true)) {
+            leaf("test-account", Profile(isExternal = true))
           }
         }
       }
