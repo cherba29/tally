@@ -1,7 +1,7 @@
 package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.core.TreeNode
+import com.cherba29.tally.utils.TreeNode
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.plus

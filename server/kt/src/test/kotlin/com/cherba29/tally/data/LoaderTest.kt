@@ -2,7 +2,7 @@ package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.MAR
-import com.cherba29.tally.core.root
+import com.cherba29.tally.utils.root
 import com.cherba29.tally.utils.WatchResult
 import com.cherba29.tally.utils.watchedEventFlow
 import io.kotest.core.spec.style.DescribeSpec

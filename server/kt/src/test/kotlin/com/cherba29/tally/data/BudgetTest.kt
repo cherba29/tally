@@ -2,8 +2,8 @@ package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.MonthName.*
-import com.cherba29.tally.core.TreeNode
-import com.cherba29.tally.core.root
+import com.cherba29.tally.utils.TreeNode
+import com.cherba29.tally.utils.root
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 

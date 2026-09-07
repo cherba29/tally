@@ -8,8 +8,8 @@ import com.cherba29.tally.core.MonthName.FEB
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthName.NOV
-import com.cherba29.tally.core.TreeNode
-import com.cherba29.tally.core.root
+import com.cherba29.tally.utils.TreeNode
+import com.cherba29.tally.utils.root
 import com.cherba29.tally.data.Profile
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement

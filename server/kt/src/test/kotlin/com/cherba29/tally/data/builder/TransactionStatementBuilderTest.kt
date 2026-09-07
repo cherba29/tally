@@ -2,8 +2,8 @@ package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.JUL
-import com.cherba29.tally.core.TreeNode
-import com.cherba29.tally.core.root
+import com.cherba29.tally.utils.TreeNode
+import com.cherba29.tally.utils.root
 import com.cherba29.tally.core.Transaction
 import com.cherba29.tally.data.Profile
 import io.kotest.core.spec.style.DescribeSpec

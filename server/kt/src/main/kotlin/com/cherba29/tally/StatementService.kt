@@ -1,7 +1,7 @@
 package com.cherba29.tally
 
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.core.TreeNode
+import com.cherba29.tally.utils.TreeNode
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.schema.GqlStatement
 import com.cherba29.tally.schema.toGql

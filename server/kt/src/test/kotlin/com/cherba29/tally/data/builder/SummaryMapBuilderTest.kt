@@ -1,7 +1,7 @@
 package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.MonthName.MAY
-import com.cherba29.tally.core.root
+import com.cherba29.tally.utils.root
 import com.cherba29.tally.data.Profile
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement

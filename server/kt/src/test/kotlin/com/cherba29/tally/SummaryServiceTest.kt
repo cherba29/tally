@@ -5,7 +5,7 @@ import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.FEB
 import com.cherba29.tally.core.MonthName.MAR
-import com.cherba29.tally.core.root
+import com.cherba29.tally.utils.root
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.data.Profile

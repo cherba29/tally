@@ -1,6 +1,5 @@
-package com.cherba29.tally.core
+package com.cherba29.tally.utils
 
-import com.cherba29.tally.utils.PrefixTree
 import kotlin.sequences.sequence
 
 interface TreeNodeInterface<P, T> {
