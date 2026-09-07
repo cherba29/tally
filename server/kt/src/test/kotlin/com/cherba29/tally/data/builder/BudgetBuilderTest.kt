@@ -69,7 +69,7 @@ class BudgetBuilderTest : DescribeSpec({
         )
       )
     }
-    budget.leafNodes.size shouldBe 3
+    budget.tree.nLeaves shouldBe 3
     budget.tree[listOf("john", "internal", "test-account1")]?.data?.account shouldBe account1
     budget.tree[listOf("john", "internal", "test-account2")]?.data?.account shouldBe account2
     budget.nodeToStatement.filter { it.key.children.isEmpty() }.size shouldBe 3
@@ -222,7 +222,6 @@ class BudgetBuilderTest : DescribeSpec({
       val budget = budget {
         setAccount(path1, account1)
       }
-      budget.leafNodes shouldBe setOf(budget.tree[listOf("bob", "internal", "test-account1")])
       budget.tree[listOf("bob", "internal", "test-account1")]?.data?.account shouldBe account1
     }
 
@@ -239,8 +238,8 @@ class BudgetBuilderTest : DescribeSpec({
         setAccount(path2, account2)
         setAccount(path3, account3)
       }
-      budget.leafNodes.size shouldBe 3
-      budget.leafNodes.map { it.data.account }.toSet() shouldBe setOf(account1, account2, account3)
+      budget.tree.nLeaves shouldBe 3
+      budget.tree.traverseLeaves().map { it.data.account }.toSet() shouldBe setOf(account1, account2, account3)
     }
   }
 

@@ -1,5 +1,6 @@
 package com.cherba29.tally.utils
 
+import kotlin.getValue
 import kotlin.sequences.sequence
 
 interface TreeNodeInterface<P, T> {
@@ -17,6 +18,8 @@ interface TreeNodeInterface<P, T> {
   val top: TreeNodeInterface<P, T>
 
   val path: List<String>
+
+  val nLeaves: Int
 }
 
 sealed class TreeNode<P>: TreeNodeInterface<P, TreeNode<P>>, Comparable<TreeNode<*>> {
@@ -27,6 +30,7 @@ sealed class TreeNode<P>: TreeNodeInterface<P, TreeNode<P>>, Comparable<TreeNode
   ) : TreeNode<P>() {
     override val parent: TreeNode<P>? = null
     override val children: List<TreeNode<P>> = ParentList(this).apply(createChildren)
+    override val nLeaves: Int by lazy { children.sumOf { it.nLeaves } }
     override fun get(id: String): TreeNode<P>? = children.firstOrNull { it.name == id }
 
     override fun equals(other: Any?): Boolean {
@@ -49,6 +53,7 @@ sealed class TreeNode<P>: TreeNodeInterface<P, TreeNode<P>>, Comparable<TreeNode
     override val data: P,
   ) : TreeNode<P>() {
     override val children: List<TreeNode<P>> = ParentList(this).apply(createChildren)
+    override val nLeaves: Int by lazy { children.sumOf { it.nLeaves } }
     override fun get(id: String): TreeNode<P>? = children.firstOrNull { it.name == id }
 
     override fun equals(other: Any?): Boolean {
@@ -70,6 +75,7 @@ sealed class TreeNode<P>: TreeNodeInterface<P, TreeNode<P>>, Comparable<TreeNode
     override val data: P,
   ) : TreeNode<P>() {
     override val children: List<TreeNode<P>> = listOf()
+    override val nLeaves = 1
     override fun get(id: String): TreeNode<P>? = null
     override fun toString() = name
 
@@ -100,6 +106,16 @@ sealed class TreeNode<P>: TreeNodeInterface<P, TreeNode<P>>, Comparable<TreeNode
     yield(this@TreeNode)
     for (child in children) {
       yieldAll(child.traverseDepthDown())
+    }
+  }
+
+  fun traverseLeaves(): Sequence<Leaf<P>> = sequence {
+    if (children.isEmpty()) {
+      yield(this@TreeNode as Leaf<P>)
+    } else {
+      for (child in children) {
+        yieldAll(child.traverseLeaves())
+      }
     }
   }
 

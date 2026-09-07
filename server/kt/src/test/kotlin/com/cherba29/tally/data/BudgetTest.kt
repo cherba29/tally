@@ -12,7 +12,7 @@ class BudgetTest : DescribeSpec({
     it("empty budget all accounts are closed") {
       val tree = root(Profile()) { }
       val budget = Budget(
-        months = AUG / 2026..SEP / 2026, tree = tree, leafNodes = setOf(), nodeToStatement = mapOf()
+        months = AUG / 2026..SEP / 2026, tree = tree, nodeToStatement = mapOf()
       )
       budget.isClosed(tree, AUG / 2026) shouldBe true
     }
@@ -29,7 +29,6 @@ class BudgetTest : DescribeSpec({
       val budget = Budget(
         months = AUG / 2026..SEP / 2026,
         tree = tree,
-        leafNodes = setOf(node),
         nodeToStatement = mapOf()
       )
       budget.isClosed(tree, AUG / 2026) shouldBe false
@@ -76,9 +75,7 @@ class BudgetTest : DescribeSpec({
       val externalNode = tree[listOf("external")] as TreeNode.Branch
       val node3 = tree[listOf("test-account3")] as TreeNode.Leaf
       val budget = Budget(
-        months = AUG / 2026..SEP / 2026, tree = tree, leafNodes = setOf(
-          node1, node2, node3
-        ), nodeToStatement = mapOf()
+        months = AUG / 2026..SEP / 2026, tree = tree, nodeToStatement = mapOf()
       )
       (JUL / 2026..DEC / 2026).associateWith { budget.isClosed(node1, it) } shouldBe mapOf(
         JUL / 2026 to true,

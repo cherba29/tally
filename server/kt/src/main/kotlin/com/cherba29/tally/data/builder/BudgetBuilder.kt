@@ -143,11 +143,10 @@ class BudgetBuilder {
   }
 
   private fun buildTransactionStatements(
-    treeRoot: TreeNode<Profile>,
-    leafNodes: Set<TreeNode.Leaf<Profile>>
+    treeRoot: TreeNode<Profile>
   ): Map<TreeNode.Leaf<Profile>, Map<Month, TransactionStatement>> {
     // Backfill external inactive account balances.
-    for (accountNode in leafNodes) {
+    for (accountNode in treeRoot.traverseLeaves()) {
       if (accountNode.data.isInactive) {
         var lastBalance: Balance? = null
         for (month in monthRange!!) {
@@ -170,7 +169,7 @@ class BudgetBuilder {
     val statementBuilders = mutableMapOf<TreeNode.Leaf<Profile>, MonthTransactionStatementBuilder>()
 
     statementBuilders.putAll(
-      leafNodes.associateWith {
+      treeRoot.traverseLeaves().associateWith {
         val builder = MonthTransactionStatementBuilder()
         builder.months = monthRange!!
         builder.monthlyBalances = leafToBalances[it] ?: mapOf()
@@ -266,7 +265,7 @@ class BudgetBuilder {
 
     val nodeToStatement = mutableMapOf<TreeNode<Profile>, Map<Month, Statement>>()
     val (numTransactions, elapsedTransactionTime) = timeSource.measureTimedValue {
-      val transactionStatements = buildTransactionStatements(treeRoot, leafNodes)
+      val transactionStatements = buildTransactionStatements(treeRoot)
       nodeToStatement.putAll(transactionStatements)
       transactionStatements.values.sumOf { it.values.sumOf { stmt -> stmt.transactions.size } }
     }
@@ -288,7 +287,6 @@ class BudgetBuilder {
     return Budget(
       monthRange!!,
       treeRoot,
-      leafNodes,
       nodeToStatement,
     )
   }

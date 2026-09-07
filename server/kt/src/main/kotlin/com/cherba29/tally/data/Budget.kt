@@ -13,15 +13,13 @@ data class Budget(
   val months: MonthRange,
   /** Hierarchical structure of accounts and summaries. */
   val tree: TreeNode<Profile>,
-  /** Maps leaf tree node to corresponding account. */
-  val leafNodes: Set<TreeNode.Leaf<Profile>>,
   // Tree node to corresponding statement.
   // Parent nodes map to SummaryStatement and leaf nodes to TransactionStatement.
   val nodeToStatement: Map<TreeNode<Profile>, Map<Month, Statement>>,
 ) {
   private val isClosedCache = mutableMapOf<TreeNode<Profile>, MutableMap<Month, Boolean>>()
 
-  fun getAccountNode(accountName: String) = leafNodes.find { it.data.account?.name == accountName }
+  fun getAccountNode(accountName: String) =  tree.traverseLeaves().find { it.data.account?.name == accountName }
 
   /**
    * Checks if node is closed.

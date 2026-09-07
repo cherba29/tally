@@ -44,7 +44,6 @@ class SummaryServiceTest : DescribeSpec({
         coEvery { budget() } returns Budget(
           months = MAR / 2026..MAR / 2026,
           tree = root(Profile()) {},
-          leafNodes = setOf(),
           nodeToStatement = mapOf()
         )
       }
