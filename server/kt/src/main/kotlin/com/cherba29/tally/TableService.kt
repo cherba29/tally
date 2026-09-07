@@ -54,7 +54,6 @@ class TableService(val loader: Loader) : Query {
 
       val rows = mutableListOf<GqlTableRow>()
       for (treeNode in ownerTree.traverseDepthDown()) {
-        val account = payload.leafToAccount[treeNode]
         val monthMap = payload.nodeToStatement[treeNode]
           ?: throw java.lang.IllegalArgumentException(
             "Did not find monthly statements at '${treeNode.path.joinToString("/")}'"
@@ -68,6 +67,7 @@ class TableService(val loader: Loader) : Query {
         }
 
         if (cells.any { c -> !c.isClosed }) {
+          val account = treeNode.data.account
           rows.add(
             GqlTableRow(
               id = treeNode.path.joinToString("/"),

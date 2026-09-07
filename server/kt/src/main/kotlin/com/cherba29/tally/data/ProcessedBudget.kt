@@ -44,7 +44,7 @@ class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
       processedOn = startTime.elapsedNow()
     }
     logger.info {
-      "Done building budget for ${budget?.leafToAccount?.size} accounts in $elapsedBudgetTime"
+      "Done building budget for ${budget?.leafNodes?.size} accounts in $elapsedBudgetTime"
     }
   }
 

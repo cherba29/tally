@@ -40,7 +40,7 @@ class Report : CliktCommand() {
     if (accountNode !is TreeNode.Leaf) {
       throw CliktError("'$account' does not exist ")
     }
-    val stmtAccount = payload.leafToAccount[accountNode]!!
+    val stmtAccount = accountNode.data.account!!
 
     val monthStatements = payload.nodeToStatement[accountNode] ?: mapOf()
     echo(HEADER_ROW.joinToString(","))

@@ -25,7 +25,7 @@ class StatementService(val loader: Loader) : Query {
         if (accountNode !is TreeNode.Leaf) {
           throw NotFoundException("'$accountPath' is not an account path")
         }
-        val account = payload.leafToAccount[accountNode]
+        val account = accountNode.data.account
           ?: throw IllegalStateException("No corresponding account for $accountNode")
         val statement: TransactionStatement = payload.nodeToStatement[accountNode]?.get(month) as? TransactionStatement
           ?: throw NotFoundException("Did not find statement for month '$month' for account '$accountPath'")

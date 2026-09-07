@@ -60,7 +60,7 @@ class Unaccounted : CliktCommand() {
       if (account != null && treeNode.name != account) {
         continue
       }
-      val accountRecord = budget.leafToAccount[treeNode]
+      val accountRecord = treeNode.data.account
         ?: throw IllegalStateException("No matching account for $treeNode")
       for ((month, transactionStatement) in monthTransactionStatements) {
         if (accountRecord.isClosed(month)) {

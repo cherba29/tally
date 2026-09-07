@@ -88,9 +88,9 @@ class LoadYamlTest : DescribeSpec({
           }
         }
       }
-      budget.leafToAccount.size shouldBe 2
+      budget.leafNodes.size shouldBe 2
 
-      val account = budget.leafToAccount[budget.tree[listOf("arthur", "external", "test-account")]]!!
+      val account = budget.tree[listOf("arthur", "external", "test-account")]?.data?.account!!
       account.name shouldBe "test-account"
       account.description shouldBe "Testing account"
       account.number shouldBe "1223344"
@@ -140,7 +140,7 @@ class LoadYamlTest : DescribeSpec({
           }
         }
       }
-      budget.leafToAccount.size shouldBe 1
+      budget.leafNodes.size shouldBe 1
       budget.nodeToStatement.size shouldBe 3
       budget.months.size shouldBe 2
       budget.nodeToStatement.values.sumOf {
@@ -254,7 +254,7 @@ class LoadYamlTest : DescribeSpec({
         loadYamlFile(this, externalAccountData, relativeFilePath)
       }
       budget.months.size shouldBe 2
-      budget.leafToAccount.size shouldBe 2
+      budget.leafNodes.size shouldBe 2
       budget.tree shouldBe root(Profile()) {
         branch("someone", Profile()) {
           branch("external", Profile(isExternal = true)) {

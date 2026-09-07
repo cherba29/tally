@@ -76,7 +76,7 @@ class SummaryService(val loader: Loader) : Query {
         val treeNode = budget.tree[treePath]
           ?: throw NotFoundException("'$accountPath' not found.")
 
-        val account = budget.leafToAccount[treeNode]
+        val account = treeNode.data.account
           ?: throw IllegalStateException("Could not find account for $accountPath")
         val monthlyStatements = budget.nodeToStatement[treeNode]
           ?: throw IllegalStateException("Could not find statements for $accountPath")

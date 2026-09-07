@@ -86,7 +86,7 @@ class BudgetBuilder {
 
   private val processedPath = mutableSetOf<List<String>>()
   fun setAccount(fullPath: List<String>, account: Account): BudgetBuilder {
-    for (i in 0..fullPath.lastIndex-1) {
+    for (i in 0..fullPath.lastIndex) {
       val subPath = fullPath.subList(0, i)
       if (processedPath.add(subPath)) {
         treeNodeBuilder.addPath(
@@ -98,6 +98,7 @@ class BudgetBuilder {
       }
     }
     treeNodeBuilder.addPath(fullPath, Profile(
+      account,
       isExternal = fullPath.contains(EXTERNAL_NAME),
       isInactive = fullPath.contains(INACTIVE_NAME)
     ), account.rank)
@@ -143,11 +144,11 @@ class BudgetBuilder {
 
   private fun buildTransactionStatements(
     treeRoot: TreeNode<Profile>,
-    leafToAccount: Map<TreeNode.Leaf<Profile>, Account>
+    leafNodes: Set<TreeNode.Leaf<Profile>>
   ): Map<TreeNode.Leaf<Profile>, Map<Month, TransactionStatement>> {
     // Backfill external inactive account balances.
-    for ((accountNode, account) in leafToAccount) {
-      if (account.isInactive) {
+    for (accountNode in leafNodes) {
+      if (accountNode.data.isInactive) {
         var lastBalance: Balance? = null
         for (month in monthRange!!) {
           val accountBalances = balances.getOrPut(accountNode.path) { mutableMapOf() }
@@ -169,7 +170,7 @@ class BudgetBuilder {
     val statementBuilders = mutableMapOf<TreeNode.Leaf<Profile>, MonthTransactionStatementBuilder>()
 
     statementBuilders.putAll(
-      leafToAccount.keys.associateWith {
+      leafNodes.associateWith {
         val builder = MonthTransactionStatementBuilder()
         builder.months = monthRange!!
         builder.monthlyBalances = leafToBalances[it] ?: mapOf()
@@ -210,7 +211,7 @@ class BudgetBuilder {
               "$fromOwner vs $toOwner"
         }
       }
-      val fromAccount = leafToAccount[fromAccountNode]
+      val fromAccount = fromAccountNode.data.account
         ?: throw java.lang.IllegalStateException("Node ${fromAccountNode.pathString} has no matching account entry")
       if (fromAccount.isClosed(transferRecord.month)) {
         throw IllegalArgumentException(
@@ -218,7 +219,7 @@ class BudgetBuilder {
               "has transfer during closed month ${transferRecord.month} to ${toAccountNode.pathString}"
         )
       }
-      val toAccount = leafToAccount[toAccountNode]
+      val toAccount = toAccountNode.data.account
         ?: throw java.lang.IllegalStateException("Node ${toAccountNode.pathString} has no matching account entry")
       if (toAccount.isClosed(transferRecord.month)) {
         throw IllegalArgumentException(
@@ -259,13 +260,13 @@ class BudgetBuilder {
     }
 
     val treeRoot = treeNodeBuilder.build()
-    val leafToAccount = pathToAccount.mapKeys {
+    val leafNodes = pathToAccount.map {
       treeRoot[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
-    }
+    }.toSet()
 
     val nodeToStatement = mutableMapOf<TreeNode<Profile>, Map<Month, Statement>>()
     val (numTransactions, elapsedTransactionTime) = timeSource.measureTimedValue {
-      val transactionStatements = buildTransactionStatements(treeRoot, leafToAccount)
+      val transactionStatements = buildTransactionStatements(treeRoot, leafNodes)
       nodeToStatement.putAll(transactionStatements)
       transactionStatements.values.sumOf { it.values.sumOf { stmt -> stmt.transactions.size } }
     }
@@ -278,7 +279,7 @@ class BudgetBuilder {
     nodeToStatement.putAll(summaryNameMonthMap)
 
     logger.info {
-        "Build ${leafToAccount.size} accounts, " +
+        "Build ${leafNodes.size} accounts, " +
         "$numTransactions transactions in $elapsedTransactionTime, " +
         "${summaryNameMonthMap.size} summaries in $elapsedBuildSummaryStatements, " +
         "total in ${elapsedTransactionTime + elapsedBuildSummaryStatements}"
@@ -287,7 +288,7 @@ class BudgetBuilder {
     return Budget(
       monthRange!!,
       treeRoot,
-      leafToAccount,
+      leafNodes,
       nodeToStatement,
     )
   }

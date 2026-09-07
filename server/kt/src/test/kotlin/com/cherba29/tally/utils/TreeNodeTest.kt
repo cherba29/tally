@@ -35,6 +35,7 @@ class TreeNodeTest : DescribeSpec({
       val builder = TreeNode.Builder<String>()
       builder.addPath(listOf("child1"), "test1")
       builder.addPath(listOf("child2"), "test2")
+      builder.addPath(listOf(), "test")
       val tree = builder.build()
       tree shouldBe root("test") {
         leaf("child1", "test1")
@@ -44,15 +45,16 @@ class TreeNodeTest : DescribeSpec({
 
     it("single branch") {
       val builder = TreeNode.Builder<String>()
-      builder.addPath(listOf("branch1", "child1"), "test1")
-      builder.addPath(listOf("branch1", "child2"), "test2")
+      builder.addPath(listOf("branch1", "child1"), "test11")
+      builder.addPath(listOf("branch1", "child2"), "test12")
+      builder.addPath(listOf("branch1"), "test1")
       builder.addPath(listOf(), "test")
       val tree = builder.build()
 
       tree shouldBe root("test") {
         branch("branch1", "test1") {
-          leaf("child1", "test1")
-          leaf("child2", "test2")
+          leaf("child1", "test11")
+          leaf("child2", "test12")
         }
       }
     }
@@ -75,7 +77,9 @@ class TreeNodeTest : DescribeSpec({
       val builder = TreeNode.Builder<String>()
       builder.addPath(listOf("branch1", "child1"), "test11")
       builder.addPath(listOf("branch1", "child2"), "test12")
+      builder.addPath(listOf("branch1"), "test1")
       builder.addPath(listOf("child3"), "test3")
+      builder.addPath(listOf(), "test")
       val tree = builder.build()
 
       tree shouldBe root("test") {
@@ -89,19 +93,22 @@ class TreeNodeTest : DescribeSpec({
 
     it("multiple branches") {
       val builder = TreeNode.Builder<String>()
-      builder.addPath(listOf("branch1", "child11"), "test11")
+      builder.addPath(listOf("branch1", "child11"), "test-c11")
       builder.addPath(listOf("branch1", "child12"), "test12")
       builder.addPath(listOf("branch1", "branch11", "child113"), "test113")
+      builder.addPath(listOf("branch1", "branch11"), "test-b11")
       builder.addPath(listOf("branch2", "child23"), "test23")
+      builder.addPath(listOf("branch1"), "test1")
+      builder.addPath(listOf("branch2"), "test2")
       builder.addPath(listOf(), "test")
       val tree = builder.build()
 
       tree shouldBe root("test") {
         branch("branch1", "test1") {
-          branch("branch11", "test11") {
+          branch("branch11", "test-b11") {
             leaf("child113", "test113")
           }
-          leaf("child11", "test11")
+          leaf("child11", "test-c11")
           leaf("child12", "test12")
         }
         branch("branch2", "test2") {
@@ -461,6 +468,7 @@ class TreeNodeTest : DescribeSpec({
       val builder = TreeNode.Builder<String>()
       builder.addPath(listOf("external"), "test-external")
       builder.addPath(listOf("internal"), "test-internal")
+      builder.addPath(listOf(), "test")
       builder.build() shouldBe root("test") {
         leaf("external", "test-external")
         leaf("internal", "test-internal")
@@ -470,7 +478,9 @@ class TreeNodeTest : DescribeSpec({
     it("branched") {
       val builder = TreeNode.Builder<String>()
       builder.addPath(listOf("external", "child1"), "test1")
+      builder.addPath(listOf("external"), "test-external")
       builder.addPath(listOf("internal", "child2"), "test2")
+      builder.addPath(listOf("internal"), "test-internal")
       builder.addPath(listOf(), "test")
 
       builder.build() shouldBe root("test") {
@@ -503,6 +513,7 @@ class TreeNodeTest : DescribeSpec({
       val builder = TreeNode.Builder<String>()
       builder.addPath(listOf("child2"), "test2")
       builder.addPath(listOf("child1"), "test1")
+      builder.addPath(listOf(), "test")
       builder.build() shouldBe root("test") {
         leaf("child1", "test1")
         leaf("child2", "test2")
@@ -513,6 +524,7 @@ class TreeNodeTest : DescribeSpec({
       val builder = TreeNode.Builder<String>()
       builder.addPath(listOf("child2"), "test2", 1)
       builder.addPath(listOf("child1"), "test1", 2)
+      builder.addPath(listOf(), "test")
       builder.build() shouldBe root("test") {
         leaf("child2", "test2")
         leaf("child1", "test1")

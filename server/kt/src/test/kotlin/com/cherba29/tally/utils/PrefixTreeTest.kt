@@ -1,6 +1,7 @@
 package com.cherba29.tally.utils
 
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 
@@ -33,6 +34,37 @@ class PrefixTreeTest : DescribeSpec({
       )
     }
   }
+
+  describe("sets data") {
+    it("root") {
+      val prefixTree = PrefixTree<String>()
+      val path = listOf<String>()
+      prefixTree.insert(path, "test", 1)
+      prefixTree.data shouldBe "test"
+    }
+    it("child") {
+      val prefixTree = PrefixTree<String>()
+      val path = listOf("test")
+      prefixTree.insert(path, "test", 1)
+      prefixTree[path]?.data shouldBe "test"
+    }
+    it("nested") {
+      val prefixTree = PrefixTree<String>()
+      val path = listOf("top", "test")
+      prefixTree.insert(path, "test", 1)
+      prefixTree.data shouldBe null
+      prefixTree[path]?.data shouldBe "test"
+    }
+    it("deep nested") {
+      val prefixTree = PrefixTree<String>()
+      val path = listOf("top", "branch", "leaf")
+      prefixTree.insert(path, "test", 1)
+      prefixTree.data shouldBe null
+      prefixTree[listOf("top", "branch")]?.data shouldBe null
+      prefixTree[path]?.data shouldBe "test"
+    }
+  }
+
   describe("sorts entries") {
     it("by name") {
       val prefixTree = PrefixTree<String>()

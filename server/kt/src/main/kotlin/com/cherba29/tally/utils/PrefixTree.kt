@@ -21,9 +21,12 @@ class PrefixTree<P>(
         node.rank = min(node.rank, rank)
         node = node.insert(part, null)
       }
-      node.data = data
       node.rank = min(node.rank, rank)
-      return node.insert(path.last(), data, rank)
+      val child = node.insert(path.last(), data, rank)
+      // Update if child existed before.
+      child.data = data
+      child.rank = rank
+      return child
     }
     this.data = data
     this.rank = rank
@@ -35,7 +38,7 @@ class PrefixTree<P>(
   operator fun get(path: List<String>): PrefixTree<P>? {
     var node: PrefixTree<P> = this
     for (part in path) {
-      node = children[part] ?: return null
+      node = node.children[part] ?: return null
     }
     return node
   }

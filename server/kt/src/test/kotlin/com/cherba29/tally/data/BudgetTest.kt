@@ -12,22 +12,25 @@ class BudgetTest : DescribeSpec({
     it("empty budget all accounts are closed") {
       val tree = root(Profile()) { }
       val budget = Budget(
-        months = AUG / 2026..SEP / 2026, tree = tree, leafToAccount = mapOf(), nodeToStatement = mapOf()
+        months = AUG / 2026..SEP / 2026, tree = tree, leafNodes = setOf(), nodeToStatement = mapOf()
       )
       budget.isClosed(tree, AUG / 2026) shouldBe true
     }
 
     it("single open account") {
       val tree = root(Profile()) {
-        leaf("test-account", Profile())
+        leaf("test-account", Profile(
+          account = Account(
+            name = "test-account", path = listOf(), owners = setOf("john"), openedOn = AUG / 2026
+          )
+        ))
       }
       val node = tree["test-account"] as TreeNode.Leaf
       val budget = Budget(
-        months = AUG / 2026..SEP / 2026, tree = tree, leafToAccount = mapOf(
-          node to Account(
-            name = "test-account", path = listOf(), owners = setOf("john"), openedOn = AUG / 2026
-          )
-        ), nodeToStatement = mapOf()
+        months = AUG / 2026..SEP / 2026,
+        tree = tree,
+        leafNodes = setOf(node),
+        nodeToStatement = mapOf()
       )
       budget.isClosed(tree, AUG / 2026) shouldBe false
       budget.isClosed(node, AUG / 2026) shouldBe false
@@ -39,12 +42,33 @@ class BudgetTest : DescribeSpec({
     it("nested open - closed accounts") {
       val tree = root(Profile()) {
         branch("internal", Profile()) {
-          leaf("test-account1", Profile())
+          leaf("test-account1", Profile(
+            Account(
+              name = "test-account1", path = listOf("internal"), owners = setOf("john"), openedOn = AUG / 2026
+            )
+          ))
         }
         branch("external", Profile(isExternal = true)) {
-          leaf("test-account2", Profile(isExternal = true))
+          leaf("test-account2", Profile(
+            Account(
+              name = "test-account2",
+              path = listOf("external"),
+              owners = setOf("john"),
+              openedOn = AUG / 2026,
+              closedOn = AUG / 2026
+            ),
+            isExternal = true
+          ))
         }
-        leaf("test-account3", Profile())
+        leaf("test-account3", Profile(
+          Account(
+            name = "test-account3",
+            path = listOf(),
+            owners = setOf("john"),
+            openedOn = AUG / 2026,
+            closedOn = SEP / 2026
+          )
+        ))
       }
       val node1 = tree[listOf("internal", "test-account1")] as TreeNode.Leaf
       val internalNode = tree[listOf("internal")] as TreeNode.Branch
@@ -52,22 +76,8 @@ class BudgetTest : DescribeSpec({
       val externalNode = tree[listOf("external")] as TreeNode.Branch
       val node3 = tree[listOf("test-account3")] as TreeNode.Leaf
       val budget = Budget(
-        months = AUG / 2026..SEP / 2026, tree = tree, leafToAccount = mapOf(
-          node1 to Account(
-            name = "test-account1", path = listOf("internal"), owners = setOf("john"), openedOn = AUG / 2026
-          ), node2 to Account(
-            name = "test-account2",
-            path = listOf("external"),
-            owners = setOf("john"),
-            openedOn = AUG / 2026,
-            closedOn = AUG / 2026
-          ), node3 to Account(
-            name = "test-account3",
-            path = listOf(),
-            owners = setOf("john"),
-            openedOn = AUG / 2026,
-            closedOn = SEP / 2026
-          )
+        months = AUG / 2026..SEP / 2026, tree = tree, leafNodes = setOf(
+          node1, node2, node3
         ), nodeToStatement = mapOf()
       )
       (JUL / 2026..DEC / 2026).associateWith { budget.isClosed(node1, it) } shouldBe mapOf(
