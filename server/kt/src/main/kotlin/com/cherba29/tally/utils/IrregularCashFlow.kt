@@ -1,6 +1,8 @@
 package com.cherba29.tally.utils
 
+import kotlin.math.absoluteValue
 import kotlin.math.pow
+import kotlin.math.sign
 
 class IrregularCashFlow {
   private val contributions = mutableListOf<Long>()
@@ -82,6 +84,9 @@ class IrregularCashFlow {
   companion object {
     fun effectiveRateOfReturn(rates: List<Double>): Double
       = if (rates.size < 2) 0.0
-        else rates.reduce (Double::times).pow(12.0 / (rates.size - 1)) - 1
+        else {
+          val product = rates.reduce(Double::times)
+          product.sign * (product.absoluteValue.pow(12.0 / (rates.size - 1)) - 1)
+        }
   }
 }

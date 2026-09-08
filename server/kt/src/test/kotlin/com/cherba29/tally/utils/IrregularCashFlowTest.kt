@@ -209,4 +209,11 @@ class IrregularCashFlowTest : DescribeSpec({
       cashFlow.weightedGainsAge() shouldBe (3.0 plusOrMinus 0.001)
     }
   }
+  describe("effectiveRateOfReturn") {
+    it("works on negative") {
+      // Need at least 5 elements to make 12 / (numElements - 1) to be fractional.
+      val changes = listOf(1.0, 1.0, 1.0, 1.0, 1.0, -1.07)
+      IrregularCashFlow.effectiveRateOfReturn(changes) shouldBe (-0.176 plusOrMinus 0.001)
+    }
+  }
 })
