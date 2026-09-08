@@ -92,9 +92,9 @@ private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boole
   budgetBuilder.addAccount(account, convertedBalances)
 
   if (data.transfersTo != null) {
-    for ((toAccountName, transfers) in data.transfersTo.entries) {
-      if (transfers == null) continue
-      for (transferData in transfers) {
+    for ((toAccountName, transfersWrapper) in data.transfersTo.entries) {
+      if (transfersWrapper?.transfers == null) continue
+      for (transferData in transfersWrapper.transfers) {
         if (transferData.grp == null) {
           throw IllegalArgumentException(
             "For account '${account.name}' transfer to '$toAccountName' does not have 'grp' field"

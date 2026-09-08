@@ -18,6 +18,7 @@ class YamlDataParser {
   init {
     module.addDeserializer(LocalDate::class.java, LocalDateDeserializer())
     module.addDeserializer(Month::class.java, MonthDeserializer())
+    module.addDeserializer(TransferDataWrapper::class.java, TransferDataWrapperDeserializer())
     mapper.registerModule(module)
     mapper.addHandler(problemHandler)
   }

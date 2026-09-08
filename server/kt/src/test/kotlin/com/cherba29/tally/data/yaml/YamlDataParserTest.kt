@@ -99,17 +99,93 @@ class YamlDataParserTest : DescribeSpec({
       data shouldBe YamlData(
         name = "test-account",
         transfersTo = mapOf(
-          "test-account2" to listOf(
+          "test-account2" to TransferDataWrapper(listOf(
             TransferYamlData(
               grp = JUN / 2026,
               date = LocalDate(2026, 6, 20),
               camt = 500.0,
               desc = "Refund"
             )
+          ))
+        )
+      )
+    }
+
+    it("with empty transfers") {
+      val relativeFilePath = Paths.get("path/file.yaml")
+      val data = yamlDataParser.parseContent(
+        """
+        name: test-account
+        transfers_to:
+          test-account2:
+      """,
+        relativeFilePath
+      )
+      data shouldBe YamlData(
+        name = "test-account",
+        transfersTo = mapOf("test-account2" to null)
+      )
+    }
+
+    it("with transfers alternative format") {
+      val relativeFilePath = Paths.get("path/file.yaml")
+      val data = yamlDataParser.parseContent(
+        """
+        name: test-account
+        transfers_to:
+          test-account2:
+            Jun2026:
+              - { date: 2026-06-20, camt: 500.0, desc: "Refund" }
+      """,
+        relativeFilePath
+      )
+      data shouldBe YamlData(
+        name = "test-account",
+        transfersTo = mapOf(
+          "test-account2" to TransferDataWrapper(listOf(
+            TransferYamlData(
+              grp = JUN / 2026,
+              date = LocalDate(2026, 6, 20),
+              camt = 500.0,
+              desc = "Refund"
+            ))
           )
         )
       )
     }
+
+    it("with transfers alternative format empty") {
+      val relativeFilePath = Paths.get("path/file.yaml")
+      val data = yamlDataParser.parseContent(
+        """
+        name: test-account
+        transfers_to:
+          test-account2:
+            Jun2026:
+      """,
+        relativeFilePath
+      )
+      data shouldBe YamlData(
+        name = "test-account",
+        transfersTo = mapOf("test-account2" to TransferDataWrapper())
+      )
+    }
+
+    it("with transfers bad entry") {
+      val relativeFilePath = Paths.get("path/file.yaml")
+      val error = shouldThrow<IllegalArgumentException> {
+        yamlDataParser.parseContent(
+          """
+        name: test-account
+        transfers_to:
+          test-account2: xyz
+      """,
+          relativeFilePath
+        )
+      }
+      error.message shouldContain "Expecting an object or array but got \"xyz\""
+    }
+
 
     it("fails with bad balance month") {
       val relativeFilePath = Paths.get("path/file.yaml")

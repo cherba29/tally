@@ -44,5 +44,5 @@ data class YamlData(
   val pswd: String? = null,
   val balances: List<BalanceYamlData>? = null,
   @param:JsonProperty("transfers_to")
-  val transfersTo: Map<String, List<TransferYamlData>?>? = null,
+  val transfersTo: Map<String, TransferDataWrapper?>? = null,
 )
