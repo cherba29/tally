@@ -30,24 +30,18 @@ Build client side:
 ```
 pnpm lib build
 pnpm client build
-pnpm apollo build
 ```
 
 ## Run
 
-### Start (nodejs) server
+### Start server
 
+and then running kotlin server via
 ```
-bazel run //server/apollo:server
-```
-
-or
-
-```
-pnpm apollo start
+TALLY_FILES=../../data TALLY_CLIENT_BUNDLE=../../bazel-bin/client/hbs ./gradlew run -t --info
 ```
 
-access server via http://localhost:4000/app
+access server via http://localhost:8080
 
 ## CLI
 

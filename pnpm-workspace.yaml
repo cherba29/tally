@@ -2,4 +2,4 @@ packages:
  - client/cli
  - client/hbs
  - lib
- - server/apollo
+ 
