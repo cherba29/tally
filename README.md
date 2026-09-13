@@ -41,7 +41,7 @@ and then running kotlin server via
 TALLY_FILES=../../data TALLY_CLIENT_BUNDLE=../../bazel-bin/client/hbs ./gradlew run -t --info
 ```
 
-access server via http://localhost:8080
+access server via http://localhost:8080 and graphql via http://localhost:8080/graphiql, and schema description at http://localhost:8080/sdl
 
 ## CLI
 

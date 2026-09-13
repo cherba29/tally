@@ -2,10 +2,12 @@ package com.cherba29.tally.utils
 
 import app.cash.turbine.test
 import app.cash.turbine.turbineScope
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.engine.coroutines.backgroundScope
 import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.toList
 import java.nio.file.Paths
@@ -14,6 +16,7 @@ import kotlin.io.path.createFile
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
 import kotlin.io.path.writeText
+import kotlin.time.Duration.Companion.milliseconds
 
 class PathWatcherTest : DescribeSpec({
   describe("empty directory") {
@@ -75,6 +78,23 @@ class PathWatcherTest : DescribeSpec({
         flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file2.yaml"), WatchResult.Action.ADD)
         flow.awaitItem() shouldBe WatchResult(folder, relativePath = null, WatchResult.Action.REPROCESS)
         targetFile.writeText("hello")
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file2.yaml"), WatchResult.Action.REPROCESS)
+        flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
+      }
+    }
+
+    it("multiple updates as one") {
+      val folder = tempdir("tally-", keepOnFailure = false).toPath()
+      val targetFile = (folder / "file2.yaml").createFile()
+
+      turbineScope {
+        val flow = folder.watchedEventFlow { true }.testIn(backgroundScope)
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file2.yaml"), WatchResult.Action.ADD)
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = null, WatchResult.Action.REPROCESS)
+        targetFile.toFile().bufferedWriter().use {
+          it.write("First line")
+          it.write("Second line")
+        }
         flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file2.yaml"), WatchResult.Action.REPROCESS)
         flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
       }

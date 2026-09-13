@@ -103,17 +103,17 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
         logger.info { "Waiting for changes to $watchedPath" }
         watcher.take()
       }
+      val updatedFolderPath = watchKeyToFolderMap[key]
       // TODO: remove this delay. Without it same modify is triggered multiple times. See discussion.
       // https://stackoverflow.com/questions/16777869/java-7-watchservice-ignoring-multiple-occurrences-of-the-same-event
       // On linux (wsl2) this can be as low as 200ms, but on macOS needed to be at least 500ms.
       delay(500.milliseconds)
 
-      val updatedFolderPath = watchKeyToFolderMap[key]
       if (updatedFolderPath != null) {
         for (event in key.pollEvents()) {
           val filePath = updatedFolderPath / (event.context() as Path)  // Relative to watched root path.
           if (filePathFilter(filePath)) {
-            logger.info { "$ANSI_YELLOW$filePath$ANSI_RESET for event ${event.kind()}" }
+            logger.info { "$ANSI_YELLOW$filePath$ANSI_RESET for event ${event.kind()} count=${event.count()}" }
             when (event.kind()) {
               StandardWatchEventKinds.ENTRY_CREATE -> {
                 val fullPath = watchedPath / filePath
