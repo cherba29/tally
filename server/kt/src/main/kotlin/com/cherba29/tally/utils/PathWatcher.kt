@@ -1,6 +1,7 @@
 package com.cherba29.tally.utils
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CoroutineScope
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.StandardWatchEventKinds
@@ -12,15 +13,21 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.walk
 import kotlin.io.path.relativeTo
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.channelFlow
+
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
+import java.io.File
 import java.io.IOException
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.pathString
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -93,10 +100,14 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
     it.register(watcher,*eventsToWatch) to watchedPath.relativize(it)
   }
 
+  // Stores references to active background checks to avoid spawning duplicate coroutines for the same file
+  val activeChecks = ConcurrentHashMap<Path, Job>()
+  // Create a scope specifically for handling background file-settling tasks
+  val watcherScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
   val rootPath = this
-  return flow {
+  return channelFlow {
     // Emit existing files.
-    scan(filePathFilter).forEach { emit(it) }
+    scan(filePathFilter).forEach { send(it) }
 
     while (currentCoroutineContext().isActive) {
       val key: WatchKey = runInterruptible(Dispatchers.IO) {
@@ -104,11 +115,10 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
         watcher.take()
       }
       val updatedFolderPath = watchKeyToFolderMap[key]
-      // TODO: remove this delay. Without it same modify is triggered multiple times. See discussion.
-      // https://stackoverflow.com/questions/16777869/java-7-watchservice-ignoring-multiple-occurrences-of-the-same-event
-      // On linux (wsl2) this can be as low as 200ms, but on macOS needed to be at least 500ms.
-      delay(500.milliseconds)
-
+      // Optional brief delay to let OS complete multi-part flush operations.
+      // This almost eliminates multiple modify events for same file,
+      // the rest is taken care of by stability check.
+      delay(50)
       if (updatedFolderPath != null) {
         for (event in key.pollEvents()) {
           val filePath = updatedFolderPath / (event.context() as Path)  // Relative to watched root path.
@@ -123,13 +133,13 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
                   // We added new directory, it can already contain files in it, so scan and emit them.
                   fullPath.scan(filePathFilter).forEach {
                     if (it.relativePath != null) {
-                      emit(WatchResult(rootPath, filePath / it.relativePath, WatchResult.Action.ADD))
+                      send(WatchResult(rootPath, filePath / it.relativePath, WatchResult.Action.ADD))
                     } else { // Emit end of scan event.
-                      emit(WatchResult(rootPath, null, WatchResult.Action.REPROCESS))
+                      send(WatchResult(rootPath, null, WatchResult.Action.REPROCESS))
                     }
                   }
                 } else {
-                  emit(WatchResult(rootPath, filePath, WatchResult.Action.REPROCESS))
+                  send(WatchResult(rootPath, filePath, WatchResult.Action.REPROCESS))
                 }
               }
               StandardWatchEventKinds.ENTRY_DELETE -> {
@@ -137,17 +147,33 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
                 if (fullPath.isDirectory()) {
                   TODO("Handle directory delete")
                 } else {
-                  emit(WatchResult(rootPath, filePath, WatchResult.Action.REMOVE))
+                  send(WatchResult(rootPath, filePath, WatchResult.Action.REMOVE))
                 }
               }
               StandardWatchEventKinds.ENTRY_MODIFY -> {
-                emit(WatchResult(rootPath, filePath, WatchResult.Action.REPROCESS))
+                //emit(WatchResult(rootPath, filePath, WatchResult.Action.REPROCESS))
+                val fullPath = watchedPath / filePath
+                val file = fullPath.toFile()
+                if (file.exists() && file.isFile) {
+                  // If we are already waiting for this file to settle, cancel the old check
+                  // and restart the timer (Debounce/Settle mechanism)
+                  activeChecks[fullPath]?.cancel()
+
+                  // Launch a non-blocking job to monitor stability
+                  activeChecks[fullPath] = watcherScope.launch {
+                    if (waitForFileToSettle(file)) {
+                      send(WatchResult(rootPath, filePath, WatchResult.Action.REPROCESS))
+                    }
+                    activeChecks.remove(fullPath) // Clean up tracking map
+                  }
+                }
+
               }
               StandardWatchEventKinds.OVERFLOW -> {
                 // This can happen if watcher event queue gets overflows. In that case just rescan everything.
                 logger.warn { "Filesystem event overflow at $rootPath, rescanning..." }
-                emit(WatchResult(rootPath, null, WatchResult.Action.REMOVE_ALL))
-                scan(filePathFilter).forEach { emit(it) }
+                send(WatchResult(rootPath, null, WatchResult.Action.REMOVE_ALL))
+                scan(filePathFilter).forEach { send(it) }
               }
               else -> {
                 throw IllegalStateException("Unknown event ${event.kind()} for $filePath")
@@ -163,6 +189,39 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
   }.onCompletion {
     logger.info { "Closing watcher for path '$rootPath'"}
     watcher.close()
+    activeChecks.forEach { it.value.cancel() }
+  }
+}
+
+private suspend fun waitForFileToSettle(file: File): Boolean {
+  var lastSize = -1L
+  var currentSize = file.length()
+  val checkInterval = 200.milliseconds // Time to wait between checks
+  val maxWaitAttempts = 15   // Prevents infinite loops if a file is permanently locked
+
+  var attempts = 0
+  while (currentSize != lastSize && attempts < maxWaitAttempts) {
+    lastSize = currentSize
+    delay(checkInterval) // Suspend thread safely, letting other tasks run
+
+    if (!file.exists()) return false // File was deleted or moved mid-write
+    currentSize = file.length()
+    attempts++
+  }
+  if (currentSize != lastSize) {
+    throw IllegalStateException("File $file never settled after ${checkInterval*maxWaitAttempts}")
+  }
+
+  // Final sanity check: try to open it briefly to verify exclusive write lock is released
+  return isFileAccessible(file)
+}
+
+private fun isFileAccessible(file: File): Boolean {
+  return try {
+    // Attempt to open in read/write mode. If OS flush is incomplete, this will throw an IOException
+    java.io.RandomAccessFile(file, "rw").use { true }
+  } catch (_: Exception) {
+    throw IllegalStateException("File $file is not accessible")
   }
 }
 
