@@ -280,7 +280,27 @@
     weightedAge: 1.0
     unaccounted: 0
 
-╔═ with single transaction statement ═╗
+╔═ with single transaction statement/for account ═╗
+- months:
+  - Mar2026
+  data:
+  - internalTransfers: -50
+    externalTransfers: 0
+    totalMonthTransfers: -50
+    totalInternalTransfers: -50
+    totalInternalTransfersPrct: 100.0
+    totalInternalTransfersAnnualPrct: 0.0
+    weightedInternalAge: 0.0
+    totalExternalTransfers: 0
+    totalExternalTransfersPrct: -0.0
+    totalExternalTransfersAnnualPrct: 0.0
+    weightedExternalAge: 0.0
+    totalTransfers: -50
+    totalAnnualPrct: 0.0
+    weightedAge: -0.0
+    unaccounted: 100
+
+╔═ with single transaction statement/for summary ═╗
 - months:
   - Mar2026
   data:

@@ -76,11 +76,14 @@ class SummaryService(val loader: Loader) : Query {
         val treeNode = budget.tree[treePath]
           ?: throw NotFoundException("'$accountPath' not found.")
 
-        val account = treeNode.data.account
-          ?: throw IllegalStateException("Could not find account for $accountPath")
         val monthlyStatements = budget.nodeToStatement[treeNode]
           ?: throw IllegalStateException("Could not find statements for $accountPath")
-        val ascMonthList = monthlyStatements.filter { !account.isClosed(it.key) }.keys.sorted()
+        val ascMonthList = monthlyStatements.filter {
+          !budget.isClosed(treeNode,it.key)
+        }.keys.sorted()
+        if (ascMonthList.isEmpty()) {
+          throw NotFoundException("Could not any non-closed statements for $accountPath between $startMonth..$endMonth")
+        }
         val summaries = mutableMapOf<Month, GqlMonthTransferSummary>()
 
         val cashFlow = IrregularCashFlow()

@@ -298,8 +298,16 @@ class SummaryServiceTest : DescribeSpec({
         endMonth = MAR / 2026,
         accountPath = "john/internal/test-account1"
       )
-      expectSelfie(data.toSnapshot()).toMatchDisk()
+      expectSelfie(data.toSnapshot()).toMatchDisk("for account")
+
+      val dataInternal = SummaryService(loader).transfersSummary(
+        startMonth = MAR / 2026,
+        endMonth = MAR / 2026,
+        accountPath = "john/internal"
+      )
+      expectSelfie(data.toSnapshot()).toMatchDisk("for summary")
     }
+
     it("transfers summary multiple months") {
       val account1 = Account("test-account1", owners = setOf("john"), path = listOf("internal"), openedOn = FEB / 2026)
       val account2 = Account("test-account2", owners = setOf("john"), path = listOf("external"), openedOn = MAR / 2026)
