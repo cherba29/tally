@@ -2,8 +2,7 @@ package com.cherba29.tally.cli.cmds
 
 import com.cherba29.tally.core.Month
 import com.jsoizo.kotlincsv.csvReader
-import com.jsoizo.kotlincsv.reader.ExcessFieldsRowBehaviour
-import com.jsoizo.kotlincsv.reader.readFromFile
+import com.jsoizo.kotlincsv.reader.read
 import com.jsoizo.kotlincsv.reader.withHeader
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
@@ -25,14 +24,12 @@ class CsvToTransfers : CliktCommand("csv-to-transfers") {
 
   override fun run() {
     echo("Converting csv '$csvPath' to transfers")
+    val cleanedCsv = csvPath.toFile().useLines { lines ->
+      lines.joinToString("\n") { fixUnquotedAmounts(it) }
+    }
     val data = csvReader {
       skipEmptyLine = true
-      // TODO: remove and fix csv parsing.
-      // Some CSV files have column values like '$ -1,385.21' which breaks the csv parser
-      // given that there is a comma in the middle of the number. Later '$' also breaks
-      // conversion into number.
-      excessFieldsRowBehaviour = ExcessFieldsRowBehaviour.IGNORE
-    }.readFromFile(csvPath.toString()) { rows ->
+    }.read(cleanedCsv.byteInputStream()) { rows ->
       val records = rows.withHeader()
       val data = mutableMapOf<String, MutableList<String>>()
       for (record in records) {
@@ -81,6 +78,47 @@ class CsvToTransfers : CliktCommand("csv-to-transfers") {
   }
 
   companion object {
+    private val unquotedAmountRegex = Regex(
+      """(?<=^|,)\s*([+-]?\s*\$?\s*[+-]?\s*\d{1,3}(?:,\d{3})+(?:\.\d+)?)\s*(?=,|$)"""
+    )
+
+    fun fixUnquotedAmounts(line: String): String {
+      if (!line.contains(',')) return line
+      val sb = StringBuilder()
+      var inQuotes = false
+      var segmentStart = 0
+      var i = 0
+      while (i < line.length) {
+        val c = line[i]
+        if (c == '"') {
+          if (inQuotes) {
+            if (i + 1 < line.length && line[i + 1] == '"') {
+              i += 2
+              continue
+            }
+            sb.append(line.substring(segmentStart, i + 1))
+            inQuotes = false
+            segmentStart = i + 1
+          } else {
+            val unquotedSegment = line.substring(segmentStart, i)
+            sb.append(unquotedSegment.replace(unquotedAmountRegex) { "\"${it.value.trim()}\"" })
+            inQuotes = true
+            segmentStart = i
+          }
+        }
+        i++
+      }
+      if (segmentStart < line.length) {
+        val remaining = line.substring(segmentStart)
+        if (inQuotes) {
+          sb.append(remaining)
+        } else {
+          sb.append(remaining.replace(unquotedAmountRegex) { "\"${it.value.trim()}\"" })
+        }
+      }
+      return sb.toString()
+    }
+
     fun String.asAmount() = this.replace(Regex("[$,\\s]+"), "").toFloatOrNull()
     data class CsvMetadata(
       val name: String,

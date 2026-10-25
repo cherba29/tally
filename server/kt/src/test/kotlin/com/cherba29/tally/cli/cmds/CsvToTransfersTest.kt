@@ -20,6 +20,32 @@ class CsvToTransfersTest : DescribeSpec({
       command.commandName shouldBe "csv-to-transfers"
     }
   }
+
+  describe("fixUnquotedAmounts") {
+    it("quotes unquoted amounts with commas") {
+      CsvToTransfers.fixUnquotedAmounts(
+        """Cleared,10/14/2026,"ONLINE PAYMENT, THANK YOU",, -$ 1,839.72,John B"""
+      ) shouldBe """Cleared,10/14/2026,"ONLINE PAYMENT, THANK YOU",,"-$ 1,839.72",John B"""
+
+      CsvToTransfers.fixUnquotedAmounts(
+        """Cleared,07/17/2025,"COSTCO WHSE",$ -1,385.21,,JOHN"""
+      ) shouldBe """Cleared,07/17/2025,"COSTCO WHSE","$ -1,385.21",,JOHN"""
+
+      CsvToTransfers.fixUnquotedAmounts(
+        """Cleared,07/17/2025,"COSTCO WHSE",$ 1,385.21,,JOHN"""
+      ) shouldBe """Cleared,07/17/2025,"COSTCO WHSE","$ 1,385.21",,JOHN"""
+
+      CsvToTransfers.fixUnquotedAmounts(
+        """Cleared,07/17/2025,"COSTCO WHSE",1,385.21,,JOHN"""
+      ) shouldBe """Cleared,07/17/2025,"COSTCO WHSE","1,385.21",,JOHN"""
+    }
+
+    it("leaves already quoted amounts and descriptions untouched") {
+      val line = """Cleared,10/14/2026,"ONLINE PAYMENT, THANK YOU",,"$ -1,385.21",John B"""
+      CsvToTransfers.fixUnquotedAmounts(line) shouldBe line
+    }
+  }
+
   describe("runs") {
     it("fails on file empty") {
       val csvPath = (tempdir("tally-", keepOnFailure = false).toPath()
@@ -63,6 +89,36 @@ class CsvToTransfersTest : DescribeSpec({
         Detected source: costco
         Detected month: Jul2025
             - { grp: Jul2025, date: 2025-07-17, camt:    2.12, desc: "COSTCO WHSE#5 JOHNSVILLECA" }
+
+      """.trimIndent()
+      result.statusCode shouldBe 0
+    }
+
+    it("converts citi costco with amount with comma") {
+      val csvPath = (tempdir("tally-", keepOnFailure = false).toPath()
+          / "transactions.csv").createFile()
+
+      csvPath.writeText(
+        """
+          Status,Date,Description,Debit,Credit,Member Name
+          Cleared,07/17/2025,"COSTCO WHSE#5 JOHNSVILLECA",$ 1,385.21,,JOHN
+          Cleared,07/16/2025,"ONLINE PAYMENT, THANK YOU",, -$ 1,839.72,JOHN
+        """.trimIndent()
+      )
+
+      val command = CsvToTransfers()
+
+      val result = command.test(
+        listOf("--csv-file=$csvPath")
+      )
+      result.stderr shouldBe ""
+      result.stdout shouldBe """
+        Converting csv '$csvPath' to transfers
+        {Status=Cleared, Date=07/17/2025, Description=COSTCO WHSE#5 JOHNSVILLECA, Debit=$ 1,385.21, Credit=, Member Name=JOHN}
+        {Status=Cleared, Date=07/16/2025, Description=ONLINE PAYMENT, THANK YOU, Debit=, Credit=-$ 1,839.72, Member Name=JOHN}
+        Detected source: costco
+        Detected month: Jul2025
+            - { grp: Jul2025, date: 2025-07-17, camt: 1385.21, desc: "COSTCO WHSE#5 JOHNSVILLECA" }
 
       """.trimIndent()
       result.statusCode shouldBe 0
