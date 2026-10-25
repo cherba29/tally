@@ -94,41 +94,40 @@ private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boole
   if (data.transfersTo != null) {
     for ((toAccountName, transfersWrapper) in data.transfersTo.entries) {
       if (transfersWrapper?.transfers == null) continue
-      for (transferData in transfersWrapper.transfers) {
-        if (transferData.grp == null) {
+      for ((transferMonth, date, camt, pamt, desc, tags) in transfersWrapper.transfers) {
+        if (transferMonth == null) {
           throw IllegalArgumentException(
             "For account '${account.name}' transfer to '$toAccountName' does not have 'grp' field"
           )
         }
-        if (transferData.date == null) {
+        if (date == null) {
           throw IllegalArgumentException(
             "For account '${account.name}' transfer to '$toAccountName' does not have a valid 'date' field"
           )
         }
         var balance: Balance? = null
-        if (transferData.pamt != null) {
+        if (pamt != null) {
           balance = Balance(
-            (100 * transferData.pamt).roundToLong(),
-            transferData.date,
+            (100 * pamt).roundToLong(),
+            date,
             Balance.Type.PROJECTED
           )
-        } else if (transferData.camt != null) {
+        } else if (camt != null) {
           balance = Balance(
-            (100 * transferData.camt).roundToLong(),
-            transferData.date,
+            (100 * camt).roundToLong(),
+            date,
             Balance.Type.CONFIRMED
           )
         }
         if (balance == null) {
           throw IllegalArgumentException(
             "For account '${account.name}' transfer to '$toAccountName' " +
-                "for ${transferData.grp} ${transferData.date} " +
+                "for $transferMonth $date " +
                 "does not have 'pamt' or 'camt' field"
           )
         }
 
         // TODO: move logical inconsistency checks into budget builder.
-        val transferMonth = transferData.grp
         val balanceMonth = Month.fromDate(balance.date)
         if (abs(balanceMonth - transferMonth) > 2) {
           throw IllegalArgumentException(
@@ -141,8 +140,8 @@ private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boole
           toAccountName,
           transferMonth,
           balance,
-          transferData.desc,
-          transferData.tags ?: listOf()
+          desc,
+          tags ?: listOf()
         )
       }
     }

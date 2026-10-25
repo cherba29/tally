@@ -2,6 +2,7 @@ package com.cherba29.tally.cli.cmds
 
 import com.cherba29.tally.core.Month
 import com.jsoizo.kotlincsv.csvReader
+import com.jsoizo.kotlincsv.reader.ExcessFieldsRowBehaviour
 import com.jsoizo.kotlincsv.reader.readFromFile
 import com.jsoizo.kotlincsv.reader.withHeader
 import com.github.ajalt.clikt.core.CliktCommand
@@ -14,6 +15,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format.byUnicodePattern
 import kotlinx.datetime.number
 import java.nio.file.Path
+import kotlin.text.replace
 
 class CsvToTransfers : CliktCommand("csv-to-transfers") {
   override fun help(context: Context) = "Convert give csv file to list of transfers"
@@ -25,6 +27,11 @@ class CsvToTransfers : CliktCommand("csv-to-transfers") {
     echo("Converting csv '$csvPath' to transfers")
     val data = csvReader {
       skipEmptyLine = true
+      // TODO: remove and fix csv parsing.
+      // Some CSV files have column values like '$ -1,385.21' which breaks the csv parser
+      // given that there is a comma in the middle of the number. Later '$' also breaks
+      // conversion into number.
+      excessFieldsRowBehaviour = ExcessFieldsRowBehaviour.IGNORE
     }.readFromFile(csvPath.toString()) { rows ->
       val records = rows.withHeader()
       val data = mutableMapOf<String, MutableList<String>>()
@@ -62,8 +69,9 @@ class CsvToTransfers : CliktCommand("csv-to-transfers") {
 
     for ((i, date) in dates.withIndex()) {
       val description = descriptions[i]
-      val amount = amountFactor * (debits[i].toFloatOrNull() ?: (credits[i].toFloatOrNull()) ?:
-        throw IllegalArgumentException("'Credit' or 'Debit' field is not set on row $i for date $date"))
+      val amount = amountFactor * (debits[i].asAmount() ?: (credits[i].asAmount()) ?:
+        throw IllegalArgumentException("'Credit' or 'Debit' field is not set on row $i for date $date"
+        + " debit='${debits[i]}' credit='${credits[i]}'"))
 
       if (amount < 0 && description.contains("payment", ignoreCase = true)) {
         continue
@@ -73,6 +81,7 @@ class CsvToTransfers : CliktCommand("csv-to-transfers") {
   }
 
   companion object {
+    fun String.asAmount() = this.replace(Regex("[$,\\s]+"), "").toFloatOrNull()
     data class CsvMetadata(
       val name: String,
       val fields: Set<String>,

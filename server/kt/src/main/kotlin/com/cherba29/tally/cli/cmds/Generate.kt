@@ -99,9 +99,9 @@ class Generate : CliktCommand() {
       }
       val transfers = currentStatement?.transactions ?: listOf()
       if (showTransfers) {
-        for (transfer in transfers) {
+        for ((targetTreeNode, balance) in transfers) {
           lines.add(
-            "    $currentMonth $account --> ${transfer.targetTreeNode.name} ${-transfer.balance}"
+            "    $currentMonth $account --> ${targetTreeNode.name} ${-balance}"
           )
         }
       }

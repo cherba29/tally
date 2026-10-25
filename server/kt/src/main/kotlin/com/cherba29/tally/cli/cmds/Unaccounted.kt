@@ -90,15 +90,15 @@ class Unaccounted : CliktCommand() {
         abs((b.statement.unaccounted ?: 0) / 100).compareTo(a.statement.transactions.size)
       } else b.statement.transactions.size.compareTo(abs((a.statement.unaccounted) / 100))
     }
-    for (entry in unaccountedEntries.slice(0..< min(unaccountedEntries.size, limit))) {
-      val unaccountedValue = if (entry.statement.unaccounted != null && entry.statement.unaccounted != 0L) {
-        entry.statement.unaccounted.asAmount().padStart(10)
+    for ((treeNode, statement) in unaccountedEntries.slice(0..< min(unaccountedEntries.size, limit))) {
+      val unaccountedValue = if (statement.unaccounted != null && statement.unaccounted != 0L) {
+        statement.unaccounted.asAmount().padStart(10)
       } else {
         "---"
       }
-      val numTransfers = entry.statement.transactions.size
+      val numTransfers = statement.transactions.size
       echo(
-        "${entry.statement.monthRange.first} $unaccountedValue ${entry.treeNode.name} $numTransfers transfers"
+        "${statement.monthRange.first} $unaccountedValue ${treeNode.name} $numTransfers transfers"
       )
     }
   }

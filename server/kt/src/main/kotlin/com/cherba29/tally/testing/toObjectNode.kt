@@ -19,45 +19,6 @@ import com.cherba29.tally.statement.TransactionStatement
 import com.fasterxml.jackson.databind.node.ObjectNode
 import kotlin.math.absoluteValue
 
-fun Account.toObjectNode(root: ObjectNode) {
-  root.put("__type", this.javaClass.simpleName)
-  root.put("name", name)
-  if (path.isNotEmpty()) {
-    val pathNode = root.putArray("path")
-    path.forEach { pathNode.add(it) }
-  }
-  if (owners.isNotEmpty()) {
-    val ownersNode = root.putArray("owner")
-    owners.forEach { ownersNode.add(it) }
-  }
-  if (description != null) {
-    root.put("desc", description)
-  }
-  if (number != null) {
-    root.put("number", number)
-  }
-  root.put("openedOn", openedOn.toString())
-
-  if (closedOn != null) {
-    root.put("closedOn", closedOn.toString())
-  }
-  if (url != null) {
-    root.put("url", url)
-  }
-  if (address != null) {
-    root.put("address", address)
-  }
-  if (phone != null) {
-    root.put("phone", phone)
-  }
-  if (userName != null) {
-    root.put("userName", userName)
-  }
-  if (password != null) {
-    root.put("password", password)
-  }
-}
-
 fun Statement.toObjectNode(root: ObjectNode, isClosed: Boolean) {
   root.put("__type", "Statement")
   root.put("months", monthRange.toString())

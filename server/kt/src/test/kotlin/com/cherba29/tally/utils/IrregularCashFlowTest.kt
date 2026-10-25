@@ -43,7 +43,7 @@ class IrregularCashFlowTest : DescribeSpec({
       cashFlow.add(10, 0)
       // 110/110 = 1.
       cashFlow.effectiveRateOfReturnOnContributions() shouldBe 0.0
-      // 110 / 100 = 1.1 over 1 periods 1.1^(12/1)-1 = 2.138.
+      // 110 / 100 = 1.1 over 1 period 1.1^(12/1)-1 = 2.138.
       cashFlow.effectiveRateOfReturnOnGains() shouldBe (2.138 plusOrMinus 0.001)
       cashFlow.effectiveRateOfReturn() shouldBe (2.138 plusOrMinus 0.001)
     }

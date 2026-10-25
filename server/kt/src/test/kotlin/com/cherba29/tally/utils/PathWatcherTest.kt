@@ -2,12 +2,10 @@ package com.cherba29.tally.utils
 
 import app.cash.turbine.test
 import app.cash.turbine.turbineScope
-import io.github.oshai.kotlinlogging.KotlinLogging
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.engine.coroutines.backgroundScope
 import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.shouldBe
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.toList
 import java.nio.file.Paths
@@ -16,7 +14,6 @@ import kotlin.io.path.createFile
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
 import kotlin.io.path.writeText
-import kotlin.time.Duration.Companion.milliseconds
 
 class PathWatcherTest : DescribeSpec({
   describe("empty directory") {

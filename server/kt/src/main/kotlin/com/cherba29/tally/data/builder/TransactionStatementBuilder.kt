@@ -53,9 +53,10 @@ class TransactionStatementBuilder {
       && startBalance != null
       && firstTransaction.balance.date < startBalance!!.date) {
       throw IllegalStateException(
-        "$month $startBalance starts after its first " +
-            "transfer to ${firstTransaction.targetTreeNode.pathString} " +
-            "for amount of ${firstTransaction.balance} desc '${firstTransaction.description}'"
+        "In transaction statement for $month which starts ${startBalance?.date} first transaction " +
+            "is too early on ${firstTransaction.balance.date} for amount of ${firstTransaction.balance} " +
+            "desc '${firstTransaction.description}' to ${firstTransaction.targetTreeNode.pathString} "
+
       )
     }
 

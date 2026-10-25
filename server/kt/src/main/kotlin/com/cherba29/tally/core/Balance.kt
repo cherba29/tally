@@ -12,10 +12,8 @@ data class Balance(
   val description: String = "",
 ) : Comparable<Balance> {
   enum class Type(val id: String) {
-    UNKNOWN("UNKNOWN"),
     CONFIRMED("CONFIRMED"),
-    PROJECTED("PROJECTED"),
-    AUTO_PROJECTED("AUTO_PROJECTED");
+    PROJECTED("PROJECTED");
 
     companion object {
       fun combineTypes(t1: Type, t2: Type): Type = if (t1.ordinal < t2.ordinal) t2 else t1
@@ -61,18 +59,6 @@ data class Balance(
 
     fun projected(amount: Long, date: String): Balance {
       return Balance(amount, LocalDate.parse(date), Type.PROJECTED)
-    }
-
-    fun pickMinDate(first: Balance?, second: Balance?): Balance? {
-      if (first == null) return second
-      if (second == null) return first
-      return if (first.date > second.date) second else first
-    }
-
-    fun pickMaxDate(first: Balance?, second: Balance?): Balance? {
-      if (first == null) return second
-      if (second == null) return first
-      return if (first.date > second.date) first else second
     }
   }
 }

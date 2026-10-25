@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
@@ -115,10 +116,10 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
         watcher.take()
       }
       val updatedFolderPath = watchKeyToFolderMap[key]
-      // Optional brief delay to let OS complete multi-part flush operations.
+      // Optional brief delay to let OS complete multipart flush operations.
       // This almost eliminates multiple modify events for same file,
       // the rest is taken care of by stability check.
-      delay(50)
+      delay(50.milliseconds)
       if (updatedFolderPath != null) {
         for (event in key.pollEvents()) {
           val filePath = updatedFolderPath / (event.context() as Path)  // Relative to watched root path.
@@ -129,7 +130,10 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
                 val fullPath = watchedPath / filePath
                 if (fullPath.isDirectory()) {
                   logger.info { "Registering new directory $fullPath" }
-                  watchKeyToFolderMap[fullPath.register(watcher, *eventsToWatch)] = filePath
+                  val key = withContext(Dispatchers.IO) {
+                    fullPath.register(watcher, *eventsToWatch)
+                  }
+                  watchKeyToFolderMap[key] = filePath
                   // We added new directory, it can already contain files in it, so scan and emit them.
                   fullPath.scan(filePathFilter).forEach {
                     if (it.relativePath != null) {
@@ -188,7 +192,9 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
     }
   }.onCompletion {
     logger.info { "Closing watcher for path '$rootPath'"}
-    watcher.close()
+    withContext(Dispatchers.IO) {
+      watcher.close()
+    }
     activeChecks.forEach { it.value.cancel() }
   }
 }
@@ -233,8 +239,8 @@ private val eventsToWatch = arrayOf(
 )
 private val ignorePathRegex = Regex("(^_)|(/_)")
 private const val ANSI_RESET = "\u001B[0m"
-private const val ANSI_RED = "\u001B[31m"
-private const val ANSI_GREEN = "\u001B[32m"
+// private const val ANSI_RED = "\u001B[31m"
+// private const val ANSI_GREEN = "\u001B[32m"
 private const val ANSI_YELLOW = "\u001B[33m"
-private const val ANSI_BLUE = "\u001B[34m"
+// private const val ANSI_BLUE = "\u001B[34m"
 private val logger = KotlinLogging.logger {}

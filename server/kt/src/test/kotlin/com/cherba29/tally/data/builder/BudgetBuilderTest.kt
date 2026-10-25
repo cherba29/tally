@@ -305,9 +305,9 @@ class BudgetBuilderTest : DescribeSpec({
               )
             }
           }
-        exception.message shouldBe "Dec2019 Balance { amount: 10.00, date: 2019-12-01, type: CONFIRMED } " +
-            "starts after its first transfer to john/external/test-account1 " +
-            "for amount of Balance { amount: -20.00, date: 2019-11-25, type: PROJECTED } desc 'First transfer'"
+        exception.message shouldBe "In transaction statement for Dec2019 which starts 2019-12-01 first transaction " +
+            "is too early on 2019-11-25 for amount of Balance { amount: -20.00, date: 2019-11-25, type: PROJECTED } " +
+            "desc 'First transfer' to john/external/test-account1 "
       }
       it("transfer during closed month") {
         val path1 = listOf("john", "external", "test-account1")

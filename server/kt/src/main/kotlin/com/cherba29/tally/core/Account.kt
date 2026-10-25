@@ -28,7 +28,7 @@ data class Account(
   val address: String? = null,
   // Phone number for customer support.
   val phone: String? = null,
-  // Username/password to use to login to the account.
+  // Username/password to use to log in to the account.
   val userName: String? = null,
   val password: String? = null,
   // Day when statement closes for this account.
@@ -37,7 +37,6 @@ data class Account(
   override fun toString(): String = "Account $name /${path.joinToString("/")}${if (closedOn == null) "" else " Closed $closedOn"}"
 
   val isExternal = path.contains(EXTERNAL_NAME)
-  val isInactive = path.contains(INACTIVE_NAME)
 
   fun isClosed(month: Month): Boolean {
     return (closedOn != null) && (closedOn < month) || // After closed.

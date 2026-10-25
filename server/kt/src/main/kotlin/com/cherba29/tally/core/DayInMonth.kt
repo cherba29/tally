@@ -8,7 +8,7 @@ sealed interface DayInMonth : Comparable<DayInMonth>  {
 
   @JvmInline value class AbsoluteDay(val value: Int): DayInMonth
   @JvmInline value class RelativeDay(val value: Relative): DayInMonth
-  class Unknown(): DayInMonth {
+  class Unknown: DayInMonth {
     override fun equals(other: Any?): Boolean {
       if (this === other) return true
       if (other !is Unknown) return false

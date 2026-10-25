@@ -27,9 +27,7 @@ class MonthRangeSummaryStatementBuilder {
   }
 
   fun build(): SummaryStatement {
-    val accumulatedMonthRange: MonthRange? = nodeMonthStatementMap.values
-      .map { it.keys }
-      .flatten()
+    val accumulatedMonthRange: MonthRange? = nodeMonthStatementMap.values.flatMap { it.keys }
       .fold(null as MonthRange?) { acc, elem -> acc + elem }
     return MonthSummaryStatementBuilder.builder {
       for ((stmtTreeNode, monthStatementMap) in nodeMonthStatementMap) {
@@ -51,10 +49,10 @@ class MonthRangeSummaryStatementBuilder {
       val firstStmt = statements[monthRange.first.previous()]
       val lastStmt = statements[monthRange.last.next()]
 
-      val startBalance: Balance? = firstStmt?.endBalance
+      val startBalance: Balance = firstStmt?.endBalance
         ?: (statements[monthRange.first]?.startBalance
           ?: Balance(0, monthRange.first.toDate(), Balance.Type.PROJECTED))
-      val endBalance: Balance? = lastStmt?.startBalance
+      val endBalance: Balance = lastStmt?.startBalance
         ?: (statements[monthRange.last]?.endBalance
           ?: Balance(0, monthRange.last.next().toDate(), Balance.Type.PROJECTED))
 

@@ -86,7 +86,7 @@ class BudgetBuilder {
 
   private val processedPath = mutableSetOf<List<String>>()
   fun setAccount(fullPath: List<String>, account: Account): BudgetBuilder {
-    for (i in 0..fullPath.lastIndex) {
+    for (i in fullPath.indices) {
       val subPath = fullPath.subList(0, i)
       if (processedPath.add(subPath)) {
         treeNodeBuilder.addPath(
@@ -178,68 +178,68 @@ class BudgetBuilder {
 
     val cachedNameToTreenodeMap = mutableMapOf<String, TreeNode.Leaf<Profile>>()
 
-    for (transferRecord in transferRecordList) {
-      val toAccountNode = cachedNameToTreenodeMap.getOrPut(transferRecord.toAccountName) {
-        val toAccounts = pathToAccount.keys.filter { it.last() == transferRecord.toAccountName }
+    for ((toAccountName, fromAccountPath, month, balance, description) in transferRecordList) {
+      val toAccountNode = cachedNameToTreenodeMap.getOrPut(toAccountName) {
+        val toAccounts = pathToAccount.keys.filter { it.last() == toAccountName }
         if (toAccounts.isEmpty()) {
           throw IllegalArgumentException(
-            "Unknown to account ${transferRecord.toAccountName} in " +
-                "${transferRecord.fromAccountPath.joinToString("/")}, " +
+            "Unknown to account $toAccountName in " +
+                "${fromAccountPath.joinToString("/")}, " +
                 "known accounts\n${treeRoot.toPrettyString()}"
           )
         } else if (toAccounts.size > 1) {
           throw IllegalArgumentException(
-            "Ambiguous transfer from ${transferRecord.fromAccountPath.joinToString("/")} to " +
-                "${transferRecord.toAccountName}, found multiple candidate accounts " +
+            "Ambiguous transfer from ${fromAccountPath.joinToString("/")} to " +
+                "$toAccountName, found multiple candidate accounts " +
                 toAccounts.joinToString { it.joinToString("/") })
         }
 
         treeRoot[toAccounts.first()] as? TreeNode.Leaf
           ?: throw IllegalStateException("Unknown account path ${toAccounts.first().joinToString("/")}")
       }
-      val fromAccountNode = treeRoot[transferRecord.fromAccountPath] as? TreeNode.Leaf ?: throw IllegalArgumentException(
-        "Unknown account ${transferRecord.fromAccountPath.joinToString("/")}"
+      val fromAccountNode = treeRoot[fromAccountPath] as? TreeNode.Leaf ?: throw IllegalArgumentException(
+        "Unknown account ${fromAccountPath.joinToString("/")}"
       )
 
       val fromOwner = fromAccountNode.top.name
       val toOwner = toAccountNode.top.name
       if (fromOwner != toOwner) {
         logger.warn {
-          "WARNING: Transaction in ${transferRecord.month} has " +
+          "WARNING: Transaction in $month has " +
               "to account ${toAccountNode.name} from ${fromAccountNode.name} with different owners " +
               "$fromOwner vs $toOwner"
         }
       }
       val fromAccount = fromAccountNode.data.account
         ?: throw java.lang.IllegalStateException("Node ${fromAccountNode.pathString} has no matching account entry")
-      if (fromAccount.isClosed(transferRecord.month)) {
+      if (fromAccount.isClosed(month)) {
         throw IllegalArgumentException(
           "Account ${fromAccountNode.pathString} " +
-              "has transfer during closed month ${transferRecord.month} to ${toAccountNode.pathString}"
+              "has transfer during closed month $month to ${toAccountNode.pathString}"
         )
       }
       val toAccount = toAccountNode.data.account
         ?: throw java.lang.IllegalStateException("Node ${toAccountNode.pathString} has no matching account entry")
-      if (toAccount.isClosed(transferRecord.month)) {
+      if (toAccount.isClosed(month)) {
         throw IllegalArgumentException(
           "Account ${toAccountNode.pathString} " +
-              "has transfer during closed month ${transferRecord.month} from ${fromAccountNode.pathString}"
+              "has transfer during closed month $month from ${fromAccountNode.pathString}"
         )
       }
 
       (statementBuilders[fromAccountNode] ?: throw IllegalStateException()).addTransfer(
           fromAccountNode,
           toAccountNode,
-          transferRecord.month,
-          -transferRecord.balance,
-          transferRecord.description
+          month,
+          -balance,
+          description
         )
       (statementBuilders[toAccountNode] ?: throw IllegalStateException()).addTransfer(
           toAccountNode,
           fromAccountNode,
-          transferRecord.month,
-          transferRecord.balance,
-          transferRecord.description
+          month,
+          balance,
+          description
         )
     }
     return statementBuilders.mapValues {

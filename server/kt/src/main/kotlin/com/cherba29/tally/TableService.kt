@@ -42,7 +42,7 @@ class TableService(val loader: Loader) : Query {
       }
       val owners = payload.tree.children.map { it.name }.sorted()
       val forOwner = if (owner.isNullOrEmpty()) {
-        owners.firstOrNull { !it.isEmpty() }
+        owners.firstOrNull { it.isNotEmpty() }
           ?: throw IllegalArgumentException("No owner is specified and one cannot be derived from accounts")
       } else {
         owner

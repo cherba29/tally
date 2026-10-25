@@ -304,21 +304,21 @@
 - months:
   - Mar2026
   data:
-  - internalTransfers: -50
+  - internalTransfers: 0
     externalTransfers: 0
-    totalMonthTransfers: -50
-    totalInternalTransfers: -50
-    totalInternalTransfersPrct: 100.0
+    totalMonthTransfers: 0
+    totalInternalTransfers: 0
+    totalInternalTransfersPrct: 0.0
     totalInternalTransfersAnnualPrct: 0.0
     weightedInternalAge: 0.0
     totalExternalTransfers: 0
-    totalExternalTransfersPrct: -0.0
+    totalExternalTransfersPrct: 0.0
     totalExternalTransfersAnnualPrct: 0.0
     weightedExternalAge: 0.0
-    totalTransfers: -50
+    totalTransfers: 0
     totalAnnualPrct: 0.0
-    weightedAge: -0.0
-    unaccounted: 100
+    weightedAge: 0.0
+    unaccounted: 300
 
 ╔═ with transaction statement ═╗
 - statements:

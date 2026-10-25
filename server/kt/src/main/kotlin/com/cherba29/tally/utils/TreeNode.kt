@@ -1,5 +1,6 @@
 package com.cherba29.tally.utils
 
+import java.util.function.IntFunction
 import kotlin.getValue
 import kotlin.sequences.sequence
 
@@ -203,6 +204,10 @@ class ParentList<P>(
     return children == other
   }
   override fun hashCode(): Int = children.hashCode()
+  @Deprecated("The base class also deprecates this. Overridden here to squash a JVM warning.")
+  override fun <T : Any?> toArray(generator: IntFunction<Array<out T?>?>): Array<out T?>? {
+    throw NotImplementedError()
+  }
 }
 
 fun <P> root(data: P, createChildren: ParentList<P>.() -> Unit) = TreeNode.Root(data = data, createChildren = createChildren)

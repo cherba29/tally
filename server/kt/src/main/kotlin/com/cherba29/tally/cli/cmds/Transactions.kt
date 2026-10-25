@@ -74,12 +74,12 @@ class Transactions : CliktCommand() {
     }
     echo("Date,Amount,From,To,Description")
     for ((accountName, accountEntries) in entries) {
-      for (t in accountEntries.slice(0..limit)) {
-        val amount = t.balance.amount
+      for ((targetTreeNode, balance, description) in accountEntries.slice(0..limit)) {
+        val amount = balance.amount
         echo(
-          "${t.balance.date},${amount.asAmount().padStart(8)}, ${
+          "${balance.date},${amount.asAmount().padStart(8)}, ${
             accountName.padEnd(20)
-          },${t.targetTreeNode.name},${t.description ?: ""}\n"
+          },${targetTreeNode.name},${description ?: ""}\n"
         )
       }
     }

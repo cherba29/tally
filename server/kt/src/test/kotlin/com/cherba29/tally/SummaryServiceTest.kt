@@ -305,7 +305,7 @@ class SummaryServiceTest : DescribeSpec({
         endMonth = MAR / 2026,
         accountPath = "john/internal"
       )
-      expectSelfie(data.toSnapshot()).toMatchDisk("for summary")
+      expectSelfie(dataInternal.toSnapshot()).toMatchDisk("for summary")
     }
 
     it("transfers summary multiple months") {
