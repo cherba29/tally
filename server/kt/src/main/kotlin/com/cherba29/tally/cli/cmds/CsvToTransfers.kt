@@ -11,7 +11,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.path
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.format.byUnicodePattern
+import kotlinx.datetime.format.char
 import kotlinx.datetime.number
 import java.nio.file.Path
 import kotlin.text.replace
@@ -169,7 +169,12 @@ class CsvToTransfers : CliktCommand("csv-to-transfers") {
       return null
     }
 
-    val dateFormat = LocalDate.Format { byUnicodePattern("MM/dd/yyyy") }
-   }
-
+    val dateFormat = LocalDate.Format {
+      monthNumber()
+      char('/')
+      day()
+      char('/')
+      year()
+    }
+  }
 }
