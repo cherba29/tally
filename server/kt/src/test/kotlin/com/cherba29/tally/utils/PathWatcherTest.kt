@@ -141,5 +141,64 @@ class PathWatcherTest : DescribeSpec({
       }
     }
 
+    it("notifies of directory removal") {
+      val folder = tempdir("tally-", keepOnFailure = false).toPath()
+      val subFolder = (folder / "subpath").createDirectory()
+      (subFolder / "file1.yaml").createFile()
+
+      turbineScope {
+        val flow = folder.watchedEventFlow { true }.testIn(backgroundScope)
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("subpath/file1.yaml"), WatchResult.Action.ADD)
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = null, WatchResult.Action.REPROCESS)
+
+        subFolder.toFile().deleteRecursively() shouldBe true
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("subpath/file1.yaml"), WatchResult.Action.REMOVE)
+        flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
+
+        // Verify watcher is still active and detects new files after directory delete
+        val flow2 = folder.watchedEventFlow { true }.testIn(backgroundScope)
+        flow2.awaitItem() shouldBe WatchResult(folder, relativePath = null, WatchResult.Action.REPROCESS)
+        (folder / "file2.yaml").createFile()
+        flow2.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file2.yaml"), WatchResult.Action.REPROCESS)
+        flow2.cancelAndConsumeRemainingEvents() shouldBe listOf()
+      }
+    }
+
+    it("handles empty directory removal and keeps watcher alive") {
+      val folder = tempdir("tally-", keepOnFailure = false).toPath()
+      val subFolder = (folder / "subpath").createDirectory()
+
+      turbineScope {
+        val flow = folder.watchedEventFlow { true }.testIn(backgroundScope)
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = null, WatchResult.Action.REPROCESS)
+
+        subFolder.toFile().delete() shouldBe true
+
+        // Directory deletion itself shouldn't emit a file REMOVE event.
+        // Creating a new file in root should be detected, confirming watcher didn't break.
+        (folder / "file1.yaml").createFile()
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file1.yaml"), WatchResult.Action.REPROCESS)
+        flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
+      }
+    }
+
+    it("handles directory creation and deletion with extension filter") {
+      val folder = tempdir("tally-", keepOnFailure = false).toPath()
+
+      turbineScope {
+        val flow = folder.watchedEventFlow { it.toString().endsWith(".yaml") }.testIn(backgroundScope)
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = null, WatchResult.Action.REPROCESS)
+
+        val subFolder = (folder / "subpath").createDirectory()
+        (subFolder / "file1.yaml").createFile()
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("subpath/file1.yaml"), WatchResult.Action.ADD)
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = null, WatchResult.Action.REPROCESS)
+
+        subFolder.toFile().deleteRecursively() shouldBe true
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("subpath/file1.yaml"), WatchResult.Action.REMOVE)
+        flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
+      }
+    }
+
   }
 })

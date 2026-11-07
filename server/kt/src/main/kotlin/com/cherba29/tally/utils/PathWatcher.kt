@@ -92,23 +92,35 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
     return flowOf()  // Return empty flow if path does not exist.
   }
   val watchKeyToFolderMap = mutableMapOf<WatchKey, Path>()
+  val watchedFolders = mutableSetOf<Path>()
 
   logger.info { "Registering all paths under $watchedPath" }
   watchedPath.walk(PathWalkOption.INCLUDE_DIRECTORIES).filter {
     it.isDirectory() && !ignorePathRegex.containsMatchIn(it.pathString)
   }.associateTo(watchKeyToFolderMap) {
     logger.info { "Registering $it" }
-    it.register(watcher,*eventsToWatch) to watchedPath.relativize(it)
+    val relative = watchedPath.relativize(it)
+    watchedFolders.add(relative)
+    it.register(watcher,*eventsToWatch) to relative
   }
+  val rootKey = watchKeyToFolderMap.entries.firstOrNull { it.value == Path.of("") }?.key
 
   // Stores references to active background checks to avoid spawning duplicate coroutines for the same file
   val activeChecks = ConcurrentHashMap<Path, Job>()
   // Create a scope specifically for handling background file-settling tasks
   val watcherScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
   val rootPath = this
+  // Keep track of watched files so that when directory is deleted,
+  // delete events can be sent for all files within directory.
+  val watchedFiles = mutableSetOf<Path>()
   return channelFlow {
     // Emit existing files.
-    scan(filePathFilter).forEach { send(it) }
+    scan(filePathFilter).forEach {
+      if (it.relativePath != null) {
+        watchedFiles.add(it.relativePath)
+      }
+      send(it)
+    }
 
     while (currentCoroutineContext().isActive) {
       val key: WatchKey = runInterruptible(Dispatchers.IO) {
@@ -123,39 +135,70 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
       if (updatedFolderPath != null) {
         for (event in key.pollEvents()) {
           val filePath = updatedFolderPath / (event.context() as Path)  // Relative to watched root path.
-          if (filePathFilter(filePath)) {
-            logger.info { "$ANSI_YELLOW$filePath$ANSI_RESET for event ${event.kind()} count=${event.count()}" }
-            when (event.kind()) {
-              StandardWatchEventKinds.ENTRY_CREATE -> {
-                val fullPath = watchedPath / filePath
-                if (fullPath.isDirectory()) {
-                  logger.info { "Registering new directory $fullPath" }
-                  val key = withContext(Dispatchers.IO) {
-                    fullPath.register(watcher, *eventsToWatch)
+          if (ignorePathRegex.containsMatchIn(filePath.pathString)) {
+            continue
+          }
+          val isWatchedFolder = filePath in watchedFolders || watchedFolders.any { it.startsWith(filePath) }
+          logger.info { "$ANSI_YELLOW$filePath$ANSI_RESET for event ${event.kind()} count=${event.count()}" }
+          when (event.kind()) {
+            StandardWatchEventKinds.ENTRY_CREATE -> {
+              val fullPath = watchedPath / filePath
+              if (fullPath.isDirectory()) {
+                logger.info { "Registering new directory $fullPath" }
+                fullPath.walk(PathWalkOption.INCLUDE_DIRECTORIES).filter {
+                  it.isDirectory() && !ignorePathRegex.containsMatchIn(it.pathString)
+                }.forEach {
+                  val relative = watchedPath.relativize(it)
+                  val dirKey = withContext(Dispatchers.IO) {
+                    it.register(watcher, *eventsToWatch)
                   }
-                  watchKeyToFolderMap[key] = filePath
-                  // We added new directory, it can already contain files in it, so scan and emit them.
-                  fullPath.scan(filePathFilter).forEach {
-                    if (it.relativePath != null) {
-                      send(WatchResult(rootPath, filePath / it.relativePath, WatchResult.Action.ADD))
-                    } else { // Emit end of scan event.
-                      send(WatchResult(rootPath, null, WatchResult.Action.REPROCESS))
-                    }
+                  watchKeyToFolderMap[dirKey] = relative
+                  watchedFolders.add(relative)
+                }
+                // We added new directory, it can already contain files in it, so scan and emit them.
+                fullPath.scan(filePathFilter).forEach {
+                  if (it.relativePath != null) {
+                    val relativeFile = filePath / it.relativePath
+                    watchedFiles.add(relativeFile)
+                    send(WatchResult(rootPath, relativeFile, WatchResult.Action.ADD))
+                  } else { // Emit end of scan event.
+                    send(WatchResult(rootPath, null, WatchResult.Action.REPROCESS))
                   }
-                } else {
-                  send(WatchResult(rootPath, filePath, WatchResult.Action.REPROCESS))
                 }
+              } else if (filePathFilter(filePath)) {
+                watchedFiles.add(filePath)
+                send(WatchResult(rootPath, filePath, WatchResult.Action.REPROCESS))
               }
-              StandardWatchEventKinds.ENTRY_DELETE -> {
-                val fullPath = watchedPath / filePath
-                if (fullPath.isDirectory()) {
-                  TODO("Handle directory delete")
-                } else {
-                  send(WatchResult(rootPath, filePath, WatchResult.Action.REMOVE))
+            }
+            StandardWatchEventKinds.ENTRY_DELETE -> {
+              val fullPath = watchedPath / filePath
+              if (isWatchedFolder) {
+                logger.info { "Handling directory delete for $ANSI_YELLOW$fullPath$ANSI_RESET" }
+                val keysToCancel = watchKeyToFolderMap.filter { it.value == filePath || it.value.startsWith(filePath) }
+                for ((k, _) in keysToCancel) {
+                  k.cancel()
+                  watchKeyToFolderMap.remove(k)
                 }
+                watchedFolders.removeIf { it == filePath || it.startsWith(filePath) }
+
+                val checksToCancel = activeChecks.filter { it.key.startsWith(fullPath) }
+                for ((p, job) in checksToCancel) {
+                  job.cancel()
+                  activeChecks.remove(p)
+                }
+
+                val filesToRemove = watchedFiles.filter { it.startsWith(filePath) }
+                for (file in filesToRemove) {
+                  watchedFiles.remove(file)
+                  send(WatchResult(rootPath, file, WatchResult.Action.REMOVE))
+                }
+              } else if (filePathFilter(filePath)) {
+                watchedFiles.remove(filePath)
+                send(WatchResult(rootPath, filePath, WatchResult.Action.REMOVE))
               }
-              StandardWatchEventKinds.ENTRY_MODIFY -> {
-                //emit(WatchResult(rootPath, filePath, WatchResult.Action.REPROCESS))
+            }
+            StandardWatchEventKinds.ENTRY_MODIFY -> {
+              if (filePathFilter(filePath)) {
                 val fullPath = watchedPath / filePath
                 val file = fullPath.toFile()
                 if (file.exists() && file.isFile) {
@@ -166,29 +209,40 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
                   // Launch a non-blocking job to monitor stability
                   activeChecks[fullPath] = watcherScope.launch {
                     if (waitForFileToSettle(file)) {
+                      watchedFiles.add(filePath)
                       send(WatchResult(rootPath, filePath, WatchResult.Action.REPROCESS))
                     }
                     activeChecks.remove(fullPath) // Clean up tracking map
                   }
                 }
-
               }
-              StandardWatchEventKinds.OVERFLOW -> {
-                // This can happen if watcher event queue gets overflows. In that case just rescan everything.
-                logger.warn { "Filesystem event overflow at $rootPath, rescanning..." }
-                send(WatchResult(rootPath, null, WatchResult.Action.REMOVE_ALL))
-                scan(filePathFilter).forEach { send(it) }
+            }
+            StandardWatchEventKinds.OVERFLOW -> {
+              // This can happen if watcher event queue gets overflows. In that case just rescan everything.
+              logger.warn { "Filesystem event overflow at $rootPath, rescanning..." }
+              send(WatchResult(rootPath, null, WatchResult.Action.REMOVE_ALL))
+              watchedFiles.clear()
+              scan(filePathFilter).forEach {
+                if (it.relativePath != null) {
+                  watchedFiles.add(it.relativePath)
+                }
+                send(it)
               }
-              else -> {
-                throw IllegalStateException("Unknown event ${event.kind()} for $filePath")
-              }
+            }
+            else -> {
+              throw IllegalStateException("Unknown event ${event.kind()} for $filePath")
             }
           }
         }
       } else {
         logger.warn { "Could not find registered key for $key" }
       }
-      if (!key.reset()) break
+      if (!key.reset()) {
+        watchKeyToFolderMap.remove(key)
+        if (key == rootKey || updatedFolderPath == Path.of("")) {
+          break
+        }
+      }
     }
   }.onCompletion {
     logger.info { "Closing watcher for path '$rootPath'"}
