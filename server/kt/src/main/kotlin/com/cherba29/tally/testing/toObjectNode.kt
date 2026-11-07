@@ -1,6 +1,5 @@
 package com.cherba29.tally.testing
 
-import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.schema.GqlAccount
 import com.cherba29.tally.schema.GqlBalance

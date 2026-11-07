@@ -205,7 +205,7 @@ class ParentList<P>(
   }
   override fun hashCode(): Int = children.hashCode()
   @Deprecated("The base class also deprecates this. Overridden here to squash a JVM warning.")
-  override fun <T : Any?> toArray(generator: IntFunction<Array<out T?>?>): Array<out T?>? {
+  override fun <T> toArray(generator: IntFunction<Array<out T?>?>): Array<out T?>? {
     throw NotImplementedError()
   }
 }
