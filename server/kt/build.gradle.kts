@@ -35,11 +35,11 @@ dependencies {
   implementation(libs.ktor.server.cio)
   implementation(libs.ktor.server.core)
   implementation(libs.ktor.server.cors)
+  implementation(libs.ktor.server.di)
   implementation(libs.ktor.server.netty)
   implementation(libs.logback.classic)
   implementation(libs.logback.core)
   implementation(libs.ktor.server.content)
-  implementation(libs.ktor.server.core)
   implementation(libs.ktor.server.config.yaml)
   implementation(libs.ktor.server.statuspages)
   implementation(libs.ktor.server.websockets)
@@ -67,7 +67,6 @@ dependencies {
   testImplementation(libs.selfie.junit5)
   testImplementation(libs.turbine)
 
-  testRuntimeOnly(libs.logback.classic)
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

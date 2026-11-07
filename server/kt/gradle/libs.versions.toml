@@ -4,7 +4,7 @@ graphql-ktor = "8.3.0"
 jackson-yaml = "2.21.0"
 kotest = "6.0.7"
 kotlin = "2.3.0"
-ktor = "3.0.3"
+ktor = "3.2.0"
 logback = "1.4.14"
 mockk = "1.14.6"
 selfie = "3.0.0"
@@ -38,6 +38,7 @@ ktor-server-config-yaml = { module = "io.ktor:ktor-server-config-yaml", version.
 ktor-server-content = { group = "io.ktor", name = "ktor-server-content-negotiation", version.ref = "ktor" }
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
 ktor-server-cors = { group = "io.ktor", name = "ktor-server-cors", version.ref = "ktor" }
+ktor-server-di = { module = "io.ktor:ktor-server-di", version.ref = "ktor" }
 ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor" }
 ktor-server-statuspages = { group = "io.ktor", name = "ktor-server-status-pages", version.ref = "ktor" }
 ktor-server-test-host = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }

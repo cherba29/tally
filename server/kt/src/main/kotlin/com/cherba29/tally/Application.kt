@@ -16,12 +16,12 @@ import com.expediagroup.graphql.server.operations.Query
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.plugins.cors.routing.CORS
+import io.ktor.server.plugins.di.dependencies
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.serialization.jackson.JacksonWebsocketContentConverter
 import io.ktor.server.application.ApplicationCallPipeline
-import io.ktor.server.application.ApplicationStopped
 import io.ktor.server.application.call
 import io.ktor.server.http.content.staticFiles
 import io.ktor.server.netty.EngineMain
@@ -67,8 +67,10 @@ fun Application.graphQLModule() {
     "'$tallyFiles' path does not exist as set in application config '$TALLY_PATH_ENV_SETTING'."
   }
 
-  // TODO: Maybe use resource lifecycle https://ktor.io/docs/server-di-resource-lifecycle-management.html
-  val loader = Loader.watchPath(tallyFiles)
+  dependencies {
+    provide<Loader> { Loader.watchPath(tallyFiles) }
+  }
+  val loader: Loader by dependencies
 
   install(WebSockets) {
     // Pings the client every 10 seconds to keep alive
@@ -126,11 +128,6 @@ fun Application.graphQLModule() {
     call.request.origin.apply {
       logger.info { "Request URL: $scheme://$localHost:$localPort$uri" }
     }
-  }
-
-  monitor.subscribe(ApplicationStopped) {
-    logger.info { "Closing loader..." }
-    loader.close()
   }
 }
 private val logger = KotlinLogging.logger {}

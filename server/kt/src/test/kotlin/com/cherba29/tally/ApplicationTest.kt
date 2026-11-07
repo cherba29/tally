@@ -21,6 +21,14 @@ import io.ktor.server.config.MapApplicationConfig
 import io.ktor.server.config.mergeWith
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
+import io.ktor.server.plugins.di.dependencies
+import com.cherba29.tally.data.Loader
+import io.kotest.matchers.nulls.shouldNotBeNull
+import io.mockk.every
+import io.mockk.mockkObject
+import io.mockk.spyk
+import io.mockk.unmockkObject
+import io.mockk.verify
 import java.nio.file.Path
 import kotlin.io.path.createDirectory
 import kotlin.io.path.createFile
@@ -128,6 +136,28 @@ class ApplicationTest : DescribeSpec({
         val html = response.bodyAsText()
         html shouldContain "var serverUrl = '/graphql';"
         html shouldContain """var subscriptionUrl = new URL("/subscriptions", location.href);"""
+      }
+    }
+
+    it("loader is managed by DI resource lifecycle") {
+      mockkObject(Loader.Companion)
+      var spyLoader: Loader? = null
+      every { Loader.watchPath(any()) } answers {
+        val real = callOriginal()
+        spyk(real).also { spyLoader = it }
+      }
+
+      try {
+        testApplication {
+          configureTestClient(tallyPath)
+          startApplication()
+          val loader = application.dependencies.resolve<Loader>()
+          loader.shouldNotBeNull()
+          loader shouldBe spyLoader
+        }
+        verify(atLeast = 1) { spyLoader!!.close() }
+      } finally {
+        unmockkObject(Loader.Companion)
       }
     }
   }
