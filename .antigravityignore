@@ -1,0 +1,91 @@
+# ==========================================
+# BAZEL BUILD & SYMLINK EXCLUSIONS
+# ==========================================
+# Bazel symlink shortcuts at the root directory
+/bazel-*
+/bazel-bin
+/bazel-out
+/bazel-testlogs
+/bazel-code
+
+# Internal cache and sandbox states
+.bazel/
+.bazel-cache/
+.bazel_output/
+MODULE.bazel.lock
+
+# Workspace internal configurations that shouldn't be read as active code
+**/.bazelrc.user
+
+# ==========================================
+# UNIVERSAL / BUILD SYSTEM EXCLUSIONS
+# ==========================================
+.git/
+.github/
+.gitignore
+.vscode/
+*.log
+*.tmp
+*.bak
+.DS_Store
+Thumps.db
+
+# ==========================================
+# FRONTEND: TYPESCRIPT & LIT ELEMENT
+# ==========================================
+# Dependencies
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build & Bundler outputs (Vite, Webpack, Rollup, Esbuild, etc.)
+dist/
+build/
+out/
+.cache/
+.parcel-cache/
+
+# Test coverage and local runtime states
+coverage/
+.nyc_output/
+.eslintcache
+
+# Static assets (images, fonts, styles that don't need refactoring)
+**/public/assets/
+**/*.png
+**/*.jpg
+**/*.jpeg
+**/*.gif
+**/*.svg
+**/*.ico
+**/*.woff
+**/*.woff2
+
+# ==========================================
+# BACKEND: KOTLIN, GRADLE, & KTOR
+# ==========================================
+# Gradle build artifacts and caches
+/server/kt/.idea/
+/server/kt/.gradle/
+/server/kt/build/
+/server/kt/*/build/
+/server/kt/bin/
+/server/kt/out/
+/server/kt/.kotlin/
+
+# Virtual environments or local configuration templates
+/server/kt/.env
+/server/kt/.env.*
+!/server/kt/.env.example
+
+# ==========================================
+# GRAPHQL GENERATED ARTIFACTS
+# ==========================================
+# Force Antigravity to read your handwritten .graphql schema/queries,
+# but ignore the massive auto-generated TS types or Kotlin classes 
+# that are re-created on every build anyway.
+**/generated/
+**/__generated__/
+**/*.schema.json
+**/*.gql.gen.ts
