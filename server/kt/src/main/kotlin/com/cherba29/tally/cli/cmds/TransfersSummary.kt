@@ -6,15 +6,17 @@ import com.cherba29.tally.data.builder.transfersSummary
 import com.cherba29.tally.utils.asAmount
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
+import com.github.ajalt.clikt.core.terminal
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.convert
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
+import com.github.ajalt.clikt.parameters.types.int
 import com.github.ajalt.clikt.parameters.types.path
 import com.github.ajalt.mordant.rendering.TextAlign
 import com.github.ajalt.mordant.table.Borders
 import com.github.ajalt.mordant.table.table
-import com.github.ajalt.mordant.terminal.Terminal
 
 class TransfersSummary : CliktCommand() {
   override fun help(context: Context) = "List of transactions within given period."
@@ -22,16 +24,19 @@ class TransfersSummary : CliktCommand() {
   val accountPath by argument(help = "Account path")
   val startMonth by option(
     "--start-month",
-    help="Inclusive start month, eg Apr2026"
+    help = "Inclusive start month, eg Apr2026"
   ).convert { Month.fromString(it) }.required()
   val endMonth by option(
     "--end-month",
-    help="Inclusive end month, eg May2026"
+    help = "Inclusive end month, eg May2026"
   ).convert { Month.fromString(it) }.required()
 
-  val tallyPath by option(envvar = "TALLY_PATH").path(mustExist = true).required()
+  val width: Int by option(
+    "-w", "--width",
+    help = "Output width in characters"
+  ).int().default(120)
 
-  private val terminal = Terminal(width = 120)
+  val tallyPath by option(envvar = "TALLY_PATH").path(mustExist = true).required()
 
   override fun run() {
     val budget = Loader.loadFrom(tallyPath)
@@ -61,7 +66,7 @@ class TransfersSummary : CliktCommand() {
         for ((index, month) in payload.months.withIndex()) {
           val summary = payload.data[index]
           row(
-            index+1,
+            index + 1,
             month,
             summary.internalTransfers.asAmount(),
             summary.externalTransfers.asAmount(),
@@ -79,6 +84,6 @@ class TransfersSummary : CliktCommand() {
         }
       }
     }
-    terminal.println(t)
+    echo(t.render(terminal, width = width))
   }
 }
