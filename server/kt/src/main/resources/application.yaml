@@ -1,20 +1,60 @@
 ktor:
+  development: false
   application:
     modules:
       - com.cherba29.tally.ApplicationKt.graphQLModule
   deployment:
+    # Explicit loopback eliminates IPv6 lookup delays and multi-interface binding
+    # host: 127.0.0.1
+    # Using default so that WSL2 http://localhost:8080 works.
     port: 8080
-    # TODO: configure these EngineMain settings.
-    # See https://ktor.io/docs/server-configuration-file.html#predefined-properties
-    # connectionGroupSize: 2
-    # workerGroupSize: 5
-    # callGroupSize: 10
-    # shutdownGracePeriod: 2000
-    # shutdownTimeout: 3000
-    # TODO: configure these Netty settings.
-    # maxInitialLineLength: 2048
-    # maxHeaderSize: 1024
-    # maxChunkSize: 42
+
+    # Thread sizing optimized for single-user local usage:
+    # Eliminates thread contention, context-switching overhead, and cold-thread wakeups
+    connectionGroupSize: 1
+    workerGroupSize: 2
+    callGroupSize: 2
+
+    # Reuse worker event loop group for calls to avoid thread handoffs and cold wake-up latency
+    shareWorkGroup: true
+
+    # Keep TCP connections alive and keep HTTP connections open across idle periods
+    tcpKeepAlive: true
+    requestReadTimeoutSeconds: 0
+    responseWriteTimeoutSeconds: 10
+    runningLimit: 16
+
+    # Fast and clean shutdown for local process lifecycle
+    shutdownGracePeriod: 1000
+    shutdownTimeout: 2000
+
+    # Netty HTTP buffer settings
+    maxInitialLineLength: 4096
+    maxHeaderSize: 8192
+    maxChunkSize: 8192
+
+graphql:
+  schema:
+    federation:
+      enabled: false
+      tracing:
+        # Disable tracing instrumentation to eliminate per-request trace generation overhead
+        enabled: false
+  engine:
+    # Retain schema introspection for local developer tools and GraphiQL
+    introspection:
+      enabled: true
+    # Batch data loader execution using sync exhaustion
+    batching:
+      enabled: true
+      strategy: SYNC_EXHAUSTION
+    # APQ caches parsed and validated GraphQL Document ASTs in memory, eliminating query parsing
+    # and validation latency spikes on recurring queries and warm-ups
+    automaticPersistedQueries:
+      enabled: true
+  server:
+    subscription:
+      connectionInitTimeout: 60000
 
 tally:
   data:
