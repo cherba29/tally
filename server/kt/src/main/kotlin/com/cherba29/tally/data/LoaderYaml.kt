@@ -3,13 +3,11 @@ package com.cherba29.tally.data
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.DayInMonth
-import com.cherba29.tally.core.Month
 import com.cherba29.tally.data.builder.BudgetBuilder
 import com.cherba29.tally.data.yaml.BalanceYamlData
 import com.cherba29.tally.data.yaml.YamlData
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
-import kotlin.math.abs
 import kotlin.math.roundToLong
 
 private fun YamlData.toAccount(): Account? {
@@ -67,21 +65,13 @@ private fun BalanceYamlData.toBalance(name: String): Balance {
   if (date == null) {
     throw IllegalArgumentException("For $name account balance for $grp does not have date set")
   }
-  val balance =  Balance(amount, date, balanceType, desc ?: "")
-  val balanceMonthDiff = abs(balance.date.year * 12 + balance.date.month.ordinal - grp.year * 12 - grp.month)
-  // TODO: move logical inconsistency checks into budget builder.
-  if (balanceMonthDiff > 2) {
-    throw IllegalArgumentException(
-      "For $name account $balance and month $grp are $balanceMonthDiff months apart (2 max)"
-    )
-  }
-  return balance
+  return Balance(amount, date, balanceType, desc ?: "")
 }
 
 /**
  * Validates YamlData and atomically adds it to the budget.
  */
-private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boolean {
+private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData, relativeFilePath: Path? = null): Boolean {
   // Ignore data which dont represent account.
   val account = data.toAccount() ?: return false
   val convertedBalances = data.balances?.associate {
@@ -89,7 +79,7 @@ private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boole
       "For ${account.name} account balance entry with date '${it.date}' and desc '${it.desc}' has no grp setting"
     )) to it.toBalance(account.name) } ?: mapOf()
 
-  budgetBuilder.addAccount(account, convertedBalances)
+  budgetBuilder.addAccount(account, convertedBalances, relativeFilePath)
 
   if (data.transfersTo != null) {
     for ((toAccountName, transfersWrapper) in data.transfersTo.entries) {
@@ -127,21 +117,14 @@ private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boole
           )
         }
 
-        // TODO: move logical inconsistency checks into budget builder.
-        val balanceMonth = Month.fromDate(balance.date)
-        if (abs(balanceMonth - transferMonth) > 2) {
-          throw IllegalArgumentException(
-            "For account '${account.name}' transfer to '${toAccountName}' " +
-                "for $transferMonth date ${balance.date} (${balanceMonth}) are too far apart"
-          )
-        }
         budgetBuilder.addAccountTransfer(
           account,
           toAccountName,
           transferMonth,
           balance,
           desc,
-          tags ?: listOf()
+          tags ?: listOf(),
+          relativeFilePath
         )
       }
     }
@@ -151,7 +134,7 @@ private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData): Boole
 
 fun loadYamlFile(budgetBuilder: BudgetBuilder, accountData: YamlData, relativeFilePath: Path): Boolean {
   return try {
-    processYamlData(budgetBuilder, accountData)
+    processYamlData(budgetBuilder, accountData, relativeFilePath)
   } catch (e: IllegalArgumentException) {
     logger.error { e.javaClass.simpleName + ": " + e.message }
     throw IllegalArgumentException(e.message + ", while processing $relativeFilePath", e)

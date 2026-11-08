@@ -315,7 +315,6 @@ class LoadYamlTest : DescribeSpec({
     }
 
     it("fails with transfer and no grp") {
-      val budgetBuilder = BudgetBuilder()
       val relativeFilePath = Paths.get("path/test.yaml")
       val testAccountData = YamlData(
         name = "test-account",
@@ -333,14 +332,15 @@ class LoadYamlTest : DescribeSpec({
       )
 
       val exception = shouldThrow<IllegalArgumentException> {
-        loadYamlFile(budgetBuilder, testAccountData, relativeFilePath)
+        budget {
+          loadYamlFile(this, testAccountData, relativeFilePath)
+        }
       }
       exception.message shouldBe "For account 'test-account' transfer to 'external' " +
         "does not have 'grp' field, while processing path/test.yaml"
     }
 
     it("fails with transfer and no date") {
-      val budgetBuilder = BudgetBuilder()
       val relativeFilePath = Paths.get("path/test.yaml")
       val testAccountData = YamlData(
         name = "test-account",
@@ -358,14 +358,15 @@ class LoadYamlTest : DescribeSpec({
       )
 
       val exception = shouldThrow<IllegalArgumentException> {
-        loadYamlFile(budgetBuilder, testAccountData, relativeFilePath)
+        budget {
+          loadYamlFile(this, testAccountData, relativeFilePath)
+        }
       }
       exception.message shouldBe "For account 'test-account' transfer to 'external' " +
         "does not have a valid 'date' field, while processing path/test.yaml"
     }
 
     it("fails with transfer and too far apart dates") {
-      val budgetBuilder = BudgetBuilder()
       val relativeFilePath = Paths.get("path/test.yaml")
       val testAccountData = YamlData(
         name = "test-account",
@@ -384,14 +385,15 @@ class LoadYamlTest : DescribeSpec({
       )
 
       val exception = shouldThrow<IllegalArgumentException> {
-        loadYamlFile(budgetBuilder, testAccountData, relativeFilePath)
+        budget {
+          loadYamlFile(this, testAccountData, relativeFilePath)
+        }
       }
       exception.message shouldBe "For account 'test-account' transfer to 'external' for Jan2020 date " +
         "2020-04-01 (Apr2020) are too far apart, while processing path/test.yaml"
     }
 
     it("fails with transfer and no balance") {
-      val budgetBuilder = BudgetBuilder()
       val relativeFilePath = Paths.get("path/test.yaml")
       val testAccountData = YamlData(
         name = "test-account",
@@ -409,7 +411,9 @@ class LoadYamlTest : DescribeSpec({
       )
 
       val exception = shouldThrow<IllegalArgumentException> {
-        loadYamlFile(budgetBuilder, testAccountData, relativeFilePath)
+        budget {
+          loadYamlFile(this, testAccountData, relativeFilePath)
+        }
       }
       exception.message shouldBe "For account 'test-account' transfer to 'external' " +
         "for Jan2020 2020-01-17 does not have 'pamt' or 'camt' field, " +

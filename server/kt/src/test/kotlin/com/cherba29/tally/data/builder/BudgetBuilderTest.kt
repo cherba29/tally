@@ -17,6 +17,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import java.nio.file.Paths
 import kotlinx.datetime.LocalDate
 
 class BudgetBuilderTest : DescribeSpec({
@@ -628,6 +629,182 @@ class BudgetBuilderTest : DescribeSpec({
       stmt2.statements[treeNode3] shouldBe stmt3
       stmt2.totalPayments shouldBe 0
       stmt2.totalTransfers shouldBe 0
+    }
+  }
+
+  describe("validation") {
+    describe("validateBalances") {
+      it("fails when balance date is too far from month with source file") {
+        val sourceFile = Paths.get("data/accounts/checking.yaml")
+        val account = Account("checking", path = listOf("bank"), owners = setOf("john"), openedOn = JAN / 2020)
+        val exception = shouldThrow<IllegalArgumentException> {
+          budget {
+            addAccount(
+              account,
+              mapOf(JAN / 2020 to Balance.confirmed(1000, "2020-04-15")),
+              sourceFile = sourceFile
+            )
+          }
+        }
+        exception.message shouldBe "For checking account Balance { amount: 10.00, date: 2020-04-15, type: CONFIRMED } " +
+            "and month Jan2020 are 3 months apart (2 max), while processing data/accounts/checking.yaml"
+      }
+
+      it("succeeds when balance date is within 2 months") {
+        val sourceFile = Paths.get("data/accounts/checking.yaml")
+        val account = Account("checking", path = listOf("bank"), owners = setOf("john"), openedOn = JAN / 2020)
+        val b = budget {
+          addAccount(
+            account,
+            mapOf(JAN / 2020 to Balance.confirmed(1000, "2020-02-28")),
+            sourceFile = sourceFile
+          )
+        }
+        b.months shouldBe (JAN / 2020..JAN / 2020)
+      }
+    }
+
+    describe("validateTransfers") {
+      it("fails when transfer date is too far from month with source file and line number") {
+        val sourceFile = Paths.get("data/transfers.yaml")
+        val account1 = Account("checking", path = listOf("bank"), owners = setOf("john"), openedOn = JAN / 2020)
+        val account2 = Account("savings", path = listOf("bank"), owners = setOf("john"), openedOn = JAN / 2020)
+        val exception = shouldThrow<IllegalArgumentException> {
+          budget {
+            addAccount(account1, mapOf(JAN / 2020 to Balance.confirmed(1000, "2020-01-01")), sourceFile = sourceFile)
+            addAccount(account2, mapOf(JAN / 2020 to Balance.confirmed(2000, "2020-01-01")), sourceFile = sourceFile)
+            addAccountTransfer(
+              fromAccount = account1,
+              toAccountName = "savings",
+              month = JAN / 2020,
+              balance = Balance.confirmed(500, "2020-04-05"),
+              sourceFile = sourceFile,
+              lineNumber = 42
+            )
+          }
+        }
+        exception.message shouldBe "For account 'checking' transfer to 'savings' for Jan2020 date 2020-04-05 (Apr2020) " +
+            "are too far apart, while processing data/transfers.yaml:42"
+      }
+
+      it("fails when transfer date is too far from month inheriting source file from account") {
+        val sourceFile = Paths.get("data/checking.yaml")
+        val account1 = Account("checking", path = listOf("bank"), owners = setOf("john"), openedOn = JAN / 2020)
+        val account2 = Account("savings", path = listOf("bank"), owners = setOf("john"), openedOn = JAN / 2020)
+        val exception = shouldThrow<IllegalArgumentException> {
+          budget {
+            addAccount(account1, mapOf(JAN / 2020 to Balance.confirmed(1000, "2020-01-01")), sourceFile = sourceFile)
+            addAccount(account2, mapOf(JAN / 2020 to Balance.confirmed(2000, "2020-01-01")))
+            addAccountTransfer(
+              fromAccount = account1,
+              toAccountName = "savings",
+              month = JAN / 2020,
+              balance = Balance.confirmed(500, "2020-05-01")
+            )
+          }
+        }
+        exception.message shouldBe "For account 'checking' transfer to 'savings' for Jan2020 date 2020-05-01 (May2020) " +
+            "are too far apart, while processing data/checking.yaml"
+      }
+
+      it("fails when transfer is to unknown account with source file") {
+        val sourceFile = Paths.get("data/checking.yaml")
+        val account1 = Account("checking", path = listOf("bank"), owners = setOf("john"), openedOn = JAN / 2020)
+        val exception = shouldThrow<IllegalArgumentException> {
+          budget {
+            addAccount(account1, mapOf(JAN / 2020 to Balance.confirmed(1000, "2020-01-01")), sourceFile = sourceFile)
+            addAccountTransfer(
+              fromAccount = account1,
+              toAccountName = "nonexistent",
+              month = JAN / 2020,
+              balance = Balance.confirmed(500, "2020-01-05"),
+              sourceFile = sourceFile,
+              lineNumber = 15
+            )
+          }
+        }
+        exception.message shouldBe """
+        Unknown to account nonexistent in john/bank/checking, known accounts
+        └── 
+            └── john
+                └── bank
+                    └── checking
+        , while processing data/checking.yaml:15
+        """.trimIndent()
+      }
+
+      it("fails when transfer is to ambiguous account with source file") {
+        val sourceFile = Paths.get("data/transfer.yaml")
+        val account1 = Account("checking", path = listOf("bank1"), owners = setOf("john"), openedOn = JAN / 2020)
+        val account2a = Account("savings", path = listOf("bank1"), owners = setOf("john"), openedOn = JAN / 2020)
+        val account2b = Account("savings", path = listOf("bank2"), owners = setOf("john"), openedOn = JAN / 2020)
+        val exception = shouldThrow<IllegalArgumentException> {
+          budget {
+            addAccount(account1, mapOf(JAN / 2020 to Balance.confirmed(1000, "2020-01-01")))
+            addAccount(account2a, mapOf(JAN / 2020 to Balance.confirmed(1000, "2020-01-01")))
+            addAccount(account2b, mapOf(JAN / 2020 to Balance.confirmed(1000, "2020-01-01")))
+            addAccountTransfer(
+              fromAccount = account1,
+              toAccountName = "savings",
+              month = JAN / 2020,
+              balance = Balance.confirmed(500, "2020-01-05"),
+              sourceFile = sourceFile
+            )
+          }
+        }
+        exception.message shouldBe "Ambiguous transfer from john/bank1/checking to savings, " +
+            "found multiple candidate accounts john/bank1/savings, john/bank2/savings, while processing data/transfer.yaml"
+      }
+
+      it("fails when transfer is during closed month for fromAccount with source file") {
+        val sourceFile = Paths.get("data/closed.yaml")
+        val account1 = Account("checking", path = listOf("bank"), owners = setOf("john"), openedOn = JAN / 2020, closedOn = FEB / 2020)
+        val account2 = Account("savings", path = listOf("bank"), owners = setOf("john"), openedOn = JAN / 2020)
+        val exception = shouldThrow<IllegalArgumentException> {
+          budget {
+            addAccount(account1, mapOf(JAN / 2020 to Balance.confirmed(1000, "2020-01-01"), FEB / 2020 to Balance.confirmed(500, "2020-02-01")))
+            addAccount(account2, mapOf(JAN / 2020 to Balance.confirmed(1000, "2020-01-01"), MAR / 2020 to Balance.confirmed(1000, "2020-03-01")))
+            addAccountTransfer(
+              fromAccount = account1,
+              toAccountName = "savings",
+              month = MAR / 2020,
+              balance = Balance.confirmed(100, "2020-03-05"),
+              sourceFile = sourceFile,
+              lineNumber = 25
+            )
+          }
+        }
+        exception.message shouldBe "Account john/bank/checking has transfer during closed month Mar2020 to john/bank/savings, while processing data/closed.yaml:25"
+      }
+
+      it("fails when transfer is during closed month for toAccount with source file") {
+        val sourceFile = Paths.get("data/closed_target.yaml")
+        val account1 = Account("checking", path = listOf("bank"), owners = setOf("john"), openedOn = JAN / 2020)
+        val account2 = Account("savings", path = listOf("bank"), owners = setOf("john"), openedOn = JAN / 2020, closedOn = FEB / 2020)
+        val exception = shouldThrow<IllegalArgumentException> {
+          budget {
+            addAccount(account1, mapOf(JAN / 2020 to Balance.confirmed(1000, "2020-01-01"), MAR / 2020 to Balance.confirmed(1000, "2020-03-01")))
+            addAccount(account2, mapOf(JAN / 2020 to Balance.confirmed(1000, "2020-01-01"), FEB / 2020 to Balance.confirmed(500, "2020-02-01")))
+            addAccountTransfer(
+              fromAccount = account1,
+              toAccountName = "savings",
+              month = MAR / 2020,
+              balance = Balance.confirmed(100, "2020-03-05"),
+              sourceFile = sourceFile
+            )
+          }
+        }
+        exception.message shouldBe "Account john/bank/savings has transfer during closed month Mar2020 from john/bank/checking, while processing data/closed_target.yaml"
+      }
+    }
+
+    describe("explicit validate") {
+      it("can call validate explicitly before build") {
+        val builder = BudgetBuilder()
+        val account = Account("checking", path = listOf("bank"), owners = setOf("john"), openedOn = JAN / 2020)
+        builder.addAccount(account, mapOf(JAN / 2020 to Balance.confirmed(1000, "2020-01-01")))
+        builder.validate() shouldBe builder
+      }
     }
   }
 })
