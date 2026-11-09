@@ -2,6 +2,7 @@ package com.cherba29.tally.data.yaml
 
 import com.cherba29.tally.core.MonthName.JUL
 import com.cherba29.tally.core.MonthName.JUN
+import com.cherba29.tally.data.BudgetLoadingException
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -184,6 +185,25 @@ class YamlDataParserTest : DescribeSpec({
         )
       }
       error.message shouldContain "Expecting an object or array but got \"xyz\""
+    }
+
+    it("fails with misformatted number in transfers") {
+      val relativeFilePath = Paths.get("bank/BAC_Checking_8137.yaml")
+      val content =
+        """
+        name: BAC_Checking_8137
+        transfers_to:
+          External_Refunds:
+            - { pamt: "-3 40.00" }
+        """.trimIndent()
+      val exception = shouldThrow<BudgetLoadingException> {
+        yamlDataParser.parseContent(content, relativeFilePath)
+      }
+      exception.message shouldBe "Cannot deserialize value of type `java.lang.Double` from String \"-3 40.00\": " +
+        "not a valid `Double` value at \"transfers_to\"->\"External_Refunds\"->\"pamt\" while processing bank/BAC_Checking_8137.yaml:4"
+      exception.fileName shouldBe "bank/BAC_Checking_8137.yaml"
+      exception.lineNumber shouldBe 4
+      exception.fieldPath shouldBe "\"transfers_to\"->\"External_Refunds\"->\"pamt\""
     }
 
 

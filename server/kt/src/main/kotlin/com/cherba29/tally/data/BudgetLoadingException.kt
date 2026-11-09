@@ -16,6 +16,7 @@ class BudgetLoadingException(
   cause: Throwable? = null,
   val fileName: String? = null,
   val lineNumber: Int? = null,
+  val fieldPath: String? = null,
 ) : IllegalArgumentException(message, cause) {
 
   fun toGraphQLError(location: SourceLocation? = null, path: ResultPath? = null): GraphQLError =
@@ -28,12 +29,14 @@ class BudgetLoadingException(
         buildMap {
           fileName?.let { put("file", it) }
           lineNumber?.let { put("line", it) }
+          fieldPath?.let { put("fieldPath", it) }
         }
       )
       .build()
 }
 
 private val WHILE_PROCESSING_REGEX = Regex("""while processing ([^,\s]+?)(?::(\d+))?(?:,\s*|$)""")
+private val AT_FIELD_PATH_REGEX = Regex(""" at ("[^"]+"(?:->"?[^"]+"?)*) while processing""")
 
 fun Throwable.toBudgetLoadingException(defaultFile: Path? = null): BudgetLoadingException {
   if (this is BudgetLoadingException) return this
@@ -41,10 +44,12 @@ fun Throwable.toBudgetLoadingException(defaultFile: Path? = null): BudgetLoading
   val match = WHILE_PROCESSING_REGEX.find(msg)
   val file = match?.groups?.get(1)?.value ?: defaultFile?.toString()
   val line = match?.groups?.get(2)?.value?.toIntOrNull()
+  val fieldPath = AT_FIELD_PATH_REGEX.find(msg)?.groups?.get(1)?.value
   return BudgetLoadingException(
     message = msg,
     cause = this,
     fileName = file,
-    lineNumber = line
+    lineNumber = line,
+    fieldPath = fieldPath
   )
 }
