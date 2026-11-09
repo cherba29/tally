@@ -137,12 +137,16 @@ fun loadYamlFile(budgetBuilder: BudgetBuilder, accountData: YamlData, relativeFi
     processYamlData(budgetBuilder, accountData, relativeFilePath)
   } catch (e: IllegalArgumentException) {
     logger.error { e.javaClass.simpleName + ": " + e.message }
-    throw IllegalArgumentException(e.message + ", while processing $relativeFilePath", e)
+    throw BudgetLoadingException(
+      message = e.message + ", while processing $relativeFilePath",
+      cause = e,
+      fileName = relativeFilePath.toString()
+    )
   } catch (e: Exception) {
     val message = ", while processing $relativeFilePath"
     logger.error { e.javaClass.simpleName + ": " + e.message + message }
     logger.info { "Account Data$accountData" }
-    throw e
+    throw e.toBudgetLoadingException(relativeFilePath)
   }
 }
 

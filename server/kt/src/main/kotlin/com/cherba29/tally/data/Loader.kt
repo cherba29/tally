@@ -17,6 +17,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlin.time.measureTime
 
+sealed interface LoadResult {
+  data class Success(val budget: Budget) : LoadResult
+  data class Failure(val error: Throwable) : LoadResult
+}
+
 class Loader(
   pathUpdates: Flow<WatchResult>,
   watchScope: CoroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
@@ -24,13 +29,17 @@ class Loader(
   private val processedBudget: ProcessedBudget = ProcessedBudget(timeSource)
 ): AutoCloseable {
   val loadedOn: Duration? get() = processedBudget.loadedOn
-  private val state = LastSetFlowState(
+  private val state = LastSetFlowState<LoadResult>(
     pathUpdates.map { result ->
       process(processedBudget, result)
     },
     watchScope)
 
-  suspend fun budget(): Budget = state.last()
+  suspend fun budget(): Budget = when (val result = state.last()) {
+    is LoadResult.Success -> result.budget
+    is LoadResult.Failure -> throw result.error
+  }
+
   override fun close() = state.close()
 
   companion object {
@@ -40,10 +49,18 @@ class Loader(
     fun loadFrom(path: Path, timeSource: TimeSource = TimeSource.Monotonic): Budget {
       val fileResults = path.scan(filePathFilter)
       val processedBudget = ProcessedBudget(timeSource)
+      var lastResult: LoadResult? = null
       for (fileResult in fileResults) {
-        process(processedBudget, fileResult)
+        val result = process(processedBudget, fileResult)
+        if (result != null) {
+          lastResult = result
+        }
       }
-      return processedBudget.budget!!
+      return when (lastResult) {
+        is LoadResult.Success -> lastResult.budget
+        is LoadResult.Failure -> throw lastResult.error
+        null -> processedBudget.dataPayload
+      }
     }
 
     fun watchPath(path: Path) = Loader(path.watchedEventFlow(filePathFilter))
@@ -51,27 +68,27 @@ class Loader(
     private fun process(
       processedBudget: ProcessedBudget,
       watchResult: WatchResult
-    ): Budget? {
+    ): LoadResult? {
       when (watchResult.action) {
         WatchResult.Action.REPROCESS -> {
           if (watchResult.relativePath != null) {
             try {
-              processedBudget.addFile(watchResult.rootPath,watchResult.relativePath)
-            } catch (e: Exception) {
+              processedBudget.addFile(watchResult.rootPath, watchResult.relativePath)
+            } catch (e: Throwable) {
               logger.error { "Failed to reload ${watchResult.relativePath}. $e" }
-              return null
+              return LoadResult.Failure(e.toBudgetLoadingException(watchResult.relativePath))
             }
           }
           val reprocessTime = processedBudget.timeSource.measureTime {
             try {
               processedBudget.reProcess()
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
               logger.error(e) { "Failed to reprocess $watchResult." }
-              return null
+              return LoadResult.Failure(e.toBudgetLoadingException(watchResult.relativePath))
             }
           }
           logger.info { "Rebuilt budget in ${reprocessTime.inWholeMilliseconds}ms" }
-          return processedBudget.dataPayload
+          return LoadResult.Success(processedBudget.dataPayload)
         }
 
         WatchResult.Action.ADD -> {
@@ -81,38 +98,40 @@ class Loader(
               watchResult.relativePath
                 ?: throw IllegalStateException("Adding null file to ${watchResult.rootPath}")
             )
-          } catch (e: Exception) {
+          } catch (e: Throwable) {
             logger.error { "Failed to reload ${watchResult.relativePath}. $e" }
-            return null
+            return LoadResult.Failure(e.toBudgetLoadingException(watchResult.relativePath))
           }
+          return null
         }
+
         WatchResult.Action.REMOVE -> {
           val reprocessTime = processedBudget.timeSource.measureTime {
             try {
               processedBudget.removeFile(
                 watchResult.relativePath
-                  ?: throw IllegalStateException("Adding null file to ${watchResult.rootPath}")
+                  ?: throw IllegalStateException("Removing null file from ${watchResult.rootPath}")
               )
               processedBudget.reProcess()
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
               logger.error { "Failed to remove file ${watchResult.relativePath}. $e" }
-              return null
+              return LoadResult.Failure(e.toBudgetLoadingException(watchResult.relativePath))
             }
           }
           logger.info { "Rebuilt budget in ${reprocessTime.inWholeMilliseconds}ms" }
-          return processedBudget.dataPayload
+          return LoadResult.Success(processedBudget.dataPayload)
         }
+
         WatchResult.Action.REMOVE_ALL -> {
           try {
             processedBudget.removeAll()
-          } catch (e: Exception) {
+          } catch (e: Throwable) {
             logger.error { "Failed to remove all for ${watchResult.rootPath}. $e" }
-            return null
+            return LoadResult.Failure(e.toBudgetLoadingException())
           }
-
+          return null
         }
       }
-      return null
     }
   }
 }

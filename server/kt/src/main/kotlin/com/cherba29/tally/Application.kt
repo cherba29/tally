@@ -1,5 +1,6 @@
 package com.cherba29.tally
 
+import com.cherba29.tally.data.BudgetLoadingException
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.schema.CustomSchemaGeneratorHooks
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
@@ -98,16 +99,16 @@ class LoggingDataFetcherExceptionHandler : DataFetcherExceptionHandler {
       "GraphQL fetch error on field '$fieldName' at path '$path' with arguments $argumentValues ($sourceLocation): ${exception.message}"
     }
 
-    val error: GraphQLError = if (exception is GraphQLError) {
-      GraphqlErrorBuilder.newError()
+    val error: GraphQLError = when (exception) {
+      is BudgetLoadingException -> exception.toGraphQLError(sourceLocation, path)
+      is GraphQLError -> GraphqlErrorBuilder.newError()
         .message(exception.message ?: "GraphQL Error")
         .location(sourceLocation)
         .path(path)
         .errorType(exception.errorType ?: ErrorType.DataFetchingException)
         .extensions(exception.extensions)
         .build()
-    } else {
-      ExceptionWhileDataFetching(path, exception, sourceLocation)
+      else -> ExceptionWhileDataFetching(path, exception, sourceLocation)
     }
 
     val result = DataFetcherExceptionHandlerResult.newResult().error(error).build()
@@ -116,7 +117,7 @@ class LoggingDataFetcherExceptionHandler : DataFetcherExceptionHandler {
 
   private fun unwrap(exception: Throwable): Throwable {
     var current = exception
-    while (current is CompletionException && current.cause != null) {
+    while ((current is CompletionException || current is java.lang.reflect.InvocationTargetException) && current.cause != null) {
       current = current.cause!!
     }
     return current

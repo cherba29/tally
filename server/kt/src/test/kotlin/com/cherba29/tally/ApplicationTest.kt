@@ -7,6 +7,7 @@ import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldNotContain
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
@@ -158,6 +159,109 @@ class ApplicationTest : DescribeSpec({
         verify(atLeast = 1) { spyLoader!!.close() }
       } finally {
         unmockkObject(Loader.Companion)
+      }
+    }
+
+    it("returns GraphQL errors when YAML has syntax or validation errors and recovers once fixed") {
+      val testPath = tempdir("tally-err-", keepOnFailure = false).toPath()
+      ((testPath / "client").createDirectory() / "index.html").createFile().writeText("Hello World!")
+      val dataDir = (testPath / "data").createDirectory()
+      val accountFile = (dataDir / "account.yaml").createFile()
+      accountFile.writeText(
+        """
+        name: test-account
+        owner: [someone]
+        path: [ external ]
+        opened_on: Mar2019
+        balances:
+          - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
+        """.trimIndent()
+      )
+
+      testApplication {
+        configureTestClient(testPath)
+        val client = createClient {
+          install(ContentNegotiation) {
+            jackson()
+          }
+        }
+
+        val tableQuery = """query { table(owner: "someone", startMonth: "Mar2019", endMonth: "Mar2019") { currentOwner } }"""
+
+        // 1. Initial valid query succeeds
+        val initialResponse = client.post("/graphql") {
+          contentType(ContentType.Application.Json)
+          setBody(GraphQLRequest(query = tableQuery))
+        }
+        initialResponse.status shouldBe HttpStatusCode.OK
+        val initialBody = initialResponse.bodyAsText()
+        initialBody shouldContain """"currentOwner":"someone""""
+        initialBody shouldNotContain """"errors":"""
+
+        // 2. Introduce YAML parsing syntax error
+        accountFile.writeText(
+          """
+          name: test-account
+          owner: [someone
+          """.trimIndent()
+        )
+        Thread.sleep(700)
+
+        val parseErrResponse = client.post("/graphql") {
+          contentType(ContentType.Application.Json)
+          setBody(GraphQLRequest(query = tableQuery))
+        }
+        parseErrResponse.status shouldBe HttpStatusCode.OK
+        val parseErrBody = parseErrResponse.bodyAsText()
+        parseErrBody shouldContain """"errors":"""
+        parseErrBody shouldContain "account.yaml"
+        parseErrBody shouldContain """"file":"account.yaml""""
+
+        // 3. Introduce validation error (balance date too far from grp)
+        accountFile.writeText(
+          """
+          name: test-account
+          owner: [someone]
+          path: [ external ]
+          opened_on: Mar2019
+          balances:
+            - { grp: Mar2019, date: 2020-05-01, camt: 100.00 }
+          """.trimIndent()
+        )
+        Thread.sleep(700)
+
+        val valErrResponse = client.post("/graphql") {
+          contentType(ContentType.Application.Json)
+          setBody(GraphQLRequest(query = tableQuery))
+        }
+        valErrResponse.status shouldBe HttpStatusCode.OK
+        val valErrBody = valErrResponse.bodyAsText()
+        valErrBody shouldContain """"errors":"""
+        valErrBody shouldContain "months apart (2 max)"
+        valErrBody shouldContain "account.yaml"
+        valErrBody shouldContain """"file":"account.yaml""""
+
+        // 4. Recover by writing valid YAML
+        accountFile.writeText(
+          """
+          name: test-account
+          owner: [someone]
+          path: [ external ]
+          opened_on: Mar2019
+          balances:
+            - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
+          """.trimIndent()
+        )
+        Thread.sleep(700)
+
+        val recoveredResponse = client.post("/graphql") {
+          contentType(ContentType.Application.Json)
+          setBody(GraphQLRequest(query = tableQuery))
+        }
+        recoveredResponse.status shouldBe HttpStatusCode.OK
+        val recoveredBody = recoveredResponse.bodyAsText()
+        recoveredBody shouldContain """"currentOwner":"someone""""
+        recoveredBody shouldNotContain """"errors":"""
       }
     }
   }

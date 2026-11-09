@@ -5,11 +5,13 @@ import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.utils.root
 import com.cherba29.tally.utils.WatchResult
 import com.cherba29.tally.utils.watchedEventFlow
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.engine.coroutines.testScheduler
 import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.comparables.shouldBeLessThan
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -189,12 +191,13 @@ class LoaderTest : DescribeSpec({
         }
       }
 
-      it("ignoring add file error") {
+      it("captures add file error and recovers once fixed") {
         val testTimeSource = TestTimeSource()
         val channel = Channel<WatchResult>(Channel.BUFFERED)
         val rootPath = Paths.get("/tmp")
         val relativePath = Paths.get("file.yaml")
         channel.trySend(WatchResult(rootPath, relativePath, WatchResult.Action.ADD)).isSuccess shouldBe true
+        var addFileFails = false
         val processedBudget = mockk<ProcessedBudget> {
           var count = 1
           val startTime = testTimeSource.markNow()
@@ -202,7 +205,7 @@ class LoaderTest : DescribeSpec({
           every { timeSource } answers { testTimeSource }
           every { loadedOn } answers { mockLoadedOn }
           every { addFile(any<Path>(), any()) } answers {
-            if (count > 1) throw IllegalArgumentException("error")
+            if (addFileFails) throw IllegalArgumentException("error in $relativePath")
           }
           every { reProcess() } answers { mockLoadedOn = startTime.elapsedNow() }
           every { dataPayload } answers {
@@ -220,27 +223,39 @@ class LoaderTest : DescribeSpec({
           result1.tree shouldBe root(Profile()) { leaf("testAccount1", Profile()) }
           loader.loadedOn shouldBe 150.seconds
 
+          // Trigger error on reprocess
+          addFileFails = true
           testTimeSource += 100.seconds
           channel.trySend(WatchResult(rootPath, relativePath, WatchResult.Action.REPROCESS)).isSuccess shouldBe true
           testScheduler.advanceTimeBy(1000)
 
           loader.loadedOn shouldBe 150.seconds // Should not change since add file fails.
+          val ex = shouldThrow<BudgetLoadingException> { loader.budget() }
+          ex.message shouldContain "error in file.yaml"
 
+          // Fix error and reprocess
+          addFileFails = false
+          testTimeSource += 50.seconds
+          channel.trySend(WatchResult(rootPath, relativePath, WatchResult.Action.REPROCESS)).isSuccess shouldBe true
+          testScheduler.advanceTimeBy(1000)
+
+          loader.loadedOn shouldBe 300.seconds
           val result2 = loader.budget()
-          result2.tree shouldBe root(Profile()) { leaf("testAccount1", Profile()) }
+          result2.tree shouldBe root(Profile()) { leaf("testAccount2", Profile()) }
           channel.close() shouldBe true
 
-          verify { processedBudget.addFile(rootPath, relativePath) }
-          verify(exactly = 1) { processedBudget.reProcess() } // Second call was not made due to error.
+          verify(exactly = 3) { processedBudget.addFile(rootPath, relativePath) }
+          verify(exactly = 2) { processedBudget.reProcess() }
         }
       }
 
-      it("ignoring reprocess error") {
+      it("captures reprocess error and recovers once fixed") {
         val testTimeSource = TestTimeSource()
         val channel = Channel<WatchResult>(Channel.BUFFERED)
         val rootPath = Paths.get("/tmp")
         val relativePath = Paths.get("file.yaml")
         channel.trySend(WatchResult(rootPath, relativePath, WatchResult.Action.ADD)).isSuccess shouldBe true
+        var reprocessFails = false
         val processedBudget = mockk<ProcessedBudget> {
           var count = 1
           val startTime = testTimeSource.markNow()
@@ -249,7 +264,7 @@ class LoaderTest : DescribeSpec({
           every { loadedOn } answers { mockLoadedOn }
           every { addFile(any<Path>(), any()) } answers { }
           every { reProcess() } answers {
-            if (count > 1) throw IllegalArgumentException("error")
+            if (reprocessFails) throw IllegalArgumentException("error in reprocess")
             mockLoadedOn = startTime.elapsedNow()
           }
           every { dataPayload } answers {
@@ -267,19 +282,30 @@ class LoaderTest : DescribeSpec({
           result1.tree shouldBe root(Profile()) { leaf("testAccount1", Profile()) }
           loader.loadedOn shouldBe 150.seconds
 
+          // Trigger reprocess error
+          reprocessFails = true
           testTimeSource += 100.seconds
           channel.trySend(WatchResult(rootPath, relativePath, WatchResult.Action.REPROCESS)).isSuccess shouldBe true
           testScheduler.advanceTimeBy(1000)
 
           loader.loadedOn shouldBe 150.seconds // Should not change since reprocess fails.
+          val ex = shouldThrow<BudgetLoadingException> { loader.budget() }
+          ex.message shouldContain "error in reprocess"
 
+          // Fix error and reprocess
+          reprocessFails = false
+          testTimeSource += 50.seconds
+          channel.trySend(WatchResult(rootPath, relativePath, WatchResult.Action.REPROCESS)).isSuccess shouldBe true
+          testScheduler.advanceTimeBy(1000)
+
+          loader.loadedOn shouldBe 300.seconds
           val result2 = loader.budget()
-          result2.tree shouldBe root(Profile()) { leaf("testAccount1", Profile()) }
+          result2.tree shouldBe root(Profile()) { leaf("testAccount2", Profile()) }
           channel.close() shouldBe true
 
-          verify(exactly = 2) { processedBudget.addFile(rootPath, relativePath) }
-          verify(exactly = 2) { processedBudget.reProcess() }
-          verify(exactly = 1) { processedBudget.dataPayload } // Second call was not made due to error.
+          verify(exactly = 3) { processedBudget.addFile(rootPath, relativePath) }
+          verify(exactly = 3) { processedBudget.reProcess() }
+          verify(exactly = 2) { processedBudget.dataPayload }
         }
       }
     }

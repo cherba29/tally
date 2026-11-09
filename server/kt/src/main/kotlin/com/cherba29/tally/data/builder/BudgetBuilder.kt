@@ -9,6 +9,7 @@ import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.utils.TreeNode
 import com.cherba29.tally.core.plus
 import com.cherba29.tally.data.Budget
+import com.cherba29.tally.data.BudgetLoadingException
 import com.cherba29.tally.data.Profile
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.TransactionStatement
@@ -282,8 +283,9 @@ class BudgetBuilder {
         if (balanceMonthDiff > 2) {
           val accountName = accountPath.last()
           val fileContext = ", while processing $sourceFile"
-          throw IllegalArgumentException(
-            "For $accountName account $balance and month $month are $balanceMonthDiff months apart (2 max)$fileContext"
+          throw BudgetLoadingException(
+            "For $accountName account $balance and month $month are $balanceMonthDiff months apart (2 max)$fileContext",
+            fileName = sourceFile.toString()
           )
         }
       }
@@ -303,25 +305,31 @@ class BudgetBuilder {
 
       if (balanceMonthDiff > 2 && sourceFile != null) {
         val fromAccountName = fromAccountPath.last()
-        throw IllegalArgumentException(
+        throw BudgetLoadingException(
           "For account '$fromAccountName' transfer to '$toAccountName' " +
-              "for $month date ${balance.date} ($balanceMonth) are too far apart$fileContext"
+              "for $month date ${balance.date} ($balanceMonth) are too far apart$fileContext",
+          fileName = sourceFile.toString(),
+          lineNumber = lineNumber
         )
       }
 
       val toAccountNode = cachedNameToTreenodeMap.getOrPut(toAccountName) {
         val toAccounts = pathToAccount.keys.filter { it.last() == toAccountName }
         if (toAccounts.isEmpty()) {
-          throw IllegalArgumentException(
+          throw BudgetLoadingException(
             "Unknown to account $toAccountName in " +
                 "${fromAccountPath.joinToString("/")}, " +
-                "known accounts\n${treeRoot.toPrettyString()}$fileContext"
+                "known accounts\n${treeRoot.toPrettyString()}$fileContext",
+            fileName = sourceFile?.toString(),
+            lineNumber = lineNumber
           )
         } else if (toAccounts.size > 1) {
-          throw IllegalArgumentException(
+          throw BudgetLoadingException(
             "Ambiguous transfer from ${fromAccountPath.joinToString("/")} to " +
                 "$toAccountName, found multiple candidate accounts " +
-                toAccounts.joinToString { it.joinToString("/") } + fileContext
+                toAccounts.joinToString { it.joinToString("/") } + fileContext,
+            fileName = sourceFile?.toString(),
+            lineNumber = lineNumber
           )
         }
 
@@ -330,23 +338,31 @@ class BudgetBuilder {
       }
 
       val fromAccountNode = treeRoot[fromAccountPath] as? TreeNode.Leaf
-        ?: throw IllegalArgumentException("Unknown account ${fromAccountPath.joinToString("/")}$fileContext")
+        ?: throw BudgetLoadingException(
+          "Unknown account ${fromAccountPath.joinToString("/")}$fileContext",
+          fileName = sourceFile?.toString(),
+          lineNumber = lineNumber
+        )
 
       val fromAccount = fromAccountNode.data.account
         ?: throw IllegalStateException("Node ${fromAccountNode.pathString} has no matching account entry")
       if (fromAccount.isClosed(month)) {
-        throw IllegalArgumentException(
+        throw BudgetLoadingException(
           "Account ${fromAccountNode.pathString} " +
-              "has transfer during closed month $month to ${toAccountNode.pathString}$fileContext"
+              "has transfer during closed month $month to ${toAccountNode.pathString}$fileContext",
+          fileName = sourceFile?.toString(),
+          lineNumber = lineNumber
         )
       }
 
       val toAccount = toAccountNode.data.account
         ?: throw IllegalStateException("Node ${toAccountNode.pathString} has no matching account entry")
       if (toAccount.isClosed(month)) {
-        throw IllegalArgumentException(
+        throw BudgetLoadingException(
           "Account ${toAccountNode.pathString} " +
-              "has transfer during closed month $month from ${fromAccountNode.pathString}$fileContext"
+              "has transfer during closed month $month from ${fromAccountNode.pathString}$fileContext",
+          fileName = sourceFile?.toString(),
+          lineNumber = lineNumber
         )
       }
     }

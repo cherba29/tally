@@ -1,7 +1,8 @@
 package com.cherba29.tally.data.yaml
 
 import com.cherba29.tally.core.Month
-import com.fasterxml.jackson.databind.JsonMappingException
+import com.cherba29.tally.data.BudgetLoadingException
+import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -26,9 +27,24 @@ class YamlDataParser {
   fun parseContent(content: String, relativeFilePath: Path): YamlData {
     val result = try {
       mapper.readValue(content, YamlData::class.java)
-    } catch (e: JsonMappingException) {
+    } catch (e: JsonProcessingException) {
+      val line = e.location?.lineNr?.takeIf { it > 0 }
+      val locationStr = if (line != null) ":$line" else ""
+      val message = "${e.message} while processing $relativeFilePath$locationStr"
+      logger.error { "Failed to parse $relativeFilePath$locationStr: ${e.message}" }
+      throw BudgetLoadingException(
+        message = message,
+        cause = e,
+        fileName = relativeFilePath.toString(),
+        lineNumber = line
+      )
+    } catch (e: Exception) {
       logger.error { "Failed to parse $relativeFilePath: ${e.message}" }
-      throw IllegalArgumentException(e.message + " while processing $relativeFilePath", e)
+      throw BudgetLoadingException(
+        message = "${e.message} while processing $relativeFilePath",
+        cause = e,
+        fileName = relativeFilePath.toString()
+      )
     }
     if (problemHandler.ignoredFields.isNotEmpty()) {
       logger.warn { "Unknown ignored fields: ${problemHandler.ignoredFields} in $relativeFilePath" }
