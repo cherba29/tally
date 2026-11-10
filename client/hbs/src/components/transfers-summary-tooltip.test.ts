@@ -65,6 +65,7 @@ describe('TransferSummaryTooltip component', () => {
       `<span>XXX</span>
        <period-buttons></period-buttons>
        <span style="float:right;">john/internal/test-account1</span>
+       <div class="index-chart"></div>
       <table>
         <thead>
           <tr>
@@ -129,6 +130,11 @@ describe('TransferSummaryTooltip component', () => {
         </tbody>
       </table>`
     );
+    const svg = element.shadowRoot!.querySelector('.index-chart svg');
+    expect(svg).to.exist;
+    expect(svg!.querySelector('path')).to.exist;
+    expect(svg!.textContent).to.include('Total Transfers');
+
     const buttons = element.shadowRoot!.querySelector('period-buttons');
     expect(buttons).to.exist;
     await buttons!.updateComplete;
@@ -141,5 +147,32 @@ describe('TransferSummaryTooltip component', () => {
     // 9 months back from Jul2026 is Nov2025.
     expect(detail.startMonth.toString()).to.equal('Nov2025');
     expect(detail.endMonth.toString()).to.equal('Jul2026');
+  });
+
+  it('updates rule and serie position on mousemove over index-chart', async () => {
+    const accountPath = 'john/internal/test-account1';
+    const months: string[] = ['Jul2026', 'Jun2026', 'May2026'];
+    const monthlyData: GqlMonthTransferSummary[] = [
+      { totalTransfers: 300 } as GqlMonthTransferSummary,
+      { totalTransfers: 200 } as GqlMonthTransferSummary,
+      { totalTransfers: 100 } as GqlMonthTransferSummary,
+    ];
+
+    const element = await fixture<TransfersSummaryTooltip>(
+      html`<transfers-summary-tooltip
+        .accountPath=${accountPath}
+        .months=${months}
+        .monthlyData=${monthlyData}
+      ></transfers-summary-tooltip>`
+    );
+
+    const svg = element.shadowRoot!.querySelector('.index-chart svg') as SVGSVGElement;
+    expect(svg).to.exist;
+    const rule = svg.querySelector('line.rule-line')!;
+    expect(rule).to.exist;
+
+    svg.dispatchEvent(new MouseEvent('mousemove', { clientX: 200, clientY: 100, bubbles: true }));
+    const updatedTransform = rule.getAttribute('transform');
+    expect(updatedTransform).to.be.a('string');
   });
 });
