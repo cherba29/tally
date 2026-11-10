@@ -13,8 +13,17 @@ export class AccountTooltip extends LitElement {
     }
   `;
 
+  private __account: GqlAccount | undefined = undefined;
+
   @property({attribute: false})
-  account: GqlAccount | undefined = undefined;
+  set account(value: GqlAccount | undefined) {
+    const oldValue = this.__account;
+    this.__account = value;
+    this.requestUpdate('account', oldValue);
+  }
+  get account() {
+    return this.__account;
+  }
 
   onCloseButton() {
     this.dispatchEvent(new CustomEvent('close'));
