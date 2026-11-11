@@ -3,6 +3,7 @@ package com.cherba29.tally
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.reduceTo
 import com.cherba29.tally.data.Budget
+import com.cherba29.tally.data.LoadResult
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.schema.GqlTable
 import com.cherba29.tally.schema.GqlTableRow
@@ -10,8 +11,11 @@ import com.cherba29.tally.schema.toGql
 import com.cherba29.tally.schema.toGqlTableCell
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query
+import com.expediagroup.graphql.server.operations.Subscription
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlin.time.measureTimedValue
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 
 class TableService(val loader: Loader) : Query {
@@ -84,6 +88,16 @@ class TableService(val loader: Loader) : Query {
         }
       }
       return GqlTable(currentOwner = forOwner, owners, requestedMonths, rows)
+    }
+  }
+}
+
+class TableSubscription(val loader: Loader) : Subscription {
+  @GraphQLDescription("Subscribes to notifications when budget data is reloaded.")
+  fun tableUpdates(): Flow<Boolean> = loader.updates.map {
+    when (it) {
+      is LoadResult.Success -> true
+      is LoadResult.Failure -> throw it.error
     }
   }
 }

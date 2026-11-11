@@ -17,6 +17,19 @@ const link = ApolloLink.from([
   new HttpLink({ uri: "http://localhost:8080/graphql" }),
 ]);
 
+const getSubscriptionUrl = (): string => {
+  if (typeof window !== 'undefined' && window.location) {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const hostname = window.location.hostname || 'localhost';
+    const port =
+      window.location.port && window.location.port !== '9000' && window.location.port !== '8000'
+        ? window.location.port
+        : '8080';
+    return `${protocol}//${hostname}:${port}/subscriptions`;
+  }
+  return 'ws://localhost:8080/subscriptions';
+};
+
 /**
  * Gql Backend Client.
  */
@@ -286,5 +299,102 @@ export class BackendClient {
         month,
       },
     });
+  }
+
+  /**
+   * Subscribes to table updates from the GraphQL backend.
+   * Calls onReload callback whenever data is reloaded.
+   * Returns an unsubscribe function.
+   */
+  subscribeToUpdates(onReload: () => void): () => void {
+    if (typeof WebSocket === 'undefined') {
+      return () => {};
+    }
+
+    let isClosed = false;
+    let ws: WebSocket | null = null;
+    let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+    let subId = 1;
+
+    const connect = () => {
+      if (isClosed) return;
+      try {
+        const url = getSubscriptionUrl();
+        ws = new WebSocket(url, 'graphql-transport-ws');
+
+        ws.onopen = () => {
+          if (isClosed) {
+            ws?.close();
+            return;
+          }
+          ws?.send(JSON.stringify({type: 'connection_init'}));
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type === 'connection_ack') {
+              ws?.send(
+                JSON.stringify({
+                  id: String(subId++),
+                  type: 'subscribe',
+                  payload: {
+                    query: 'subscription { tableUpdates }',
+                  },
+                })
+              );
+            } else if (data.type === 'next') {
+              onReload();
+            } else if (data.type === 'error') {
+              console.warn('GraphQL subscription error:', data.payload);
+              onReload();
+              if (!isClosed && ws && ws.readyState === WebSocket.OPEN) {
+                setTimeout(() => {
+                  if (!isClosed && ws && ws.readyState === WebSocket.OPEN) {
+                    ws.send(
+                      JSON.stringify({
+                        id: String(subId++),
+                        type: 'subscribe',
+                        payload: {
+                          query: 'subscription { tableUpdates }',
+                        },
+                      })
+                    );
+                  }
+                }, 1000);
+              }
+            }
+          } catch (e) {
+            console.error('Error handling WebSocket message', e);
+          }
+        };
+
+        ws.onclose = () => {
+          if (!isClosed) {
+            reconnectTimeout = setTimeout(connect, 3000);
+          }
+        };
+
+        ws.onerror = () => {
+          // Handled via onclose
+        };
+      } catch (err) {
+        if (!isClosed) {
+          reconnectTimeout = setTimeout(connect, 3000);
+        }
+      }
+    };
+
+    connect();
+
+    return () => {
+      isClosed = true;
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+      if (ws) {
+        ws.close();
+      }
+    };
   }
 }

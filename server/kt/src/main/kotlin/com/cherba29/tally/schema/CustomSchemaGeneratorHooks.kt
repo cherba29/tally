@@ -1,7 +1,7 @@
 package com.cherba29.tally.schema
 
 import com.cherba29.tally.core.Month
-import com.expediagroup.graphql.generator.hooks.SchemaGeneratorHooks
+import com.expediagroup.graphql.generator.hooks.FlowSubscriptionSchemaGeneratorHooks
 import graphql.schema.GraphQLScalarType
 import graphql.schema.GraphQLType
 import kotlin.reflect.KClass
@@ -26,11 +26,11 @@ val graphqlMonthType: GraphQLScalarType? = GraphQLScalarType.newScalar()
   .coercing(MonthCoercing)
   .build()
 
-class CustomSchemaGeneratorHooks : SchemaGeneratorHooks {
+class CustomSchemaGeneratorHooks : FlowSubscriptionSchemaGeneratorHooks() {
   override fun willGenerateGraphQLType(type: KType): GraphQLType? = when (type.classifier as? KClass<*>) {
     LocalDate::class -> graphqlLocalDateType
     Long::class -> graphqlLongType
     Month::class -> graphqlMonthType
-    else -> null
+    else -> super.willGenerateGraphQLType(type)
   }
 }

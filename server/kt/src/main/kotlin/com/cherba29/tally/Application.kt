@@ -248,6 +248,9 @@ fun Application.graphQLModule() {
         SummaryService(loader),
         StatementService(loader),
       )
+      subscriptions = listOf(
+        TableSubscription(loader),
+      )
       hooks = CustomSchemaGeneratorHooks()
       schemaObject = TallySchema()
     }

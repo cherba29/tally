@@ -41,6 +41,7 @@ export class TallyApp extends LitElement {
   `;
 
   private backendClient = new BackendClient();
+  private unsubscribeUpdates?: () => void;
   private popupMap = new Map<string, PopupData>();
 
   // Rendered values.
@@ -60,6 +61,12 @@ export class TallyApp extends LitElement {
     this.endMonth = Month.fromDate(new Date()).next(2);
     console.log('###', this.startMonth, this.endMonth);
     this.reloadTable();
+    this.unsubscribeUpdates = this.backendClient.subscribeToUpdates(() => this.reloadTable());
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this.unsubscribeUpdates?.();
   }
 
   override render() {

@@ -2,6 +2,7 @@
 "Schema for Tally data"
 schema @contact(description : "Report issues on github.", name : "Tally", url : "https://github.com/cherba29/tally"){
   query: Query
+  subscription: Subscription
 }
 
 "Provides contact information of the owner responsible for this subgraph schema."
@@ -208,6 +209,11 @@ type Query {
   table(endMonth: GqlMonth!, owner: String, startMonth: GqlMonth!): GqlTable!
   "Generates sum of internal/external transfers for each month."
   transfersSummary(accountPath: String!, endMonth: GqlMonth!, startMonth: GqlMonth): GqlTransfersSummary!
+}
+
+type Subscription {
+  "Subscribes to notifications when budget data is reloaded."
+  tableUpdates: Boolean!
 }
 
 "Date representation in YYYY-MM-DD format."

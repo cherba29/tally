@@ -13,7 +13,10 @@ import kotlin.time.TimeSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.map
 import kotlin.time.measureTime
 
@@ -29,9 +32,14 @@ class Loader(
   private val processedBudget: ProcessedBudget = ProcessedBudget(timeSource)
 ): AutoCloseable {
   val loadedOn: Duration? get() = processedBudget.loadedOn
+  private val _updates = MutableSharedFlow<LoadResult>(replay = 0, extraBufferCapacity = 64, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+  val updates: Flow<LoadResult> = _updates.asSharedFlow()
+
   private val state = LastSetFlowState<LoadResult>(
     pathUpdates.map { result ->
-      process(processedBudget, result)
+      process(processedBudget, result)?.also {
+        _updates.tryEmit(it)
+      }
     },
     watchScope)
 
