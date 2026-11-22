@@ -314,52 +314,94 @@ export class BackendClient {
     let isClosed = false;
     let ws: WebSocket | null = null;
     let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+    let resubscribeTimeout: ReturnType<typeof setTimeout> | null = null;
     let subId = 1;
+    let activeSubId: string | null = null;
+
+    const clearResubscribeTimeout = () => {
+      if (resubscribeTimeout) {
+        clearTimeout(resubscribeTimeout);
+        resubscribeTimeout = null;
+      }
+    };
+
+    const sendSubscribe = (socket: WebSocket) => {
+      const id = String(subId++);
+      activeSubId = id;
+      socket.send(
+        JSON.stringify({
+          id,
+          type: 'subscribe',
+          payload: {
+            query: 'subscription { tableUpdates }',
+          },
+        })
+      );
+    };
+
+    const sendComplete = () => {
+      if (activeSubId && ws && ws.readyState === WebSocket.OPEN) {
+        const id = activeSubId;
+        activeSubId = null;
+        try {
+          ws.send(JSON.stringify({id, type: 'complete'}));
+        } catch {
+          // Socket may already be closing during page unload
+        }
+      }
+    };
+
+    const closeConnection = () => {
+      isClosed = true;
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+        reconnectTimeout = null;
+      }
+      clearResubscribeTimeout();
+      sendComplete();
+      if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+        ws.close();
+      }
+    };
 
     const connect = () => {
       if (isClosed) return;
       try {
         const url = getSubscriptionUrl();
-        ws = new WebSocket(url, 'graphql-transport-ws');
+        const socket = new WebSocket(url, 'graphql-transport-ws');
+        ws = socket;
 
-        ws.onopen = () => {
+        socket.onopen = () => {
           if (isClosed) {
-            ws?.close();
+            socket.close();
             return;
           }
-          ws?.send(JSON.stringify({type: 'connection_init'}));
+          socket.send(JSON.stringify({type: 'connection_init'}));
         };
 
-        ws.onmessage = (event) => {
+        socket.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
             if (data.type === 'connection_ack') {
-              ws?.send(
-                JSON.stringify({
-                  id: String(subId++),
-                  type: 'subscribe',
-                  payload: {
-                    query: 'subscription { tableUpdates }',
-                  },
-                })
-              );
+              sendSubscribe(socket);
             } else if (data.type === 'next') {
               onReload();
+            } else if (data.type === 'complete') {
+              if (data.id === activeSubId) {
+                activeSubId = null;
+              }
             } else if (data.type === 'error') {
               console.warn('GraphQL subscription error:', data.payload);
+              if (data.id === activeSubId) {
+                activeSubId = null;
+              }
               onReload();
-              if (!isClosed && ws && ws.readyState === WebSocket.OPEN) {
-                setTimeout(() => {
-                  if (!isClosed && ws && ws.readyState === WebSocket.OPEN) {
-                    ws.send(
-                      JSON.stringify({
-                        id: String(subId++),
-                        type: 'subscribe',
-                        payload: {
-                          query: 'subscription { tableUpdates }',
-                        },
-                      })
-                    );
+              if (!isClosed && ws === socket && socket.readyState === WebSocket.OPEN) {
+                clearResubscribeTimeout();
+                resubscribeTimeout = setTimeout(() => {
+                  resubscribeTimeout = null;
+                  if (!isClosed && ws === socket && socket.readyState === WebSocket.OPEN) {
+                    sendSubscribe(socket);
                   }
                 }, 1000);
               }
@@ -369,32 +411,39 @@ export class BackendClient {
           }
         };
 
-        ws.onclose = () => {
+        socket.onclose = () => {
+          if (ws === socket) {
+            activeSubId = null;
+            clearResubscribeTimeout();
+          }
           if (!isClosed) {
             reconnectTimeout = setTimeout(connect, 3000);
           }
         };
 
-        ws.onerror = () => {
+        socket.onerror = () => {
           // Handled via onclose
         };
-      } catch (err) {
+      } catch {
         if (!isClosed) {
           reconnectTimeout = setTimeout(connect, 3000);
         }
       }
     };
 
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeunload', closeConnection);
+      window.addEventListener('pagehide', closeConnection);
+    }
+
     connect();
 
     return () => {
-      isClosed = true;
-      if (reconnectTimeout) {
-        clearTimeout(reconnectTimeout);
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('beforeunload', closeConnection);
+        window.removeEventListener('pagehide', closeConnection);
       }
-      if (ws) {
-        ws.close();
-      }
+      closeConnection();
     };
   }
 }

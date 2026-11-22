@@ -5,12 +5,12 @@ import com.cherba29.tally.data.Loader
 import com.cherba29.tally.schema.CustomSchemaGeneratorHooks
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.generator.federation.directives.ContactDirective
+import com.expediagroup.graphql.server.execution.subscription.GRAPHQL_WS_PROTOCOL
 import com.expediagroup.graphql.server.ktor.GraphQL
 import com.expediagroup.graphql.server.Schema
 import com.expediagroup.graphql.server.ktor.graphQLGetRoute
 import com.expediagroup.graphql.server.ktor.graphQLPostRoute
 import com.expediagroup.graphql.server.ktor.graphQLSDLRoute
-import com.expediagroup.graphql.server.ktor.graphQLSubscriptionsRoute
 import com.expediagroup.graphql.server.ktor.graphiQLRoute
 import com.expediagroup.graphql.server.operations.Query
 import graphql.ErrorType
@@ -51,6 +51,7 @@ import io.ktor.server.routing.routing
 import io.ktor.server.websocket.WebSockets
 import io.ktor.server.websocket.pingPeriod
 import io.ktor.server.websocket.timeout
+import io.ktor.server.websocket.webSocket
 import io.ktor.util.AttributeKey
 import java.io.File
 import java.nio.file.Paths
@@ -60,6 +61,7 @@ import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 fun main(args: Array<String>) {
@@ -287,7 +289,20 @@ fun Application.graphQLModule() {
     staticFiles("/", File(tallyBundlePath))
     graphQLGetRoute()
     graphQLPostRoute()
-    graphQLSubscriptionsRoute()
+    // Cancel active subscription collection as soon as the WebSocket closes.
+    // graphql-kotlin's default graphQLSubscriptionsRoute() uses flatMapMerge over a request flow
+    // that completes normally on client disconnect, leaving infinite SharedFlow subscriptions alive
+    // until the next emission fails with CancellationException on the closed outgoing channel.
+    webSocket(path = "subscriptions", protocol = GRAPHQL_WS_PROTOCOL) {
+      val subscriptionJob = launch {
+        call.application.plugin(GraphQL)
+          .subscriptionServer
+          .handleSubscription(this@webSocket)
+          .collect()
+      }
+      closeReason.invokeOnCompletion { subscriptionJob.cancel() }
+      subscriptionJob.join()
+    }
     graphiQLRoute()
     graphQLSDLRoute()
   }

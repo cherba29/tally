@@ -1,20 +1,31 @@
 package com.cherba29.tally
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
 import com.diffplug.selfie.coroutines.expectSelfie
+import com.expediagroup.graphql.server.execution.subscription.GRAPHQL_WS_PROTOCOL
+import com.expediagroup.graphql.server.execution.subscription.GraphQLWebSocketServer
 import com.expediagroup.graphql.server.types.GraphQLRequest
 import io.kotest.assertions.ktor.client.shouldHaveStatus
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.engine.spec.tempdir
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.jackson.jackson
@@ -23,6 +34,9 @@ import io.ktor.server.config.mergeWith
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import io.ktor.server.plugins.di.dependencies
+import io.ktor.websocket.Frame
+import io.ktor.websocket.close
+import io.ktor.websocket.readText
 import com.cherba29.tally.data.Loader
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.mockk.every
@@ -38,6 +52,9 @@ import kotlin.io.path.pathString
 import kotlin.io.path.writeText
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeout
+import org.slf4j.LoggerFactory
 
 fun ApplicationTestBuilder.configureTestClient(tallyPath: Path?) {
   application {
@@ -262,6 +279,83 @@ class ApplicationTest : DescribeSpec({
         val recoveredBody = recoveredResponse.bodyAsText()
         recoveredBody shouldContain """"currentOwner":"someone""""
         recoveredBody shouldNotContain """"errors":"""
+      }
+    }
+
+    it("cleans up subscription without warnings when client disconnects before reload") {
+      val testPath = tempdir("tally-ws-", keepOnFailure = false).toPath()
+      ((testPath / "client").createDirectory() / "index.html").createFile().writeText("Hello World!")
+      val dataDir = (testPath / "data").createDirectory()
+      val accountFile = (dataDir / "account.yaml").createFile()
+      accountFile.writeText(
+        """
+        name: test-account
+        owner: [someone]
+        path: [ external ]
+        opened_on: Mar2019
+        balances:
+          - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
+        """.trimIndent()
+      )
+
+      val wsLogger = LoggerFactory.getLogger(GraphQLWebSocketServer::class.java) as Logger
+      val listAppender = ListAppender<ILoggingEvent>().apply { start() }
+      wsLogger.addAppender(listAppender)
+
+      try {
+        testApplication {
+          configureTestClient(testPath)
+          val wsClient = createClient {
+            install(WebSockets)
+          }
+
+          // 1. Connect first client and subscribe, then close abruptly without sending 'complete'
+          //    (simulates browser page reload or closed tab).
+          val ws1 = wsClient.webSocketSession("/subscriptions") {
+            header(HttpHeaders.SecWebSocketProtocol, GRAPHQL_WS_PROTOCOL)
+          }
+          ws1.send(Frame.Text("""{"type":"connection_init"}"""))
+          val ack1 = withTimeout(5.seconds) { (ws1.incoming.receive() as Frame.Text).readText() }
+          ack1 shouldContain """"type":"connection_ack""""
+          ws1.send(Frame.Text("""{"id":"1","type":"subscribe","payload":{"query":"subscription { tableUpdates }"}}"""))
+          delay(100)
+          ws1.close()
+
+          // 2. Connect second client (simulates reloaded page) and subscribe.
+          val ws2 = wsClient.webSocketSession("/subscriptions") {
+            header(HttpHeaders.SecWebSocketProtocol, GRAPHQL_WS_PROTOCOL)
+          }
+          ws2.send(Frame.Text("""{"type":"connection_init"}"""))
+          val ack2 = withTimeout(5.seconds) { (ws2.incoming.receive() as Frame.Text).readText() }
+          ack2 shouldContain """"type":"connection_ack""""
+          ws2.send(Frame.Text("""{"id":"1","type":"subscribe","payload":{"query":"subscription { tableUpdates }"}}"""))
+          delay(100)
+
+          // 3. Trigger a budget reload and verify ws2 receives the update.
+          accountFile.writeText(
+            """
+            name: test-account
+            owner: [someone]
+            path: [ external ]
+            opened_on: Mar2019
+            balances:
+              - { grp: Mar2019, date: 2019-03-01, camt: 200.00 }
+            """.trimIndent()
+          )
+          val nextMsg = withTimeout(5.seconds) { (ws2.incoming.receive() as Frame.Text).readText() }
+          nextMsg shouldContain """"type":"next""""
+          nextMsg shouldContain """"tableUpdates":true"""
+
+          // 4. Gracefully complete and close ws2.
+          ws2.send(Frame.Text("""{"id":"1","type":"complete"}"""))
+          ws2.close()
+        }
+
+        val warningsOrErrors = listAppender.list.filter { it.level.isGreaterOrEqual(Level.WARN) }
+        warningsOrErrors.shouldBeEmpty()
+      } finally {
+        wsLogger.detachAppender(listAppender)
+        listAppender.stop()
       }
     }
   }
