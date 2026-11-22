@@ -1,7 +1,7 @@
 import { assert } from '@esm-bundle/chai';
 import { html, fixture, expect, oneEvent } from '@open-wc/testing';
 import { PeriodButtons } from './period-buttons';
-import { Month } from '@tally/lib/core/month';
+import { Month } from '../month';
 
 describe('PeriodButtons component', () => {
   it('renders with default property values', async () => {

@@ -3,7 +3,7 @@ import { html, fixture, expect } from '@open-wc/testing';
 import { type StatementEntry } from '../utils';
 import { type GqlSummaryStatement } from '../gql_types';
 import { BalanceSummaryTooltip } from './balance-summary-tooltip';
-import { Month } from '@tally/lib/core/month';
+import { Month } from '../month';
 
 describe('BalanceSummaryTooltip component', () => {
 

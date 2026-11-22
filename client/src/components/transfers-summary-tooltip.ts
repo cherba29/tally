@@ -3,7 +3,7 @@ import { customElement, property } from 'lit/decorators.js';
 import * as d3 from 'd3';
 import { currency } from '../format';
 import { type GqlMonthTransferSummary } from '../gql_types';
-import { Month } from '@tally/lib/core/month';
+import { Month } from '../month';
 
 import './period-buttons';
 

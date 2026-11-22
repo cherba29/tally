@@ -24,10 +24,9 @@ ln -s <path data directory> data
 pnpm -r install
 ```
 
-Build and test TypeScript packages:
+Test the client:
 
 ```bash
-pnpm lib test
 pnpm client test
 ```
 

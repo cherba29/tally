@@ -4,7 +4,7 @@ import { type StatementEntry } from '../utils';
 import {dateFormat, currency, isProjected} from '../format';
 import {classMap, type ClassInfo} from 'lit/directives/class-map.js';
 import {type GqlBalance, type GqlSummaryStatement} from '../gql_types';
-import {Month} from '@tally/lib/core/month';
+import {Month} from '../month';
 
 import './period-buttons';
 

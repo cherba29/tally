@@ -25,7 +25,7 @@ ktor {
 }
 
 val repoRoot = layout.projectDirectory.dir("../..")
-val frontendDir = repoRoot.dir("client/hbs")
+val frontendDir = repoRoot.dir("client")
 val frontendDistDir = frontendDir.dir("dist")
 val skipFrontend = providers.gradleProperty("skipFrontend")
   .map { it.isBlank() || it.equals("true", ignoreCase = true) }
@@ -53,7 +53,6 @@ val buildFrontend by tasks.registering(Exec::class) {
     frontendDir.file("vite.config.ts"),
   )
   inputs.files(fileTree(frontendDir.dir("src")) { exclude("**/*.test.ts") })
-  inputs.files(fileTree(repoRoot.dir("lib/src")) { exclude("**/*.test.ts") })
   outputs.dir(frontendDistDir)
 }
 

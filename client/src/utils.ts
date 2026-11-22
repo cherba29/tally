@@ -5,7 +5,7 @@ import {
   type GqlSummaryStatement, 
   type GqlTableRow
 } from './gql_types';
-import { Month } from '@tally/lib/core/month';
+import { Month } from './month';
 
 export interface PopupMonthSummaryData {
   accountName: string;

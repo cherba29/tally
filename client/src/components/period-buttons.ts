@@ -1,6 +1,6 @@
 import { LitElement, css, html, type PropertyValues } from 'lit';
 import { customElement, state, property } from 'lit/decorators.js';
-import { Month } from '@tally/lib/core/month';
+import { Month } from '../month';
 
 export enum SummaryView {
   MONTH_1 = '1m',

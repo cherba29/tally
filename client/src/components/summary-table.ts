@@ -6,7 +6,7 @@ import {customElement, property} from 'lit/decorators.js';
 import {currency} from '../format';
 import {type GqlAccount, type GqlTableRow, type GqlTableCell} from '../gql_types';
 import {classMap, type ClassInfo} from 'lit/directives/class-map.js';
-import {Month} from '@tally/lib/core/month';
+import {Month} from '../month';
 
 export type CellClickEventData = {
   mouseEvent: MouseEvent;

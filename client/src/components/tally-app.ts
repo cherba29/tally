@@ -20,7 +20,7 @@ import './transfers-summary-tooltip';
 import {type MonthRangeChange} from './balance-summary-tooltip';
 import {type TransfersSummaryMonthRangeChange} from './transfers-summary-tooltip';
 import {type CellClickEventData} from './summary-table';
-import {Month} from '@tally/lib/core/month';
+import {Month} from '../month';
 
 @customElement('tally-app')
 export class TallyApp extends LitElement {
