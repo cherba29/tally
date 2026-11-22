@@ -7,7 +7,6 @@
     "dev": "./dev.sh",
     "build": "./build.sh",
     "start": "./run.sh",
-    "cli": "pnpm --filter @tally/cli",
     "client": "pnpm --filter @tally/client",
     "lib": "pnpm --filter @tally/lib"
   },

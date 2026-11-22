@@ -1,36 +1,31 @@
 # Tally client side
 
-## Setup
-
-To build js bundle use.
-
-```
-npm run build
-```
-
-also via bazel
-
-```
-bazel build //client/hbs:bundle
-```
-
-and then running kotlin server via
-```
-TALLY_FILES=../../data TALLY_CLIENT_BUNDLE=../../bazel-bin/client/hbs ./gradlew run -t --info
-```
-
-the web app can be rebuilt without restarting the server, just reload page.
-
-
 ## Development
 
-```
-npm run test
+Run the Vite dev server (proxies `/graphql`, `/subscriptions`, `/graphiql`, and `/sdl` to Ktor on `:8080`):
+
+```bash
+pnpm --filter @tally/client dev
 ```
 
-## Graphql
+Or start both frontend and backend together from the repo root with `./dev.sh` (or `pnpm dev`).
 
-To regenerate ts graphql schema, using codegen.yaml config.
+## Build
+
+```bash
+pnpm --filter @tally/client build
 ```
-$ pnpm client graphql-codegen
+
+## Tests
+
+```bash
+pnpm --filter @tally/client test
+```
+
+## GraphQL
+
+To regenerate TypeScript GraphQL types using `codegen.yml`:
+
+```bash
+pnpm client graphql-codegen
 ```

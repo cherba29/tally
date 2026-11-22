@@ -13,23 +13,22 @@ It consists of backend micro-service with web-ui interface.
 
 ### Initial
 
-```
+```bash
 sudo apt install npm
-sudo npm install -g pnpm @bazel/bazelisk @bazel/ibazel
+sudo npm install -g pnpm
 ```
 
-```
+```bash
 cd tally
 ln -s <path data directory> data
 pnpm -r install
-bazel test //...
 ```
 
-Build client side:
+Build and test TypeScript packages:
 
-```
-pnpm lib build
-pnpm client build
+```bash
+pnpm lib test
+pnpm client test
 ```
 
 ## Run
@@ -70,20 +69,11 @@ Access the app at http://localhost:8080, GraphiQL at http://localhost:8080/graph
 
 ## CLI
 
-```
- bazel run //client/cli:tally_cli  --  generate External --start-month Dec2022
-```
+The CLI commands (`generate`, `report`, `transactions`, `unaccounted`, `summary`, `transfers-summary`, `csv-to-transfers`) are implemented in Kotlin under `server/kt`:
 
-or
-
-```
-pnpm cli exect generate External --start-month Dec2022
-```
-
-## Format files
-
-```
-bazel run @aspect_rules_format//format
+```bash
+cd server/kt
+TALLY_PATH=../../data ./gradlew runTally --args="generate External --start-month Dec2022"
 ```
 
 ## Update dependencies
