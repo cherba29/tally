@@ -1,4 +1,5 @@
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.language.jvm.tasks.ProcessResources
 
 plugins {
   alias(libs.plugins.expediagroup.graphql)
@@ -15,6 +16,54 @@ version = "0.0.1"
 
 application {
   mainClass = "io.ktor.server.netty.EngineMain"
+}
+
+ktor {
+  fatJar {
+    archiveFileName.set("tally-all.jar")
+  }
+}
+
+val repoRoot = layout.projectDirectory.dir("../..")
+val frontendDir = repoRoot.dir("client/hbs")
+val frontendDistDir = frontendDir.dir("dist")
+val skipFrontend = providers.gradleProperty("skipFrontend")
+  .map { it.isBlank() || it.equals("true", ignoreCase = true) }
+  .orElse(false)
+
+fun resolvePnpmExecutable(): String {
+  val candidates = listOf(
+    "${System.getProperty("user.home")}/.local/share/pnpm/pnpm",
+    "/usr/local/bin/pnpm",
+    "/usr/bin/pnpm",
+  )
+  return candidates.firstOrNull { File(it).canExecute() } ?: "pnpm"
+}
+
+val buildFrontend by tasks.registering(Exec::class) {
+  group = "build"
+  description = "Builds the frontend UI bundle using Vite."
+  workingDir = repoRoot.asFile
+  commandLine(resolvePnpmExecutable(), "--filter", "@tally/client", "build")
+
+  inputs.files(
+    frontendDir.file("index.html"),
+    frontendDir.file("package.json"),
+    frontendDir.file("tsconfig.json"),
+    frontendDir.file("vite.config.ts"),
+  )
+  inputs.files(fileTree(frontendDir.dir("src")) { exclude("**/*.test.ts") })
+  inputs.files(fileTree(repoRoot.dir("lib/src")) { exclude("**/*.test.ts") })
+  outputs.dir(frontendDistDir)
+}
+
+tasks.named<ProcessResources>("processResources") {
+  if (!skipFrontend.get()) {
+    dependsOn(buildFrontend)
+    from(frontendDistDir) {
+      into("static")
+    }
+  }
 }
 
 kotlin {

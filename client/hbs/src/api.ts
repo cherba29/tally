@@ -13,19 +13,21 @@ const defaultOptions: DefaultOptions = {
   },
 };
 
+const getGraphqlUrl = (): string => {
+  if (typeof window !== 'undefined' && window.location && window.location.origin !== 'null') {
+    return `${window.location.origin}/graphql`;
+  }
+  return 'http://localhost:8080/graphql';
+};
+
 const link = ApolloLink.from([
-  new HttpLink({ uri: "http://localhost:8080/graphql" }),
+  new HttpLink({uri: getGraphqlUrl()}),
 ]);
 
 const getSubscriptionUrl = (): string => {
-  if (typeof window !== 'undefined' && window.location) {
+  if (typeof window !== 'undefined' && window.location && window.location.host) {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const hostname = window.location.hostname || 'localhost';
-    const port =
-      window.location.port && window.location.port !== '9000' && window.location.port !== '8000'
-        ? window.location.port
-        : '8080';
-    return `${protocol}//${hostname}:${port}/subscriptions`;
+    return `${protocol}//${window.location.host}/subscriptions`;
   }
   return 'ws://localhost:8080/subscriptions';
 };

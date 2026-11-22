@@ -96,6 +96,25 @@ class ApplicationTest : DescribeSpec({
         response.bodyAsText() shouldBe "Hello World!"
       }
     }
+
+    it("serves embedded frontend resources when tally.client.path is not set") {
+      testApplication {
+        application {
+          graphQLModule()
+        }
+        environment {
+          config = config.mergeWith(
+            MapApplicationConfig(
+              "tally.data.path" to tallyPath.resolve("data").pathString,
+              "tally.client.path" to "",
+            )
+          )
+        }
+        val response = client.get("/")
+        response shouldHaveStatus HttpStatusCode.OK
+        response.bodyAsText() shouldContain "<tally-app></tally-app>"
+      }
+    }
     it("server should return Bad Request for invalid GET requests") {
       testApplication {
         configureTestClient(tallyPath)

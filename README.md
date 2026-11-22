@@ -34,14 +34,39 @@ pnpm client build
 
 ## Run
 
-### Start server
+### Development mode (auto-reload UI & backend)
 
-and then running kotlin server via
-```
-TALLY_FILES=../../data TALLY_CLIENT_BUNDLE=../../bazel-bin/client/hbs ./gradlew run -t --info
+Starts Ktor with autoreload (`:8080`), continuous Kotlin compilation, and the Vite dev server (`:5173`, proxying `/graphql`, `/subscriptions`, `/graphiql`, and `/sdl` to Ktor) with automatic browser reload whenever the UI changes:
+
+```bash
+./dev.sh
+# or
+pnpm dev
 ```
 
-access server via http://localhost:8080 and graphql via http://localhost:8080/graphiql, and schema description at http://localhost:8080/sdl
+Open http://localhost:5173 (override data path with `TALLY_FILES=/path/to/data ./dev.sh`).
+
+### Production mode (single fat JAR with embedded UI)
+
+Build the frontend with Vite and package frontend + backend into a single executable JAR (`server/kt/build/libs/tally-all.jar`):
+
+```bash
+./build.sh
+# or
+pnpm build
+```
+
+Run the packaged server (builds automatically if the JAR doesn't exist; pass `--build` to force a rebuild):
+
+```bash
+./run.sh
+# or
+pnpm start
+# or directly:
+TALLY_FILES=./data java -jar server/kt/build/libs/tally-all.jar
+```
+
+Access the app at http://localhost:8080, GraphiQL at http://localhost:8080/graphiql, and SDL at http://localhost:8080/sdl.
 
 ## CLI
 

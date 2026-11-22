@@ -24,6 +24,7 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.54.0",
+    "vite": "^6.3.5",
     "webpack": "^5.104.1",
     "webpack-cli": "^6.0.1",
     "webpack-dev-server": "^5.2.3"
@@ -39,8 +40,10 @@
   },
   "scripts": {
     "test": "DEBUG=pw:api web-test-runner --debug --puppeteer",
-    "serve": "TS_NODE_PROJECT=\"tsconfig-for-webpack-config.json\" webpack serve --port 9000",
-    "build": "TS_NODE_PROJECT=\"tsconfig-for-webpack-config.json\" webpack --config webpack.config.ts",
+    "dev": "vite",
+    "serve": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "karma": "karma start karma.conf.js",
     "graphql-codegen": "graphql-codegen --config codegen.yml",
     "coverage": "nyc -r text -e .ts -x \"tests/*.test.ts\" npm run test",

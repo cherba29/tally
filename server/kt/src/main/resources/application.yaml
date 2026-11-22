@@ -1,5 +1,5 @@
 ktor:
-  development: false
+  development: '$KTOR_DEVELOPMENT:false'
   application:
     modules:
       - com.cherba29.tally.ApplicationKt.graphQLModule
@@ -7,7 +7,10 @@ ktor:
     # Explicit loopback eliminates IPv6 lookup delays and multi-interface binding
     # host: 127.0.0.1
     # Using default so that WSL2 http://localhost:8080 works.
-    port: 8080
+    port: '$TALLY_PORT:8080'
+    watch:
+      - classes
+      - resources
 
     # Thread sizing optimized for single-user local usage:
     # Eliminates thread contention, context-switching overhead, and cold-thread wakeups
@@ -61,4 +64,5 @@ tally:
   # https://ktor.io/docs/server-configuration-file.html#environment-variables
     path: '$TALLY_FILES:123'
   client:
-    path: '$TALLY_CLIENT_BUNDLE'
+    # Optional filesystem override; when unset, embedded classpath /static resources are served.
+    path: '$?TALLY_CLIENT_BUNDLE'

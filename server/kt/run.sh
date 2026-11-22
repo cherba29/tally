@@ -1,3 +1,8 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-TALLY_FILES=../../data TALLY_CLIENT_BUNDLE=../../bazel-bin/client/hbs ./gradlew run -t --info
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TALLY_FILES="${TALLY_FILES:-$SCRIPT_DIR/../../data}"
+
+cd "$SCRIPT_DIR"
+TALLY_FILES="$TALLY_FILES" ./gradlew run --info

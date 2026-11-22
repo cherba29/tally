@@ -39,6 +39,7 @@ import io.ktor.server.application.hooks.ResponseSent
 import io.ktor.server.application.install
 import io.ktor.server.application.plugin
 import io.ktor.server.http.content.staticFiles
+import io.ktor.server.http.content.staticResources
 import io.ktor.server.netty.EngineMain
 import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.di.dependencies
@@ -279,14 +280,19 @@ fun Application.graphQLModule() {
     }
   }
 
-  val tallyBundlePath = requireNotNull(
-    environment.config.propertyOrNull(TALLY_CLIENT_BUNDLE_PATH)?.getString()
-  ) {
-    "Application config does not set $TALLY_CLIENT_BUNDLE_PATH property."
-  }
+  val tallyBundlePath = environment.config
+    .propertyOrNull(TALLY_CLIENT_BUNDLE_PATH)
+    ?.getString()
+    ?.takeIf { it.isNotBlank() }
 
   routing {
-    staticFiles("/", File(tallyBundlePath))
+    if (tallyBundlePath != null) {
+      logger.info { "Serving client bundle from filesystem: $tallyBundlePath" }
+      staticFiles("/", File(tallyBundlePath))
+    } else {
+      logger.info { "Serving client bundle from embedded classpath resources (/static)" }
+      staticResources("/", "static")
+    }
     graphQLGetRoute()
     graphQLPostRoute()
     // Cancel active subscription collection as soon as the WebSocket closes.

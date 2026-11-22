@@ -68,6 +68,8 @@ describe('BackendClient.subscribeToUpdates', () => {
     expect(MockWebSocket.instances).to.have.lengthOf(1);
     const ws = MockWebSocket.instances[0]!;
     expect(ws.protocol).to.equal('graphql-transport-ws');
+    const expectedProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    expect(ws.url).to.equal(`${expectedProtocol}//${window.location.host}/subscriptions`);
 
     ws.emitOpen();
     expect(ws.sent.map((m) => JSON.parse(m))).to.deep.equal([{type: 'connection_init'}]);
