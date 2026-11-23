@@ -133,6 +133,21 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "${GITHUB_REF_NAME}" dist/tally-all.jar \
-            --title "Tally ${GITHUB_REF_NAME}" \
-            --generate-notes
+          VERSION="${GITHUB_REF_NAME#v}"
+          NOTES_FILE="$(mktemp)"
+          if [[ -f CHANGELOG.md ]]; then
+            awk -v ver="$VERSION" '
+              $0 ~ "^## \\[" ver "\\]" { found=1; next }
+              found && /^## \[/ { exit }
+              found { print }
+            ' CHANGELOG.md > "$NOTES_FILE"
+          fi
+          if [[ -s "$NOTES_FILE" ]]; then
+            gh release create "${GITHUB_REF_NAME}" dist/tally-all.jar \
+              --title "Tally ${GITHUB_REF_NAME}" \
+              --notes-file "$NOTES_FILE"
+          else
+            gh release create "${GITHUB_REF_NAME}" dist/tally-all.jar \
+              --title "Tally ${GITHUB_REF_NAME}" \
+              --generate-notes
+          fi

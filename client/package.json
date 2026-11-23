@@ -2,7 +2,7 @@
   "name": "@tally/client",
   "type": "module",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.4.0",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@esm-bundle/chai": "4.3.4-fix.0",

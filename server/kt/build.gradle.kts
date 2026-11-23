@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "com.cherba29.tally"
-version = "0.0.1"
+version = "0.4.0"
 
 application {
   mainClass = "io.ktor.server.netty.EngineMain"
