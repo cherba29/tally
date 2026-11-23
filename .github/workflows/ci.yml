@@ -37,7 +37,19 @@ jobs:
 
       - name: Install dependencies
         working-directory: client
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
         run: pnpm install --frozen-lockfile
+
+      - name: Cache Puppeteer Chrome
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/puppeteer
+          key: ${{ runner.os }}-puppeteer-${{ hashFiles('client/pnpm-lock.yaml') }}
+
+      - name: Install Puppeteer Chrome
+        working-directory: client
+        run: '"$(realpath node_modules/@web/test-runner-puppeteer)/node_modules/.bin/puppeteer" browsers install chrome'
 
       - name: Build client
         working-directory: client
@@ -68,6 +80,8 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: client
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Setup JDK 21
