@@ -23,13 +23,13 @@ sudo npm install -g pnpm
 ```bash
 cd tally
 ln -s <path data directory> data
-pnpm -r install
+(cd client && pnpm install)
 ```
 
 Test the client:
 
 ```bash
-pnpm client test
+cd client && pnpm test
 ```
 
 ## Run
@@ -40,8 +40,6 @@ Starts Ktor with autoreload (`:8080`), continuous Kotlin compilation, and the Vi
 
 ```bash
 ./dev.sh
-# or
-pnpm dev
 ```
 
 Open http://localhost:5173 (override data path with `TALLY_FILES=/path/to/data ./dev.sh`).
@@ -52,16 +50,12 @@ Build the frontend with Vite and package frontend + backend into a single execut
 
 ```bash
 ./build.sh
-# or
-pnpm build
 ```
 
 Run the packaged server (builds automatically if the JAR doesn't exist; pass `--build` to force a rebuild):
 
 ```bash
 ./run.sh
-# or
-pnpm start
 # or directly:
 TALLY_FILES=./data java -jar server/kt/build/libs/tally-all.jar
 ```
@@ -87,11 +81,11 @@ GitHub Actions runs automatically via [`.github/workflows/ci.yml`](.github/workf
 
 ## Update dependencies
 
-List outdate packeges
-```
-pnpm outdated --recursive
+List outdated client packages:
+```bash
+cd client && pnpm outdated
 ```
 
-```
-pnpm update --latest --recursive
+```bash
+cd client && pnpm update --latest
 ```

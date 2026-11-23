@@ -43,8 +43,8 @@ fun resolvePnpmExecutable(): String {
 val buildFrontend by tasks.registering(Exec::class) {
   group = "build"
   description = "Builds the frontend UI bundle using Vite."
-  workingDir = repoRoot.asFile
-  commandLine(resolvePnpmExecutable(), "--filter", "@tally/client", "build")
+  workingDir = frontendDir.asFile
+  commandLine(resolvePnpmExecutable(), "build")
 
   inputs.files(
     frontendDir.file("index.html"),

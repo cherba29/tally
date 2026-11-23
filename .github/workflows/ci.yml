@@ -33,15 +33,19 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
+          cache-dependency-path: client/pnpm-lock.yaml
 
       - name: Install dependencies
+        working-directory: client
         run: pnpm install --frozen-lockfile
 
       - name: Build client
-        run: pnpm --filter @tally/client build
+        working-directory: client
+        run: pnpm build
 
       - name: Test client
-        run: pnpm --filter @tally/client test
+        working-directory: client
+        run: pnpm test
 
   server:
     name: Server (Test & Package Fat JAR)
@@ -60,8 +64,10 @@ jobs:
         with:
           node-version: 20
           cache: pnpm
+          cache-dependency-path: client/pnpm-lock.yaml
 
       - name: Install frontend dependencies
+        working-directory: client
         run: pnpm install --frozen-lockfile
 
       - name: Setup JDK 21

@@ -56,10 +56,10 @@ PIDS+=($!)
 
 # 3. Vite dev server proxying /graphql and /subscriptions to Ktor
 (
-  cd "$ROOT_DIR"
+  cd "$ROOT_DIR/client"
   TALLY_BACKEND_PORT="$TALLY_PORT" \
   TALLY_DEV_PORT="$TALLY_DEV_PORT" \
-    pnpm --filter @tally/client dev
+    pnpm dev
 ) &
 PIDS+=($!)
 
