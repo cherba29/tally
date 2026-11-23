@@ -88,7 +88,7 @@ GitHub Actions runs automatically via [`.github/workflows/ci.yml`](.github/workf
 
 - **Client**: installs workspace dependencies with `pnpm --frozen-lockfile`, runs the Vite production build, and executes all `web-test-runner` tests in headless Chromium.
 - **Server**: runs the full Kotlin/Ktor test suite (`./gradlew test`), packages the standalone fat JAR (`tally-all.jar` with embedded UI), and uploads the JAR and JaCoCo coverage report as workflow artifacts.
-- **Release (CD)**: pushing a version tag (e.g., `git tag v0.4.0 && git push origin v0.4.0`) automatically publishes a GitHub Release with `tally-all.jar` attached.
+- **Release (CD)**: [`.github/workflows/release.yml`](.github/workflows/release.yml) publishes GitHub Releases with `tally-all.jar`, its SHA-256 checksum, and release notes extracted from [`CHANGELOG.md`](CHANGELOG.md). Trigger it either by running the **Release** workflow manually in the GitHub Actions UI (defaults to the version in `client/package.json` and creates the `v<version>` tag automatically) or by pushing a version tag (e.g., `git tag v0.4.0 && git push origin v0.4.0`).
 
 ## Update dependencies
 
