@@ -43,11 +43,5 @@
     "prettier-format": "prettier --config .prettierrc.yaml '**/*.ts' --write",
     "lint": "eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix"
-  },
-  "pnpm": {
-    "overrides": {
-      "puppeteer": "24.43.1",
-      "puppeteer-core": "24.43.1"
-    }
   }
 }
