@@ -20,7 +20,19 @@ import './transfers-summary-tooltip';
 import {type MonthRangeChange} from './balance-summary-tooltip';
 import {type TransfersSummaryMonthRangeChange} from './transfers-summary-tooltip';
 import {type CellClickEventData} from './summary-table';
+import {type GqlTableRow} from '../gql_types';
 import {Month} from '../month';
+
+type ActivePopupRequest =
+  | {type: 'summary'; accountName: string; startMonth: Month | undefined; endMonth: Month}
+  | {
+      type: 'transfers-summary';
+      accountPath: string;
+      startMonth: Month | undefined;
+      endMonth: Month;
+    }
+  | {type: 'statement'; accountName: string; month: Month}
+  | {type: 'account'; rowId: string};
 
 @customElement('tally-app')
 export class TallyApp extends LitElement {
@@ -40,7 +52,7 @@ export class TallyApp extends LitElement {
     }
   `;
 
-  private backendClient = new BackendClient();
+  backendClient = new BackendClient();
   private unsubscribeUpdates?: () => void;
   private popupMap = new Map<string, PopupData>();
 
@@ -51,6 +63,8 @@ export class TallyApp extends LitElement {
   private months: string[] = [];
   private rows: Rows = {};
   private popupData: PopupData | undefined = undefined;
+  private activePopup: ActivePopupRequest | undefined = undefined;
+  private popupRequestId = 0;
   private popupOffset = {top: 0, left: 0};
   private currentOwner: string | undefined = undefined;
   private owners: string[] = [];
@@ -129,6 +143,9 @@ export class TallyApp extends LitElement {
   }
 
   tabClick(owner: string) {
+    if (this.currentOwner !== owner) {
+      this.closePopup();
+    }
     this.currentOwner = owner;
     if (this.popupMap.size === 0) {
       // If data was loading individually.
@@ -181,12 +198,20 @@ export class TallyApp extends LitElement {
   }
 
   private closePopup() {
+    this.popupRequestId++;
+    this.activePopup = undefined;
     this.popupData = undefined;
     this.requestUpdate();
   }
 
   private popupMonthRangeChange(e: CustomEvent<MonthRangeChange>) {
     console.log('### popup month range change', e.detail.startMonth, '-->', e.detail.endMonth);
+    this.activePopup = {
+      type: 'summary',
+      accountName: e.detail.accountName,
+      startMonth: e.detail.startMonth,
+      endMonth: e.detail.endMonth,
+    };
     this.reloadPopupSummaryStatement(
       e.detail.accountName,
       e.detail.startMonth,
@@ -196,6 +221,12 @@ export class TallyApp extends LitElement {
 
   private popupTransfersSummaryMonthRangeChange(e: CustomEvent<TransfersSummaryMonthRangeChange>) {
     console.log('### popup transfers-summary month range change', e.detail.startMonth, '--', e.detail.endMonth);
+    this.activePopup = {
+      type: 'transfers-summary',
+      accountPath: e.detail.accountPath,
+      startMonth: e.detail.startMonth,
+      endMonth: e.detail.endMonth,
+    };
     this.reloadPopupTransfersSummary(
       e.detail.accountPath,
       e.detail.startMonth,
@@ -205,50 +236,80 @@ export class TallyApp extends LitElement {
 
   private onAddSubCellClick(e: CustomEvent<CellClickEventData>) {
     console.log(e);
-    this.reloadPopupTransfersSummary(e.detail.rowId, this.startMonth, e.detail.month!);
     this.popupOffset = {
       top: e.detail.mouseEvent.pageY + 10,
       left: e.detail.mouseEvent.pageX,
     };
+    this.activePopup = {
+      type: 'transfers-summary',
+      accountPath: e.detail.rowId,
+      startMonth: this.startMonth,
+      endMonth: e.detail.month!,
+    };
+    this.reloadPopupTransfersSummary(e.detail.rowId, this.startMonth, e.detail.month!);
   }
 
   private onCellClick(e: CustomEvent<CellClickEventData>) {
+    this.popupOffset = {
+      top: e.detail.mouseEvent.pageY + 10,
+      left: e.detail.mouseEvent.pageX,
+    };
     if (e.detail.isSummary) {
-      this.reloadPopupSummaryStatement(
-        e.detail.rowId ?? '',
-        e.detail.month,
-        e.detail.month!
-      );
-      this.popupOffset = {
-        top: e.detail.mouseEvent.pageY + 10,
-        left: e.detail.mouseEvent.pageX,
+      const accountName = e.detail.rowId ?? '';
+      this.activePopup = {
+        type: 'summary',
+        accountName,
+        startMonth: e.detail.month,
+        endMonth: e.detail.month!,
       };
+      this.reloadPopupSummaryStatement(accountName, e.detail.month, e.detail.month!);
     } else if (e.detail.month) {
-      this.backendClient
-        .loadStatement(e.detail.rowId ?? '', e.detail.month?.toString() ?? '')
-        .then((result) => {
-          console.log(`PopupData for ${e.detail}`, result);
-          const statement = result.data!.statement;
-          const popupData: PopupMonthData = {
-            accountName: e.detail.rowId ?? '',
-            month: e.detail.month!,
-            stmt: statement!,
-          };
-          this.popupData = popupData;
-          this.popupOffset = {
-            top: e.detail.mouseEvent.pageY + 10,
-            left: e.detail.mouseEvent.pageX,
-          };
-          this.requestUpdate();
-        });
+      const accountName = e.detail.rowId ?? '';
+      this.activePopup = {
+        type: 'statement',
+        accountName,
+        month: e.detail.month,
+      };
+      this.reloadPopupStatement(accountName, e.detail.month);
     } else {
+      this.popupRequestId++;
+      this.activePopup = {
+        type: 'account',
+        rowId: e.detail.rowId,
+      };
       const popupData: HeadingPopupData = {
         account: e.detail.account!,
       };
       this.popupData = popupData;
-      this.popupOffset = {top: e.detail.mouseEvent.pageY + 10, left: e.detail.mouseEvent.pageX};
       this.requestUpdate();
     }
+  }
+
+  private reloadPopupStatement(accountName: string, month: Month) {
+    const requestId = ++this.popupRequestId;
+    this.backendClient
+      .loadStatement(accountName, month.toString())
+      .then((result) => {
+        if (requestId !== this.popupRequestId) return;
+        console.log(`PopupData for ${accountName} ${month}`, result);
+        const statement = result.data?.statement;
+        if (result.error || !statement) {
+          this.popupData = undefined;
+        } else {
+          const popupData: PopupMonthData = {
+            accountName,
+            month,
+            stmt: statement,
+          };
+          this.popupData = popupData;
+        }
+        this.requestUpdate();
+      })
+      .catch(() => {
+        if (requestId !== this.popupRequestId) return;
+        this.popupData = undefined;
+        this.requestUpdate();
+      });
   }
 
   private reloadPopupSummaryStatement(
@@ -256,23 +317,33 @@ export class TallyApp extends LitElement {
     startMonth: Month | undefined,
     endMonth: Month
   ) {
+    const requestId = ++this.popupRequestId;
     this.backendClient
       .loadSummaryData(accountName, startMonth?.toString(), endMonth.toString())
       .then((result) => {
+        if (requestId !== this.popupRequestId) return;
         console.log(`PopupData for ${accountName} ${startMonth}-${endMonth}`, result);
-        const summaryStatement = result.data!.summary?.total;
-        const statements = result.data!.summary?.statements;
-        const popupData: PopupMonthSummaryData = {
-          accountName,
-          startMonth: startMonth ?? endMonth,
-          endMonth: endMonth,
-          summary: summaryStatement ?? undefined,
-          statements: (statements || []).map((stmt) => ({
-            name: stmt?.name ?? '',
-            stmt: stmt!,
-          })),
-        };
-        this.popupData = popupData;
+        const summary = result.data?.summary;
+        if (result.error || !summary) {
+          this.popupData = undefined;
+        } else {
+          const popupData: PopupMonthSummaryData = {
+            accountName,
+            startMonth: startMonth ?? endMonth,
+            endMonth: endMonth,
+            summary: summary.total ?? undefined,
+            statements: (summary.statements || []).map((stmt) => ({
+              name: stmt?.name ?? '',
+              stmt: stmt!,
+            })),
+          };
+          this.popupData = popupData;
+        }
+        this.requestUpdate();
+      })
+      .catch(() => {
+        if (requestId !== this.popupRequestId) return;
+        this.popupData = undefined;
         this.requestUpdate();
       });
   }
@@ -282,19 +353,68 @@ export class TallyApp extends LitElement {
     startMonth: Month | undefined,
     endMonth: Month
   ) {
+    const requestId = ++this.popupRequestId;
     this.backendClient
       .loadTransferSummaryData(accountPath, startMonth?.toString(), endMonth.toString())
       .then((result) => {
+        if (requestId !== this.popupRequestId) return;
         console.log(`addSub data for ${accountPath}`, result);
-        const transfersSummary = result.data!.transfersSummary;
-        const popupData: PopupTransferSummaryData = {
-          accountPath: accountPath,
-          months: transfersSummary.months,
-          monthlyData: transfersSummary.data,
-        };
-        this.popupData = popupData;
+        const transfersSummary = result.data?.transfersSummary;
+        if (result.error || !transfersSummary) {
+          this.popupData = undefined;
+        } else {
+          const popupData: PopupTransferSummaryData = {
+            accountPath: accountPath,
+            months: transfersSummary.months,
+            monthlyData: transfersSummary.data,
+          };
+          this.popupData = popupData;
+        }
+        this.requestUpdate();
+      })
+      .catch(() => {
+        if (requestId !== this.popupRequestId) return;
+        this.popupData = undefined;
         this.requestUpdate();
       });
+  }
+
+  private refreshActivePopup(rows: GqlTableRow[]) {
+    if (!this.activePopup) {
+      this.popupData = undefined;
+      return;
+    }
+    switch (this.activePopup.type) {
+      case 'summary':
+        this.reloadPopupSummaryStatement(
+          this.activePopup.accountName,
+          this.activePopup.startMonth,
+          this.activePopup.endMonth
+        );
+        break;
+      case 'transfers-summary':
+        this.reloadPopupTransfersSummary(
+          this.activePopup.accountPath,
+          this.activePopup.startMonth,
+          this.activePopup.endMonth
+        );
+        break;
+      case 'statement':
+        this.reloadPopupStatement(this.activePopup.accountName, this.activePopup.month);
+        break;
+      case 'account': {
+        this.popupRequestId++;
+        const {rowId} = this.activePopup;
+        const row = rows.find((r) => r.id === rowId);
+        if (row?.account) {
+          this.popupData = {account: row.account};
+        } else {
+          this.activePopup = undefined;
+          this.popupData = undefined;
+        }
+        break;
+      }
+    }
   }
 
   private reloadTable() {
@@ -305,22 +425,25 @@ export class TallyApp extends LitElement {
         console.log('backend response', result);
         if (result.error) {
           this.errorMessage = result.error.message;
+          this.popupData = undefined;
         } else {
-          this.popupData = undefined; // Closes any open popups.
           this.errorMessage = '';
           const table = result.data!.table;
           this.currentOwner = table?.currentOwner ?? undefined;
           this.owners = table?.owners?.filter((owner) => !!owner).map((owner) => owner!) ?? [];
           this.months = table?.months?.map((value) => value.toString()) || [];
+          const freshRows = (table?.rows || []).map((r) => r!);
           this.rows = {
-            [this.currentOwner ?? '']: (table?.rows || []).map((r) => r!),
+            [this.currentOwner ?? '']: freshRows,
           };
           this.popupMap = new Map<string, PopupData>();
+          this.refreshActivePopup(freshRows);
         }
         this.requestUpdate();
       })
       .catch((error) => {
         this.errorMessage = error.message;
+        this.popupData = undefined;
         this.requestUpdate();
         throw error;
       });
