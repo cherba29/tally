@@ -1,5 +1,7 @@
 # tally
 
+[![CI/CD](https://github.com/cherba29/tally/actions/workflows/ci.yml/badge.svg)](https://github.com/cherba29/tally/actions/workflows/ci.yml)
+
 Personal financial ledger based on simple text (yaml) files.
 
 There are many other similar tools (see https://plaintextaccounting.org/).
@@ -74,6 +76,14 @@ The CLI commands (`generate`, `report`, `transactions`, `unaccounted`, `summary`
 cd server/kt
 TALLY_PATH=../../data ./gradlew runTally --args="generate External --start-month Dec2022"
 ```
+
+## CI/CD
+
+GitHub Actions runs automatically via [`.github/workflows/ci.yml`](.github/workflows/ci.yml) on pushes and pull requests to `master`:
+
+- **Client**: installs workspace dependencies with `pnpm --frozen-lockfile`, runs the Vite production build, and executes all `web-test-runner` tests in headless Chromium.
+- **Server**: runs the full Kotlin/Ktor test suite (`./gradlew test`), packages the standalone fat JAR (`tally-all.jar` with embedded UI), and uploads the JAR and JaCoCo coverage report as workflow artifacts.
+- **Release (CD)**: pushing a version tag (e.g., `git tag v0.4.0 && git push origin v0.4.0`) automatically publishes a GitHub Release with `tally-all.jar` attached.
 
 ## Update dependencies
 

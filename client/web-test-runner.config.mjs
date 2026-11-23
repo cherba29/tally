@@ -1,6 +1,15 @@
 import { esbuildPlugin } from '@web/dev-server-esbuild';
+import { puppeteerLauncher } from '@web/test-runner-puppeteer';
 
 export default {
+  browsers: [
+    puppeteerLauncher({
+      launchOptions: {
+        args: process.env.CI ? ['--no-sandbox', '--disable-setuid-sandbox'] : [],
+      },
+    }),
+  ],
+
   // Target your TypeScript test files
   files: ['src/**/*.test.ts', 'src/**/*.spec.ts'],
   

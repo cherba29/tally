@@ -38,7 +38,7 @@
     "prettier": "^3.8.1"
   },
   "scripts": {
-    "test": "DEBUG=pw:api web-test-runner --debug --puppeteer",
+    "test": "web-test-runner",
     "dev": "vite",
     "serve": "vite",
     "build": "vite build",
