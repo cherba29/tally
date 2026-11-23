@@ -22,9 +22,10 @@ sudo npm install -g pnpm
 
 ```bash
 cd tally
-ln -s <path data directory> data
 (cd client && pnpm install)
 ```
+
+> By default, `./dev.sh` and `./run.sh` load the bundled [`sample-data`](sample-data/README.md) ledger so you can try Tally immediately. Pass your own data directory via `--data /path/to/data` (or positional argument / `TALLY_FILES` env var).
 
 Test the client:
 
@@ -40,9 +41,12 @@ Starts Ktor with autoreload (`:8080`), continuous Kotlin compilation, and the Vi
 
 ```bash
 ./dev.sh
+# or with your own YAML data directory:
+./dev.sh /path/to/data
+./dev.sh --data /path/to/data
 ```
 
-Open http://localhost:5173 (override data path with `TALLY_FILES=/path/to/data ./dev.sh`).
+Open http://localhost:5173 (defaults to `./sample-data`; also supports `TALLY_FILES=/path/to/data ./dev.sh`).
 
 ### Production mode (single fat JAR with embedded UI)
 
@@ -56,11 +60,18 @@ Run the packaged server (builds automatically if the JAR doesn't exist; pass `--
 
 ```bash
 ./run.sh
+# or with your own YAML data directory:
+./run.sh /path/to/data
+./run.sh --build --data /path/to/data
 # or directly:
-TALLY_FILES=./data java -jar server/kt/build/libs/tally-all.jar
+TALLY_FILES=./sample-data java -jar server/kt/build/libs/tally-all.jar
 ```
 
 Access the app at http://localhost:8080, GraphiQL at http://localhost:8080/graphiql, and SDL at http://localhost:8080/sdl.
+
+## Sample Data
+
+See [`sample-data/README.md`](sample-data/README.md) for a walkthrough of the bundled 5-month double-entry example ledger (checking, credit card, payroll, and expenses) and screenshots of the UI.
 
 ## CLI
 
@@ -68,7 +79,7 @@ The CLI commands (`generate`, `report`, `transactions`, `unaccounted`, `summary`
 
 ```bash
 cd server/kt
-TALLY_PATH=../../data ./gradlew runTally --args="generate External --start-month Dec2022"
+TALLY_PATH=../../sample-data ./gradlew runTally --args="summary --start-month Jul2026 --end-month Nov2026"
 ```
 
 ## CI/CD

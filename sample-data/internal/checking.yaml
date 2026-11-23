@@ -1,0 +1,57 @@
+# Primary checking account (internal asset — positive balance)
+name: checking
+desc: "Primary Checking Account (Example Bank)"
+rank: 1
+number: "****1234"
+path: [internal]
+opened_on: Jul2026
+owner: [alex]
+statement_close_day: "1"
+url: "https://example.com/checking"
+
+# Recorded balance at the start of each month (camt = confirmed, pamt = projected)
+balances:
+  - { grp: Dec2026, date: 2026-12-01, pamt: 17867.00, desc: "Projected balance after Nov2026 paycheck & utilities" }
+  - { grp: Nov2026, date: 2026-11-01, camt: 15398.10 }
+  - { grp: Oct2026, date: 2026-10-01, camt: 12851.00 }
+  - { grp: Sep2026, date: 2026-09-01, camt:  9949.70 }
+  - { grp: Aug2026, date: 2026-08-01, camt:  7396.60 }
+  - { grp: Jul2026, date: 2026-07-01, camt:  5000.00, desc: "Opening checking balance" }
+
+# Outgoing transfers from checking (Tally automatically records the matching entry on the destination account)
+transfers_to:
+  credit-card:
+    Dec2026:
+      - { date: 2026-12-10, pamt: 670.00, desc: "Pay off Nov2026 statement (projected)" }
+    Nov2026:
+      - { date: 2026-11-10, camt: 684.10, desc: "Pay off Oct2026 statement" }
+    Oct2026:
+      - { date: 2026-10-10, camt: 619.00, desc: "Pay off Sep2026 statement" }
+    Sep2026:
+      - { date: 2026-09-10, camt: 658.10, desc: "Pay off Aug2026 statement" }
+    Aug2026:
+      - { date: 2026-08-10, camt: 579.10, desc: "Pay off Jul2026 statement" }
+    Jul2026:
+      - { date: 2026-07-10, camt: 750.00, desc: "Pay off Jun2026 statement" }
+
+  expenses:
+    Nov2026:
+      - { date: 2026-11-25, pamt:  122.00, desc: "Electric & gas utility (projected)" }
+      - { date: 2026-11-18, camt:   75.00, desc: "Fiber internet" }
+      - { date: 2026-11-02, camt: 1850.00, desc: "Monthly apartment rent" }
+    Oct2026:
+      - { date: 2026-10-24, camt:  108.90, desc: "Electric & gas utility" }
+      - { date: 2026-10-18, camt:   75.00, desc: "Fiber internet" }
+      - { date: 2026-10-02, camt: 1850.00, desc: "Monthly apartment rent" }
+    Sep2026:
+      - { date: 2026-09-24, camt:  115.60, desc: "Electric & gas utility" }
+      - { date: 2026-09-18, camt:   75.00, desc: "Fiber internet" }
+      - { date: 2026-09-02, camt: 1850.00, desc: "Monthly apartment rent" }
+    Aug2026:
+      - { date: 2026-08-24, camt:  142.80, desc: "Electric & gas utility (summer AC)" }
+      - { date: 2026-08-18, camt:   75.00, desc: "Fiber internet" }
+      - { date: 2026-08-02, camt: 1850.00, desc: "Monthly apartment rent" }
+    Jul2026:
+      - { date: 2026-07-24, camt:  128.40, desc: "Electric & gas utility" }
+      - { date: 2026-07-18, camt:   75.00, desc: "Fiber internet" }
+      - { date: 2026-07-02, camt: 1850.00, desc: "Monthly apartment rent" }

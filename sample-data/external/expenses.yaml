@@ -1,0 +1,17 @@
+# Living expenses account (external sink for rent, utilities, groceries, dining, etc.)
+# All incoming transfers are recorded on the source accounts (checking.yaml and credit-card.yaml).
+name: expenses
+desc: "Living Expenses (Rent, Utilities, Groceries, Dining)"
+rank: 2
+path: [external]
+opened_on: Jul2026
+owner: [alex]
+
+# Cumulative expenses paid to external merchants
+balances:
+  - { grp: Dec2026, date: 2026-12-01, pamt: 13453.00 }
+  - { grp: Nov2026, date: 2026-11-01, camt: 10736.00 }
+  - { grp: Oct2026, date: 2026-10-01, camt:  8018.00 }
+  - { grp: Sep2026, date: 2026-09-01, camt:  5358.40 }
+  - { grp: Aug2026, date: 2026-08-01, camt:  2632.50 }
+  - { grp: Jul2026, date: 2026-07-01, camt:     0.00 }

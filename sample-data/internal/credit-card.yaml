@@ -1,0 +1,53 @@
+# Everyday credit card account (internal liability — negative balance)
+name: credit-card
+desc: "Everyday Rewards Credit Card"
+rank: 2
+number: "****5678"
+path: [internal]
+opened_on: Jul2026
+owner: [alex]
+statement_close_day: "1"
+url: "https://example.com/credit-card"
+
+# Recorded balance at the start of each month (negative = amount owed)
+balances:
+  - { grp: Dec2026, date: 2026-12-01, pamt: -670.00, desc: "Projected statement balance" }
+  - { grp: Nov2026, date: 2026-11-01, camt: -684.10 }
+  - { grp: Oct2026, date: 2026-10-01, camt: -619.00 }
+  - { grp: Sep2026, date: 2026-09-01, camt: -658.10 }
+  - { grp: Aug2026, date: 2026-08-01, camt: -579.10 }
+  - { grp: Jul2026, date: 2026-07-01, camt: -750.00, desc: "Prior month balance due Jul 10" }
+
+# Outgoing charges on the credit card (payments from checking are recorded in checking.yaml)
+transfers_to:
+  expenses:
+    Nov2026:
+      - { date: 2026-11-27, pamt: 120.00, desc: "Holiday gifts (projected)" }
+      - { date: 2026-11-22, camt:  45.00, desc: "Streaming & cloud subscriptions" }
+      - { date: 2026-11-21, camt: 214.50, desc: "Thanksgiving groceries" }
+      - { date: 2026-11-14, camt:  92.30, desc: "Dining & coffee" }
+      - { date: 2026-11-04, camt: 198.20, desc: "Weekly groceries" }
+    Oct2026:
+      - { date: 2026-10-29, camt:  84.50, desc: "Restaurants & coffee" }
+      - { date: 2026-10-22, camt:  45.00, desc: "Streaming & cloud subscriptions" }
+      - { date: 2026-10-19, camt: 179.45, desc: "Weekly groceries" }
+      - { date: 2026-10-13, camt: 165.00, desc: "Autumn jacket" }
+      - { date: 2026-10-05, camt: 210.15, desc: "Weekly groceries" }
+    Sep2026:
+      - { date: 2026-09-27, camt:  76.85, desc: "Dining & takeout" }
+      - { date: 2026-09-22, camt:  45.00, desc: "Streaming & cloud subscriptions" }
+      - { date: 2026-09-20, camt: 196.75, desc: "Weekly groceries" }
+      - { date: 2026-09-14, camt: 112.00, desc: "Running shoes" }
+      - { date: 2026-09-06, camt: 188.40, desc: "Weekly groceries" }
+    Aug2026:
+      - { date: 2026-08-28, camt:  89.20, desc: "Restaurants & coffee" }
+      - { date: 2026-08-22, camt:  45.00, desc: "Streaming & cloud subscriptions" }
+      - { date: 2026-08-17, camt: 184.60, desc: "Weekly groceries" }
+      - { date: 2026-08-11, camt: 134.00, desc: "Weekend train tickets" }
+      - { date: 2026-08-04, camt: 205.30, desc: "Weekly groceries" }
+    Jul2026:
+      - { date: 2026-07-27, camt:  94.45, desc: "Transit pass & rideshare" }
+      - { date: 2026-07-22, camt:  45.00, desc: "Streaming & cloud subscriptions" }
+      - { date: 2026-07-19, camt: 178.90, desc: "Weekly groceries" }
+      - { date: 2026-07-12, camt:  68.25, desc: "Dinner with friends" }
+      - { date: 2026-07-05, camt: 192.50, desc: "Trader Joe's groceries" }

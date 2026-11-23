@@ -1,0 +1,35 @@
+# Employer payroll account (external income source)
+# Money flows OUT of payroll into checking, so its cumulative balance is negative.
+name: payroll
+desc: "Acme Corp Employer Payroll"
+rank: 1
+path: [external]
+opened_on: Jul2026
+owner: [alex]
+
+# Opening balance (-4250.00) offsets Alex's initial net worth (+4250.00) so total ledger = 0.00
+balances:
+  - { grp: Dec2026, date: 2026-12-01, pamt: -30650.00 }
+  - { grp: Nov2026, date: 2026-11-01, camt: -25450.00 }
+  - { grp: Oct2026, date: 2026-10-01, camt: -20250.00 }
+  - { grp: Sep2026, date: 2026-09-01, camt: -14650.00 }
+  - { grp: Aug2026, date: 2026-08-01, camt:  -9450.00 }
+  - { grp: Jul2026, date: 2026-07-01, camt:  -4250.00, desc: "Prior cumulative net earnings" }
+
+transfers_to:
+  checking:
+    Nov2026:
+      - { date: 2026-11-30, pamt: 2600.00, desc: "Acme Corp bi-monthly paycheck (projected)" }
+      - { date: 2026-11-13, camt: 2600.00, desc: "Acme Corp bi-monthly paycheck" }
+    Oct2026:
+      - { date: 2026-10-30, camt: 2600.00, desc: "Acme Corp bi-monthly paycheck" }
+      - { date: 2026-10-15, camt: 2600.00, desc: "Acme Corp bi-monthly paycheck" }
+    Sep2026:
+      - { date: 2026-09-30, camt: 3000.00, desc: "Paycheck + Q3 spot bonus" }
+      - { date: 2026-09-15, camt: 2600.00, desc: "Acme Corp bi-monthly paycheck" }
+    Aug2026:
+      - { date: 2026-08-31, camt: 2600.00, desc: "Acme Corp bi-monthly paycheck" }
+      - { date: 2026-08-14, camt: 2600.00, desc: "Acme Corp bi-monthly paycheck" }
+    Jul2026:
+      - { date: 2026-07-31, camt: 2600.00, desc: "Acme Corp bi-monthly paycheck" }
+      - { date: 2026-07-15, camt: 2600.00, desc: "Acme Corp bi-monthly paycheck" }
