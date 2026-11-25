@@ -61,8 +61,10 @@ graphql:
 
 tally:
   data:
-  # https://ktor.io/docs/server-configuration-file.html#environment-variables
-    path: '$TALLY_FILES:123'
+    # https://ktor.io/docs/server-configuration-file.html#environment-variables
+    # Primary data directory env var; falls back to TALLY_PATH or ./sample-data when unset.
+    path: '$?TALLY_FILES'
+    legacyPath: '$?TALLY_PATH'
   client:
     # Optional filesystem override; when unset, embedded classpath /static resources are served.
     path: '$?TALLY_CLIENT_BUNDLE'

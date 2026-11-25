@@ -38,6 +38,7 @@ import io.ktor.server.application.hooks.CallSetup
 import io.ktor.server.application.hooks.ResponseSent
 import io.ktor.server.application.install
 import io.ktor.server.application.plugin
+import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.http.content.staticFiles
 import io.ktor.server.http.content.staticResources
 import io.ktor.server.netty.EngineMain
@@ -55,6 +56,7 @@ import io.ktor.server.websocket.timeout
 import io.ktor.server.websocket.webSocket
 import io.ktor.util.AttributeKey
 import java.io.File
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
@@ -82,7 +84,9 @@ class HelloWorldQuery : Query {
 }
 
 private const val TALLY_PATH_ENV_SETTING = "tally.data.path"
+private const val TALLY_LEGACY_PATH_ENV_SETTING = "tally.data.legacyPath"
 private const val TALLY_CLIENT_BUNDLE_PATH = "tally.client.path"
+private const val DEFAULT_SAMPLE_DATA_PATH = "sample-data"
 
 /**
  * GraphQL exception handler that logs exceptions with full contextual details (path, field, arguments)
@@ -185,16 +189,39 @@ val RequestLoggingPlugin = createApplicationPlugin("RequestLogging") {
   }
 }
 
-fun Application.graphQLModule() {
-  val tallyFiles = Paths.get(requireNotNull(
-    environment.config.propertyOrNull(TALLY_PATH_ENV_SETTING)?.getString()
-  ) {
-    "Application config does not set $TALLY_PATH_ENV_SETTING property."
-  })
-  logger.info { "Using tally files path: ${tallyFiles.toRealPath()}" }
+internal fun resolveTallyDataPath(
+  config: ApplicationConfig,
+  defaultPath: Path = Paths.get(DEFAULT_SAMPLE_DATA_PATH),
+): Path {
+  val primary = config.propertyOrNull(TALLY_PATH_ENV_SETTING)?.getString()?.takeIf { it.isNotBlank() }
+  val legacy = if (primary == null) {
+    config.propertyOrNull(TALLY_LEGACY_PATH_ENV_SETTING)?.getString()?.takeIf { it.isNotBlank() }?.also {
+      logger.warn { "Environment variable TALLY_PATH is deprecated; use TALLY_FILES instead." }
+    }
+  } else {
+    null
+  }
+  val configuredPath = primary ?: legacy
+  val tallyFiles = if (configuredPath != null) {
+    Paths.get(configuredPath)
+  } else if (defaultPath.exists()) {
+    logger.info { "No data path configured; falling back to bundled '$defaultPath'." }
+    defaultPath
+  } else {
+    throw IllegalArgumentException(
+      "Tally data directory is not configured. Set TALLY_FILES=/path/to/data " +
+        "(or application config '$TALLY_PATH_ENV_SETTING')."
+    )
+  }
   require(tallyFiles.exists()) {
     "'$tallyFiles' path does not exist as set in application config '$TALLY_PATH_ENV_SETTING'."
   }
+  logger.info { "Using tally files path: ${tallyFiles.toRealPath()}" }
+  return tallyFiles
+}
+
+fun Application.graphQLModule() {
+  val tallyFiles = resolveTallyDataPath(environment.config)
 
   dependencies {
     provide<Loader> { Loader.watchPath(tallyFiles) }

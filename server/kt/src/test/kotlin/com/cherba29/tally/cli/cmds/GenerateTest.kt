@@ -52,7 +52,7 @@ class GenerateTest : DescribeSpec({
         """.trimIndent()
       )
 
-      val envvars = mapOf("TALLY_PATH" to tallyPath.toString())
+      val envvars = mapOf("TALLY_FILES" to tallyPath.toString())
       val command = Generate().context {
         readEnvvar = { envvars[it] }
       }
@@ -60,6 +60,46 @@ class GenerateTest : DescribeSpec({
       command.tallyPath shouldBe tallyPath
       command.account shouldBe "test-account"
       command.startMonth shouldBe MAR / 2019
+    }
+
+    it("falls back to legacy TALLY_PATH and prefers TALLY_FILES when both are set") {
+      val sampleYaml =
+        """
+        name: test-account
+        owner: [someone]
+        path: [external]
+        opened_on: Mar2019
+        balances:
+          - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
+        """.trimIndent()
+      val primaryPath = tempdir("tally-primary-", keepOnFailure = false).toPath()
+      (primaryPath / "acct.yaml").createFile().writeText(sampleYaml)
+      val legacyPath = tempdir("tally-legacy-", keepOnFailure = false).toPath()
+      (legacyPath / "acct.yaml").createFile().writeText(sampleYaml)
+
+      val legacyOnly = Generate().context {
+        readEnvvar = { mapOf("TALLY_PATH" to legacyPath.toString())[it] }
+      }
+      legacyOnly.parse(listOf("test-account", "--start-month=Mar2019"))
+      legacyOnly.tallyPath shouldBe legacyPath
+
+      val bothSet = Generate().context {
+        readEnvvar = {
+          mapOf(
+            "TALLY_FILES" to primaryPath.toString(),
+            "TALLY_PATH" to legacyPath.toString(),
+          )[it]
+        }
+      }
+      bothSet.parse(listOf("test-account", "--start-month=Mar2019"))
+      bothSet.tallyPath shouldBe primaryPath
+
+      val result = Generate().test(
+        listOf("test-account", "--start-month=Mar2019"),
+        envvars = mapOf("TALLY_PATH" to primaryPath.resolve("does-not-exist").toString()),
+      )
+      result.statusCode shouldBe 1
+      result.stderr shouldContain "does not exist"
     }
   }
 

@@ -176,5 +176,5 @@ query table(
 ./gradlew runTally --args="report External --start-month=Jan2025 --end-month=May2026 --tally-path=../../../data"
 ```
 
-the `--tally-path` option can be set as environment variable `TALLY_PATH` 
-in which case no need to provide it on command line.
+The `--tally-path` option can be set via the `TALLY_FILES` environment variable
+(or legacy `TALLY_PATH` as a fallback), in which case it does not need to be passed on the command line.

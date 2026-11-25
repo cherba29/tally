@@ -11,13 +11,12 @@ import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import com.github.ajalt.clikt.parameters.types.path
 import kotlin.collections.filter
 
 class Summary : CliktCommand() {
   override fun help(context: Context) = "Full report"
 
-  val tallyPath by option(envvar = "TALLY_PATH").path(mustExist = true).required()
+  val tallyPath by tallyPathOption()
 
   val account by argument(help = "Account name")
   val startMonth by option(

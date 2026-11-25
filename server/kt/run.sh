@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TALLY_FILES="${TALLY_FILES:-$SCRIPT_DIR/../../sample-data}"
+TALLY_FILES="${TALLY_FILES:-${TALLY_PATH:-$SCRIPT_DIR/../../sample-data}}"
 
 usage() {
   echo "Usage: $(basename "$0") [--data <path> | <path>]"

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TALLY_FILES="${TALLY_FILES:-$ROOT_DIR/sample-data}"
+TALLY_FILES="${TALLY_FILES:-${TALLY_PATH:-$ROOT_DIR/sample-data}}"
 TALLY_PORT="${TALLY_PORT:-8080}"
 TALLY_DEV_PORT="${TALLY_DEV_PORT:-5173}"
 

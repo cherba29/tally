@@ -11,15 +11,13 @@ import com.github.ajalt.clikt.parameters.arguments.optional
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.int
-import com.github.ajalt.clikt.parameters.types.path
 import kotlin.math.abs
 
 class Transactions : CliktCommand() {
   override fun help(context: Context) = "List of transactions within given period."
 
-  val tallyPath by option(envvar = "TALLY_PATH").path(mustExist = true).required()
+  val tallyPath by tallyPathOption()
 
   val account by argument(help = "Account name").optional()
   val startMonth by option(

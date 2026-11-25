@@ -91,7 +91,7 @@ The CLI commands (`generate`, `report`, `transactions`, `unaccounted`, `summary`
 
 ```bash
 cd server/kt
-TALLY_PATH=../../sample-data ./gradlew runTally --args="summary --start-month Jul2026 --end-month Nov2026"
+TALLY_FILES=../../sample-data ./gradlew runTally --args="summary --start-month Jul2026 --end-month Nov2026"
 ```
 
 ## CI/CD

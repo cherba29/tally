@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 JAR_PATH="$ROOT_DIR/server/kt/build/libs/tally-all.jar"
-TALLY_FILES="${TALLY_FILES:-$ROOT_DIR/sample-data}"
+TALLY_FILES="${TALLY_FILES:-${TALLY_PATH:-$ROOT_DIR/sample-data}}"
 TALLY_PORT="${TALLY_PORT:-8080}"
 FORCE_BUILD=false
 

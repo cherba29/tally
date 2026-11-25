@@ -13,10 +13,8 @@ import com.github.ajalt.clikt.parameters.arguments.optional
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.boolean
 import com.github.ajalt.clikt.parameters.types.int
-import com.github.ajalt.clikt.parameters.types.path
 import java.lang.IllegalStateException
 import kotlin.math.abs
 import kotlin.math.min
@@ -24,7 +22,7 @@ import kotlin.math.min
 class Unaccounted : CliktCommand() {
   override fun help(context: Context) = "List of periods with unaccounted balances."
 
-  val tallyPath by option(envvar = "TALLY_PATH").path(mustExist = true).required()
+  val tallyPath by tallyPathOption()
 
   val account by argument(help = "Account name").optional()
   val startMonth by option(

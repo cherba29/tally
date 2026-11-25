@@ -14,9 +14,10 @@ Low-risk cleanup that reduces noise, removes dead code, and establishes automate
 - [x] Removed stray tracked `server/kt/skills/system/run-workflow/SKILL.md` (`server/kt/kt.iml` is already gitignored via `server/kt/.gitignore`).
 - [x] Moved test-only helpers (`toObjectNode.kt` and `toSnapshot.kt`) from `server/kt/src/main/kotlin/com/cherba29/tally/testing/` to `server/kt/src/test/kotlin/com/cherba29/tally/testing/` so they are excluded from `tally-all.jar`.
 
-### 1.2 Unify Environment Variables & Config Defaults
-- Standardize on `TALLY_FILES` across both the web server and CLI commands (currently CLI commands such as [`Summary.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/cli/cmds/Summary.kt) read `TALLY_PATH`, while [`application.yaml`](../server/kt/src/main/resources/application.yaml), [`dev.sh`](../dev.sh), and [`run.sh`](../run.sh) use `TALLY_FILES`). Support the legacy name as a fallback for backwards compatibility.
-- Replace the placeholder default `path: '$TALLY_FILES:123'` in [`server/kt/src/main/resources/application.yaml`](../server/kt/src/main/resources/application.yaml) with a sensible default (e.g., `./sample-data` or a clear missing-configuration error).
+### 1.2 Unify Environment Variables & Config Defaults — Done
+- [x] Standardized on `TALLY_FILES` across the web server, shell scripts ([`dev.sh`](../dev.sh), [`run.sh`](../run.sh), [`server/kt/run.sh`](../server/kt/run.sh)), and all CLI commands via shared [`TallyPathOption.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/cli/cmds/TallyPathOption.kt), while preserving `TALLY_PATH` as a backwards-compatible fallback.
+- [x] Replaced the placeholder default `path: '$TALLY_FILES:123'` in [`server/kt/src/main/resources/application.yaml`](../server/kt/src/main/resources/application.yaml) with optional `$?TALLY_FILES` + `$?TALLY_PATH` and `resolveTallyDataPath()` in [`Application.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/Application.kt) (falls back to `./sample-data` if present, otherwise fails with a clear configuration message).
+- [x] Updated CLI documentation in [`README.md`](../README.md) and [`server/kt/README.md`](../server/kt/README.md), and added unit tests covering primary, fallback, default, and error cases.
 
 ### 1.3 Enforce Static Checks in CI
 - Fix existing `tsc --noEmit` errors in `client/` (e.g., `@esm-bundle/chai` vs. `@types/chai` type conflicts) and `pnpm lint` findings.

@@ -13,7 +13,6 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.int
-import com.github.ajalt.clikt.parameters.types.path
 import com.github.ajalt.mordant.rendering.TextAlign
 import com.github.ajalt.mordant.table.Borders
 import com.github.ajalt.mordant.table.table
@@ -36,7 +35,7 @@ class TransfersSummary : CliktCommand() {
     help = "Output width in characters"
   ).int().default(120)
 
-  val tallyPath by option(envvar = "TALLY_PATH").path(mustExist = true).required()
+  val tallyPath by tallyPathOption()
 
   override fun run() {
     val budget = Loader.loadFrom(tallyPath)

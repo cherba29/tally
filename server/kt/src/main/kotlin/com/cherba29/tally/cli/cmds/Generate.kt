@@ -13,7 +13,6 @@ import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import com.github.ajalt.clikt.parameters.types.path
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
@@ -21,7 +20,7 @@ import kotlinx.datetime.plus
 class Generate : CliktCommand() {
   override fun help(context: Context) = "Generate balances record based on transfers."
 
-  val tallyPath by option(envvar = "TALLY_PATH").path(mustExist = true).required()
+  val tallyPath by tallyPathOption()
 
   val account by argument(help = "Account name")
   val startMonth by option(

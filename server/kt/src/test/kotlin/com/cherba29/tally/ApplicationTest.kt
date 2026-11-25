@@ -9,6 +9,7 @@ import com.expediagroup.graphql.server.execution.subscription.GRAPHQL_WS_PROTOCO
 import com.expediagroup.graphql.server.execution.subscription.GraphQLWebSocketServer
 import com.expediagroup.graphql.server.types.GraphQLRequest
 import io.kotest.assertions.ktor.client.shouldHaveStatus
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -86,6 +87,47 @@ class ApplicationTest : DescribeSpec({
       - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
     """.trimIndent()
   )
+
+  describe("resolveTallyDataPath") {
+    it("prefers tally.data.path over legacyPath") {
+      val primaryDir = tempdir("tally-primary-", keepOnFailure = false).toPath()
+      val legacyDir = tempdir("tally-legacy-", keepOnFailure = false).toPath()
+      val config = MapApplicationConfig(
+        "tally.data.path" to primaryDir.pathString,
+        "tally.data.legacyPath" to legacyDir.pathString,
+      )
+      resolveTallyDataPath(config, defaultPath = tallyPath.resolve("missing")) shouldBe primaryDir
+    }
+
+    it("falls back to tally.data.legacyPath when tally.data.path is unset or blank") {
+      val legacyDir = tempdir("tally-legacy-", keepOnFailure = false).toPath()
+      val config = MapApplicationConfig(
+        "tally.data.path" to "",
+        "tally.data.legacyPath" to legacyDir.pathString,
+      )
+      resolveTallyDataPath(config, defaultPath = tallyPath.resolve("missing")) shouldBe legacyDir
+    }
+
+    it("falls back to default sample-data path when unconfigured and default exists") {
+      val defaultDir = tempdir("tally-default-", keepOnFailure = false).toPath()
+      resolveTallyDataPath(MapApplicationConfig(), defaultPath = defaultDir) shouldBe defaultDir
+    }
+
+    it("throws clear IllegalArgumentException when unconfigured and no default exists") {
+      val ex = shouldThrow<IllegalArgumentException> {
+        resolveTallyDataPath(MapApplicationConfig(), defaultPath = tallyPath.resolve("missing-default"))
+      }
+      ex.message shouldContain "TALLY_FILES"
+    }
+
+    it("throws IllegalArgumentException when configured path does not exist") {
+      val missing = tallyPath.resolve("does-not-exist")
+      val ex = shouldThrow<IllegalArgumentException> {
+        resolveTallyDataPath(MapApplicationConfig("tally.data.path" to missing.pathString))
+      }
+      ex.message shouldContain "does not exist"
+    }
+  }
 
   describe("routing") {
     it("root") {
