@@ -8,19 +8,18 @@ import com.cherba29.tally.schema.toGql
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.runBlocking
 import kotlin.time.measureTimedValue
 
 class StatementService(val loader: Loader) : Query {
   @GraphQLDescription("Returns a monthly statement for given account.")
-  fun statement(
+  suspend fun statement(
     accountPath: String,
     month: Month
   ): GqlStatement {
     logger.info { "statement account=$accountPath, month=$month" }
     val (result, timeTaken) = measureTimedValue {
       try {
-        val budget = runBlocking { loader.budget() }
+        val budget = loader.budget()
         val (accountNode, statement, isClosed) = budget.statement(accountPath, month)
         statement.toGql(accountNode.name, isClosed)
       } catch (e: Exception) {

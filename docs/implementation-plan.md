@@ -45,10 +45,9 @@ Low-risk cleanup that reduces noise, removes dead code, and establishes automate
 - [x] Extracted `Budget.summary(...)`, `Budget.statement(...)`, and `Budget.table(...)` into [`BudgetQueries.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/data/BudgetQueries.kt) (matching `Budget.transfersSummary(...)`).
 - [x] Refactored `SummaryService`, `StatementService`, `TableService`, and CLI `Summary` into thin adapters over the shared `Budget` queries so CLI and GraphQL share identical aggregation and closed-account exclusion (verified in [`SummaryTest.kt`](../server/kt/src/test/kotlin/com/cherba29/tally/cli/cmds/SummaryTest.kt)).
 
-### 2.3 Use `suspend` GraphQL Resolvers Instead of `runBlocking`
+### 2.3 Use `suspend` GraphQL Resolvers Instead of `runBlocking` — Done
 - **Files**: [`TableService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/TableService.kt), [`SummaryService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/SummaryService.kt), [`StatementService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/StatementService.kt)
-- **Problem**: Resolvers wrap `loader.budget()` in `runBlocking { ... }`, which can stall Netty event-loop threads under [`application.yaml`](../server/kt/src/main/resources/application.yaml) (`workerGroupSize: 2`, `shareWorkGroup: true`).
-- **Action**: Convert resolver functions to `suspend fun` (natively supported by `graphql-kotlin`) and call `loader.budget()` directly.
+- [x] Converted `table`, `summary`, `transfersSummary`, and `statement` resolvers to `suspend fun` and removed all `runBlocking` calls from `server/kt/src/main`.
 
 ### 2.4 Split Plumbing Out of `Application.kt`
 - **File**: [`server/kt/src/main/kotlin/com/cherba29/tally/Application.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/Application.kt)

@@ -10,7 +10,6 @@ import com.cherba29.tally.schema.toGqlSummaryData
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.runBlocking
 import kotlin.time.measureTimedValue
 
 class SummaryService(val loader: Loader) : Query {
@@ -22,7 +21,7 @@ class SummaryService(val loader: Loader) : Query {
    * @return gql formatted summary data over specified period.
    */
   @GraphQLDescription("Generates delta summary table between two months.")
-  fun summary(
+  suspend fun summary(
     accountPath: String,
     startMonth: Month? = null,
     endMonth: Month
@@ -30,7 +29,7 @@ class SummaryService(val loader: Loader) : Query {
     logger.info { "summary accountPath=$accountPath, startMonth=$startMonth, endMonth=$endMonth" }
     val (result, timeTaken) = measureTimedValue {
       try {
-        val budget = runBlocking { loader.budget() }
+        val budget = loader.budget()
         val (summaryNode, summaryStatement) = budget.summary(accountPath, startMonth, endMonth)
         summaryStatement.toGqlSummaryData(summaryNode.name, budget::isClosed)
       } catch (e: Exception) {
@@ -46,7 +45,7 @@ class SummaryService(val loader: Loader) : Query {
   }
 
   @GraphQLDescription("Generates sum of internal/external transfers for each month.")
-  fun transfersSummary(
+  suspend fun transfersSummary(
     accountPath: String,
     startMonth: Month? = null,
     endMonth: Month
@@ -54,7 +53,7 @@ class SummaryService(val loader: Loader) : Query {
     logger.info { "transfersSummary accountPath=$accountPath, startMonth=$startMonth, endMonth=$endMonth" }
     val (result, timeTaken) = measureTimedValue {
       try {
-        val budget = runBlocking { loader.budget() }
+        val budget = loader.budget()
         budget.transfersSummary(accountPath, startMonth, endMonth)
       } catch (e: Exception) {
         logger.error(e) {

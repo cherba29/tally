@@ -11,12 +11,11 @@ import com.expediagroup.graphql.server.operations.Subscription
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.runBlocking
 import kotlin.time.measureTimedValue
 
 class TableService(val loader: Loader) : Query {
   @GraphQLDescription("Generates full tally table in given month range.")
-  fun table(
+  suspend fun table(
     owner: String?,
     startMonth: Month,
     endMonth: Month
@@ -24,7 +23,7 @@ class TableService(val loader: Loader) : Query {
     logger.info { "table owner=$owner startMonth=$startMonth endMonth=$endMonth" }
     val (result, timeTaken) = measureTimedValue {
       try {
-        runBlocking { loader.budget() }.table(owner, startMonth, endMonth)
+        loader.budget().table(owner, startMonth, endMonth)
       } catch (e: Exception) {
         logger.error(e) {
           "Error while processing table query owner=$owner, startMonth=$startMonth, endMonth=$endMonth"
