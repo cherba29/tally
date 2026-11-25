@@ -39,7 +39,7 @@ Clicking a recurring badge inside `balance-tooltip` opens a **second floating po
 
 Create a self-contained, independently testable package `com.cherba29.tally.recurring`:
 
-- [ ] **1.1 Define domain models & configuration**
+- [x] **1.1 Define domain models & configuration**
   - **New file:** `server/kt/src/main/kotlin/com/cherba29/tally/recurring/RecurringModels.kt`
   - Define:
     - `RecurringDetectionConfig` with tunable defaults:
@@ -54,7 +54,7 @@ Create a self-contained, independently testable package `com.cherba29.tally.recu
     - `RecurringGroup` (`id`, `label`, `cadence`, `typicalDayOfMonth`, `averageAmount`, `minAmount`, `maxAmount`, `totalAmount`, `isFixedAmount`, `occurrences`)
     - `RecurringTransactionIndex` (`groupsById: Map<String, RecurringGroup>`, lookup method from a statement transaction / transfer key to its `RecurringGroup?`, plus `RecurringTransactionIndex.EMPTY`).
 
-- [ ] **1.2 Implement description normalization**
+- [x] **1.2 Implement description normalization**
   - **New file:** `server/kt/src/main/kotlin/com/cherba29/tally/recurring/DescriptionNormalizer.kt`
   - Normalize raw descriptions into `NormalizedDescription(normalizedText: String, tokens: List<String>, tokenSet: Set<String>)`:
     1. Lowercase and collapse Unicode/whitespace.
@@ -74,7 +74,7 @@ Create a self-contained, independently testable package `com.cherba29.tally.recu
     - `"ACH DEBIT CON EDISON 2026-10-15 REF#991823"` -> `"ach debit con edison"`
     - `"ZELLE PAYMENT TO JANE DOE CONF# ABC123456"` -> `"zelle payment to jane doe"`
 
-- [ ] **1.3 Implement multi-signal pairwise similarity scorer**
+- [x] **1.3 Implement multi-signal pairwise similarity scorer**
   - **New file:** `server/kt/src/main/kotlin/com/cherba29/tally/recurring/TransactionSimilarity.kt`
   - Hard disqualifiers (return `0.0` immediately):
     - Different `owner`.
@@ -104,7 +104,7 @@ Create a self-contained, independently testable package `com.cherba29.tally.recu
        - Else `0.0`.
   - Weighted sum: `descWeight * descScore + accountWeight * accountScore + amountWeight * amountScore + timingWeight * timingScore`.
 
-- [ ] **1.4 Implement clustering, cadence inference & stable group IDs**
+- [x] **1.4 Implement clustering, cadence inference & stable group IDs**
   - **New file:** `server/kt/src/main/kotlin/com/cherba29/tally/recurring/RecurringTransactionDetector.kt`
   - **Candidate blocking** (keeps runtime near-linear for large ledgers):
     - Partition by `(owner, type)`.
@@ -127,7 +127,7 @@ Create a self-contained, independently testable package `com.cherba29.tally.recu
     - Compute **deterministic `groupId`**: short hex SHA-256 hash of `owner | type | primaryFromPath | primaryToPath | canonicalNormalizedText` (with deterministic suffix if hash collides), ensuring IDs stay stable across live YAML reloads.
     - Sort `occurrences` descending by date (newest first, matching `TransactionStatement`).
 
-- [ ] **1.5 Write unit tests for Phase 1**
+- [x] **1.5 Write unit tests for Phase 1**
   - **New files:**
     - `server/kt/src/test/kotlin/com/cherba29/tally/recurring/DescriptionNormalizerTest.kt`
     - `server/kt/src/test/kotlin/com/cherba29/tally/recurring/TransactionSimilarityTest.kt`
