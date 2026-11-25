@@ -94,6 +94,20 @@ run_dev_server() {
   local port="$2"
   local dev_port="$3"
   local pids=()
+  local saved_tty=""
+
+  if [[ -t 0 ]]; then
+    saved_tty="$(stty -g 2>/dev/null || true)"
+  fi
+
+  terminate_tree() {
+    local sig="$1"
+    local pid="$2"
+    if command -v pkill >/dev/null 2>&1; then
+      pkill "-$sig" -P "$pid" 2>/dev/null || true
+    fi
+    kill "-$sig" "$pid" 2>/dev/null || true
+  }
 
   cleanup() {
     trap - EXIT INT TERM
@@ -101,10 +115,40 @@ run_dev_server() {
     echo "Stopping dev servers..."
     for pid in "${pids[@]:-}"; do
       if kill -0 "$pid" 2>/dev/null; then
-        kill "$pid" 2>/dev/null || true
+        terminate_tree TERM "$pid"
+      fi
+    done
+
+    # Wait briefly for graceful shutdown, then force-kill any stragglers so the terminal never hangs
+    local deadline=$((SECONDS + 4))
+    while [[ $SECONDS -lt $deadline ]]; do
+      local alive=false
+      for pid in "${pids[@]:-}"; do
+        if kill -0 "$pid" 2>/dev/null; then
+          alive=true
+          break
+        fi
+      done
+      if [[ "$alive" == "false" ]]; then
+        break
+      fi
+      sleep 0.1
+    done
+
+    for pid in "${pids[@]:-}"; do
+      if kill -0 "$pid" 2>/dev/null; then
+        terminate_tree KILL "$pid"
       fi
     done
     wait 2>/dev/null || true
+
+    if [[ -t 0 ]]; then
+      if [[ -n "$saved_tty" ]]; then
+        stty "$saved_tty" 2>/dev/null || stty sane 2>/dev/null || true
+      else
+        stty sane 2>/dev/null || true
+      fi
+    fi
   }
   trap cleanup EXIT INT TERM
 
@@ -118,33 +162,38 @@ run_dev_server() {
   echo "  Frontend (Vite): http://localhost:$dev_port (auto-reloads browser on UI changes)"
   echo ""
 
+  # Redirect stdin from /dev/null on background dev processes so neither Gradle nor Vite
+  # puts the interactive terminal into raw mode or holds the TTY open on Ctrl-C.
+
   # 1. Continuous Kotlin compilation so Ktor autoreloads changed classes on save
   (
     cd "$ROOT_DIR/server/kt"
-    ./gradlew -t classes -PskipFrontend=true --console=plain
-  ) &
+    exec ./gradlew -t classes -PskipFrontend=true --console=plain
+  ) < /dev/null &
   pids+=($!)
 
   # 2. Ktor backend server with autoreload enabled
   (
     cd "$ROOT_DIR/server/kt"
-    TALLY_FILES="$data_dir" \
-    TALLY_PORT="$port" \
-    KTOR_DEVELOPMENT=true \
+    exec env \
+      TALLY_FILES="$data_dir" \
+      TALLY_PORT="$port" \
+      KTOR_DEVELOPMENT=true \
       ./gradlew run -PskipFrontend=true --console=plain
-  ) &
+  ) < /dev/null &
   pids+=($!)
 
   # 3. Vite dev server proxying /graphql and /subscriptions to Ktor
   (
     cd "$ROOT_DIR/client"
-    TALLY_BACKEND_PORT="$port" \
-    TALLY_DEV_PORT="$dev_port" \
+    exec env \
+      TALLY_BACKEND_PORT="$port" \
+      TALLY_DEV_PORT="$dev_port" \
       pnpm dev
-  ) &
+  ) < /dev/null &
   pids+=($!)
 
-  wait -n "${pids[@]}"
+  wait -n "${pids[@]}" || true
 }
 
 cmd_server() {

@@ -21,29 +21,39 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.jackson.JacksonWebsocketContentConverter
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationStarted
+import io.ktor.server.application.ApplicationStopPreparing
 import io.ktor.server.application.install
 import io.ktor.server.application.plugin
+import io.ktor.server.cio.EngineMain
 import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.http.content.staticFiles
 import io.ktor.server.http.content.staticResources
-import io.ktor.server.netty.EngineMain
 import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.uri
 import io.ktor.server.response.respond
 import io.ktor.server.routing.routing
+import io.ktor.server.websocket.DefaultWebSocketServerSession
 import io.ktor.server.websocket.WebSockets
 import io.ktor.server.websocket.pingPeriod
 import io.ktor.server.websocket.timeout
 import io.ktor.server.websocket.webSocket
+import io.ktor.websocket.CloseReason
+import io.ktor.websocket.close
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.exists
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 import com.cherba29.tally.cli.main as runCliMain
@@ -129,6 +139,7 @@ fun Application.graphQLModule() {
   install(StatusPages) {
     exception<Throwable> { call, cause ->
       when {
+        cause is CancellationException -> throw cause
         cause is UnsupportedOperationException -> {
           logger.warn(cause) { "Method not allowed for ${call.request.uri}: ${cause.message}" }
           call.respond(HttpStatusCode.MethodNotAllowed)
@@ -195,6 +206,29 @@ fun Application.graphQLModule() {
     }
   }
 
+  val activeSubscriptions = ConcurrentHashMap<DefaultWebSocketServerSession, Job>()
+
+  monitor.subscribe(ApplicationStopPreparing) {
+    val entries = activeSubscriptions.entries.toList()
+    if (entries.isNotEmpty()) {
+      logger.info { "Closing ${entries.size} active WebSocket subscription(s)..." }
+      entries.forEach { (_, job) -> job.cancel() }
+      runBlocking(Dispatchers.IO) {
+        withTimeoutOrNull(500.milliseconds) {
+          entries.forEach { (session, _) ->
+            launch {
+              try {
+                session.close(CloseReason(CloseReason.Codes.GOING_AWAY, "Server shutting down"))
+              } catch (_: Throwable) {
+                // Session may already be closed
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   val tallyBundlePath = environment.config
     .propertyOrNull(TALLY_CLIENT_BUNDLE_PATH)
     ?.getString()
@@ -210,7 +244,7 @@ fun Application.graphQLModule() {
     }
     graphQLGetRoute()
     graphQLPostRoute()
-    // Cancel active subscription collection as soon as the WebSocket closes.
+    // Cancel active subscription collection as soon as the WebSocket closes or the server stops.
     // graphql-kotlin's default graphQLSubscriptionsRoute() uses flatMapMerge over a request flow
     // that completes normally on client disconnect, leaving infinite SharedFlow subscriptions alive
     // until the next emission fails with CancellationException on the closed outgoing channel.
@@ -222,8 +256,15 @@ fun Application.graphQLModule() {
           .handleSubscription(this@webSocket)
           .collect()
       }
+      activeSubscriptions[this] = subscriptionJob
       closeReason.invokeOnCompletion { subscriptionJob.cancel() }
-      subscriptionJob.join()
+      try {
+        subscriptionJob.join()
+      } catch (_: CancellationException) {
+        // Expected on server shutdown or client disconnect
+      } finally {
+        activeSubscriptions.remove(this)
+      }
     }
     graphiQLRoute()
     graphQLSDLRoute()

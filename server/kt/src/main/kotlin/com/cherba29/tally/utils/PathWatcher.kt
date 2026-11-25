@@ -4,7 +4,9 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -17,6 +19,7 @@ import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
+import java.nio.file.ClosedWatchServiceException
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.StandardWatchEventKinds
@@ -123,9 +126,13 @@ fun Path.watchedEventFlow(filePathFilter: (Path) -> Boolean): Flow<WatchResult> 
     }
 
     while (currentCoroutineContext().isActive) {
-      val key: WatchKey = runInterruptible(Dispatchers.IO) {
-        logger.info { "Waiting for changes to $watchedPath" }
-        watcher.take()
+      val key: WatchKey = try {
+        runInterruptible(Dispatchers.IO) {
+          logger.info { "Waiting for changes to $watchedPath" }
+          watcher.take()
+        }
+      } catch (_: ClosedWatchServiceException) {
+        break
       }
       val updatedFolderPath = watchKeyToFolderMap[key]
       // Optional brief delay to let OS complete multipart flush operations.
@@ -248,10 +255,12 @@ fun Path.watchedEventFlow(filePathFilter: (Path) -> Boolean): Flow<WatchResult> 
     }
   }.onCompletion {
     logger.info { "Closing watcher for path '$rootPath'" }
-    withContext(Dispatchers.IO) {
+    activeChecks.values.forEach { it.cancel() }
+    activeChecks.clear()
+    watcherScope.cancel()
+    withContext(NonCancellable + Dispatchers.IO) {
       watcher.close()
     }
-    activeChecks.forEach { it.value.cancel() }
   }
 }
 

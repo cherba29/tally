@@ -18,23 +18,9 @@ ktor:
     workerGroupSize: 2
     callGroupSize: 2
 
-    # Reuse worker event loop group for calls to avoid thread handoffs and cold wake-up latency
-    shareWorkGroup: true
-
-    # Keep TCP connections alive and keep HTTP connections open across idle periods
-    tcpKeepAlive: true
-    requestReadTimeoutSeconds: 0
-    responseWriteTimeoutSeconds: 10
-    runningLimit: 16
-
     # Fast and clean shutdown for local process lifecycle
-    shutdownGracePeriod: 1000
-    shutdownTimeout: 2000
-
-    # Netty HTTP buffer settings
-    maxInitialLineLength: 4096
-    maxHeaderSize: 8192
-    maxChunkSize: 8192
+    shutdownGracePeriod: 500
+    shutdownTimeout: 1500
 
 graphql:
   schema:

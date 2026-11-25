@@ -9,6 +9,7 @@ import io.ktor.server.plugins.origin
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.uri
 import io.ktor.util.AttributeKey
+import kotlinx.coroutines.CancellationException
 
 private val logger = KotlinLogging.logger {}
 
@@ -35,8 +36,12 @@ val RequestLoggingPlugin = createApplicationPlugin("RequestLogging") {
   on(CallFailed) { call, cause ->
     val start = call.attributes.getOrNull(callStartTime)
     val durationMs = if (start != null) System.currentTimeMillis() - start else -1
-    logger.error(cause) {
-      "<-- ${call.request.httpMethod.value} ${call.request.uri} -> FAILED in ${durationMs}ms: ${cause.message}"
+    if (cause is CancellationException) {
+      logger.debug { "<-- ${call.request.httpMethod.value} ${call.request.uri} -> cancelled in ${durationMs}ms" }
+    } else {
+      logger.error(cause) {
+        "<-- ${call.request.httpMethod.value} ${call.request.uri} -> FAILED in ${durationMs}ms: ${cause.message}"
+      }
     }
   }
 }
