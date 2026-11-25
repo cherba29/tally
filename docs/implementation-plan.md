@@ -35,12 +35,10 @@ Low-risk cleanup that reduces noise, removes dead code, and establishes automate
 
 ## Phase 2: Backend Architecture & Readability (`server/kt`)
 
-### 2.1 Deduplicate Transfer Resolution & Validation in `BudgetBuilder`
+### 2.1 Deduplicate Transfer Resolution & Validation in `BudgetBuilder` — Done
 - **File**: [`server/kt/src/main/kotlin/com/cherba29/tally/data/builder/BudgetBuilder.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/data/builder/BudgetBuilder.kt)
-- **Problem**: `validateTransfers()` and `buildTransactionStatements()` duplicate target-account lookup, ambiguity detection, and closed-month validation while throwing different exception types (`BudgetLoadingException` vs. `IllegalArgumentException`).
-- **Action**:
-  - Introduce a `ResolvedTransfer(fromNode, toNode, month, balance, description, ...)` step that validates and resolves each `TransferRecord` once.
-  - Reuse the resolved list directly when building `MonthTransactionStatementBuilder` entries.
+- [x] Replaced duplicate validation/lookup logic across `validateTransfers()` and `buildTransactionStatements()` with a single-pass `resolveTransfers()` returning `List<ResolvedTransfer>` (preserving `validate()` public API and `BudgetLoadingException` file/line context).
+- [x] Passed the resolved transfers directly into `buildTransactionStatements()` so transfer resolution and validation cannot diverge.
 
 ### 2.2 Share Query & Aggregation Logic Between GraphQL Services and CLI
 - **Files**: [`SummaryService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/SummaryService.kt), [`StatementService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/StatementService.kt), [`TableService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/TableService.kt), [`cli/cmds/Summary.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/cli/cmds/Summary.kt)
