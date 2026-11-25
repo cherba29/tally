@@ -54,13 +54,31 @@ export class SummaryTable extends LitElement {
     }
     table {
       border: 5px solid #c3c3c3;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    thead {
+      position: sticky;
+      top: 0;
+      z-index: 2;
     }
     table td {
       border-left: 1px solid #c3c3c3;
       border-top: 1px solid #c3c3c3;
       padding: 1px;
       vertical-align: middle;
+    }
+    tbody td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      background-color: #fff;
+      border-left: none;
+      border-right: 2px solid #c3c3c3;
+      white-space: nowrap;
+    }
+    tbody tr[bgcolor='#ffd'] td:first-child {
+      background-color: #ffd;
     }
     table td.balance,
     td.unaccounted,
@@ -70,11 +88,20 @@ export class SummaryTable extends LitElement {
       text-align: right;
     }
     table th {
-      border-left-width: 1px;
+      background-color: #f6f8fa;
+      border-left: 1px solid #c3c3c3;
+      border-bottom: 1px solid #c3c3c3;
       font-family: 'Times New Roman', Times, serif;
       font-size: 75%;
       padding: 2px;
       vertical-align: middle;
+    }
+    thead th:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 3;
+      border-left: none;
+      border-right: 2px solid #c3c3c3;
     }
   `;
 

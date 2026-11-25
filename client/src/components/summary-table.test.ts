@@ -633,6 +633,21 @@ describe('SummaryTable component', () => {
     await element.updateComplete;
     expect(btn.expanded).to.equal(true);
     expect(childRow.hidden).to.equal(false);
+
+    // Sticky header and first column styles
+    const thead = element.shadowRoot!.querySelector('thead')!;
+    const firstHeader = element.shadowRoot!.querySelector('thead th:first-child')!;
+    const totalFirstCell = groupRow.querySelector('td:first-child')!;
+    const normalFirstCell = childRow.querySelector('td:first-child')!;
+    expect(getComputedStyle(thead).position).to.equal('sticky');
+    expect(getComputedStyle(thead).top).to.equal('0px');
+    expect(getComputedStyle(firstHeader).position).to.equal('sticky');
+    expect(getComputedStyle(firstHeader).left).to.equal('0px');
+    expect(getComputedStyle(totalFirstCell).position).to.equal('sticky');
+    expect(getComputedStyle(totalFirstCell).left).to.equal('0px');
+    expect(getComputedStyle(totalFirstCell).backgroundColor).to.equal('rgb(255, 255, 221)');
+    expect(getComputedStyle(normalFirstCell).position).to.equal('sticky');
+    expect(getComputedStyle(normalFirstCell).backgroundColor).to.equal('rgb(255, 255, 255)');
   });
 
   it('handles optional indent/cells and total-row rowId fallbacks on click', async () => {

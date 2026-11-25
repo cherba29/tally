@@ -136,6 +136,8 @@ export class TallyApp extends LitElement {
     .tabcontent {
       border-top: none;
       padding: 4px 8px 8px;
+      overflow: auto;
+      max-height: calc(100vh - 76px);
     }
   `;
 

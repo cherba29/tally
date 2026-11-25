@@ -83,9 +83,10 @@ Low-risk cleanup that reduces noise, removes dead code, and establishes automate
 - [x] Replaced the fixed unlabeled `<< < > >>` toolbar with a sticky flex `<header class="toolbar">` featuring labeled End/Start/Shift control groups (`+1y`, `+1m`, `-1m`, `-1y`), descriptive `title` tooltips, and a `Today` reset button (`resetRange()`).
 - [x] Updated owner tabs to render full owner names in a `<nav class="owner-tabs" role="tablist">` with active tab styling and `aria-selected`, and conditioned the error banner so it takes no space when empty.
 
-### 4.2 Sticky Table Headers & Account Column
-- **File**: [`client/src/components/summary-table.ts`](../client/src/components/summary-table.ts)
-- **Action**: Apply `position: sticky; top: 0` to `<thead>` and `position: sticky; left: 0` to the first column so account names and month headers remain visible when scrolling wide or tall ledgers.
+### 4.2 Sticky Table Headers & Account Column — Done
+- **Files**: [`client/src/components/summary-table.ts`](../client/src/components/summary-table.ts), [`client/src/components/tally-app.ts`](../client/src/components/tally-app.ts)
+- [x] Applied `position: sticky; top: 0` to `<thead>` and `position: sticky; left: 0` to `thead th:first-child` and `tbody td:first-child` (preserving `#ffd` background on total rows and `#f6f8fa` on headers with `border-collapse: separate`) and made `.tabcontent` scrollable so headers and account names stay pinned while scrolling wide/tall ledgers.
+- [x] Added computed-style assertions in [`summary-table.test.ts`](../client/src/components/summary-table.test.ts).
 
 ### 4.3 Popup Ergonomics & Copy Feedback
 - **Files**: [`client/src/components/tally-app.ts`](../client/src/components/tally-app.ts), tooltip components
