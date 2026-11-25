@@ -15,7 +15,7 @@ Low-risk cleanup that reduces noise, removes dead code, and establishes automate
 - [x] Moved test-only helpers (`toObjectNode.kt` and `toSnapshot.kt`) from `server/kt/src/main/kotlin/com/cherba29/tally/testing/` to `server/kt/src/test/kotlin/com/cherba29/tally/testing/` so they are excluded from `tally-all.jar`.
 
 ### 1.2 Unify Environment Variables & Config Defaults — Done
-- [x] Standardized on `TALLY_FILES` across the web server, shell scripts ([`dev.sh`](../dev.sh), [`run.sh`](../run.sh), [`server/kt/run.sh`](../server/kt/run.sh)), and all CLI commands via shared [`TallyPathOption.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/cli/cmds/TallyPathOption.kt), while preserving `TALLY_PATH` as a backwards-compatible fallback.
+- [x] Standardized on `TALLY_FILES` across the web server, shell scripts (later consolidated into [`tally.sh`](../tally.sh)), and all CLI commands via shared [`TallyPathOption.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/cli/cmds/TallyPathOption.kt), while preserving `TALLY_PATH` as a backwards-compatible fallback.
 - [x] Replaced the placeholder default `path: '$TALLY_FILES:123'` in [`server/kt/src/main/resources/application.yaml`](../server/kt/src/main/resources/application.yaml) with optional `$?TALLY_FILES` + `$?TALLY_PATH` and `resolveTallyDataPath()` in [`Application.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/Application.kt) (falls back to `./sample-data` if present, otherwise fails with a clear configuration message).
 - [x] Updated CLI documentation in [`README.md`](../README.md) and [`server/kt/README.md`](../server/kt/README.md), and added unit tests covering primary, fallback, default, and error cases.
 
@@ -102,7 +102,7 @@ Low-risk cleanup that reduces noise, removes dead code, and establishes automate
 ### 4.5 Fast CLI Invocation — Done
 - **Files**: [`tally.sh`](../tally.sh), [`Application.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/Application.kt), [`Cli.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/cli/Cli.kt), [`build.gradle.kts`](../server/kt/build.gradle.kts)
 - [x] Switched the fat JAR `mainClass` to `com.cherba29.tally.ApplicationKt` and added `dispatchMain()` so `java -jar tally-all.jar cli <subcommand>` dispatches directly to the Clikt CLI while `java -jar tally-all.jar` continues launching Ktor `EngineMain` (covered in [`ApplicationTest.kt`](../server/kt/src/test/kotlin/com/cherba29/tally/ApplicationTest.kt) and [`CliTest.kt`](../server/kt/src/test/kotlin/com/cherba29/tally/cli/CliTest.kt)).
-- [x] Added executable root wrapper [`tally.sh`](../tally.sh) (supports `--build`, defaults `TALLY_FILES` to `./sample-data` when unset, sends any auto-build logs to `stderr`, and executes `java -jar tally-all.jar cli "$@"` with zero Gradle startup overhead) and updated [`README.md`](../README.md) and [`server/kt/README.md`](../server/kt/README.md).
+- [x] Consolidated `build.sh`, `dev.sh`, `run.sh`, and `server/kt/run.sh` into unified executable [`tally.sh`](../tally.sh) (`./tally.sh build`, `./tally.sh server [--dev|--backend-only] [--build] [--data <path>]`, `./tally.sh cli [--build] <subcommand>`, defaulting `TALLY_FILES` to `./sample-data` and sending any auto-build logs to `stderr`) and updated [`README.md`](../README.md), [`sample-data/README.md`](../sample-data/README.md), [`client/README.md`](../client/README.md), and [`server/kt/README.md`](../server/kt/README.md).
 
 ---
 
@@ -110,4 +110,4 @@ Low-risk cleanup that reduces noise, removes dead code, and establishes automate
 
 - **Client**: `cd client && pnpm build && pnpm test && pnpm lint && npx tsc --noEmit`
 - **Server**: `cd server/kt && ./gradlew test ktlintCheck buildFatJar`
-- **End-to-End**: Run `./dev.sh` and `./run.sh` against `./sample-data`, verify live YAML reload, collapsed-row persistence, popup interactions, and CLI commands.
+- **End-to-End**: Run `./tally.sh server --dev` and `./tally.sh server` against `./sample-data`, verify live YAML reload, collapsed-row persistence, popup interactions, and `./tally.sh cli` commands.

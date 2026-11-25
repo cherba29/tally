@@ -14,7 +14,7 @@ Run the Vite dev server (proxies `/graphql`, `/subscriptions`, `/graphiql`, and 
 pnpm dev
 ```
 
-Or start both frontend and backend together from the repo root with `./dev.sh`.
+Or start both frontend and backend together from the repo root with `./tally.sh server --dev`.
 
 ## Build
 

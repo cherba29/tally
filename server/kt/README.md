@@ -175,7 +175,7 @@ query table(
 From the repository root (auto-builds `tally-all.jar` if missing):
 
 ```bash
-./tally.sh report External --start-month=Jan2025 --end-month=May2026 --tally-path=/path/to/data
+./tally.sh cli report External --start-month=Jan2025 --end-month=May2026 --tally-path=/path/to/data
 # or directly via the fat JAR:
 java -jar server/kt/build/libs/tally-all.jar cli report External --start-month=Jan2025 --end-month=May2026 --tally-path=/path/to/data
 ```

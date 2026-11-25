@@ -44,29 +44,29 @@ sample-data/
 
 ## Running Tally with This Sample Data
 
-All startup scripts use `sample-data` by default:
+`./tally.sh` uses `sample-data` by default:
 
 ```bash
 # Development mode (hot-reloading UI at http://localhost:5173)
-./dev.sh
+./tally.sh server --dev
 
 # Production fat JAR mode (http://localhost:8080)
-./run.sh
+./tally.sh server
 
 # Kotlin/Ktor backend only
-./server/kt/run.sh
+./tally.sh server --backend-only
 ```
 
-To point any script at your own private YAML directory instead, pass it on the command line (or via `TALLY_FILES`):
+To point Tally at your own private YAML directory instead, pass it on the command line (or via `TALLY_FILES`):
 
 ```bash
-./dev.sh /path/to/your/data
-./dev.sh --data /path/to/your/data
+./tally.sh server --dev /path/to/your/data
+./tally.sh server --dev --data /path/to/your/data
 
-./run.sh /path/to/your/data
-./run.sh --build --data /path/to/your/data
+./tally.sh server /path/to/your/data
+./tally.sh server --build --data /path/to/your/data
 
-./server/kt/run.sh --data /path/to/your/data
+./tally.sh server --backend-only --data /path/to/your/data
 ```
 
 You can also try editing any YAML file in `sample-data/` while Tally is running—the server watches the directory and automatically refreshes the browser table and open popups via GraphQL subscriptions.

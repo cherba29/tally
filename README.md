@@ -25,7 +25,7 @@ cd tally
 (cd client && pnpm install)
 ```
 
-> By default, `./dev.sh` and `./run.sh` load the bundled [`sample-data`](sample-data/README.md) ledger so you can try Tally immediately. Pass your own data directory via `--data /path/to/data` (or positional argument / `TALLY_FILES` env var).
+> By default, `./tally.sh` loads the bundled [`sample-data`](sample-data/README.md) ledger so you can try Tally immediately. Pass your own data directory via `--data /path/to/data` (or positional argument / `TALLY_FILES` env var).
 
 Test the client and generate a code coverage report:
 
@@ -47,34 +47,38 @@ xdg-open client/coverage/lcov-report/index.html   # Linux
 
 ## Run
 
+All build, server, and CLI workflows are unified under [`tally.sh`](tally.sh) (run `./tally.sh` with no arguments for full usage).
+
 ### Development mode (auto-reload UI & backend)
 
 Starts Ktor with autoreload (`:8080`), continuous Kotlin compilation, and the Vite dev server (`:5173`, proxying `/graphql`, `/subscriptions`, `/graphiql`, and `/sdl` to Ktor) with automatic browser reload whenever the UI changes:
 
 ```bash
-./dev.sh
+./tally.sh server --dev
 # or with your own YAML data directory:
-./dev.sh /path/to/data
-./dev.sh --data /path/to/data
+./tally.sh server --dev /path/to/data
+./tally.sh server --dev --data /path/to/data
+# or run only the Kotlin/Ktor backend via Gradle:
+./tally.sh server --backend-only --data /path/to/data
 ```
 
-Open http://localhost:5173 (defaults to `./sample-data`; also supports `TALLY_FILES=/path/to/data ./dev.sh`).
+Open http://localhost:5173 (defaults to `./sample-data`; also supports `TALLY_FILES=/path/to/data ./tally.sh server --dev`).
 
 ### Production mode (single fat JAR with embedded UI)
 
 Build the frontend with Vite and package frontend + backend into a single executable JAR (`server/kt/build/libs/tally-all.jar`):
 
 ```bash
-./build.sh
+./tally.sh build
 ```
 
 Run the packaged server (builds automatically if the JAR doesn't exist; pass `--build` to force a rebuild):
 
 ```bash
-./run.sh
+./tally.sh server
 # or with your own YAML data directory:
-./run.sh /path/to/data
-./run.sh --build --data /path/to/data
+./tally.sh server /path/to/data
+./tally.sh server --build --data /path/to/data
 # or directly:
 TALLY_FILES=./sample-data java -jar server/kt/build/libs/tally-all.jar
 ```
@@ -87,12 +91,12 @@ See [`sample-data/README.md`](sample-data/README.md) for a walkthrough of the bu
 
 ## CLI
 
-The CLI commands (`generate`, `report`, `transactions`, `unaccounted`, `summary`, `transfers-summary`, `csv-to-transfers`) are packaged into `tally-all.jar` and can be invoked directly without Gradle startup overhead via `./tally.sh` (defaults to `./sample-data` if `TALLY_FILES` / `TALLY_PATH` is unset; builds the JAR automatically if missing, or pass `--build` to force a rebuild):
+The CLI commands (`generate`, `report`, `transactions`, `unaccounted`, `summary`, `transfers-summary`, `csv-to-transfers`) are packaged into `tally-all.jar` and can be invoked directly without Gradle startup overhead via `./tally.sh cli` (defaults to `./sample-data` if `TALLY_FILES` / `TALLY_PATH` is unset; builds the JAR automatically if missing, or pass `--build` to force a rebuild):
 
 ```bash
-./tally.sh --help
-./tally.sh summary alex/internal --start-month Jul2026 --end-month Nov2026
-TALLY_FILES=/path/to/data ./tally.sh unaccounted
+./tally.sh cli --help
+./tally.sh cli summary alex/internal --start-month Jul2026 --end-month Nov2026
+TALLY_FILES=/path/to/data ./tally.sh cli unaccounted
 
 # Or directly from the packaged fat JAR:
 TALLY_FILES=./sample-data java -jar server/kt/build/libs/tally-all.jar cli summary alex/internal --start-month Jul2026 --end-month Nov2026
