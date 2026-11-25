@@ -27,10 +27,22 @@ cd tally
 
 > By default, `./dev.sh` and `./run.sh` load the bundled [`sample-data`](sample-data/README.md) ledger so you can try Tally immediately. Pass your own data directory via `--data /path/to/data` (or positional argument / `TALLY_FILES` env var).
 
-Test the client:
+Test the client and generate a code coverage report:
 
 ```bash
 cd client && pnpm test
+```
+
+Running `pnpm test` executes the frontend test suite in headless Chromium via `@web/test-runner` with built-in V8 code coverage enabled (configured in [`client/web-test-runner.config.mjs`](client/web-test-runner.config.mjs)):
+
+- Prints a coverage summary (statements, branches, functions, lines) directly to the terminal and enforces minimum thresholds (60% statements/functions/lines, 30% branches).
+- Writes the interactive HTML report to `client/coverage/lcov-report/index.html` and raw LCOV data to `client/coverage/lcov.info`.
+
+Open the HTML report in your browser:
+
+```bash
+xdg-open client/coverage/lcov-report/index.html   # Linux
+# or: open client/coverage/lcov-report/index.html # macOS
 ```
 
 ## Run

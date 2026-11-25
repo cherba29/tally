@@ -17,7 +17,6 @@
     "@web/test-runner-puppeteer": "^1.0.2",
     "eslint": "^10.15.0",
     "eslint-config-google": "^0.14.0",
-    "nyc": "^18.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.73.0",
@@ -39,9 +38,13 @@
     "preview": "vite preview",
     "karma": "karma start karma.conf.js",
     "graphql-codegen": "graphql-codegen --config codegen.yml",
-    "coverage": "nyc -r text -e .ts -x \"tests/*.test.ts\" npm run test",
     "prettier-format": "prettier --config .prettierrc.yaml '**/*.ts' --write",
     "lint": "eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix"
+  },
+  "pnpm": {
+    "overrides": {
+      "minimatch": "^11.0.9"
+    }
   }
 }

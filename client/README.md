@@ -22,11 +22,16 @@ Or start both frontend and backend together from the repo root with `./dev.sh`.
 pnpm build
 ```
 
-## Tests
+## Tests & Coverage
 
 ```bash
 pnpm test
 ```
+
+Tests run in headless Chromium via `@web/test-runner` with built-in V8 coverage enabled (see [`web-test-runner.config.mjs`](web-test-runner.config.mjs)). Each run prints a text summary to the terminal, checks minimum coverage thresholds (60% statements/functions/lines, 30% branches), and writes the full report to:
+
+- `coverage/lcov-report/index.html` — interactive HTML coverage report (e.g., `xdg-open coverage/lcov-report/index.html`)
+- `coverage/lcov.info` — LCOV coverage data
 
 ## GraphQL
 
