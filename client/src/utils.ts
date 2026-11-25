@@ -8,6 +8,7 @@ import {
 import { Month } from './month';
 
 export interface PopupMonthSummaryData {
+  kind: 'summary';
   accountName: string;
   startMonth: Month;
   endMonth: Month;
@@ -16,6 +17,7 @@ export interface PopupMonthSummaryData {
 }
 
 export interface PopupTransferSummaryData {
+  kind: 'transfers-summary';
   accountPath: string;
   months: Month[];
   monthlyData: GqlMonthTransferSummary[];
@@ -27,12 +29,14 @@ export interface StatementEntry {
 }
 
 export interface PopupMonthData {
+  kind: 'statement';
   accountName: string;
   month: Month;
   stmt: GqlStatement;
 }
 
 export interface HeadingPopupData {
+  kind: 'account';
   account: GqlAccount;
 }
 

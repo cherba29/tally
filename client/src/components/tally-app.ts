@@ -149,44 +149,43 @@ export class TallyApp extends LitElement {
   }
 
   tooltipFragment() {
-    // TODO: think of better dispatch on popup type.
     if (!this.popupData) {
       return nothing;
-    } else if ('summary' in this.popupData) {
-      return html` <balance-summary-tooltip
-        .accountName=${this.popupData.accountName}
-        .startMonth=${this.popupData.startMonth}
-        .endMonth=${this.popupData.endMonth}
-        .statementEntries=${this.popupData.statements || []}
-        .summary=${this.popupData.summary}
-        @close=${this.closePopup}
-        @month-range-change=${this.popupMonthRangeChange}
-      >
-      </balance-summary-tooltip>`;
-    } else if ('account' in this.popupData) {
-      return html`<account-tooltip
-        .account=${this.popupData.account}
-        @close=${this.closePopup}
-      ></account-tooltip>`;
-    } else if ('stmt' in this.popupData) {
-      return html` <balance-tooltip
-        .accountName=${this.popupData.accountName}
-        .month=${this.popupData.month}
-        .stmt=${this.popupData.stmt}
-        @close=${this.closePopup}
-      >
-      </balance-tooltip>`;
-    } else if ('monthlyData' in this.popupData) {
-       return html`<transfers-summary-tooltip
-       .accountPath=${this.popupData.accountPath}
-       .months=${this.popupData.months}
-       .monthlyData=${this.popupData.monthlyData}
-        @close=${this.closePopup}
-        @month-range-change=${this.popupTransfersSummaryMonthRangeChange}
-      >
-      </transfers-summary-tooltip>`
-    } else {
-      throw new Error(`Unknown type of popup data ${this.popupData}.`);
+    }
+    switch (this.popupData.kind) {
+      case 'summary':
+        return html` <balance-summary-tooltip
+          .accountName=${this.popupData.accountName}
+          .startMonth=${this.popupData.startMonth}
+          .endMonth=${this.popupData.endMonth}
+          .statementEntries=${this.popupData.statements || []}
+          .summary=${this.popupData.summary}
+          @close=${this.closePopup}
+          @month-range-change=${this.popupMonthRangeChange}
+        >
+        </balance-summary-tooltip>`;
+      case 'account':
+        return html`<account-tooltip
+          .account=${this.popupData.account}
+          @close=${this.closePopup}
+        ></account-tooltip>`;
+      case 'statement':
+        return html` <balance-tooltip
+          .accountName=${this.popupData.accountName}
+          .month=${this.popupData.month}
+          .stmt=${this.popupData.stmt}
+          @close=${this.closePopup}
+        >
+        </balance-tooltip>`;
+      case 'transfers-summary':
+        return html`<transfers-summary-tooltip
+          .accountPath=${this.popupData.accountPath}
+          .months=${this.popupData.months}
+          .monthlyData=${this.popupData.monthlyData}
+          @close=${this.closePopup}
+          @month-range-change=${this.popupTransfersSummaryMonthRangeChange}
+        >
+        </transfers-summary-tooltip>`;
     }
   }
 
@@ -267,6 +266,7 @@ export class TallyApp extends LitElement {
         rowId: e.detail.rowId,
       };
       const popupData: HeadingPopupData = {
+        kind: 'account',
         account: e.detail.account!,
       };
       this.popupData = popupData;
@@ -284,6 +284,7 @@ export class TallyApp extends LitElement {
           this.popupData = undefined;
         } else {
           const popupData: PopupMonthData = {
+            kind: 'statement',
             accountName,
             month,
             stmt: statement,
@@ -312,6 +313,7 @@ export class TallyApp extends LitElement {
           this.popupData = undefined;
         } else {
           const popupData: PopupMonthSummaryData = {
+            kind: 'summary',
             accountName,
             startMonth: startMonth ?? endMonth,
             endMonth: endMonth,
@@ -345,6 +347,7 @@ export class TallyApp extends LitElement {
           this.popupData = undefined;
         } else {
           const popupData: PopupTransferSummaryData = {
+            kind: 'transfers-summary',
             accountPath: accountPath,
             months: transfersSummary.months,
             monthlyData: transfersSummary.data,
@@ -386,7 +389,7 @@ export class TallyApp extends LitElement {
         const {rowId} = this.activePopup;
         const row = rows.find((r) => r.id === rowId);
         if (row?.account) {
-          this.popupData = {account: row.account};
+          this.popupData = {kind: 'account', account: row.account};
         } else {
           this.activePopup = undefined;
           this.popupData = undefined;

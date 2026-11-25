@@ -63,9 +63,10 @@ Low-risk cleanup that reduces noise, removes dead code, and establishes automate
 - [x] Simplified `months` and `rows` in `SummaryTable` to `@property({attribute: false})`.
 - [x] Converted `TallyApp` UI fields to Lit `@state()` decorators, removed manual `requestUpdate()` calls, and deleted dead `popupMap` code.
 
-### 3.2 Discriminated Union for `PopupData`
+### 3.2 Discriminated Union for `PopupData` — Done
 - **Files**: [`client/src/utils.ts`](../client/src/utils.ts), [`client/src/components/tally-app.ts`](../client/src/components/tally-app.ts)
-- **Action**: Add an explicit `kind: 'summary' | 'transfers-summary' | 'statement' | 'account'` discriminant to `PopupData` (matching `ActivePopupRequest`) so `tooltipFragment()` can use an exhaustive `switch (this.popupData.kind)` instead of `'summary' in this.popupData` checks.
+- [x] Added `kind: 'summary' | 'transfers-summary' | 'statement' | 'account'` discriminant to all `PopupData` interfaces in [`client/src/utils.ts`](../client/src/utils.ts).
+- [x] Replaced `'...' in this.popupData` checks and the unreachable fallback throw in `TallyApp.tooltipFragment()` with an exhaustive `switch (this.popupData.kind)`.
 
 ### 3.3 Simplify GraphQL Client (`api.ts`)
 - **File**: [`client/src/api.ts`](../client/src/api.ts)
