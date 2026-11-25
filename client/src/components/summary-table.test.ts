@@ -251,4 +251,416 @@ describe('SummaryTable component', () => {
     expect(detail.month.toString()).to.equal('Aug2026');
     expect(detail.isSummary).to.be.true;
   });
+
+  it('handles space/closed/projected/covered/url/inactive rows, click events, clipboard copy, and nested row folding', async () => {
+    const months = ['Aug2026', 'Jul2026'];
+    const baseAccount = (name: string, url = '') => ({
+      address: '',
+      closedOn: undefined,
+      description: '',
+      external: false,
+      name,
+      number: undefined,
+      openedOn: undefined,
+      owners: [],
+      password: '',
+      path: ['internal'],
+      phone: '',
+      summary: false,
+      url,
+      userName: '',
+    });
+
+    const rows: GqlTableRow[] = [
+      {
+        id: 'root',
+        title: 'root',
+        indent: 0,
+        isSpace: false,
+        isTotal: true,
+        isNormal: false,
+        isInactive: false,
+        account: null,
+        cells: [
+          {
+            month: 'Aug2026',
+            isClosed: true,
+            addSub: 0,
+            balance: 0,
+            isProjected: false,
+            isCovered: true,
+            isProjectedCovered: true,
+            hasProjectedTransfer: false,
+            percentChange: 0,
+            annualizedPercentChange: 0,
+            unaccounted: 0,
+            balanced: true,
+          },
+          {
+            month: 'Jul2026',
+            isClosed: false,
+            addSub: 10000,
+            balance: 50000,
+            isProjected: true,
+            isCovered: true,
+            isProjectedCovered: true,
+            hasProjectedTransfer: false,
+            percentChange: 10,
+            annualizedPercentChange: 0,
+            unaccounted: 250,
+            balanced: false,
+          },
+        ],
+      },
+      {
+        id: 'root/sub',
+        title: 'sub',
+        indent: 1,
+        isSpace: false,
+        isTotal: true,
+        isNormal: false,
+        isInactive: false,
+        account: null,
+        cells: [
+          {
+            month: 'Aug2026',
+            isClosed: false,
+            addSub: 5000,
+            balance: 50000,
+            isProjected: false,
+            isCovered: true,
+            isProjectedCovered: true,
+            hasProjectedTransfer: false,
+            percentChange: 5,
+            annualizedPercentChange: 0,
+            unaccounted: 0,
+            balanced: true,
+          },
+          {
+            month: 'Jul2026',
+            isClosed: false,
+            addSub: 5000,
+            balance: 45000,
+            isProjected: false,
+            isCovered: true,
+            isProjectedCovered: true,
+            hasProjectedTransfer: false,
+            percentChange: 0,
+            annualizedPercentChange: 0,
+            unaccounted: 0,
+            balanced: true,
+          },
+        ],
+      },
+      {
+        id: 'root/sub/checking',
+        title: 'checking',
+        indent: 2,
+        isSpace: false,
+        isTotal: false,
+        isNormal: true,
+        isInactive: false,
+        account: baseAccount('checking', 'https://example.com/checking'),
+        cells: [
+          {
+            month: 'Aug2026',
+            isClosed: false,
+            addSub: 1500,
+            balance: -67000,
+            isProjected: true,
+            isCovered: false,
+            isProjectedCovered: true,
+            hasProjectedTransfer: true,
+            percentChange: undefined,
+            annualizedPercentChange: 0,
+            unaccounted: 0,
+            balanced: true,
+          },
+          {
+            month: 'Jul2026',
+            isClosed: true,
+            addSub: 0,
+            balance: 0,
+            isProjected: false,
+            isCovered: true,
+            isProjectedCovered: true,
+            hasProjectedTransfer: false,
+            percentChange: 0,
+            annualizedPercentChange: 0,
+            unaccounted: 0,
+            balanced: true,
+          },
+        ],
+      },
+      {
+        id: 'root/sub/covered',
+        title: 'covered',
+        indent: 2,
+        isSpace: false,
+        isTotal: false,
+        isNormal: true,
+        isInactive: true,
+        account: baseAccount('covered'),
+        cells: [
+          {
+            month: 'Aug2026',
+            isClosed: false,
+            addSub: 0,
+            balance: 10000,
+            isProjected: false,
+            isCovered: true,
+            isProjectedCovered: true,
+            hasProjectedTransfer: false,
+            percentChange: 1.5,
+            annualizedPercentChange: 0,
+            unaccounted: 0,
+            balanced: true,
+          },
+          {
+            month: 'Jul2026',
+            isClosed: false,
+            addSub: 0,
+            balance: 10000,
+            isProjected: false,
+            isCovered: true,
+            isProjectedCovered: true,
+            hasProjectedTransfer: false,
+            percentChange: 0,
+            annualizedPercentChange: 0,
+            unaccounted: 0,
+            balanced: true,
+          },
+        ],
+      },
+      {
+        id: 'space-row',
+        title: 'Section',
+        indent: 0,
+        isSpace: true,
+        isTotal: false,
+        isNormal: false,
+        isInactive: false,
+        account: null,
+        cells: [],
+      },
+      {
+        id: 'empty-row',
+        title: 'Ignored',
+        indent: 0,
+        isSpace: false,
+        isTotal: false,
+        isNormal: false,
+        isInactive: false,
+        account: null,
+        cells: [],
+      },
+    ];
+
+    const element = await fixture<SummaryTable>(
+      html`<summary-table .months=${months} .rows=${rows}></summary-table>`
+    );
+
+    const row0 = element.shadowRoot!.getElementById('row-0')!;
+    const row1 = element.shadowRoot!.getElementById('row-1')!;
+    const row2 = element.shadowRoot!.getElementById('row-2')!;
+    const row3 = element.shadowRoot!.getElementById('row-3')!;
+    const row4 = element.shadowRoot!.getElementById('row-4')!;
+
+    // Space row, closed cells, link, projected/covered styles, infinity change, hidden inactive row
+    expect(row0.querySelector('td.closed')).to.not.equal(null);
+    expect(row2.querySelector('a')!.getAttribute('href')).to.equal('https://example.com/checking');
+    expect(row2.querySelector('td.closed')).to.not.equal(null);
+    const row2Balance = row2.querySelector('td.balance') as HTMLElement;
+    expect(row2Balance.classList.contains('projected')).to.equal(true);
+    expect(row2Balance.textContent).to.include('☂');
+    expect(row2Balance.style.color).to.equal('rgb(255, 170, 0)');
+    expect(row2.querySelector('td.change')!.textContent!.trim()).to.equal('∞');
+    expect(row3.hasAttribute('hidden')).to.equal(true);
+    expect((row3.querySelector('td.balance') as HTMLElement).style.color).to.equal('');
+    expect(row4.querySelector('td.account_type')!.textContent).to.equal('Section');
+    expect(element.shadowRoot!.getElementById('row-5')).to.equal(null);
+
+    // Click add_sub on total row and normal row
+    const totalAddSub = row0.querySelector('td.add_sub') as HTMLElement;
+    setTimeout(() => totalAddSub.click());
+    const totalAddSubEvent = await oneEvent(element, 'addSubCellClick');
+    expect(totalAddSubEvent.detail.rowId).to.equal('root');
+    expect(totalAddSubEvent.detail.month.toString()).to.equal('Jul2026');
+    expect(totalAddSubEvent.detail.isSummary).to.equal(true);
+
+    const normalAddSub = row2.querySelector('td.add_sub') as HTMLElement;
+    setTimeout(() => normalAddSub.click());
+    const normalAddSubEvent = await oneEvent(element, 'addSubCellClick');
+    expect(normalAddSubEvent.detail.rowId).to.equal('root/sub/checking');
+    expect(normalAddSubEvent.detail.isSummary).to.equal(false);
+
+    // Click balance cell on normal row
+    setTimeout(() => row2Balance.click());
+    const normalBalEvent = await oneEvent(element, 'cellclick');
+    expect(normalBalEvent.detail.rowId).to.equal('root/sub/checking');
+    expect(normalBalEvent.detail.month.toString()).to.equal('Aug2026');
+    expect(normalBalEvent.detail.isSummary).to.equal(false);
+
+    // Click title cell on normal row
+    const titleCell = element.shadowRoot!.getElementById('checking')!;
+    setTimeout(() => titleCell.click());
+    const titleEvent = await oneEvent(element, 'cellclick');
+    expect(titleEvent.detail.rowId).to.equal('root/sub/checking');
+    expect(titleEvent.detail.account?.name).to.equal('checking');
+    expect(titleEvent.detail.month).to.equal(undefined);
+
+    // Click unaccounted/accounted cells to copy to clipboard
+    const copied: string[] = [];
+    const origClipboardDesc = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+    Object.defineProperty(navigator, 'clipboard', {
+      value: {
+        writeText: (text: string) => {
+          copied.push(text);
+          return Promise.resolve();
+        },
+      },
+      configurable: true,
+    });
+    try {
+      (row0.querySelector('td.unaccounted') as HTMLElement).click();
+      (row2.querySelector('td.accounted') as HTMLElement).click();
+      expect(copied).to.deep.equal(['2.50', '0.00']);
+
+      element.copyToClipBoard(null);
+      element.copyToClipBoard(undefined);
+      expect(copied).to.deep.equal(['2.50', '0.00']);
+    } finally {
+      if (origClipboardDesc) {
+        Object.defineProperty(navigator, 'clipboard', origClipboardDesc);
+      }
+    }
+
+    // Nested row folding via expand-button toggle events
+    const row0Btn = row0.querySelector('expand-button')!;
+    const row1Btn = row1.querySelector('expand-button')!;
+
+    row0Btn.dispatchEvent(new CustomEvent('toggle', {detail: {expanded: false}}));
+    expect(row1.style.display).to.equal('none');
+    expect(row2.style.display).to.equal('none');
+
+    row0Btn.dispatchEvent(new CustomEvent('toggle', {detail: {expanded: true}}));
+    expect(row1.style.display).to.equal('table-row');
+    expect(row2.style.display).to.equal('table-row');
+
+    // Collapse child (row1), then collapse & re-expand parent (row0) -> grandchild stays hidden
+    row1Btn.dispatchEvent(new CustomEvent('toggle', {detail: {expanded: false}}));
+    expect(row2.style.display).to.equal('none');
+    row0Btn.dispatchEvent(new CustomEvent('toggle', {detail: {expanded: false}}));
+    expect(row1.style.display).to.equal('none');
+    expect(row2.style.display).to.equal('none');
+    row0Btn.dispatchEvent(new CustomEvent('toggle', {detail: {expanded: true}}));
+    expect(row1.style.display).to.equal('table-row');
+    expect(row2.style.display).to.equal('none');
+  });
+
+  it('handles optional indent/cells and total-row rowId fallbacks on click', async () => {
+    const months = ['Aug2026'];
+    const makeCell = () => ({
+      month: 'Aug2026',
+      isClosed: false,
+      addSub: 100,
+      balance: 200,
+      isProjected: false,
+      isCovered: true,
+      isProjectedCovered: true,
+      hasProjectedTransfer: false,
+      percentChange: 0,
+      annualizedPercentChange: 0,
+      unaccounted: 0,
+      balanced: true,
+    });
+    const baseAccount = (name: string) => ({
+      address: '',
+      closedOn: undefined,
+      description: '',
+      external: false,
+      name,
+      number: undefined,
+      openedOn: undefined,
+      owners: [],
+      password: '',
+      path: [],
+      phone: '',
+      summary: false,
+      url: '',
+      userName: '',
+    });
+
+    const rows = [
+      {
+        id: undefined,
+        title: 'fallback-title',
+        indent: undefined,
+        isSpace: false,
+        isTotal: true,
+        isNormal: false,
+        isInactive: false,
+        account: baseAccount('acct-fallback'),
+        cells: [makeCell()],
+      },
+      {
+        id: undefined,
+        title: 'title-only',
+        indent: 0,
+        isSpace: false,
+        isTotal: true,
+        isNormal: false,
+        isInactive: false,
+        account: null,
+        cells: [makeCell()],
+      },
+      {
+        id: 'total-no-cells',
+        title: 'total-no-cells',
+        indent: undefined,
+        isSpace: false,
+        isTotal: true,
+        isNormal: false,
+        isInactive: false,
+        account: null,
+        cells: undefined,
+      },
+      {
+        id: 'normal-no-cells',
+        title: 'normal-no-cells',
+        indent: undefined,
+        isSpace: false,
+        isTotal: false,
+        isNormal: true,
+        isInactive: false,
+        account: baseAccount('normal-no-cells'),
+        cells: undefined,
+      },
+    ] as unknown as GqlTableRow[];
+
+    const element = await fixture<SummaryTable>(
+      html`<summary-table .months=${months} .rows=${rows}></summary-table>`
+    );
+
+    const row0 = element.shadowRoot!.getElementById('row-0')!;
+    const row1 = element.shadowRoot!.getElementById('row-1')!;
+
+    // Row 0 falls back to account.name
+    setTimeout(() => (row0.querySelector('td.add_sub') as HTMLElement).click());
+    const ev0AddSub = await oneEvent(element, 'addSubCellClick');
+    expect(ev0AddSub.detail.rowId).to.equal('acct-fallback');
+
+    setTimeout(() => (row0.querySelector('td.balance') as HTMLElement).click());
+    const ev0Bal = await oneEvent(element, 'cellclick');
+    expect(ev0Bal.detail.rowId).to.equal('acct-fallback');
+
+    // Row 1 falls back to row.title
+    setTimeout(() => (row1.querySelector('td.add_sub') as HTMLElement).click());
+    const ev1AddSub = await oneEvent(element, 'addSubCellClick');
+    expect(ev1AddSub.detail.rowId).to.equal('title-only');
+
+    setTimeout(() => (row1.querySelector('td.balance') as HTMLElement).click());
+    const ev1Bal = await oneEvent(element, 'cellclick');
+    expect(ev1Bal.detail.rowId).to.equal('title-only');
+  });
 });

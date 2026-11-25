@@ -176,4 +176,39 @@ describe('Month', () => {
     const end = new Month(2020, 1);
     expect(Array.from(Month.generate(start, end))).to.deep.equal([start, dec, jan]);
   });
+
+  describe('min and max', () => {
+    it('returns minimum month across multiple arguments', () => {
+      const m1 = new Month(2020, 5);
+      const m2 = new Month(2019, 11);
+      const m3 = new Month(2021, 0);
+      expect(Month.min(m1)).to.equal(m1);
+      expect(Month.min(m2, m1, m3)).to.equal(m2);
+      expect(Month.min(m3, m1, m2)).to.equal(m2);
+    });
+
+    it('returns maximum month across multiple arguments', () => {
+      const m1 = new Month(2020, 5);
+      const m2 = new Month(2019, 11);
+      const m3 = new Month(2021, 0);
+      expect(Month.max(m1)).to.equal(m1);
+      expect(Month.max(m2, m1, m3)).to.equal(m3);
+      expect(Month.max(m3, m1, m2)).to.equal(m3);
+    });
+  });
+
+  describe('multi-month offsets and open ranges', () => {
+    it('supports multi-month next and previous offsets', () => {
+      const base = new Month(2020, 3);
+      expect(base.next(12).toString()).to.equal('Apr2021');
+      expect(base.previous(15).toString()).to.equal('Jan2019');
+    });
+
+    it('handles open-ended isBetween bounds', () => {
+      const m = new Month(2020, 5);
+      expect(m.isBetween(undefined, undefined)).to.equal(true);
+      expect(m.isBetween(new Month(2020, 5), undefined)).to.equal(true);
+      expect(m.isBetween(undefined, new Month(2020, 5))).to.equal(true);
+    });
+  });
 });

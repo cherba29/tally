@@ -1,9 +1,16 @@
-import { html, fixture, expect } from '@open-wc/testing';
+import { html, fixture, expect, oneEvent } from '@open-wc/testing';
 import { LitElement } from 'lit';
 import { AccountTooltip } from './account-tooltip';
 import { type GqlAccount } from '../gql_types';
 
 describe('AccountTooltip component', () => {
+  it('renders nothing when account is undefined', async () => {
+    const element = await fixture<AccountTooltip>(
+      html`<account-tooltip></account-tooltip>`
+    );
+    expect(element.shadowRoot!.querySelector('table')).to.equal(null);
+  });
+
   it('renders with default property values', async () => {
     const account = {
        name: "test-account1"
@@ -56,5 +63,49 @@ describe('AccountTooltip component', () => {
     await tooltip.updateComplete;
 
     expect(tooltip.shadowRoot!.querySelector('table td:nth-child(2)')!.textContent!.trim()).to.equal("test-account2");
+  });
+
+  it('renders account link, metadata fields, and dispatches close on XXX click', async () => {
+    const account = {
+      name: 'checking',
+      url: 'https://example.com/checking',
+      description: 'Primary Checking',
+      number: '****1234',
+      userName: 'alex',
+      password: 'secret',
+      openedOn: 'Jul2026',
+      phone: '555-0100',
+      address: '123 Main St',
+      statementCloseDay: '1',
+    } as GqlAccount;
+
+    const element = await fixture<AccountTooltip>(
+      html`<account-tooltip .account=${account}></account-tooltip>`
+    );
+
+    const link = element.shadowRoot!.querySelector('a')!;
+    expect(link).to.not.equal(null);
+    expect(link.getAttribute('href')).to.equal('https://example.com/checking');
+    expect(link.textContent).to.equal('checking');
+
+    const values = Array.from(element.shadowRoot!.querySelectorAll('table tr td:nth-child(2)')).map(
+      (td) => td.textContent!.trim()
+    );
+    expect(values).to.deep.equal([
+      'checking',
+      'Primary Checking',
+      '****1234',
+      'alex',
+      'secret',
+      'Jul2026',
+      '555-0100',
+      '123 Main St',
+      '1',
+    ]);
+
+    const closeSpan = element.shadowRoot!.querySelector('span')!;
+    setTimeout(() => closeSpan.click());
+    const closeEvent = await oneEvent(element, 'close');
+    expect(closeEvent.type).to.equal('close');
   });
 });

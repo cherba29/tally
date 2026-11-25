@@ -100,17 +100,19 @@ describe('TallyApp popup refresh on reload', () => {
   let loadStatementCalls: Array<[string, string]>;
   let loadSummaryCalls: Array<[string, string | undefined, string]>;
   let loadTransferCalls: Array<[string, string | undefined, string]>;
+  let loadTableCalls: Array<[string, string, string]>;
 
   const createMockClient = (): BackendClient =>
     ({
-      loadTable: () => {
+      loadTable: (owner: string, startMonth: string, endMonth: string) => {
+        loadTableCalls.push([owner, startMonth, endMonth]);
         if (tableError) {
           return Promise.resolve({error: tableError});
         }
         return Promise.resolve({
           data: {
             table: {
-              currentOwner: 'owner1',
+              currentOwner: owner || 'owner1',
               owners: ['owner1', 'owner2'],
               months: ['Jan2025', 'Feb2025'],
               rows: tableRows,
@@ -183,6 +185,7 @@ describe('TallyApp popup refresh on reload', () => {
     loadStatementCalls = [];
     loadSummaryCalls = [];
     loadTransferCalls = [];
+    loadTableCalls = [];
     tableRows = [makeRow('owner1/checking/acct1', makeAccount('acct1', 'Initial desc'))];
 
     el = document.createElement('tally-app') as TallyApp;
@@ -474,5 +477,358 @@ describe('TallyApp popup refresh on reload', () => {
     expect(el.shadowRoot!.querySelector('balance-tooltip')).to.equal(null);
 
     el.backendClient.loadStatement = origLoadStatement;
+  });
+
+  it('updates month range via toolbar buttons and reloads table', async () => {
+    const toolbarDiv = el.shadowRoot!.querySelector('div')!;
+    const buttons = Array.from(toolbarDiv.querySelectorAll('button'));
+    // 12 navigation buttons + Reload Table
+    expect(buttons).to.have.lengthOf(13);
+
+    const initialCall = loadTableCalls[0]!;
+    const initialStart = Month.fromString(initialCall[1]);
+    const initialEnd = Month.fromString(initialCall[2]);
+
+    // Click all 12 navigation buttons: +12/-12/+1/-1 on end, start, and both (net delta 0)
+    const expectedDeltas: Array<[number, number]> = [
+      [0, 12],
+      [0, 1],
+      [0, -1],
+      [0, -12],
+      [12, 0],
+      [1, 0],
+      [-1, 0],
+      [-12, 0],
+      [12, 12],
+      [1, 1],
+      [-1, -1],
+      [-12, -12],
+    ];
+    let curStart = initialStart;
+    let curEnd = initialEnd;
+    for (let i = 0; i < 12; i++) {
+      const [sd, ed] = expectedDeltas[i]!;
+      curStart = curStart.next(sd);
+      curEnd = curEnd.next(ed);
+      buttons[i]!.click();
+      await flush(el);
+      const lastCall = loadTableCalls[loadTableCalls.length - 1]!;
+      expect(lastCall[1]).to.equal(curStart.toString());
+      expect(lastCall[2]).to.equal(curEnd.toString());
+    }
+  });
+
+  it('switches owner tabs, closes popup on owner change, and keeps popup on same-owner click', async () => {
+    getSummaryTable().dispatchEvent(
+      new CustomEvent<CellClickEventData>('cellclick', {
+        detail: {
+          mouseEvent: new MouseEvent('click'),
+          rowId: 'owner1/checking/acct1',
+          month: Month.fromString('Jan2025'),
+          isSummary: false,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('balance-tooltip')).to.not.equal(null);
+
+    const divs = el.shadowRoot!.querySelectorAll('div');
+    const ownerButtons = Array.from(divs[3]!.querySelectorAll('button'));
+    expect(ownerButtons).to.have.lengthOf(2);
+
+    // Clicking the already-active owner keeps the popup open
+    ownerButtons[0]!.click();
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('balance-tooltip')).to.not.equal(null);
+
+    // Clicking owner2 closes the popup and reloads table for owner2
+    ownerButtons[1]!.click();
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('balance-tooltip')).to.equal(null);
+    const lastCall = loadTableCalls[loadTableCalls.length - 1]!;
+    expect(lastCall[0]).to.equal('owner2');
+  });
+
+  it('clears popup when statement, summary, or transfer-summary requests error or reject', async () => {
+    // 1. Statement error & rejection
+    el.backendClient.loadStatement = () =>
+      Promise.resolve({error: {message: 'not found'}}) as unknown as ReturnType<BackendClient['loadStatement']>;
+    getSummaryTable().dispatchEvent(
+      new CustomEvent<CellClickEventData>('cellclick', {
+        detail: {
+          mouseEvent: new MouseEvent('click'),
+          rowId: 'owner1/checking/acct1',
+          month: Month.fromString('Jan2025'),
+          isSummary: false,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('balance-tooltip')).to.equal(null);
+
+    el.backendClient.loadStatement = () =>
+      Promise.reject(new Error('network')) as unknown as ReturnType<BackendClient['loadStatement']>;
+    getSummaryTable().dispatchEvent(
+      new CustomEvent<CellClickEventData>('cellclick', {
+        detail: {
+          mouseEvent: new MouseEvent('click'),
+          rowId: 'owner1/checking/acct1',
+          month: Month.fromString('Jan2025'),
+          isSummary: false,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('balance-tooltip')).to.equal(null);
+
+    // 2. Summary error, rejection, and empty fields
+    el.backendClient.loadSummaryData = () =>
+      Promise.resolve({error: {message: 'summary err'}}) as unknown as ReturnType<BackendClient['loadSummaryData']>;
+    getSummaryTable().dispatchEvent(
+      new CustomEvent<CellClickEventData>('cellclick', {
+        detail: {
+          mouseEvent: new MouseEvent('click'),
+          rowId: 'owner1/checking',
+          month: Month.fromString('Feb2025'),
+          isSummary: true,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('balance-summary-tooltip')).to.equal(null);
+
+    el.backendClient.loadSummaryData = () =>
+      Promise.reject(new Error('summary network')) as unknown as ReturnType<BackendClient['loadSummaryData']>;
+    getSummaryTable().dispatchEvent(
+      new CustomEvent<CellClickEventData>('cellclick', {
+        detail: {
+          mouseEvent: new MouseEvent('click'),
+          rowId: 'owner1/checking',
+          month: Month.fromString('Feb2025'),
+          isSummary: true,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('balance-summary-tooltip')).to.equal(null);
+
+    // 3. Transfers summary error & rejection
+    el.backendClient.loadTransferSummaryData = () =>
+      Promise.resolve({error: {message: 'transfers err'}}) as unknown as ReturnType<
+        BackendClient['loadTransferSummaryData']
+      >;
+    getSummaryTable().dispatchEvent(
+      new CustomEvent<CellClickEventData>('addSubCellClick', {
+        detail: {
+          mouseEvent: new MouseEvent('click'),
+          rowId: 'owner1/checking',
+          month: Month.fromString('Feb2025'),
+          isSummary: true,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('transfers-summary-tooltip')).to.equal(null);
+
+    el.backendClient.loadTransferSummaryData = () =>
+      Promise.reject(new Error('transfers network')) as unknown as ReturnType<
+        BackendClient['loadTransferSummaryData']
+      >;
+    getSummaryTable().dispatchEvent(
+      new CustomEvent<CellClickEventData>('addSubCellClick', {
+        detail: {
+          mouseEvent: new MouseEvent('click'),
+          rowId: 'owner1/checking',
+          month: Month.fromString('Feb2025'),
+          isSummary: true,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('transfers-summary-tooltip')).to.equal(null);
+  });
+
+  it('ignores stale popup responses and rejections after closing, and handles null/empty fields', async () => {
+    const month = Month.fromString('Feb2025');
+
+    // 1. Stale statement rejection ignored after popup closed
+    let rejectStmt!: (err: Error) => void;
+    el.backendClient.loadStatement = () =>
+      new Promise((_, reject) => {
+        rejectStmt = reject;
+      }) as ReturnType<BackendClient['loadStatement']>;
+    getSummaryTable().dispatchEvent(
+      new CustomEvent<CellClickEventData>('cellclick', {
+        detail: {
+          mouseEvent: new MouseEvent('click'),
+          rowId: undefined as unknown as string,
+          month,
+          isSummary: false,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    // Supersede by clicking another cell before previous settles, then reject stale promise
+    let resolveSummary!: (val: unknown) => void;
+    el.backendClient.loadSummaryData = () =>
+      new Promise((resolve) => {
+        resolveSummary = resolve;
+      }) as ReturnType<BackendClient['loadSummaryData']>;
+    getSummaryTable().dispatchEvent(
+      new CustomEvent<CellClickEventData>('cellclick', {
+        detail: {
+          mouseEvent: new MouseEvent('click'),
+          rowId: undefined as unknown as string,
+          month,
+          isSummary: true,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    rejectStmt(new Error('stale stmt err'));
+    await flush(el);
+
+    // 2. Stale summary resolve & reject ignored after supersede
+    let rejectSummary!: (err: Error) => void;
+    el.backendClient.loadSummaryData = () =>
+      new Promise((_, reject) => {
+        rejectSummary = reject;
+      }) as ReturnType<BackendClient['loadSummaryData']>;
+    getSummaryTable().dispatchEvent(
+      new CustomEvent<CellClickEventData>('cellclick', {
+        detail: {
+          mouseEvent: new MouseEvent('click'),
+          rowId: 'owner1/checking',
+          month,
+          isSummary: true,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    resolveSummary({data: {summary: {statements: null, total: null}}});
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('balance-summary-tooltip')).to.equal(null);
+
+    // Trigger valid summary with null total, null statements, and unnamed statement
+    el.backendClient.loadSummaryData = () =>
+      Promise.resolve({
+        data: {
+          summary: {
+            statements: [{...makeStatement('', 'Feb2025', 500), name: undefined}],
+            total: null,
+          },
+        },
+      }) as unknown as ReturnType<BackendClient['loadSummaryData']>;
+    getSummaryTable().dispatchEvent(
+      new CustomEvent<CellClickEventData>('cellclick', {
+        detail: {
+          mouseEvent: new MouseEvent('click'),
+          rowId: 'owner1/checking',
+          month,
+          isSummary: true,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    rejectSummary(new Error('stale summary err'));
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('balance-summary-tooltip')).to.not.equal(null);
+
+    // Summary with null statements array
+    el.backendClient.loadSummaryData = () =>
+      Promise.resolve({
+        data: {summary: {statements: null, total: null}},
+      }) as unknown as ReturnType<BackendClient['loadSummaryData']>;
+    getSummaryTable().dispatchEvent(
+      new CustomEvent<CellClickEventData>('cellclick', {
+        detail: {
+          mouseEvent: new MouseEvent('click'),
+          rowId: 'owner1/checking',
+          month,
+          isSummary: true,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('balance-summary-tooltip')).to.not.equal(null);
+
+    // 3. Stale transfers-summary resolve & reject ignored after supersede
+    let resolveTransfers!: (val: unknown) => void;
+    el.backendClient.loadTransferSummaryData = () =>
+      new Promise((resolve) => {
+        resolveTransfers = resolve;
+      }) as ReturnType<BackendClient['loadTransferSummaryData']>;
+    getSummaryTable().dispatchEvent(
+      new CustomEvent<CellClickEventData>('addSubCellClick', {
+        detail: {
+          mouseEvent: new MouseEvent('click'),
+          rowId: 'owner1/checking',
+          month,
+          isSummary: true,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+
+    let rejectTransfers!: (err: Error) => void;
+    el.backendClient.loadTransferSummaryData = () =>
+      new Promise((_, reject) => {
+        rejectTransfers = reject;
+      }) as ReturnType<BackendClient['loadTransferSummaryData']>;
+    getSummaryTable().dispatchEvent(
+      new CustomEvent<CellClickEventData>('addSubCellClick', {
+        detail: {
+          mouseEvent: new MouseEvent('click'),
+          rowId: 'owner1/checking',
+          month,
+          isSummary: true,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    resolveTransfers({data: {transfersSummary: {months: ['Feb2025'], data: []}}});
+    // Close popup while second transfers request is in flight, then reject it
+    el.shadowRoot!.querySelector('balance-summary-tooltip')?.dispatchEvent(new CustomEvent('close'));
+    rejectTransfers(new Error('stale transfers err'));
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('transfers-summary-tooltip')).to.equal(null);
+
+    // 4. Null/empty table payload fields
+    el.backendClient.loadTable = () =>
+      Promise.resolve({
+        data: {
+          table: {
+            currentOwner: null,
+            owners: null,
+            months: null,
+            rows: null,
+          },
+        },
+      }) as unknown as ReturnType<BackendClient['loadTable']>;
+    onSubscriptionReload!();
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('summary-table')).to.not.equal(null);
   });
 });
