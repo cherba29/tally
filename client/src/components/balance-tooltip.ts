@@ -1,10 +1,20 @@
-import {LitElement, css, html, type TemplateResult} from 'lit';
+import {LitElement, css, html, nothing, type TemplateResult} from 'lit';
 import {classMap, type ClassInfo} from 'lit/directives/class-map.js';
 import {styleMap, type StyleInfo} from 'lit/directives/style-map.js';
 import {customElement, property} from 'lit/decorators.js';
 
-import {dateFormat, currency, isProjected} from '../format';
+import {dateFormat, currency, isProjected, formatCadence} from '../format';
 import {type GqlBalance, type GqlStatement, type GqlTransaction} from '../gql_types';
+
+export interface RecurringClickEventData {
+  groupId: string;
+  accountPath: string;
+  selectedDate: string;
+  selectedAmount: number;
+  selectedDescription: string;
+  mouseEvent: MouseEvent;
+  anchorRect: DOMRect;
+}
 
 @customElement('balance-tooltip')
 export class BalanceTooltip extends LitElement {
@@ -25,6 +35,27 @@ export class BalanceTooltip extends LitElement {
     .confirmed {
       background-color: #dd4;
       text-align: right;
+    }
+    .recurring-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      margin-left: 4px;
+      padding: 0 5px;
+      font-size: 9px;
+      line-height: 13px;
+      font-weight: 700;
+      color: #0969da;
+      background-color: #ddf4ff;
+      border: 1px solid #54aeff;
+      border-radius: 999px;
+      cursor: pointer;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+    .recurring-badge:hover {
+      background-color: #b6e3ff;
+      border-color: #0969da;
     }
   `;
 
@@ -56,6 +87,44 @@ export class BalanceTooltip extends LitElement {
 
   onCloseButton() {
     this.dispatchEvent(new CustomEvent('close'));
+  }
+
+  private onRecurringClick(e: MouseEvent, t: GqlTransaction) {
+    if (!t.recurringGroupId) return;
+    e.stopPropagation();
+    const target = e.currentTarget as HTMLElement;
+    const anchorRect = target.getBoundingClientRect();
+    this.dispatchEvent(
+      new CustomEvent<RecurringClickEventData>('recurring-click', {
+        detail: {
+          groupId: t.recurringGroupId,
+          accountPath: this.accountName,
+          selectedDate: dateFormat(t.balance?.date),
+          selectedAmount: t.balance?.amount ?? 0,
+          selectedDescription: t.description ?? '',
+          mouseEvent: e,
+          anchorRect,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
+  private recurringBadge(t: GqlTransaction | undefined | null) {
+    if (!t?.recurringGroupId) {
+      return nothing;
+    }
+    const cadenceLabel = formatCadence(t.recurringCadence);
+    const countPart = t.recurringCount ? ` · ${t.recurringCount} occurrences` : '';
+    const title = `Recurring (${cadenceLabel}${countPart}) — click to view all`;
+    return html`<button
+      type="button"
+      class="recurring-badge"
+      title="${title}"
+      aria-label="${title}"
+      @click=${(e: MouseEvent) => this.onRecurringClick(e, t)}
+    >&#x21BB;${t.recurringCount ? ` ${t.recurringCount}` : ''}</button>`;
   }
 
   copyToClipBoard(amount: number | null | undefined) {
@@ -105,7 +174,7 @@ export class BalanceTooltip extends LitElement {
             html`<tr class="highlight">
               <td style="min-width:175px">
                 ${index + 1} ${t?.toAccountName}
-                <span style="font-size:75%">${t?.description}</span>
+                <span style="font-size:75%">${t?.description}</span>${this.recurringBadge(t)}
               </td>
               <td align="middle" style=${styleMap(transactionColor(t))}>${transactionCode(t)}</td>
               <td class=${classMap(projectedClass(t?.balance))} style="min-width:40px">

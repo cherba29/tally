@@ -1,6 +1,6 @@
 import { assert } from '@esm-bundle/chai';
 import { html, fixture, expect, oneEvent } from '@open-wc/testing';
-import { BalanceTooltip } from './balance-tooltip';
+import { BalanceTooltip, type RecurringClickEventData } from './balance-tooltip';
 import { type GqlStatement } from '../gql_types';
 
 describe('BalanceTooltip component', () => {
@@ -220,5 +220,85 @@ describe('BalanceTooltip component', () => {
         Object.defineProperty(navigator, 'clipboard', origClipboardDesc);
       }
     }
+  });
+
+  it('renders recurring badge only for recurring transactions and dispatches recurring-click with anchorRect', async () => {
+    const stmt: GqlStatement = {
+      name: 'checking',
+      month: 'Nov2026',
+      isClosed: false,
+      isCovered: true,
+      isProjectedCovered: true,
+      hasProjectedTransfer: false,
+      startBalance: {amount: 100000, date: '2026-11-01', desc: '', type: 'CONFIRMED'},
+      endBalance: {amount: 82500, date: '2026-12-01', desc: '', type: 'CONFIRMED'},
+      income: 0,
+      totalPayments: -17500,
+      totalTransfers: 0,
+      inFlows: 0,
+      outFlows: -17500,
+      addSub: -17500,
+      change: -17500,
+      percentChange: -17.5,
+      annualizedPercentChange: 0,
+      unaccounted: 0,
+      transactions: [
+        {
+          toAccountName: 'expenses',
+          description: 'Fiber internet',
+          isExpense: true,
+          isIncome: false,
+          balance: {amount: -7500, date: '2026-11-18', desc: '', type: 'CONFIRMED'},
+          balanceFromStart: 92500,
+          recurringGroupId: 'grp-internet',
+          recurringCount: 5,
+          recurringCadence: 'MONTHLY',
+        },
+        {
+          toAccountName: 'expenses',
+          description: 'One-off jacket',
+          isExpense: true,
+          isIncome: false,
+          balance: {amount: -10000, date: '2026-11-10', desc: '', type: 'CONFIRMED'},
+          balanceFromStart: 82500,
+          recurringGroupId: null,
+          recurringCount: null,
+          recurringCadence: null,
+        },
+      ],
+    };
+
+    const element = await fixture<BalanceTooltip>(
+      html`<balance-tooltip
+        .accountName=${'alex/internal/checking'}
+        .month=${'Nov2026'}
+        .stmt=${stmt}
+      ></balance-tooltip>`
+    );
+
+    const rows = Array.from(element.shadowRoot!.querySelectorAll('tr.highlight'));
+    const badge = rows[0]!.querySelector<HTMLButtonElement>('button.recurring-badge');
+    expect(badge).to.not.equal(null);
+    expect(badge!.textContent?.trim()).to.equal('↻ 5');
+    expect(badge!.getAttribute('title')).to.include('Monthly');
+    expect(badge!.getAttribute('title')).to.include('5 occurrences');
+
+    // Non-recurring row has no badge
+    expect(rows[1]!.querySelector('button.recurring-badge')).to.equal(null);
+
+    // Clicking badge dispatches bubbling recurring-click event and stops native click propagation
+    let parentClicked = false;
+    element.addEventListener('click', () => {
+      parentClicked = true;
+    });
+    setTimeout(() => badge!.click());
+    const ev = (await oneEvent(element, 'recurring-click')) as CustomEvent<RecurringClickEventData>;
+    expect(ev.detail.groupId).to.equal('grp-internet');
+    expect(ev.detail.accountPath).to.equal('alex/internal/checking');
+    expect(ev.detail.selectedDate).to.equal('2026-11-18');
+    expect(ev.detail.selectedAmount).to.equal(-7500);
+    expect(ev.detail.selectedDescription).to.equal('Fiber internet');
+    expect(ev.detail.anchorRect).to.not.equal(undefined);
+    expect(parentClicked).to.equal(false);
   });
 });

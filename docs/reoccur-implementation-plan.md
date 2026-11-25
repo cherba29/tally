@@ -206,7 +206,7 @@ Create a self-contained, independently testable package `com.cherba29.tally.recu
 
 ### Phase 4 — Frontend Recurring Indicator & Secondary Popup (`client/`)
 
-- [ ] **4.1 Regenerate GraphQL types & extend `BackendClient`**
+- [x] **4.1 Regenerate GraphQL types & extend `BackendClient`**
   - Start the backend (`./tally.sh server --backend-only`) and run `cd client && pnpm graphql-codegen` to update `client/src/gql_types.ts`.
   - **Modify:** `client/src/api.ts`
     - Update `loadStatement(...)` query selection set to request:
@@ -250,13 +250,13 @@ Create a self-contained, independently testable package `com.cherba29.tally.recu
       }
       ```
 
-- [ ] **4.2 Extract reusable viewport-clamped popup positioning helper**
+- [x] **4.2 Extract reusable viewport-clamped popup positioning helper**
   - **New file:** `client/src/popup-position.ts`
   - Extract `PopupAnchor`, `PopupSize`, `ViewportSize`, and `computePopupPosition(...)` from `TallyApp.applyPopupPosition()` so both primary and secondary popups share identical, flicker-free flip-and-clamp logic.
   - Add an option `preferSide?: boolean` (for secondary popups: prefer placing right or left of the primary popup/badge before falling back to above/below so the originating transaction row stays visible).
   - **New file:** `client/src/popup-position.test.ts`
 
-- [ ] **4.3 Add recurring indicator badge to `BalanceTooltip`**
+- [x] **4.3 Add recurring indicator badge to `BalanceTooltip`**
   - **Modify:** `client/src/components/balance-tooltip.ts`
   - Define and export `RecurringClickEventData`:
     ```ts
@@ -275,7 +275,7 @@ Create a self-contained, independently testable package `com.cherba29.tally.recu
     - On click: call `e.stopPropagation()`, capture `(e.currentTarget as HTMLElement).getBoundingClientRect()` synchronously, and dispatch `new CustomEvent<RecurringClickEventData>('recurring-click', { detail, bubbles: true, composed: true })`.
   - Keep non-recurring rows visually clean with zero extra clutter.
 
-- [ ] **4.4 Build `RecurringTooltip` component**
+- [x] **4.4 Build `RecurringTooltip` component**
   - **New file:** `client/src/components/recurring-tooltip.ts`
   - Custom element `<recurring-tooltip>` with properties:
     - `@property({attribute: false}) group: GqlRecurringGroup | undefined`
@@ -291,7 +291,7 @@ Create a self-contained, independently testable package `com.cherba29.tally.recu
       - Highlight the row matching `highlightKey` (e.g. `.current-occurrence` with bold text / left accent border) so the user immediately sees where the clicked transaction sits in the history.
     - Dispatches `close` event on close click.
 
-- [ ] **4.5 Wire secondary popup into `TallyApp`**
+- [x] **4.5 Wire secondary popup into `TallyApp`**
   - **Modify:** `client/src/utils.ts`
     - Add `SecondaryPopupData` interface (holding `group: GqlRecurringGroup` and optional `highlightKey`).
   - **Modify:** `client/src/components/tally-app.ts`
@@ -315,7 +315,7 @@ Create a self-contained, independently testable package `com.cherba29.tally.recu
       - `closePopup()` (closing primary popup, switching tabs, or clicking a new table cell) also calls `closeSecondaryPopup()`.
       - `refreshActivePopup()` (on WebSocket live reload) also refreshes `activeSecondaryPopup` (closing it cleanly if the group no longer exists after a YAML edit).
 
-- [ ] **4.6 Write & update frontend unit tests**
+- [x] **4.6 Write & update frontend unit tests**
   - **New files:**
     - `client/src/popup-position.test.ts`
     - `client/src/components/recurring-tooltip.test.ts`

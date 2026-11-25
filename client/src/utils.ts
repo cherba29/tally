@@ -1,11 +1,23 @@
 import {
-  type GqlAccount, 
+  type GqlAccount,
   type GqlMonthTransferSummary,
-  type GqlStatement, 
-  type GqlSummaryStatement, 
-  type GqlTableRow
+  type GqlRecurringGroup,
+  type GqlStatement,
+  type GqlSummaryStatement,
+  type GqlTableRow,
 } from './gql_types';
-import { Month } from './month';
+import {Month} from './month';
+
+export interface RecurringHighlightKey {
+  date: string;
+  amount: number;
+  description: string;
+}
+
+export interface SecondaryPopupData {
+  group: GqlRecurringGroup;
+  highlightKey?: RecurringHighlightKey;
+}
 
 export interface PopupMonthSummaryData {
   kind: 'summary';

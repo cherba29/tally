@@ -21,3 +21,37 @@ export function currency(value: number | undefined | null): TemplateResult {
 export function isProjected(balance: GqlBalance | undefined | null): boolean {
   return (balance?.type ?? "UNKNOWN") !== "CONFIRMED";
 }
+
+export function formatCadence(cadence: string | undefined | null): string {
+  switch (cadence) {
+    case 'WEEKLY':
+      return 'Weekly';
+    case 'BIWEEKLY':
+      return 'Bi-weekly';
+    case 'MONTHLY':
+      return 'Monthly';
+    case 'QUARTERLY':
+      return 'Quarterly';
+    case 'YEARLY':
+      return 'Yearly';
+    default:
+      return 'Recurring';
+  }
+}
+
+export function formatOrdinalDay(day: number): string {
+  const mod100 = day % 100;
+  if (mod100 >= 11 && mod100 <= 13) {
+    return `${day}th`;
+  }
+  switch (day % 10) {
+    case 1:
+      return `${day}st`;
+    case 2:
+      return `${day}nd`;
+    case 3:
+      return `${day}rd`;
+    default:
+      return `${day}th`;
+  }
+}

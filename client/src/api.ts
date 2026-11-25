@@ -325,6 +325,9 @@ export class BackendClient {
               }
               balanceFromStart
               description
+              recurringGroupId
+              recurringCount
+              recurringCadence
             }
           }
         }
@@ -332,6 +335,56 @@ export class BackendClient {
       {
         accountPath,
         month,
+      }
+    );
+  }
+
+  /**
+   * Load all occurrences and summary metadata for a detected recurring transaction group.
+   * @return promise of query result.
+   */
+  loadRecurringTransactions(
+    groupId: string,
+    accountPath?: string
+  ): Promise<QueryResult<Query>> {
+    return this.executeQuery<Query>(
+      'recurringTransactions',
+      `
+        query recurringTransactions($groupId: String!, $accountPath: String = null) {
+          recurringTransactions(groupId: $groupId, accountPath: $accountPath) {
+            id
+            label
+            cadence
+            occurrenceCount
+            averageAmount
+            minAmount
+            maxAmount
+            totalAmount
+            isFixedAmount
+            typicalDayOfMonth
+            transactions {
+              month
+              fromAccountName
+              fromAccountPath
+              toAccountName
+              toAccountPath
+              counterpartyAccountName
+              isIncome
+              isExpense
+              isCurrentAccount
+              description
+              balance {
+                amount
+                date
+                type
+              }
+            }
+          }
+        }
+      `,
+      {
+        groupId,
+        accountPath: accountPath ?? null,
       }
     );
   }

@@ -3,12 +3,14 @@ import './tally-app';
 import {type TallyApp} from './tally-app';
 import {type BackendClient, type ConnectionState} from '../api';
 import {type CellClickEventData} from './summary-table';
+import {type RecurringClickEventData} from './balance-tooltip';
 import {type MonthRangeChange} from './balance-summary-tooltip';
 import {type TransfersSummaryMonthRangeChange} from './transfers-summary-tooltip';
 import {Month} from '../month';
 import {
   type GqlAccount,
   type GqlMonthTransferSummary,
+  type GqlRecurringGroup,
   type GqlStatement,
   type GqlTableRow,
 } from '../gql_types';
@@ -83,6 +85,34 @@ const makeTransferSummary = (totalTransfers: number): GqlMonthTransferSummary =>
   unaccounted: 0,
 });
 
+const makeRecurringGroup = (id: string, amount: number): GqlRecurringGroup => ({
+  id,
+  label: 'Fiber internet',
+  cadence: 'MONTHLY',
+  occurrenceCount: 2,
+  averageAmount: Math.abs(amount),
+  minAmount: Math.abs(amount),
+  maxAmount: Math.abs(amount),
+  totalAmount: Math.abs(amount) * 2,
+  isFixedAmount: true,
+  typicalDayOfMonth: 18,
+  transactions: [
+    {
+      month: 'Jan2025',
+      fromAccountName: 'acct1',
+      fromAccountPath: 'owner1/checking/acct1',
+      toAccountName: 'expenses',
+      toAccountPath: 'owner1/external/expenses',
+      counterpartyAccountName: 'expenses',
+      isIncome: false,
+      isExpense: true,
+      isCurrentAccount: true,
+      description: 'Fiber internet',
+      balance: {amount, date: '2025-01-18', desc: '', type: 'CONFIRMED'},
+    },
+  ],
+});
+
 const flush = async (el: TallyApp) => {
   await Promise.resolve();
   await Promise.resolve();
@@ -98,9 +128,11 @@ describe('TallyApp popup refresh on reload', () => {
   let statementAmount: number;
   let summaryAmount: number;
   let transferTotal: number;
+  let recurringAmount: number;
   let loadStatementCalls: Array<[string, string]>;
   let loadSummaryCalls: Array<[string, string | undefined, string]>;
   let loadTransferCalls: Array<[string, string | undefined, string]>;
+  let loadRecurringCalls: Array<[string, string | undefined]>;
   let loadTableCalls: Array<[string, string, string]>;
 
   const createMockClient = (): BackendClient =>
@@ -170,6 +202,14 @@ describe('TallyApp popup refresh on reload', () => {
           },
         });
       },
+      loadRecurringTransactions: (groupId: string, accountPath?: string) => {
+        loadRecurringCalls.push([groupId, accountPath]);
+        return Promise.resolve({
+          data: {
+            recurringTransactions: makeRecurringGroup(groupId, recurringAmount),
+          },
+        });
+      },
       subscribeToUpdates: (cb: () => void, onStateChange?: (state: ConnectionState) => void) => {
         onSubscriptionReload = cb;
         onConnectionStateChange = onStateChange;
@@ -185,9 +225,11 @@ describe('TallyApp popup refresh on reload', () => {
     statementAmount = 10000;
     summaryAmount = 20000;
     transferTotal = 30000;
+    recurringAmount = -7500;
     loadStatementCalls = [];
     loadSummaryCalls = [];
     loadTransferCalls = [];
+    loadRecurringCalls = [];
     loadTableCalls = [];
     tableRows = [makeRow('owner1/checking/acct1', makeAccount('acct1', 'Initial desc'))];
 
@@ -1050,5 +1092,160 @@ describe('TallyApp popup refresh on reload', () => {
     } finally {
       el2.remove();
     }
+  });
+
+  it('opens secondary recurring popup alongside statement popup, refreshes on live reload, and supports layered dismissal', async () => {
+    const month = Month.fromString('Jan2025');
+    getSummaryTable().dispatchEvent(
+      new CustomEvent<CellClickEventData>('cellclick', {
+        detail: {
+          mouseEvent: new MouseEvent('click'),
+          rowId: 'owner1/checking/acct1',
+          month,
+          isSummary: false,
+          anchorRect: new DOMRect(20, 40, 60, 20),
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    await flush(el);
+
+    const primaryTooltip = el.shadowRoot!.querySelector('balance-tooltip')!;
+    expect(primaryTooltip).to.not.equal(null);
+
+    // Click recurring badge -> opens secondary popup while keeping primary statement popup open
+    const recurringEvent = new MouseEvent('click', {bubbles: true, composed: true});
+    primaryTooltip.dispatchEvent(
+      new CustomEvent<RecurringClickEventData>('recurring-click', {
+        detail: {
+          groupId: 'grp-internet',
+          accountPath: 'owner1/checking/acct1',
+          selectedDate: '2025-01-18',
+          selectedAmount: -7500,
+          selectedDescription: 'Fiber internet',
+          mouseEvent: recurringEvent,
+          anchorRect: new DOMRect(120, 90, 36, 16),
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    await flush(el);
+    const secondaryChild = el.shadowRoot!.querySelector('recurring-tooltip');
+    expect(secondaryChild).to.not.equal(null);
+    await secondaryChild!.updateComplete;
+    await flush(el);
+
+    expect(el.shadowRoot!.querySelector('balance-tooltip')).to.not.equal(null);
+    expect(secondaryChild!.group?.id).to.equal('grp-internet');
+    expect(loadRecurringCalls).to.deep.equal([['grp-internet', 'owner1/checking/acct1']]);
+
+    // Clicking inside secondary popup or dispatching originating click keeps both popups open
+    const secondaryEl = el.shadowRoot!.querySelector<HTMLElement>('.secondary-toolTip')!;
+    secondaryEl.dispatchEvent(new MouseEvent('click', {bubbles: true, composed: true}));
+    document.dispatchEvent(recurringEvent);
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('recurring-tooltip')).to.not.equal(null);
+    expect(el.shadowRoot!.querySelector('balance-tooltip')).to.not.equal(null);
+
+    // Window resize repositions both popups without throwing
+    window.dispatchEvent(new Event('resize'));
+
+    // Live reload refreshes both primary statement popup and secondary recurring popup
+    recurringAmount = -8000;
+    onSubscriptionReload!();
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('recurring-tooltip')!.group?.averageAmount).to.equal(8000);
+    expect(loadRecurringCalls).to.have.lengthOf(2);
+
+    // First Escape closes only secondary popup, keeping primary statement popup open
+    window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape'}));
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('recurring-tooltip')).to.equal(null);
+    expect(el.shadowRoot!.querySelector('balance-tooltip')).to.not.equal(null);
+
+    // Reopen secondary popup, then verify outside click closes BOTH popups
+    primaryTooltip.dispatchEvent(
+      new CustomEvent<RecurringClickEventData>('recurring-click', {
+        detail: {
+          groupId: 'grp-internet',
+          accountPath: 'owner1/checking/acct1',
+          selectedDate: '2025-01-18',
+          selectedAmount: -8000,
+          selectedDescription: 'Fiber internet',
+          mouseEvent: new MouseEvent('click'),
+          anchorRect: new DOMRect(0, 0, 0, 0),
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('recurring-tooltip')).to.not.equal(null);
+
+    document.body.dispatchEvent(new MouseEvent('click', {bubbles: true, composed: true}));
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('recurring-tooltip')).to.equal(null);
+    expect(el.shadowRoot!.querySelector('balance-tooltip')).to.equal(null);
+
+    // Error & rejection when loading recurring group clears secondary popup cleanly
+    getSummaryTable().dispatchEvent(
+      new CustomEvent<CellClickEventData>('cellclick', {
+        detail: {
+          mouseEvent: new MouseEvent('click'),
+          rowId: 'owner1/checking/acct1',
+          month,
+          isSummary: false,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    await flush(el);
+
+    el.backendClient.loadRecurringTransactions = () =>
+      Promise.resolve({error: {message: 'group gone'}}) as unknown as ReturnType<
+        BackendClient['loadRecurringTransactions']
+      >;
+    el.shadowRoot!.querySelector('balance-tooltip')!.dispatchEvent(
+      new CustomEvent<RecurringClickEventData>('recurring-click', {
+        detail: {
+          groupId: 'missing',
+          accountPath: 'owner1/checking/acct1',
+          selectedDate: '2025-01-18',
+          selectedAmount: -8000,
+          selectedDescription: 'Fiber internet',
+          mouseEvent: new MouseEvent('click'),
+          anchorRect: new DOMRect(10, 10, 20, 10),
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('recurring-tooltip')).to.equal(null);
+
+    el.backendClient.loadRecurringTransactions = () =>
+      Promise.reject(new Error('network')) as unknown as ReturnType<
+        BackendClient['loadRecurringTransactions']
+      >;
+    el.shadowRoot!.querySelector('balance-tooltip')!.dispatchEvent(
+      new CustomEvent<RecurringClickEventData>('recurring-click', {
+        detail: {
+          groupId: 'missing',
+          accountPath: 'owner1/checking/acct1',
+          selectedDate: '2025-01-18',
+          selectedAmount: -8000,
+          selectedDescription: 'Fiber internet',
+          mouseEvent: new MouseEvent('click'),
+          anchorRect: new DOMRect(10, 10, 20, 10),
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('recurring-tooltip')).to.equal(null);
   });
 });

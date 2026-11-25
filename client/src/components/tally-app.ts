@@ -2,21 +2,26 @@ import {LitElement, css, html, nothing, type PropertyValues} from 'lit';
 import {customElement, state} from 'lit/decorators.js';
 import {BackendClient, type ConnectionState} from '../api';
 import {
-  type HeadingPopupData, 
-  type PopupData, 
-  type PopupMonthData, 
-  type PopupMonthSummaryData, 
+  type HeadingPopupData,
+  type PopupData,
+  type PopupMonthData,
+  type PopupMonthSummaryData,
   type PopupTransferSummaryData,
-  type Rows
+  type RecurringHighlightKey,
+  type Rows,
+  type SecondaryPopupData,
 } from '../utils';
+import {computePopupPosition, type PopupAnchor} from '../popup-position';
 import {styleMap, type StyleInfo} from 'lit/directives/style-map.js';
 
 import './account-tooltip';
 import './balance-tooltip';
 import './balance-summary-tooltip';
+import './recurring-tooltip';
 import './summary-table';
 import './transfers-summary-tooltip';
 
+import {type RecurringClickEventData} from './balance-tooltip';
 import {type MonthRangeChange} from './balance-summary-tooltip';
 import {type TransfersSummaryMonthRangeChange} from './transfers-summary-tooltip';
 import {type CellClickEventData} from './summary-table';
@@ -34,11 +39,10 @@ type ActivePopupRequest =
   | {type: 'statement'; accountName: string; month: Month}
   | {type: 'account'; rowId: string};
 
-type PopupAnchor = {
-  left: number;
-  right: number;
-  top: number;
-  bottom: number;
+type ActiveSecondaryPopupRequest = {
+  groupId: string;
+  accountPath: string;
+  highlightKey?: RecurringHighlightKey;
 };
 
 @customElement('tally-app')
@@ -176,6 +180,22 @@ export class TallyApp extends LitElement {
         Helvetica,
         sans-serif;
     }
+    .secondary-toolTip {
+      position: fixed;
+      z-index: 35;
+      padding: 6px;
+      border: 1px solid #1f6feb;
+      background-color: #fffef0;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+      max-width: calc(100vw - 16px);
+      max-height: calc(100vh - 16px);
+      overflow: auto;
+      box-sizing: border-box;
+      font:
+        10px/12px Arial,
+        Helvetica,
+        sans-serif;
+    }
     .toast {
       position: fixed;
       right: 16px;
@@ -205,6 +225,12 @@ export class TallyApp extends LitElement {
   private popupPositionToken = 0;
   private popupResizeObserver?: ResizeObserver;
   private lastCellClickEvent?: MouseEvent;
+  private activeSecondaryPopup: ActiveSecondaryPopupRequest | undefined = undefined;
+  private secondaryPopupRequestId = 0;
+  private secondaryPopupAnchor: PopupAnchor = {left: 0, right: 0, top: 0, bottom: 0};
+  private secondaryPopupPositionToken = 0;
+  private secondaryPopupResizeObserver?: ResizeObserver;
+  private lastRecurringClickEvent?: MouseEvent;
   private toastTimeout?: ReturnType<typeof setTimeout>;
 
   // Rendered reactive state.
@@ -215,26 +241,37 @@ export class TallyApp extends LitElement {
   @state() private months: string[] = [];
   @state() private rows: Rows = {};
   @state() private popupData: PopupData | undefined = undefined;
+  @state() private secondaryPopupData: SecondaryPopupData | undefined = undefined;
   @state() private currentOwner: string | undefined = undefined;
   @state() private owners: string[] = [];
   @state() private connectionState: ConnectionState = 'disconnected';
   @state() private lastReloadAt: Date | undefined = undefined;
 
   private readonly handleKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Escape' && (this.popupData || this.activePopup)) {
+    if (e.key !== 'Escape') return;
+    if (this.secondaryPopupData || this.activeSecondaryPopup) {
+      this.closeSecondaryPopup();
+    } else if (this.popupData || this.activePopup) {
       this.closePopup();
     }
   };
 
   private readonly handleDocumentClick = (e: MouseEvent) => {
-    if (!this.popupData && !this.activePopup) {
+    if (
+      !this.popupData &&
+      !this.activePopup &&
+      !this.secondaryPopupData &&
+      !this.activeSecondaryPopup
+    ) {
       return;
     }
-    if (e === this.lastCellClickEvent) {
+    if (e === this.lastCellClickEvent || e === this.lastRecurringClickEvent) {
       return;
     }
     const path = e.composedPath();
-    const keepOpenEls = this.shadowRoot?.querySelectorAll('.toolTip, header.toolbar, nav.owner-tabs');
+    const keepOpenEls = this.shadowRoot?.querySelectorAll(
+      '.toolTip, .secondary-toolTip, header.toolbar, nav.owner-tabs'
+    );
     if (keepOpenEls && Array.from(keepOpenEls).some((el) => path.includes(el))) {
       return;
     }
@@ -244,6 +281,9 @@ export class TallyApp extends LitElement {
   private readonly handleWindowResize = () => {
     if (this.popupData) {
       this.applyPopupPosition();
+    }
+    if (this.secondaryPopupData) {
+      this.applySecondaryPopupPosition();
     }
   };
 
@@ -271,6 +311,8 @@ export class TallyApp extends LitElement {
     document.removeEventListener('click', this.handleDocumentClick);
     this.popupResizeObserver?.disconnect();
     this.popupResizeObserver = undefined;
+    this.secondaryPopupResizeObserver?.disconnect();
+    this.secondaryPopupResizeObserver = undefined;
     if (this.toastTimeout) {
       clearTimeout(this.toastTimeout);
       this.toastTimeout = undefined;
@@ -278,20 +320,34 @@ export class TallyApp extends LitElement {
   }
 
   override firstUpdated() {
-    const tipEl = this.shadowRoot?.querySelector<HTMLElement>('.toolTip');
-    if (tipEl && typeof ResizeObserver !== 'undefined') {
-      this.popupResizeObserver = new ResizeObserver(() => {
-        if (this.popupData) {
-          this.applyPopupPosition();
-        }
-      });
-      this.popupResizeObserver.observe(tipEl);
+    if (typeof ResizeObserver !== 'undefined') {
+      const tipEl = this.shadowRoot?.querySelector<HTMLElement>('.toolTip');
+      if (tipEl) {
+        this.popupResizeObserver = new ResizeObserver(() => {
+          if (this.popupData) {
+            this.applyPopupPosition();
+          }
+        });
+        this.popupResizeObserver.observe(tipEl);
+      }
+      const secondaryTipEl = this.shadowRoot?.querySelector<HTMLElement>('.secondary-toolTip');
+      if (secondaryTipEl) {
+        this.secondaryPopupResizeObserver = new ResizeObserver(() => {
+          if (this.secondaryPopupData) {
+            this.applySecondaryPopupPosition();
+          }
+        });
+        this.secondaryPopupResizeObserver.observe(secondaryTipEl);
+      }
     }
   }
 
   override updated(changedProperties: PropertyValues) {
     if (changedProperties.has('popupData') && this.popupData) {
       void this.positionPopupAfterChildRender();
+    }
+    if (changedProperties.has('secondaryPopupData') && this.secondaryPopupData) {
+      void this.positionSecondaryPopupAfterChildRender();
     }
   }
 
@@ -338,41 +394,48 @@ export class TallyApp extends LitElement {
     const tipEl = this.shadowRoot?.querySelector<HTMLElement>('.toolTip');
     if (!tipEl || !this.popupData) return;
 
-    const margin = 8;
-    const gap = 4;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
     const rect = tipEl.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    const anchor = this.popupAnchor;
+    const {left, top} = computePopupPosition(
+      this.popupAnchor,
+      {width: rect.width, height: rect.height},
+      {width: window.innerWidth, height: window.innerHeight}
+    );
 
-    // Prefer placing below or above the clicked cell so it stays visible.
-    // If neither fits vertically, place beside the cell (right or left) instead of covering it.
-    const spaceBelow = vh - margin - (anchor.bottom + gap);
-    const spaceAbove = anchor.top - gap - margin;
-    const spaceRight = vw - margin - (anchor.right + gap);
-    const spaceLeft = anchor.left - gap - margin;
-    const maxLeft = Math.max(margin, vw - width - margin);
-    const maxTop = Math.max(margin, vh - height - margin);
+    tipEl.style.left = `${left}px`;
+    tipEl.style.top = `${top}px`;
+  }
 
-    let left: number;
-    let top: number;
+  private async positionSecondaryPopupAfterChildRender() {
+    const token = ++this.secondaryPopupPositionToken;
+    const tipEl = this.shadowRoot?.querySelector<HTMLElement>('.secondary-toolTip');
+    if (!tipEl) return;
 
-    if (height <= spaceBelow || height <= spaceAbove) {
-      top = height <= spaceBelow ? anchor.bottom + gap : anchor.top - height - gap;
-      // Align left edge to anchor.left opening rightward; flip leftward aligned to anchor.right if overflowing.
-      left = anchor.left + width <= vw - margin ? anchor.left : anchor.right - width;
-    } else if (width <= spaceRight || width <= spaceLeft) {
-      left = width <= spaceRight ? anchor.right + gap : anchor.left - width - gap;
-      top = anchor.bottom - height >= margin ? anchor.bottom - height : anchor.top;
-    } else {
-      left = spaceLeft > spaceRight ? anchor.right - width : anchor.left;
-      top = spaceAbove > spaceBelow ? anchor.top - height - gap : anchor.bottom + gap;
+    tipEl.style.visibility = 'hidden';
+
+    const childTooltip = tipEl.firstElementChild as
+      | (LitElement & {updateComplete?: Promise<unknown>})
+      | null;
+    if (childTooltip?.updateComplete) {
+      await childTooltip.updateComplete;
     }
+    if (token !== this.secondaryPopupPositionToken || !this.secondaryPopupData) {
+      return;
+    }
+    this.applySecondaryPopupPosition();
+    tipEl.style.visibility = 'visible';
+  }
 
-    left = Math.min(Math.max(margin, left), maxLeft);
-    top = Math.min(Math.max(margin, top), maxTop);
+  private applySecondaryPopupPosition() {
+    const tipEl = this.shadowRoot?.querySelector<HTMLElement>('.secondary-toolTip');
+    if (!tipEl || !this.secondaryPopupData) return;
+
+    const rect = tipEl.getBoundingClientRect();
+    const {left, top} = computePopupPosition(
+      this.secondaryPopupAnchor,
+      {width: rect.width, height: rect.height},
+      {width: window.innerWidth, height: window.innerHeight},
+      {preferSide: true}
+    );
 
     tipEl.style.left = `${left}px`;
     tipEl.style.top = `${top}px`;
@@ -408,6 +471,9 @@ export class TallyApp extends LitElement {
   override render() {
     const popupStyle: StyleInfo = {
       display: this.popupData ? null : 'none',
+    };
+    const secondaryPopupStyle: StyleInfo = {
+      display: this.secondaryPopupData ? null : 'none',
     };
     const tabStyle = (owner: string): StyleInfo => ({
       display: this.currentOwner === owner ? null : 'none',
@@ -461,8 +527,26 @@ export class TallyApp extends LitElement {
       ${this.errorMessage
         ? html`<div class="error-banner"><pre>${this.errorMessage}</pre></div>`
         : nothing}
-      <div class="toolTip" style=${styleMap(popupStyle)} @copied=${this.onCopied}>
+      <div
+        class="toolTip"
+        style=${styleMap(popupStyle)}
+        @copied=${this.onCopied}
+        @recurring-click=${this.onRecurringClick}
+      >
         ${this.tooltipFragment()}
+      </div>
+      <div
+        class="secondary-toolTip"
+        style=${styleMap(secondaryPopupStyle)}
+        @copied=${this.onCopied}
+      >
+        ${this.secondaryPopupData
+          ? html`<recurring-tooltip
+              .group=${this.secondaryPopupData.group}
+              .highlightKey=${this.secondaryPopupData.highlightKey}
+              @close=${this.closeSecondaryPopup}
+            ></recurring-tooltip>`
+          : nothing}
       </div>
       ${this.toastMessage
         ? html`<div class="toast" role="status" aria-live="polite">${this.toastMessage}</div>`
@@ -563,6 +647,82 @@ export class TallyApp extends LitElement {
     this.popupPositionToken++;
     this.activePopup = undefined;
     this.popupData = undefined;
+    this.closeSecondaryPopup();
+  }
+
+  private closeSecondaryPopup() {
+    this.secondaryPopupRequestId++;
+    this.secondaryPopupPositionToken++;
+    this.activeSecondaryPopup = undefined;
+    this.secondaryPopupData = undefined;
+  }
+
+  private onRecurringClick(e: CustomEvent<RecurringClickEventData>) {
+    const detail = e.detail;
+    this.lastRecurringClickEvent = detail.mouseEvent;
+    const primaryTipRect = this.shadowRoot
+      ?.querySelector<HTMLElement>('.toolTip')
+      ?.getBoundingClientRect();
+    const badgeRect = detail.anchorRect;
+    if (primaryTipRect && primaryTipRect.width > 0 && primaryTipRect.height > 0) {
+      this.secondaryPopupAnchor = {
+        left: primaryTipRect.left,
+        right: primaryTipRect.right,
+        top: badgeRect.height > 0 ? badgeRect.top : primaryTipRect.top,
+        bottom: badgeRect.height > 0 ? badgeRect.bottom : primaryTipRect.bottom,
+      };
+    } else if (badgeRect && (badgeRect.width > 0 || badgeRect.height > 0)) {
+      this.secondaryPopupAnchor = {
+        left: badgeRect.left,
+        right: badgeRect.right,
+        top: badgeRect.top,
+        bottom: badgeRect.bottom,
+      };
+    } else {
+      const x = detail.mouseEvent.clientX || detail.mouseEvent.pageX;
+      const y = detail.mouseEvent.clientY || detail.mouseEvent.pageY;
+      this.secondaryPopupAnchor = {left: x, right: x, top: y, bottom: y};
+    }
+
+    const highlightKey: RecurringHighlightKey = {
+      date: detail.selectedDate,
+      amount: detail.selectedAmount,
+      description: detail.selectedDescription,
+    };
+    this.activeSecondaryPopup = {
+      groupId: detail.groupId,
+      accountPath: detail.accountPath,
+      highlightKey,
+    };
+    this.reloadSecondaryPopup(detail.groupId, detail.accountPath, highlightKey);
+  }
+
+  private reloadSecondaryPopup(
+    groupId: string,
+    accountPath: string,
+    highlightKey?: RecurringHighlightKey
+  ) {
+    const requestId = ++this.secondaryPopupRequestId;
+    this.backendClient
+      .loadRecurringTransactions(groupId, accountPath)
+      .then((result) => {
+        if (requestId !== this.secondaryPopupRequestId) return;
+        const group = result.data?.recurringTransactions;
+        if (result.error || !group) {
+          this.activeSecondaryPopup = undefined;
+          this.secondaryPopupData = undefined;
+        } else {
+          this.secondaryPopupData = {
+            group,
+            highlightKey,
+          };
+        }
+      })
+      .catch(() => {
+        if (requestId !== this.secondaryPopupRequestId) return;
+        this.activeSecondaryPopup = undefined;
+        this.secondaryPopupData = undefined;
+      });
   }
 
   private popupMonthRangeChange(e: CustomEvent<MonthRangeChange>) {
@@ -595,6 +755,7 @@ export class TallyApp extends LitElement {
 
   private onAddSubCellClick(e: CustomEvent<CellClickEventData>) {
     this.lastCellClickEvent = e.detail.mouseEvent;
+    this.closeSecondaryPopup();
     this.popupAnchor = this.capturePopupAnchor(e.detail);
     this.activePopup = {
       type: 'transfers-summary',
@@ -607,6 +768,7 @@ export class TallyApp extends LitElement {
 
   private onCellClick(e: CustomEvent<CellClickEventData>) {
     this.lastCellClickEvent = e.detail.mouseEvent;
+    this.closeSecondaryPopup();
     this.popupAnchor = this.capturePopupAnchor(e.detail);
     if (e.detail.isSummary) {
       const accountName = e.detail.rowId ?? '';
@@ -730,6 +892,7 @@ export class TallyApp extends LitElement {
   private refreshActivePopup(rows: GqlTableRow[]) {
     if (!this.activePopup) {
       this.popupData = undefined;
+      this.closeSecondaryPopup();
       return;
     }
     switch (this.activePopup.type) {
@@ -763,6 +926,13 @@ export class TallyApp extends LitElement {
         break;
       }
     }
+    if (this.activeSecondaryPopup) {
+      this.reloadSecondaryPopup(
+        this.activeSecondaryPopup.groupId,
+        this.activeSecondaryPopup.accountPath,
+        this.activeSecondaryPopup.highlightKey
+      );
+    }
   }
 
   private reloadTable() {
@@ -772,6 +942,7 @@ export class TallyApp extends LitElement {
         if (result.error) {
           this.errorMessage = result.error.message;
           this.popupData = undefined;
+          this.secondaryPopupData = undefined;
         } else {
           this.errorMessage = '';
           const table = result.data!.table;
@@ -789,6 +960,7 @@ export class TallyApp extends LitElement {
       .catch((error: Error) => {
         this.errorMessage = error.message;
         this.popupData = undefined;
+        this.secondaryPopupData = undefined;
       });
   }
 }

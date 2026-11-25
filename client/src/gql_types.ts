@@ -87,6 +87,38 @@ export type GqlMonthTransferSummary = {
   weightedInternalAge: Scalars['Float']['output'];
 };
 
+/** Detected group of similar recurring transactions with summary statistics. */
+export type GqlRecurringGroup = {
+  __typename?: 'GqlRecurringGroup';
+  averageAmount: Scalars['Long']['output'];
+  cadence: Scalars['String']['output'];
+  id: Scalars['String']['output'];
+  isFixedAmount: Scalars['Boolean']['output'];
+  label: Scalars['String']['output'];
+  maxAmount: Scalars['Long']['output'];
+  minAmount: Scalars['Long']['output'];
+  occurrenceCount: Scalars['Int']['output'];
+  totalAmount: Scalars['Long']['output'];
+  transactions: Array<GqlRecurringTransaction>;
+  typicalDayOfMonth?: Maybe<Scalars['Int']['output']>;
+};
+
+/** Single occurrence within a detected recurring transaction series. */
+export type GqlRecurringTransaction = {
+  __typename?: 'GqlRecurringTransaction';
+  balance: GqlBalance;
+  counterpartyAccountName: Scalars['String']['output'];
+  description: Scalars['String']['output'];
+  fromAccountName: Scalars['String']['output'];
+  fromAccountPath: Scalars['String']['output'];
+  isCurrentAccount: Scalars['Boolean']['output'];
+  isExpense: Scalars['Boolean']['output'];
+  isIncome: Scalars['Boolean']['output'];
+  month: Scalars['GqlMonth']['output'];
+  toAccountName: Scalars['String']['output'];
+  toAccountPath: Scalars['String']['output'];
+};
+
 export type GqlStatement = {
   __typename?: 'GqlStatement';
   addSub: Scalars['Long']['output'];
@@ -180,6 +212,9 @@ export type GqlTransaction = {
   description: Scalars['String']['output'];
   isExpense: Scalars['Boolean']['output'];
   isIncome: Scalars['Boolean']['output'];
+  recurringCadence?: Maybe<Scalars['String']['output']>;
+  recurringCount?: Maybe<Scalars['Int']['output']>;
+  recurringGroupId?: Maybe<Scalars['String']['output']>;
   toAccountName: Scalars['String']['output'];
 };
 
@@ -194,7 +229,8 @@ export type GqlTransfersSummary = {
 
 export type Query = {
   __typename?: 'Query';
-  hello: Scalars['String']['output'];
+  /** Returns details and all occurrences for a recurring transaction group. */
+  recurringTransactions: GqlRecurringGroup;
   /** Returns a monthly statement for given account. */
   statement: GqlStatement;
   /** Generates delta summary table between two months. */
@@ -203,6 +239,12 @@ export type Query = {
   table: GqlTable;
   /** Generates sum of internal/external transfers for each month. */
   transfersSummary: GqlTransfersSummary;
+};
+
+
+export type QueryRecurringTransactionsArgs = {
+  accountPath?: InputMaybe<Scalars['String']['input']>;
+  groupId: Scalars['String']['input'];
 };
 
 

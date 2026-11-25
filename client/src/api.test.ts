@@ -161,6 +161,38 @@ describe('BackendClient GraphQL queries', () => {
     expect(result.data?.statement?.name).to.equal('checking');
   });
 
+  it('loadRecurringTransactions sends recurringTransactions query with expected variables', async () => {
+    nextResponseData = {
+      recurringTransactions: {
+        id: 'grp-1',
+        label: 'Fiber internet',
+        cadence: 'MONTHLY',
+        occurrenceCount: 5,
+        averageAmount: 7500,
+        minAmount: 7500,
+        maxAmount: 7500,
+        totalAmount: 37500,
+        isFixedAmount: true,
+        typicalDayOfMonth: 18,
+        transactions: [],
+      },
+    };
+    const client = new BackendClient();
+    const res1 = await client.loadRecurringTransactions('grp-1', 'alex/internal/checking');
+    expect(capturedRequests[0]!.body.operationName).to.equal('recurringTransactions');
+    expect(capturedRequests[0]!.body.variables).to.deep.equal({
+      groupId: 'grp-1',
+      accountPath: 'alex/internal/checking',
+    });
+    expect(res1.data?.recurringTransactions?.label).to.equal('Fiber internet');
+
+    await client.loadRecurringTransactions('grp-1');
+    expect(capturedRequests[1]!.body.variables).to.deep.equal({
+      groupId: 'grp-1',
+      accountPath: null,
+    });
+  });
+
   it('returns error object when GraphQL response contains errors', async () => {
     globalThis.fetch = (async () =>
       new Response(
