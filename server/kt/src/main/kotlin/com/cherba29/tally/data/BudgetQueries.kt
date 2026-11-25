@@ -5,6 +5,7 @@ import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.rangeTo
 import com.cherba29.tally.core.reduceTo
 import com.cherba29.tally.data.builder.MonthRangeSummaryStatementBuilder
+import com.cherba29.tally.recurring.RecurringGroup
 import com.cherba29.tally.schema.GqlTable
 import com.cherba29.tally.schema.GqlTableRow
 import com.cherba29.tally.schema.toGql
@@ -80,6 +81,13 @@ fun Budget.statement(
     isClosed = account.isClosed(statement.monthRange.first)
   )
 }
+
+/**
+ * Looks up a detected [RecurringGroup] by [groupId].
+ */
+fun Budget.recurringGroup(groupId: String): RecurringGroup =
+  recurringIndex.findGroupById(groupId)
+    ?: throw NotFoundException("Recurring transaction group '$groupId' not found.")
 
 /**
  * Builds the tabular ledger view for [owner] (or the first available owner when null/blank)

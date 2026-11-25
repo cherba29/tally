@@ -2,6 +2,7 @@ package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
+import com.cherba29.tally.recurring.RecurringTransactionIndex
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.utils.TreeNode
 
@@ -15,7 +16,9 @@ data class Budget(
   val tree: TreeNode<Profile>,
   // Tree node to corresponding statement.
   // Parent nodes map to SummaryStatement and leaf nodes to TransactionStatement.
-  val nodeToStatement: Map<TreeNode<Profile>, Map<Month, Statement>>
+  val nodeToStatement: Map<TreeNode<Profile>, Map<Month, Statement>>,
+  /** Detected recurring transaction groups indexed for O(1) lookup. */
+  val recurringIndex: RecurringTransactionIndex = RecurringTransactionIndex.EMPTY
 ) {
   private val isClosedCache = mutableMapOf<TreeNode<Profile>, MutableMap<Month, Boolean>>()
 

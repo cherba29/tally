@@ -144,7 +144,7 @@ Create a self-contained, independently testable package `com.cherba29.tally.recu
 
 ### Phase 2 — Budget Integration & GraphQL API (`server/kt`)
 
-- [ ] **2.1 Wire detection into `Budget` and `BudgetBuilder`**
+- [x] **2.1 Wire detection into `Budget` and `BudgetBuilder`**
   - **Modify:** `server/kt/src/main/kotlin/com/cherba29/tally/data/Budget.kt`
     - Add `val recurringIndex: RecurringTransactionIndex = RecurringTransactionIndex.EMPTY` (defaulted so existing callers/tests compile without changes).
   - **Modify:** `server/kt/src/main/kotlin/com/cherba29/tally/data/builder/BudgetBuilder.kt`
@@ -153,7 +153,7 @@ Create a self-contained, independently testable package `com.cherba29.tally.recu
     - Add `fun Budget.recurringGroup(groupId: String): RecurringGroup` throwing `NotFoundException` if missing.
     - Ensure `Budget.statement(...)` also has easy access to `recurringIndex` (or expose `recurringGroupFor(accountNode, month, transaction)` on `RecurringTransactionIndex`).
 
-- [ ] **2.2 Extend GraphQL schema types & mappers**
+- [x] **2.2 Extend GraphQL schema types & mappers**
   - **Modify:** `server/kt/src/main/kotlin/com/cherba29/tally/schema/GqlData.kt`
     - Add optional fields to `GqlTransaction` (defaulted to `null` for backward compatibility):
       ```kotlin
@@ -168,7 +168,7 @@ Create a self-contained, independently testable package `com.cherba29.tally.recu
     - Update `TransactionStatement.toGql(...)` and `Transaction.toGql(...)` to accept an optional `recurringGroupLookup: (Transaction) -> RecurringGroup? = { null }` and populate `recurringGroupId`, `recurringCount`, `recurringCadence`.
     - Add `RecurringGroup.toGql(viewerAccountPath: String?): GqlRecurringGroup` which orients each occurrence's `balance.amount`, `isIncome`, `isExpense`, `counterpartyAccountName`, and `isCurrentAccount` relative to `viewerAccountPath` (falling back to the transfer's outgoing perspective if `viewerAccountPath` is null or unrelated).
 
-- [ ] **2.3 Add GraphQL query service & wire into `Application.kt`**
+- [x] **2.3 Add GraphQL query service & wire into `Application.kt`**
   - **Modify:** `server/kt/src/main/kotlin/com/cherba29/tally/StatementService.kt`
     - Pass `budget.recurringIndex` lookup when converting `statement.toGql(...)`.
   - **New file:** `server/kt/src/main/kotlin/com/cherba29/tally/RecurringService.kt`
@@ -183,7 +183,7 @@ Create a self-contained, independently testable package `com.cherba29.tally.recu
   - **Modify:** `server/kt/src/main/kotlin/com/cherba29/tally/Application.kt`
     - Register `RecurringService(loader)` in `GraphQL { schema { queries = listOf(...) } }`.
 
-- [ ] **2.4 Update backend tests & SDL snapshot**
+- [x] **2.4 Update backend tests & SDL snapshot**
   - **New file:** `server/kt/src/test/kotlin/com/cherba29/tally/RecurringServiceTest.kt`
   - **Modify:**
     - `server/kt/src/test/kotlin/com/cherba29/tally/StatementServiceTest.kt` (add test verifying `recurringGroupId`, `recurringCount`, `recurringCadence` are populated for recurring transactions and `null` for one-offs).

@@ -175,7 +175,8 @@ fun Application.graphQLModule() {
       queries = listOf(
         TableService(loader),
         SummaryService(loader),
-        StatementService(loader)
+        StatementService(loader),
+        RecurringService(loader)
       )
       subscriptions = listOf(
         TableSubscription(loader)

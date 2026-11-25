@@ -6,6 +6,8 @@ import com.cherba29.tally.core.DayInMonth
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.Transaction
 import com.cherba29.tally.data.Profile
+import com.cherba29.tally.recurring.RecurringGroup
+import com.cherba29.tally.recurring.RecurringOccurrence
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
@@ -48,14 +50,76 @@ fun Balance.toGql(): GqlBalance =
     desc = description
   )
 
-fun Transaction.toGql(balanceFromStart: Long?): GqlTransaction =
+fun Transaction.toGql(
+  balanceFromStart: Long?,
+  recurringGroup: RecurringGroup? = null
+): GqlTransaction =
   GqlTransaction(
     toAccountName = targetTreeNode.name,
     isIncome = type == Transaction.Type.INCOME,
     isExpense = type == Transaction.Type.EXPENSE,
     balance = balance.toGql(),
     balanceFromStart = balanceFromStart ?: 0,
-    description = description ?: ""
+    description = description ?: "",
+    recurringGroupId = recurringGroup?.id,
+    recurringCount = recurringGroup?.occurrenceCount,
+    recurringCadence = recurringGroup?.cadence?.name
+  )
+
+fun RecurringOccurrence.toGql(viewerAccountPath: String? = null): GqlRecurringTransaction {
+  val normalizedViewer = viewerAccountPath?.trim('/')?.ifEmpty { null }
+  val isFromViewer = normalizedViewer != null && normalizedViewer == fromAccountPath
+  val isToViewer = normalizedViewer != null && normalizedViewer == toAccountPath
+  val isCurrentAccount = normalizedViewer == null || isFromViewer || isToViewer
+
+  val orientedBalance = when {
+    isFromViewer -> -balance
+    isToViewer -> balance
+    type == Transaction.Type.INCOME -> balance
+    else -> -balance
+  }
+
+  val counterpartyName = when {
+    isFromViewer -> toAccountName
+    isToViewer -> fromAccountName
+    type == Transaction.Type.INCOME -> fromAccountName
+    else -> toAccountName
+  }
+
+  val (isIncome, isExpense) = when {
+    type == Transaction.Type.TRANSFER -> false to false
+    orientedBalance.amount > 0 -> true to false
+    else -> false to true
+  }
+
+  return GqlRecurringTransaction(
+    month = month,
+    fromAccountName = fromAccountName,
+    fromAccountPath = fromAccountPath,
+    toAccountName = toAccountName,
+    toAccountPath = toAccountPath,
+    counterpartyAccountName = counterpartyName,
+    isIncome = isIncome,
+    isExpense = isExpense,
+    balance = orientedBalance.toGql(),
+    description = description,
+    isCurrentAccount = isCurrentAccount
+  )
+}
+
+fun RecurringGroup.toGql(viewerAccountPath: String? = null): GqlRecurringGroup =
+  GqlRecurringGroup(
+    id = id,
+    label = label,
+    cadence = cadence.name,
+    occurrenceCount = occurrenceCount,
+    averageAmount = averageAmount,
+    minAmount = minAmount,
+    maxAmount = maxAmount,
+    totalAmount = totalAmount,
+    isFixedAmount = isFixedAmount,
+    typicalDayOfMonth = typicalDayOfMonth,
+    transactions = occurrences.map { it.toGql(viewerAccountPath) }
   )
 
 private fun Double?.round2Float(): Float {
@@ -65,7 +129,8 @@ private fun Double?.round2Float(): Float {
 
 fun TransactionStatement.toGql(
   accountName: String,
-  isClosed: Boolean
+  isClosed: Boolean,
+  recurringGroupLookup: (Transaction) -> RecurringGroup? = { null }
 ): GqlStatement =
   GqlStatement(
     name = accountName,
@@ -86,7 +151,9 @@ fun TransactionStatement.toGql(
     percentChange = percentChange.round2Float(),
     annualizedPercentChange = annualizedPercentChange.round2Float(),
     unaccounted = unaccounted ?: 0,
-    transactions = transactions.zip(balanceFromStart).map { it.first.toGql(it.second) }
+    transactions = transactions.zip(balanceFromStart).map { (tx, runningBalance) ->
+      tx.toGql(runningBalance, recurringGroupLookup(tx))
+    }
   )
 
 fun TransactionStatement.toGqlTableCell(isClosed: Boolean): GqlTableCell =

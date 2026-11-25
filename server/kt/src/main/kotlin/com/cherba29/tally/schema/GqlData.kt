@@ -162,5 +162,38 @@ data class GqlTransaction(
   val isExpense: Boolean,
   val balance: GqlBalance,
   val balanceFromStart: Long,
-  val description: String
+  val description: String,
+  val recurringGroupId: String? = null,
+  val recurringCount: Int? = null,
+  val recurringCadence: String? = null
+)
+
+@GraphQLDescription("Single occurrence within a detected recurring transaction series.")
+data class GqlRecurringTransaction(
+  val month: Month,
+  val fromAccountName: String,
+  val fromAccountPath: String,
+  val toAccountName: String,
+  val toAccountPath: String,
+  val counterpartyAccountName: String,
+  val isIncome: Boolean,
+  val isExpense: Boolean,
+  val balance: GqlBalance,
+  val description: String,
+  val isCurrentAccount: Boolean
+)
+
+@GraphQLDescription("Detected group of similar recurring transactions with summary statistics.")
+data class GqlRecurringGroup(
+  val id: String,
+  val label: String,
+  val cadence: String,
+  val occurrenceCount: Int,
+  val averageAmount: Long,
+  val minAmount: Long,
+  val maxAmount: Long,
+  val totalAmount: Long,
+  val isFixedAmount: Boolean,
+  val typicalDayOfMonth: Int?,
+  val transactions: List<GqlRecurringTransaction>
 )

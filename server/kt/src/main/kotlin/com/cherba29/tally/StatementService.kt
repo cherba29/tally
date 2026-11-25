@@ -21,7 +21,15 @@ class StatementService(val loader: Loader) : Query {
       try {
         val budget = loader.budget()
         val (accountNode, statement, isClosed) = budget.statement(accountPath, month)
-        statement.toGql(accountNode.name, isClosed)
+        statement.toGql(accountNode.name, isClosed) { tx ->
+          budget.recurringIndex.findGroup(
+            accountPath = accountNode.pathString,
+            targetAccountPath = tx.targetTreeNode.pathString,
+            month = month,
+            balance = tx.balance,
+            description = tx.description
+          )
+        }
       } catch (e: Exception) {
         logger.error(e) { "Error while processing statement query account=$accountPath month=$month" }
         throw e

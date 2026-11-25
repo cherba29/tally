@@ -6,10 +6,14 @@ import com.cherba29.tally.core.Account.Companion.INACTIVE_NAME
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
+import com.cherba29.tally.core.Transaction
 import com.cherba29.tally.core.plus
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.data.BudgetLoadingException
 import com.cherba29.tally.data.Profile
+import com.cherba29.tally.recurring.RecurringTransactionDetector
+import com.cherba29.tally.recurring.RecurringTransactionIndex
+import com.cherba29.tally.recurring.TransferCandidate
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.TransactionStatement
 import com.cherba29.tally.utils.TreeNode
@@ -398,18 +402,54 @@ class BudgetBuilder {
     }
     nodeToStatement.putAll(summaryNameMonthMap)
 
+    val (recurringIndex, elapsedRecurring) = timeSource.measureTimedValue {
+      detectRecurringTransactions(resolvedTransfers)
+    }
+
     logger.info {
       "Build ${leafNodes.size} accounts, " +
         "$numTransactions transactions in $elapsedTransactionTime, " +
         "${summaryNameMonthMap.size} summaries in $elapsedBuildSummaryStatements, " +
-        "total in ${elapsedTransactionTime + elapsedBuildSummaryStatements}"
+        "${recurringIndex.groups.size} recurring groups in $elapsedRecurring, " +
+        "total in ${elapsedTransactionTime + elapsedBuildSummaryStatements + elapsedRecurring}"
     }
 
     return Budget(
       monthRange!!,
       treeRoot,
-      nodeToStatement
+      nodeToStatement,
+      recurringIndex
     )
+  }
+
+  private fun detectRecurringTransactions(resolvedTransfers: List<ResolvedTransfer>): RecurringTransactionIndex {
+    val candidates = resolvedTransfers.mapIndexed { idx, transfer ->
+      val fromNode = transfer.fromAccountNode
+      val toNode = transfer.toAccountNode
+      val fromIsExternal = fromNode.data.isExternal
+      val toIsExternal = toNode.data.isExternal
+      val canonicalType = when {
+        !fromIsExternal && !toIsExternal && fromNode.top.name == toNode.top.name ->
+          Transaction.Type.TRANSFER
+        fromIsExternal && !toIsExternal ->
+          if (transfer.balance.amount >= 0) Transaction.Type.INCOME else Transaction.Type.EXPENSE
+        else ->
+          if (transfer.balance.amount >= 0) Transaction.Type.EXPENSE else Transaction.Type.INCOME
+      }
+      TransferCandidate(
+        transferIndex = idx,
+        owner = fromNode.top.name,
+        fromAccountPath = fromNode.pathString,
+        fromAccountName = fromNode.name,
+        toAccountPath = toNode.pathString,
+        toAccountName = toNode.name,
+        month = transfer.month,
+        balance = transfer.balance,
+        description = transfer.description,
+        type = canonicalType
+      )
+    }
+    return RecurringTransactionDetector().detect(candidates)
   }
 
   companion object {

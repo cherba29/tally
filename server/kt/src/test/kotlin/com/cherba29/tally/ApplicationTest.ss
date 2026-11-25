@@ -102,6 +102,36 @@ type GqlMonthTransferSummary {
   weightedInternalAge: Float!
 }
 
+"Detected group of similar recurring transactions with summary statistics."
+type GqlRecurringGroup {
+  averageAmount: Long!
+  cadence: String!
+  id: String!
+  isFixedAmount: Boolean!
+  label: String!
+  maxAmount: Long!
+  minAmount: Long!
+  occurrenceCount: Int!
+  totalAmount: Long!
+  transactions: [GqlRecurringTransaction!]!
+  typicalDayOfMonth: Int
+}
+
+"Single occurrence within a detected recurring transaction series."
+type GqlRecurringTransaction {
+  balance: GqlBalance!
+  counterpartyAccountName: String!
+  description: String!
+  fromAccountName: String!
+  fromAccountPath: String!
+  isCurrentAccount: Boolean!
+  isExpense: Boolean!
+  isIncome: Boolean!
+  month: GqlMonth!
+  toAccountName: String!
+  toAccountPath: String!
+}
+
 type GqlStatement {
   addSub: Long!
   annualizedPercentChange: Float!
@@ -188,6 +218,9 @@ type GqlTransaction {
   description: String!
   isExpense: Boolean!
   isIncome: Boolean!
+  recurringCadence: String
+  recurringCount: Int
+  recurringGroupId: String
   toAccountName: String!
 }
 
@@ -200,6 +233,8 @@ type GqlTransfersSummary {
 }
 
 type Query {
+  "Returns details and all occurrences for a recurring transaction group."
+  recurringTransactions(accountPath: String, groupId: String!): GqlRecurringGroup!
   "Returns a monthly statement for given account."
   statement(accountPath: String!, month: GqlMonth!): GqlStatement!
   "Generates delta summary table between two months."

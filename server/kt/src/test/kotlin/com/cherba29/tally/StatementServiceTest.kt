@@ -4,6 +4,7 @@ import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.MAR
+import com.cherba29.tally.core.MonthName.MAY
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.data.builder.BudgetBuilder
 import com.cherba29.tally.data.builder.budget
@@ -12,6 +13,8 @@ import com.cherba29.tally.schema.GqlStatement
 import com.cherba29.tally.schema.GqlTransaction
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -182,6 +185,70 @@ class StatementServiceTest : DescribeSpec({
           )
         )
       )
+    }
+
+    it("statement populates recurring metadata for recurring transactions and omits for one-offs") {
+      val checking = Account("checking", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2026)
+      val expenses = Account("expenses", owners = setOf("john"), path = listOf("external"), openedOn = MAR / 2026)
+
+      val loader = mockk<Loader> {
+        coEvery { budget() } returns budget {
+          setAccount(listOf("john", "internal", "checking"), checking)
+          setAccount(listOf("john", "external", "expenses"), expenses)
+          addTransfer(
+            BudgetBuilder.TransferRecord(
+              toAccountName = "expenses",
+              fromAccountPath = listOf("john", "internal", "checking"),
+              month = MAR / 2026,
+              balance = Balance.confirmed(7500, "2026-03-18"),
+              description = "Fiber internet",
+              tags = listOf()
+            )
+          )
+          addTransfer(
+            BudgetBuilder.TransferRecord(
+              toAccountName = "expenses",
+              fromAccountPath = listOf("john", "internal", "checking"),
+              month = APR / 2026,
+              balance = Balance.confirmed(7500, "2026-04-18"),
+              description = "Fiber internet",
+              tags = listOf()
+            )
+          )
+          addTransfer(
+            BudgetBuilder.TransferRecord(
+              toAccountName = "expenses",
+              fromAccountPath = listOf("john", "internal", "checking"),
+              month = MAY / 2026,
+              balance = Balance.confirmed(7500, "2026-05-18"),
+              description = "Fiber internet",
+              tags = listOf()
+            )
+          )
+          addTransfer(
+            BudgetBuilder.TransferRecord(
+              toAccountName = "expenses",
+              fromAccountPath = listOf("john", "internal", "checking"),
+              month = MAY / 2026,
+              balance = Balance.confirmed(16500, "2026-05-10"),
+              description = "Spring jacket",
+              tags = listOf()
+            )
+          )
+        }
+      }
+
+      val mayStmt = StatementService(loader).statement("john/internal/checking", MAY / 2026)
+      val internetTx = mayStmt.transactions.first { it.description == "Fiber internet" }
+      val jacketTx = mayStmt.transactions.first { it.description == "Spring jacket" }
+
+      internetTx.recurringGroupId.shouldNotBeNull()
+      internetTx.recurringCount shouldBe 3
+      internetTx.recurringCadence shouldBe "MONTHLY"
+
+      jacketTx.recurringGroupId.shouldBeNull()
+      jacketTx.recurringCount.shouldBeNull()
+      jacketTx.recurringCadence.shouldBeNull()
     }
   }
 })
