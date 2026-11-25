@@ -329,16 +329,16 @@ Create a self-contained, independently testable package `com.cherba29.tally.recu
 
 ### Phase 5 — End-to-End & Visual Verification
 
-- [ ] **5.1 Build full application & run all automated checks**
+- [x] **5.1 Build full application & run all automated checks**
   - Backend: `cd server/kt && ./gradlew test ktlintCheck buildFatJar`
   - Frontend: `cd client && pnpm typecheck && pnpm lint && pnpm build && pnpm test`
-- [ ] **5.2 Live browser verification against `sample-data/`**
+- [x] **5.2 Live browser verification against `sample-data/`**
   - Launch `./tally.sh server` and inspect in a real/headless browser at multiple viewports (`1200×700`, `1200×400`, narrow window):
     - Open `checking` `Nov2026` statement: verify `Monthly apartment rent`, `Fiber internet`, `Electric & gas utility (projected)`, `Pay off Oct2026 statement`, and `Acme Corp bi-monthly paycheck` all display recurring indicators.
     - Open `credit-card` `Nov2026` statement: verify `Streaming & cloud subscriptions` and `Weekly groceries` show recurring indicators while `Holiday gifts (projected)` does not.
     - Click a recurring badge: verify secondary popup opens cleanly beside the statement popup with zero flicker, zero viewport clipping, accurate stats/cadence, highlighted current row, working clipboard copy, and layered `Escape` dismissal.
     - Edit a YAML file while both popups are open and verify WebSocket live-reload refreshes both popups smoothly.
-- [ ] **5.3 Refresh documentation/screenshots (optional)**
+- [x] **5.3 Refresh documentation/screenshots (optional)**
   - Update `sample-data/screenshot-statement.png` if desired to showcase recurring badges and the recurring transactions popup.
 
 ---

@@ -76,7 +76,9 @@ export class RecurringTooltip extends LitElement {
     }
     table {
       table-layout: auto;
-      width: 520px;
+      width: auto;
+      min-width: 390px;
+      max-width: 470px;
       border-collapse: collapse;
     }
     th,
@@ -136,7 +138,7 @@ export class RecurringTooltip extends LitElement {
   copyToClipBoard(amount: number | null | undefined) {
     if (amount != null) {
       const text = (amount / 100.0).toFixed(2);
-      navigator.clipboard.writeText(text);
+      void navigator.clipboard?.writeText(text)?.catch(() => {});
       this.dispatchEvent(
         new CustomEvent('copied', {
           detail: {text},
