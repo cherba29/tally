@@ -8,11 +8,11 @@ This document outlines prioritized improvements to make Tally more readable, eas
 
 Low-risk cleanup that reduces noise, removes dead code, and establishes automated quality gates.
 
-### 1.1 Remove Legacy & Misplaced Files
-- Remove obsolete [`client/karma.conf.js`](../client/karma.conf.js) and the unused `"karma"` script in [`client/package.json`](../client/package.json).
-- Delete untracked legacy artifacts under `client/public/` (stale Webpack/Handlebars/Jetty `.d.ts` files).
-- Remove stray tracked files (`server/kt/skills/system/run-workflow/SKILL.md` and `server/kt/kt.iml` if IDE project files are not intended to be committed).
-- Move test-only helpers (`server/kt/src/main/kotlin/com/cherba29/tally/testing/toObjectNode.kt` and `toSnapshot.kt`) from `src/main` to `src/test` so they are not packaged into `tally-all.jar`.
+### 1.1 Remove Legacy & Misplaced Files — Done
+- [x] Removed obsolete `client/karma.conf.js` and the unused `"karma"` script in [`client/package.json`](../client/package.json).
+- [x] Deleted untracked legacy artifacts under `client/public/` (stale Webpack/Handlebars/Jetty `.d.ts` files).
+- [x] Removed stray tracked `server/kt/skills/system/run-workflow/SKILL.md` (`server/kt/kt.iml` is already gitignored via `server/kt/.gitignore`).
+- [x] Moved test-only helpers (`toObjectNode.kt` and `toSnapshot.kt`) from `server/kt/src/main/kotlin/com/cherba29/tally/testing/` to `server/kt/src/test/kotlin/com/cherba29/tally/testing/` so they are excluded from `tally-all.jar`.
 
 ### 1.2 Unify Environment Variables & Config Defaults
 - Standardize on `TALLY_FILES` across both the web server and CLI commands (currently CLI commands such as [`Summary.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/cli/cmds/Summary.kt) read `TALLY_PATH`, while [`application.yaml`](../server/kt/src/main/resources/application.yaml), [`dev.sh`](../dev.sh), and [`run.sh`](../run.sh) use `TALLY_FILES`). Support the legacy name as a fallback for backwards compatibility.

@@ -36,7 +36,6 @@
     "serve": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "karma": "karma start karma.conf.js",
     "graphql-codegen": "graphql-codegen --config codegen.yml",
     "prettier-format": "prettier --config .prettierrc.yaml '**/*.ts' --write",
     "lint": "eslint . --ext .ts",
