@@ -46,9 +46,22 @@ import java.nio.file.Paths
 import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
+import com.cherba29.tally.cli.main as runCliMain
+
+internal fun dispatchMain(
+  args: Array<String>,
+  runCli: (Array<String>) -> Unit = ::runCliMain,
+  runServer: (Array<String>) -> Unit = EngineMain::main
+) {
+  if (args.firstOrNull() == "cli") {
+    runCli(args.drop(1).toTypedArray())
+  } else {
+    runServer(args)
+  }
+}
 
 fun main(args: Array<String>) {
-  EngineMain.main(args)
+  dispatchMain(args)
 }
 
 @ContactDirective(

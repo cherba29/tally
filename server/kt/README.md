@@ -170,9 +170,19 @@ query table(
 
 ## CLI
 
-### Report
+### Fast invocation (via packaged fat JAR)
 
+From the repository root (auto-builds `tally-all.jar` if missing):
+
+```bash
+./tally.sh report External --start-month=Jan2025 --end-month=May2026 --tally-path=/path/to/data
+# or directly via the fat JAR:
+java -jar server/kt/build/libs/tally-all.jar cli report External --start-month=Jan2025 --end-month=May2026 --tally-path=/path/to/data
 ```
+
+### Via Gradle
+
+```bash
 ./gradlew runTally --args="report External --start-month=Jan2025 --end-month=May2026 --tally-path=../../../data"
 ```
 

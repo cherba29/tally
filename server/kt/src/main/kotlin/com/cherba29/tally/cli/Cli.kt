@@ -21,7 +21,7 @@ class Cli : CliktCommand() {
   }
 }
 
-fun main(args: Array<String>) =
+fun createCli(): CliktCommand =
   Cli()
     .subcommands(
       CsvToTransfers(),
@@ -31,4 +31,6 @@ fun main(args: Array<String>) =
       Transactions(),
       TransfersSummary(),
       Unaccounted()
-    ).main(args)
+    )
+
+fun main(args: Array<String>) = createCli().main(args)

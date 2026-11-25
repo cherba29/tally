@@ -99,9 +99,10 @@ Low-risk cleanup that reduces noise, removes dead code, and establishes automate
 - [x] Exported `ConnectionState` (`'connected' | 'reconnecting' | 'disconnected'`) and added an optional `onStateChange` callback to `BackendClient.subscribeToUpdates()` emitting deduplicated WebSocket lifecycle transitions (covered in [`api.test.ts`](../client/src/api.test.ts)).
 - [x] Added a compact live-reload status badge (`.live-status`) with colored dot, connection label (`Live` / `Reconnecting` / `Disconnected`), and last-reload `HH:MM:SS` timestamp to the `<header class="toolbar">` in [`tally-app.ts`](../client/src/components/tally-app.ts) (covered in [`tally-app.test.ts`](../client/src/components/tally-app.test.ts)).
 
-### 4.5 Fast CLI Invocation
-- **Files**: Root script (e.g., `./tally.sh`) and/or unified fat-JAR entry point in [`server/kt`](../server/kt)
-- **Action**: Provide a lightweight `./tally.sh` wrapper—or support `java -jar tally-all.jar cli <subcommand>`—so CLI tools (`unaccounted`, `csv-to-transfers`, `generate`, `summary`, `report`) run immediately without Gradle startup overhead.
+### 4.5 Fast CLI Invocation — Done
+- **Files**: [`tally.sh`](../tally.sh), [`Application.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/Application.kt), [`Cli.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/cli/Cli.kt), [`build.gradle.kts`](../server/kt/build.gradle.kts)
+- [x] Switched the fat JAR `mainClass` to `com.cherba29.tally.ApplicationKt` and added `dispatchMain()` so `java -jar tally-all.jar cli <subcommand>` dispatches directly to the Clikt CLI while `java -jar tally-all.jar` continues launching Ktor `EngineMain` (covered in [`ApplicationTest.kt`](../server/kt/src/test/kotlin/com/cherba29/tally/ApplicationTest.kt) and [`CliTest.kt`](../server/kt/src/test/kotlin/com/cherba29/tally/cli/CliTest.kt)).
+- [x] Added executable root wrapper [`tally.sh`](../tally.sh) (supports `--build`, defaults `TALLY_FILES` to `./sample-data` when unset, sends any auto-build logs to `stderr`, and executes `java -jar tally-all.jar cli "$@"` with zero Gradle startup overhead) and updated [`README.md`](../README.md) and [`server/kt/README.md`](../server/kt/README.md).
 
 ---
 

@@ -15,7 +15,7 @@ group = "com.cherba29.tally"
 version = "0.4.0"
 
 application {
-  mainClass = "io.ktor.server.netty.EngineMain"
+  mainClass = "com.cherba29.tally.ApplicationKt"
 }
 
 ktor {

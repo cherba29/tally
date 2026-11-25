@@ -90,6 +90,50 @@ class ApplicationTest : DescribeSpec({
     """.trimIndent()
   )
 
+  describe("dispatchMain") {
+    it("routes 'cli' invocations to the CLI entry point without the leading 'cli' token") {
+      var cliArgs: List<String>? = null
+      var serverArgs: List<String>? = null
+
+      dispatchMain(
+        args = arrayOf("cli", "summary", "--start-month", "Jul2026"),
+        runCli = { cliArgs = it.toList() },
+        runServer = { serverArgs = it.toList() }
+      )
+
+      cliArgs shouldBe listOf("summary", "--start-month", "Jul2026")
+      serverArgs shouldBe null
+    }
+
+    it("routes bare 'cli' invocation to the CLI entry point with empty args") {
+      var cliArgs: List<String>? = null
+      var serverArgs: List<String>? = null
+
+      dispatchMain(
+        args = arrayOf("cli"),
+        runCli = { cliArgs = it.toList() },
+        runServer = { serverArgs = it.toList() }
+      )
+
+      cliArgs shouldBe emptyList()
+      serverArgs shouldBe null
+    }
+
+    it("routes empty or server args to the Ktor server entry point") {
+      var cliArgs: List<String>? = null
+      var serverArgs: List<String>? = null
+
+      dispatchMain(
+        args = arrayOf("-port=9090"),
+        runCli = { cliArgs = it.toList() },
+        runServer = { serverArgs = it.toList() }
+      )
+
+      cliArgs shouldBe null
+      serverArgs shouldBe listOf("-port=9090")
+    }
+  }
+
   describe("resolveTallyDataPath") {
     it("prefers tally.data.path over legacyPath") {
       val primaryDir = tempdir("tally-primary-", keepOnFailure = false).toPath()

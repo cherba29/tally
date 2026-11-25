@@ -87,11 +87,22 @@ See [`sample-data/README.md`](sample-data/README.md) for a walkthrough of the bu
 
 ## CLI
 
-The CLI commands (`generate`, `report`, `transactions`, `unaccounted`, `summary`, `transfers-summary`, `csv-to-transfers`) are implemented in Kotlin under `server/kt`:
+The CLI commands (`generate`, `report`, `transactions`, `unaccounted`, `summary`, `transfers-summary`, `csv-to-transfers`) are packaged into `tally-all.jar` and can be invoked directly without Gradle startup overhead via `./tally.sh` (defaults to `./sample-data` if `TALLY_FILES` / `TALLY_PATH` is unset; builds the JAR automatically if missing, or pass `--build` to force a rebuild):
+
+```bash
+./tally.sh --help
+./tally.sh summary alex/internal --start-month Jul2026 --end-month Nov2026
+TALLY_FILES=/path/to/data ./tally.sh unaccounted
+
+# Or directly from the packaged fat JAR:
+TALLY_FILES=./sample-data java -jar server/kt/build/libs/tally-all.jar cli summary alex/internal --start-month Jul2026 --end-month Nov2026
+```
+
+During Kotlin development you can also invoke the CLI via Gradle:
 
 ```bash
 cd server/kt
-TALLY_FILES=../../sample-data ./gradlew runTally --args="summary --start-month Jul2026 --end-month Nov2026"
+TALLY_FILES=../../sample-data ./gradlew runTally --args="summary alex/internal --start-month Jul2026 --end-month Nov2026"
 ```
 
 ## CI/CD
