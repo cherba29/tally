@@ -49,9 +49,9 @@ Low-risk cleanup that reduces noise, removes dead code, and establishes automate
 - **Files**: [`TableService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/TableService.kt), [`SummaryService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/SummaryService.kt), [`StatementService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/StatementService.kt)
 - [x] Converted `table`, `summary`, `transfersSummary`, and `statement` resolvers to `suspend fun` and removed all `runBlocking` calls from `server/kt/src/main`.
 
-### 2.4 Split Plumbing Out of `Application.kt`
-- **File**: [`server/kt/src/main/kotlin/com/cherba29/tally/Application.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/Application.kt)
-- **Action**: Extract `RequestLoggingPlugin`, `QueryLoggingInstrumentation`, and `LoggingDataFetcherExceptionHandler` into dedicated files under a `server/` or `graphql/` subpackage so `Application.kt` stays focused on application wiring.
+### 2.4 Split Plumbing Out of `Application.kt` — Done
+- **Files**: [`Application.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/Application.kt), [`RequestLoggingPlugin.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/server/RequestLoggingPlugin.kt), [`QueryLoggingInstrumentation.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/server/QueryLoggingInstrumentation.kt), [`LoggingDataFetcherExceptionHandler.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/server/LoggingDataFetcherExceptionHandler.kt)
+- [x] Extracted `RequestLoggingPlugin`, `QueryLoggingInstrumentation`, and `LoggingDataFetcherExceptionHandler` into dedicated files under `com.cherba29.tally.server`, leaving `Application.kt` focused on server wiring and routing.
 
 ---
 
