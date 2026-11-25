@@ -13,14 +13,18 @@ import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query
 import com.expediagroup.graphql.server.operations.Subscription
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlin.time.measureTimedValue
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
+import kotlin.time.measureTimedValue
 
 class TableService(val loader: Loader) : Query {
   @GraphQLDescription("Generates full tally table in given month range.")
-  fun table(owner: String?, startMonth: Month, endMonth: Month): GqlTable {
+  fun table(
+    owner: String?,
+    startMonth: Month,
+    endMonth: Month
+  ): GqlTable {
     logger.info { "table owner=$owner startMonth=$startMonth endMonth=$endMonth" }
     val (result, timeTaken) = measureTimedValue {
       try {
@@ -37,14 +41,21 @@ class TableService(val loader: Loader) : Query {
   companion object {
     private val logger = KotlinLogging.logger {}
 
-    private fun buildGqlTable(payload: Budget, owner: String?, startMonth: Month, endMonth: Month): GqlTable {
+    private fun buildGqlTable(
+      payload: Budget,
+      owner: String?,
+      startMonth: Month,
+      endMonth: Month
+    ): GqlTable {
       val requestedMonths = payload.months.reduceTo(startMonth..endMonth)?.sortedDescending()
       if (requestedMonths.isNullOrEmpty()) {
         throw IllegalArgumentException(
           "Bad month range, budget has ${payload.months} yet ${startMonth..endMonth} was requested"
         )
       }
-      val owners = payload.tree.children.map { it.name }.sorted()
+      val owners = payload.tree.children
+        .map { it.name }
+        .sorted()
       val forOwner = if (owner.isNullOrEmpty()) {
         owners.firstOrNull { it.isNotEmpty() }
           ?: throw IllegalArgumentException("No owner is specified and one cannot be derived from accounts")
@@ -67,7 +78,8 @@ class TableService(val loader: Loader) : Query {
           monthMap[month]?.toGqlTableCell(payload.isClosed(treeNode, month))
             ?: throw IllegalStateException(
               "Missing statement for ${treeNode.path.joinToString("/")} for month $month, " +
-                  "only available ${monthMap.keys}")
+                "only available ${monthMap.keys}"
+            )
         }
 
         if (cells.any { c -> !c.isClosed }) {
@@ -82,7 +94,7 @@ class TableService(val loader: Loader) : Query {
               cells = cells,
               isSpace = false,
               isInactive = treeNode.data.isInactive,
-              isNormal = treeNode.children.isEmpty(),
+              isNormal = treeNode.children.isEmpty()
             )
           )
         }
@@ -94,10 +106,11 @@ class TableService(val loader: Loader) : Query {
 
 class TableSubscription(val loader: Loader) : Subscription {
   @GraphQLDescription("Subscribes to notifications when budget data is reloaded.")
-  fun tableUpdates(): Flow<Boolean> = loader.updates.map {
-    when (it) {
-      is LoadResult.Success -> true
-      is LoadResult.Failure -> throw it.error
+  fun tableUpdates(): Flow<Boolean> =
+    loader.updates.map {
+      when (it) {
+        is LoadResult.Success -> true
+        is LoadResult.Failure -> throw it.error
+      }
     }
-  }
 }

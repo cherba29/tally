@@ -17,12 +17,13 @@ import java.lang.AutoCloseable
 // If state is null then accessing it will block until it is set.
 class LastSetFlowState<R : Any>(
   updates: Flow<R?>,
-  scope: CoroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
+  scope: CoroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 ) : AutoCloseable {
   private val stateFlow = MutableStateFlow<R?>(null)
   private val watcherJob: Job = updates.filterNotNull().onEach { stateFlow.value = it }.launchIn(scope)
 
   // Will block if not yet set.
   suspend fun last(): R = stateFlow.filterNotNull().first()
+
   override fun close() = watcherJob.cancel()
 }

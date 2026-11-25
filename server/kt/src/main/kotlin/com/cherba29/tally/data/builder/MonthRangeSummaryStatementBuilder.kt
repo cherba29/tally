@@ -1,13 +1,13 @@
 package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.utils.TreeNode
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
 import com.cherba29.tally.core.plus
 import com.cherba29.tally.data.Profile
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.SummaryStatement
+import com.cherba29.tally.utils.TreeNode
 import kotlin.collections.component1
 
 /**
@@ -17,17 +17,23 @@ class MonthRangeSummaryStatementBuilder {
   // Map of 'treeNode' -> month -> 'summary statement'.
   val nodeMonthStatementMap = mutableMapOf<TreeNode<Profile>, MutableMap<Month, Statement>>()
 
-  fun addStatement(treeNode: TreeNode<Profile>, month: Month, stmt: Statement) {
-    val prevEntry = nodeMonthStatementMap.getOrPut(treeNode) {
-      mutableMapOf()
-    }.putIfAbsent(month, stmt)
+  fun addStatement(
+    treeNode: TreeNode<Profile>,
+    month: Month,
+    stmt: Statement
+  ) {
+    val prevEntry = nodeMonthStatementMap
+      .getOrPut(treeNode) {
+        mutableMapOf()
+      }.putIfAbsent(month, stmt)
     if (prevEntry != null) {
       throw IllegalArgumentException("Duplicate month statement for ${treeNode.name} for ${stmt.monthRange}")
     }
   }
 
   fun build(): SummaryStatement {
-    val accumulatedMonthRange: MonthRange? = nodeMonthStatementMap.values.flatMap { it.keys }
+    val accumulatedMonthRange: MonthRange? = nodeMonthStatementMap.values
+      .flatMap { it.keys }
       .fold(null as MonthRange?) { acc, elem -> acc + elem }
     return MonthSummaryStatementBuilder.builder {
       for ((stmtTreeNode, monthStatementMap) in nodeMonthStatementMap) {
@@ -50,11 +56,15 @@ class MonthRangeSummaryStatementBuilder {
       val lastStmt = statements[monthRange.last.next()]
 
       val startBalance: Balance = firstStmt?.endBalance
-        ?: (statements[monthRange.first]?.startBalance
-          ?: Balance(0, monthRange.first.toDate(), Balance.Type.PROJECTED))
+        ?: (
+          statements[monthRange.first]?.startBalance
+            ?: Balance(0, monthRange.first.toDate(), Balance.Type.PROJECTED)
+        )
       val endBalance: Balance = lastStmt?.startBalance
-        ?: (statements[monthRange.last]?.endBalance
-          ?: Balance(0, monthRange.last.next().toDate(), Balance.Type.PROJECTED))
+        ?: (
+          statements[monthRange.last]?.endBalance
+            ?: Balance(0, monthRange.last.next().toDate(), Balance.Type.PROJECTED)
+        )
 
       var inFlows = 0L
       var outFlows = 0L

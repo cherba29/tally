@@ -27,7 +27,8 @@ ktor {
 val repoRoot = layout.projectDirectory.dir("../..")
 val frontendDir = repoRoot.dir("client")
 val frontendDistDir = frontendDir.dir("dist")
-val skipFrontend = providers.gradleProperty("skipFrontend")
+val skipFrontend = providers
+  .gradleProperty("skipFrontend")
   .map { it.isBlank() || it.equals("true", ignoreCase = true) }
   .orElse(false)
 
@@ -35,7 +36,7 @@ fun resolvePnpmExecutable(): String {
   val candidates = listOf(
     "${System.getProperty("user.home")}/.local/share/pnpm/pnpm",
     "/usr/local/bin/pnpm",
-    "/usr/bin/pnpm",
+    "/usr/bin/pnpm"
   )
   return candidates.firstOrNull { File(it).canExecute() } ?: "pnpm"
 }
@@ -50,7 +51,7 @@ val buildFrontend by tasks.registering(Exec::class) {
     frontendDir.file("index.html"),
     frontendDir.file("package.json"),
     frontendDir.file("tsconfig.json"),
-    frontendDir.file("vite.config.ts"),
+    frontendDir.file("vite.config.ts")
   )
   inputs.files(fileTree(frontendDir.dir("src")) { exclude("**/*.test.ts") })
   outputs.dir(frontendDistDir)

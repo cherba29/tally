@@ -5,11 +5,9 @@ import { type Query} from './gql_types';
 const defaultOptions: DefaultOptions = {
   watchQuery: {
     fetchPolicy: 'no-cache',
-    errorPolicy: 'ignore',
   },
   query: {
     fetchPolicy: 'no-cache',
-    errorPolicy: 'all',
   },
 };
 
@@ -54,6 +52,7 @@ export class BackendClient {
   ): Promise<ApolloClient.QueryResult<Query>> {
     console.log(`### loadTable owner=${owner} ${startMonth}-${endMonth}`);
     return this.gqlClient.query<Query>({
+      errorPolicy: 'all',
       query: gql`
         query table($owner: String!, $startMonth: GqlMonth!, $endMonth: GqlMonth!) {
           table(owner: $owner, startMonth: $startMonth, endMonth: $endMonth) {
@@ -122,6 +121,7 @@ export class BackendClient {
   ): Promise<ApolloClient.QueryResult<Query>> {
     console.log(`### loadSummaryData owner=${accountPath} ${startMonth}-${endMonth}`);
     return this.gqlClient.query<Query>({
+      errorPolicy: 'all',
       query: gql`
         query summary(
           $accountPath: String!
@@ -206,6 +206,7 @@ export class BackendClient {
     endMonth: string
   ): Promise<ApolloClient.QueryResult<Query>> {
     return this.gqlClient.query<Query>({
+      errorPolicy: 'all',
       query: gql`
         query transfersSummary(
           $accountPath: String!
@@ -252,6 +253,7 @@ export class BackendClient {
    */
   loadStatement(accountPath: string, month: string): Promise<ApolloClient.QueryResult<Query>> {
     return this.gqlClient.query<Query>({
+      errorPolicy: 'all',
       query: gql`
         query statement($accountPath: String!, $month: GqlMonth!) {
           statement(accountPath: $accountPath, month: $month) {

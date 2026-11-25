@@ -5,19 +5,19 @@ import com.cherba29.tally.data.Loader
 import com.cherba29.tally.schema.CustomSchemaGeneratorHooks
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.generator.federation.directives.ContactDirective
+import com.expediagroup.graphql.server.Schema
 import com.expediagroup.graphql.server.execution.subscription.GRAPHQL_WS_PROTOCOL
 import com.expediagroup.graphql.server.ktor.GraphQL
-import com.expediagroup.graphql.server.Schema
 import com.expediagroup.graphql.server.ktor.graphQLGetRoute
 import com.expediagroup.graphql.server.ktor.graphQLPostRoute
 import com.expediagroup.graphql.server.ktor.graphQLSDLRoute
 import com.expediagroup.graphql.server.ktor.graphiQLRoute
 import com.expediagroup.graphql.server.operations.Query
 import graphql.ErrorType
+import graphql.ExceptionWhileDataFetching
 import graphql.ExecutionResult
 import graphql.GraphQLError
 import graphql.GraphqlErrorBuilder
-import graphql.ExceptionWhileDataFetching
 import graphql.execution.DataFetcherExceptionHandler
 import graphql.execution.DataFetcherExceptionHandlerParameters
 import graphql.execution.DataFetcherExceptionHandlerResult
@@ -55,6 +55,9 @@ import io.ktor.server.websocket.pingPeriod
 import io.ktor.server.websocket.timeout
 import io.ktor.server.websocket.webSocket
 import io.ktor.util.AttributeKey
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -63,9 +66,6 @@ import java.util.concurrent.CompletionException
 import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 
 fun main(args: Array<String>) {
   EngineMain.main(args)
@@ -108,13 +108,15 @@ class LoggingDataFetcherExceptionHandler : DataFetcherExceptionHandler {
 
     val error: GraphQLError = when (exception) {
       is BudgetLoadingException -> exception.toGraphQLError(sourceLocation, path)
-      is GraphQLError -> GraphqlErrorBuilder.newError()
-        .message(exception.message ?: "GraphQL Error")
-        .location(sourceLocation)
-        .path(path)
-        .errorType(exception.errorType ?: ErrorType.DataFetchingException)
-        .extensions(exception.extensions)
-        .build()
+      is GraphQLError ->
+        GraphqlErrorBuilder
+          .newError()
+          .message(exception.message ?: "GraphQL Error")
+          .location(sourceLocation)
+          .path(path)
+          .errorType(exception.errorType ?: ErrorType.DataFetchingException)
+          .extensions(exception.extensions)
+          .build()
       else -> ExceptionWhileDataFetching(path, exception, sourceLocation)
     }
 
@@ -124,7 +126,9 @@ class LoggingDataFetcherExceptionHandler : DataFetcherExceptionHandler {
 
   private fun unwrap(exception: Throwable): Throwable {
     var current = exception
-    while ((current is CompletionException || current is java.lang.reflect.InvocationTargetException) && current.cause != null) {
+    while ((current is CompletionException || current is java.lang.reflect.InvocationTargetException) &&
+      current.cause != null
+    ) {
       current = current.cause!!
     }
     return current
@@ -141,19 +145,28 @@ class QueryLoggingInstrumentation : SimplePerformantInstrumentation() {
   ): InstrumentationContext<ExecutionResult> {
     val startNano = System.nanoTime()
     val operation = parameters.operation ?: parameters.executionInput.operationName ?: "query"
-    val firstLine = parameters.query?.lineSequence()?.firstOrNull { it.isNotBlank() }?.trim() ?: "unknown"
+    val firstLine = parameters.query
+      ?.lineSequence()
+      ?.firstOrNull { it.isNotBlank() }
+      ?.trim() ?: "unknown"
     logger.info { "--> GraphQL execution started: op='$operation', query='$firstLine'" }
 
     return object : InstrumentationContext<ExecutionResult> {
       override fun onDispatched() {}
-      override fun onCompleted(result: ExecutionResult?, t: Throwable?) {
+
+      override fun onCompleted(
+        result: ExecutionResult?,
+        t: Throwable?
+      ) {
         val durationMs = (System.nanoTime() - startNano) / 1_000_000.0
         val formattedDuration = String.format("%.2f", durationMs)
         if (t != null) {
           logger.error(t) { "<-- GraphQL execution failed in ${formattedDuration}ms: ${t.message}" }
         } else if (result != null && result.errors.isNotEmpty()) {
           val errorMessages = result.errors.joinToString(", ") { it.message ?: "unknown" }
-          logger.warn { "<-- GraphQL execution completed with ${result.errors.size} error(s) in ${formattedDuration}ms: $errorMessages" }
+          logger.warn {
+            "<-- GraphQL execution completed with ${result.errors.size} error(s) in ${formattedDuration}ms: $errorMessages"
+          }
         } else {
           logger.info { "<-- GraphQL execution completed successfully in ${formattedDuration}ms" }
         }
@@ -185,13 +198,15 @@ val RequestLoggingPlugin = createApplicationPlugin("RequestLogging") {
   on(CallFailed) { call, cause ->
     val start = call.attributes.getOrNull(callStartTime)
     val durationMs = if (start != null) System.currentTimeMillis() - start else -1
-    logger.error(cause) { "<-- ${call.request.httpMethod.value} ${call.request.uri} -> FAILED in ${durationMs}ms: ${cause.message}" }
+    logger.error(cause) {
+      "<-- ${call.request.httpMethod.value} ${call.request.uri} -> FAILED in ${durationMs}ms: ${cause.message}"
+    }
   }
 }
 
 internal fun resolveTallyDataPath(
   config: ApplicationConfig,
-  defaultPath: Path = Paths.get(DEFAULT_SAMPLE_DATA_PATH),
+  defaultPath: Path = Paths.get(DEFAULT_SAMPLE_DATA_PATH)
 ): Path {
   val primary = config.propertyOrNull(TALLY_PATH_ENV_SETTING)?.getString()?.takeIf { it.isNotBlank() }
   val legacy = if (primary == null) {
@@ -276,10 +291,10 @@ fun Application.graphQLModule() {
         HelloWorldQuery(),
         TableService(loader),
         SummaryService(loader),
-        StatementService(loader),
+        StatementService(loader)
       )
       subscriptions = listOf(
-        TableSubscription(loader),
+        TableSubscription(loader)
       )
       hooks = CustomSchemaGeneratorHooks()
       schemaObject = TallySchema()
@@ -328,7 +343,8 @@ fun Application.graphQLModule() {
     // until the next emission fails with CancellationException on the closed outgoing channel.
     webSocket(path = "subscriptions", protocol = GRAPHQL_WS_PROTOCOL) {
       val subscriptionJob = launch {
-        call.application.plugin(GraphQL)
+        call.application
+          .plugin(GraphQL)
           .subscriptionServer
           .handleSubscription(this@webSocket)
           .collect()

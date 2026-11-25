@@ -8,17 +8,17 @@ import com.cherba29.tally.core.MonthName.FEB
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthName.NOV
-import com.cherba29.tally.utils.TreeNode
-import com.cherba29.tally.utils.root
 import com.cherba29.tally.data.Profile
 import com.cherba29.tally.statement.SummaryStatement
 import com.cherba29.tally.statement.TransactionStatement
+import com.cherba29.tally.utils.TreeNode
+import com.cherba29.tally.utils.root
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import java.nio.file.Paths
 import kotlinx.datetime.LocalDate
+import java.nio.file.Paths
 
 class BudgetBuilderTest : DescribeSpec({
   it("build empty budget") {
@@ -240,7 +240,10 @@ class BudgetBuilderTest : DescribeSpec({
         setAccount(path3, account3)
       }
       budget.tree.nLeaves shouldBe 3
-      budget.tree.traverseLeaves().map { it.data.account }.toSet() shouldBe setOf(account1, account2, account3)
+      budget.tree
+        .traverseLeaves()
+        .map { it.data.account }
+        .toSet() shouldBe setOf(account1, account2, account3)
     }
   }
 
@@ -307,8 +310,8 @@ class BudgetBuilderTest : DescribeSpec({
             }
           }
         exception.message shouldBe "In transaction statement for Dec2019 which starts 2019-12-01 first transaction " +
-            "is too early on 2019-11-25 for amount of Balance { amount: -20.00, date: 2019-11-25, type: PROJECTED } " +
-            "desc 'First transfer' to john/external/test-account1 "
+          "is too early on 2019-11-25 for amount of Balance { amount: -20.00, date: 2019-11-25, type: PROJECTED } " +
+          "desc 'First transfer' to john/external/test-account1 "
       }
       it("transfer during closed month") {
         val path1 = listOf("john", "external", "test-account1")
@@ -343,7 +346,8 @@ class BudgetBuilderTest : DescribeSpec({
               )
             }
           }
-        exception.message shouldBe "Account john/external/test-account1 has transfer during closed month Dec2019 to john/external/test-account2"
+        exception.message shouldBe
+          "Account john/external/test-account1 has transfer during closed month Dec2019 to john/external/test-account2"
       }
     }
   }
@@ -646,8 +650,9 @@ class BudgetBuilderTest : DescribeSpec({
             )
           }
         }
-        exception.message shouldBe "For checking account Balance { amount: 10.00, date: 2020-04-15, type: CONFIRMED } " +
-            "and month Jan2020 are 3 months apart (2 max), while processing data/accounts/checking.yaml"
+        exception.message shouldBe
+          "For checking account Balance { amount: 10.00, date: 2020-04-15, type: CONFIRMED } " +
+          "and month Jan2020 are 3 months apart (2 max), while processing data/accounts/checking.yaml"
       }
 
       it("succeeds when balance date is within 2 months") {
@@ -683,8 +688,9 @@ class BudgetBuilderTest : DescribeSpec({
             )
           }
         }
-        exception.message shouldBe "For account 'checking' transfer to 'savings' for Jan2020 date 2020-04-05 (Apr2020) " +
-            "are too far apart, while processing data/transfers.yaml:42"
+        exception.message shouldBe
+          "For account 'checking' transfer to 'savings' for Jan2020 date 2020-04-05 (Apr2020) " +
+          "are too far apart, while processing data/transfers.yaml:42"
       }
 
       it("fails when transfer date is too far from month inheriting source file from account") {
@@ -703,8 +709,9 @@ class BudgetBuilderTest : DescribeSpec({
             )
           }
         }
-        exception.message shouldBe "For account 'checking' transfer to 'savings' for Jan2020 date 2020-05-01 (May2020) " +
-            "are too far apart, while processing data/checking.yaml"
+        exception.message shouldBe
+          "For account 'checking' transfer to 'savings' for Jan2020 date 2020-05-01 (May2020) " +
+          "are too far apart, while processing data/checking.yaml"
       }
 
       it("fails when transfer is to unknown account with source file") {
@@ -723,14 +730,15 @@ class BudgetBuilderTest : DescribeSpec({
             )
           }
         }
-        exception.message shouldBe """
-        Unknown to account nonexistent in john/bank/checking, known accounts
-        └── 
-            └── john
-                └── bank
-                    └── checking
-        , while processing data/checking.yaml:15
-        """.trimIndent()
+        exception.message shouldBe
+          """
+          Unknown to account nonexistent in john/bank/checking, known accounts
+          └── 
+              └── john
+                  └── bank
+                      └── checking
+          , while processing data/checking.yaml:15
+          """.trimIndent()
       }
 
       it("fails when transfer is to ambiguous account with source file") {
@@ -753,17 +761,37 @@ class BudgetBuilderTest : DescribeSpec({
           }
         }
         exception.message shouldBe "Ambiguous transfer from john/bank1/checking to savings, " +
-            "found multiple candidate accounts john/bank1/savings, john/bank2/savings, while processing data/transfer.yaml"
+          "found multiple candidate accounts john/bank1/savings, john/bank2/savings, while processing data/transfer.yaml"
       }
 
       it("fails when transfer is during closed month for fromAccount with source file") {
         val sourceFile = Paths.get("data/closed.yaml")
-        val account1 = Account("checking", path = listOf("bank"), owners = setOf("john"), openedOn = JAN / 2020, closedOn = FEB / 2020)
+        val account1 =
+          Account(
+            "checking",
+            path = listOf("bank"),
+            owners = setOf("john"),
+            openedOn = JAN / 2020,
+            closedOn =
+              FEB / 2020
+          )
         val account2 = Account("savings", path = listOf("bank"), owners = setOf("john"), openedOn = JAN / 2020)
         val exception = shouldThrow<IllegalArgumentException> {
           budget {
-            addAccount(account1, mapOf(JAN / 2020 to Balance.confirmed(1000, "2020-01-01"), FEB / 2020 to Balance.confirmed(500, "2020-02-01")))
-            addAccount(account2, mapOf(JAN / 2020 to Balance.confirmed(1000, "2020-01-01"), MAR / 2020 to Balance.confirmed(1000, "2020-03-01")))
+            addAccount(
+              account1,
+              mapOf(
+                JAN / 2020 to Balance.confirmed(1000, "2020-01-01"),
+                FEB / 2020 to Balance.confirmed(500, "2020-02-01")
+              )
+            )
+            addAccount(
+              account2,
+              mapOf(
+                JAN / 2020 to Balance.confirmed(1000, "2020-01-01"),
+                MAR / 2020 to Balance.confirmed(1000, "2020-03-01")
+              )
+            )
             addAccountTransfer(
               fromAccount = account1,
               toAccountName = "savings",
@@ -774,17 +802,38 @@ class BudgetBuilderTest : DescribeSpec({
             )
           }
         }
-        exception.message shouldBe "Account john/bank/checking has transfer during closed month Mar2020 to john/bank/savings, while processing data/closed.yaml:25"
+        exception.message shouldBe
+          "Account john/bank/checking has transfer during closed month Mar2020 to john/bank/savings, while processing data/closed.yaml:25"
       }
 
       it("fails when transfer is during closed month for toAccount with source file") {
         val sourceFile = Paths.get("data/closed_target.yaml")
         val account1 = Account("checking", path = listOf("bank"), owners = setOf("john"), openedOn = JAN / 2020)
-        val account2 = Account("savings", path = listOf("bank"), owners = setOf("john"), openedOn = JAN / 2020, closedOn = FEB / 2020)
+        val account2 =
+          Account(
+            "savings",
+            path = listOf("bank"),
+            owners = setOf("john"),
+            openedOn = JAN / 2020,
+            closedOn =
+              FEB / 2020
+          )
         val exception = shouldThrow<IllegalArgumentException> {
           budget {
-            addAccount(account1, mapOf(JAN / 2020 to Balance.confirmed(1000, "2020-01-01"), MAR / 2020 to Balance.confirmed(1000, "2020-03-01")))
-            addAccount(account2, mapOf(JAN / 2020 to Balance.confirmed(1000, "2020-01-01"), FEB / 2020 to Balance.confirmed(500, "2020-02-01")))
+            addAccount(
+              account1,
+              mapOf(
+                JAN / 2020 to Balance.confirmed(1000, "2020-01-01"),
+                MAR / 2020 to Balance.confirmed(1000, "2020-03-01")
+              )
+            )
+            addAccount(
+              account2,
+              mapOf(
+                JAN / 2020 to Balance.confirmed(1000, "2020-01-01"),
+                FEB / 2020 to Balance.confirmed(500, "2020-02-01")
+              )
+            )
             addAccountTransfer(
               fromAccount = account1,
               toAccountName = "savings",
@@ -794,7 +843,8 @@ class BudgetBuilderTest : DescribeSpec({
             )
           }
         }
-        exception.message shouldBe "Account john/bank/savings has transfer during closed month Mar2020 from john/bank/checking, while processing data/closed_target.yaml"
+        exception.message shouldBe
+          "Account john/bank/savings has transfer during closed month Mar2020 from john/bank/checking, while processing data/closed_target.yaml"
       }
     }
 

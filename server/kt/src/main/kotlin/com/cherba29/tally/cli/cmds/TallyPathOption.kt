@@ -19,18 +19,19 @@ const val LEGACY_TALLY_PATH_ENV_VAR = "TALLY_PATH"
  * 2. `TALLY_FILES` environment variable (unified across server and CLI)
  * 3. `TALLY_PATH` environment variable (legacy fallback)
  */
-fun CliktCommand.tallyPathOption() = option(
-  "--tally-path",
-  envvar = TALLY_FILES_ENV_VAR,
-  help = "Path to YAML budget data directory (env: $TALLY_FILES_ENV_VAR, fallback: $LEGACY_TALLY_PATH_ENV_VAR)",
-).path(mustExist = true).transformAll(showAsRequired = true) { values ->
-  values.lastOrNull()
-    ?: context.readEnvvar(LEGACY_TALLY_PATH_ENV_VAR)?.takeIf { it.isNotBlank() }?.let { raw ->
-      val legacyPath = Paths.get(raw)
-      if (!Files.exists(legacyPath)) {
-        fail("Path \"$raw\" does not exist.")
+fun CliktCommand.tallyPathOption() =
+  option(
+    "--tally-path",
+    envvar = TALLY_FILES_ENV_VAR,
+    help = "Path to YAML budget data directory (env: $TALLY_FILES_ENV_VAR, fallback: $LEGACY_TALLY_PATH_ENV_VAR)"
+  ).path(mustExist = true).transformAll(showAsRequired = true) { values ->
+    values.lastOrNull()
+      ?: context.readEnvvar(LEGACY_TALLY_PATH_ENV_VAR)?.takeIf { it.isNotBlank() }?.let { raw ->
+        val legacyPath = Paths.get(raw)
+        if (!Files.exists(legacyPath)) {
+          fail("Path \"$raw\" does not exist.")
+        }
+        legacyPath
       }
-      legacyPath
-    }
-    ?: throw MissingOption(option)
-}
+      ?: throw MissingOption(option)
+  }

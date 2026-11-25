@@ -5,11 +5,6 @@ import com.cherba29.tally.utils.WatchResult
 import com.cherba29.tally.utils.scan
 import com.cherba29.tally.utils.watchedEventFlow
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.lang.AutoCloseable
-import java.nio.file.Path
-import kotlin.io.path.extension
-import kotlin.time.Duration
-import kotlin.time.TimeSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -18,10 +13,16 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.map
+import java.lang.AutoCloseable
+import java.nio.file.Path
+import kotlin.io.path.extension
+import kotlin.time.Duration
+import kotlin.time.TimeSource
 import kotlin.time.measureTime
 
 sealed interface LoadResult {
   data class Success(val budget: Budget) : LoadResult
+
   data class Failure(val error: Throwable) : LoadResult
 }
 
@@ -30,9 +31,10 @@ class Loader(
   watchScope: CoroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
   private val timeSource: TimeSource = TimeSource.Monotonic,
   private val processedBudget: ProcessedBudget = ProcessedBudget(timeSource)
-): AutoCloseable {
+) : AutoCloseable {
   val loadedOn: Duration? get() = processedBudget.loadedOn
-  private val _updates = MutableSharedFlow<LoadResult>(replay = 0, extraBufferCapacity = 64, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+  private val _updates =
+    MutableSharedFlow<LoadResult>(replay = 0, extraBufferCapacity = 64, onBufferOverflow = BufferOverflow.DROP_OLDEST)
   val updates: Flow<LoadResult> = _updates.asSharedFlow()
 
   private val state = LastSetFlowState<LoadResult>(
@@ -41,20 +43,25 @@ class Loader(
         _updates.tryEmit(it)
       }
     },
-    watchScope)
+    watchScope
+  )
 
-  suspend fun budget(): Budget = when (val result = state.last()) {
-    is LoadResult.Success -> result.budget
-    is LoadResult.Failure -> throw result.error
-  }
+  suspend fun budget(): Budget =
+    when (val result = state.last()) {
+      is LoadResult.Success -> result.budget
+      is LoadResult.Failure -> throw result.error
+    }
 
   override fun close() = state.close()
 
   companion object {
     private val logger = KotlinLogging.logger {}
-    private val filePathFilter: (Path)-> Boolean = { it.extension == "yaml" }
+    private val filePathFilter: (Path) -> Boolean = { it.extension == "yaml" }
 
-    fun loadFrom(path: Path, timeSource: TimeSource = TimeSource.Monotonic): Budget {
+    fun loadFrom(
+      path: Path,
+      timeSource: TimeSource = TimeSource.Monotonic
+    ): Budget {
       val fileResults = path.scan(filePathFilter)
       val processedBudget = ProcessedBudget(timeSource)
       var lastResult: LoadResult? = null

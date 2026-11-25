@@ -49,20 +49,21 @@ class TransactionStatementBuilder {
     transactions.sort()
 
     val firstTransaction = transactions.firstOrNull()
-    if (firstTransaction != null
-      && startBalance != null
-      && firstTransaction.balance.date < startBalance!!.date) {
+    if (firstTransaction != null &&
+      startBalance != null &&
+      firstTransaction.balance.date < startBalance!!.date
+    ) {
       throw IllegalStateException(
         "In transaction statement for $month which starts ${startBalance?.date} first transaction " +
-            "is too early on ${firstTransaction.balance.date} for amount of ${firstTransaction.balance} " +
-            "desc '${firstTransaction.description}' to ${firstTransaction.targetTreeNode.pathString} "
-
+          "is too early on ${firstTransaction.balance.date} for amount of ${firstTransaction.balance} " +
+          "desc '${firstTransaction.description}' to ${firstTransaction.targetTreeNode.pathString} "
       )
     }
 
-    val balanceFromStart = transactions.runningFold(startBalance?.amount) { total, element->
-      total?.plus(element.balance.amount)
-    }.drop(1)
+    val balanceFromStart = transactions
+      .runningFold(startBalance?.amount) { total, element ->
+        total?.plus(element.balance.amount)
+      }.drop(1)
 
     return TransactionStatement(
       month!!..month!!,

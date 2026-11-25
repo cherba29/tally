@@ -2,16 +2,6 @@ package com.cherba29.tally.utils
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
-import java.nio.file.FileSystems
-import java.nio.file.Path
-import java.nio.file.StandardWatchEventKinds
-import java.nio.file.WatchKey
-import java.nio.file.WatchService
-import kotlin.io.path.PathWalkOption
-import kotlin.io.path.div
-import kotlin.io.path.isDirectory
-import kotlin.io.path.walk
-import kotlin.io.path.relativeTo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
@@ -19,7 +9,6 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
-
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.isActive
@@ -28,10 +17,19 @@ import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
+import java.nio.file.FileSystems
+import java.nio.file.Path
+import java.nio.file.StandardWatchEventKinds
+import java.nio.file.WatchKey
+import java.nio.file.WatchService
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.io.path.PathWalkOption
+import kotlin.io.path.div
+import kotlin.io.path.isDirectory
 import kotlin.io.path.pathString
+import kotlin.io.path.relativeTo
+import kotlin.io.path.walk
 import kotlin.time.Duration.Companion.milliseconds
-
 
 data class WatchResult(
   val rootPath: Path,
@@ -57,52 +55,54 @@ data class WatchResult(
     /**
      * Reprocess all added items in the list.
      */
-    REPROCESS,
+    REPROCESS
   }
-
 }
 
-fun Path.scan(filePathFilter: (Path)->Boolean) = sequence {
-  val watchedPath = try {
-    this@scan.toRealPath()  // walk below does not work for relative paths.
-  } catch (_: IOException) {
-    return@sequence  // Return empty sequence if path does not exist.
-  }
-  for (filePath in watchedPath.walk()) {
-    val relativeFilePath = filePath.relativeTo(watchedPath)
-    if (ignorePathRegex.containsMatchIn(relativeFilePath.pathString)) {
-      continue
+fun Path.scan(filePathFilter: (Path) -> Boolean) =
+  sequence {
+    val watchedPath = try {
+      this@scan.toRealPath() // walk below does not work for relative paths.
+    } catch (_: IOException) {
+      return@sequence // Return empty sequence if path does not exist.
     }
-    if (filePathFilter(relativeFilePath)) {
-      yield(WatchResult(this@scan, relativeFilePath, WatchResult.Action.ADD))
+    for (filePath in watchedPath.walk()) {
+      val relativeFilePath = filePath.relativeTo(watchedPath)
+      if (ignorePathRegex.containsMatchIn(relativeFilePath.pathString)) {
+        continue
+      }
+      if (filePathFilter(relativeFilePath)) {
+        yield(WatchResult(this@scan, relativeFilePath, WatchResult.Action.ADD))
+      }
     }
+    yield(WatchResult(this@scan, null, WatchResult.Action.REPROCESS))
   }
-  yield(WatchResult(this@scan,null, WatchResult.Action.REPROCESS))
-}
 
 /**
  * Watches for changes in this path and emits WatchResults.
  * Paths starting with '_' are skipped and ignored.
  */
-fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
+fun Path.watchedEventFlow(filePathFilter: (Path) -> Boolean): Flow<WatchResult> {
   val watcher: WatchService = FileSystems.getDefault().newWatchService()
   val watchedPath = try {
-    this.toRealPath()  // walk below does not work for relative paths.
+    this.toRealPath() // walk below does not work for relative paths.
   } catch (_: IOException) {
-    return flowOf()  // Return empty flow if path does not exist.
+    return flowOf() // Return empty flow if path does not exist.
   }
   val watchKeyToFolderMap = mutableMapOf<WatchKey, Path>()
   val watchedFolders = mutableSetOf<Path>()
 
   logger.info { "Registering all paths under $watchedPath" }
-  watchedPath.walk(PathWalkOption.INCLUDE_DIRECTORIES).filter {
-    it.isDirectory() && !ignorePathRegex.containsMatchIn(it.pathString)
-  }.associateTo(watchKeyToFolderMap) {
-    logger.info { "Registering $it" }
-    val relative = watchedPath.relativize(it)
-    watchedFolders.add(relative)
-    it.register(watcher,*eventsToWatch) to relative
-  }
+  watchedPath
+    .walk(PathWalkOption.INCLUDE_DIRECTORIES)
+    .filter {
+      it.isDirectory() && !ignorePathRegex.containsMatchIn(it.pathString)
+    }.associateTo(watchKeyToFolderMap) {
+      logger.info { "Registering $it" }
+      val relative = watchedPath.relativize(it)
+      watchedFolders.add(relative)
+      it.register(watcher, *eventsToWatch) to relative
+    }
   val rootKey = watchKeyToFolderMap.entries.firstOrNull { it.value == Path.of("") }?.key
 
   // Stores references to active background checks to avoid spawning duplicate coroutines for the same file
@@ -134,7 +134,7 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
       delay(50.milliseconds)
       if (updatedFolderPath != null) {
         for (event in key.pollEvents()) {
-          val filePath = updatedFolderPath / (event.context() as Path)  // Relative to watched root path.
+          val filePath = updatedFolderPath / (event.context() as Path) // Relative to watched root path.
           if (ignorePathRegex.containsMatchIn(filePath.pathString)) {
             continue
           }
@@ -145,16 +145,18 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
               val fullPath = watchedPath / filePath
               if (fullPath.isDirectory()) {
                 logger.info { "Registering new directory $fullPath" }
-                fullPath.walk(PathWalkOption.INCLUDE_DIRECTORIES).filter {
-                  it.isDirectory() && !ignorePathRegex.containsMatchIn(it.pathString)
-                }.forEach {
-                  val relative = watchedPath.relativize(it)
-                  val dirKey = withContext(Dispatchers.IO) {
-                    it.register(watcher, *eventsToWatch)
+                fullPath
+                  .walk(PathWalkOption.INCLUDE_DIRECTORIES)
+                  .filter {
+                    it.isDirectory() && !ignorePathRegex.containsMatchIn(it.pathString)
+                  }.forEach {
+                    val relative = watchedPath.relativize(it)
+                    val dirKey = withContext(Dispatchers.IO) {
+                      it.register(watcher, *eventsToWatch)
+                    }
+                    watchKeyToFolderMap[dirKey] = relative
+                    watchedFolders.add(relative)
                   }
-                  watchKeyToFolderMap[dirKey] = relative
-                  watchedFolders.add(relative)
-                }
                 // We added new directory, it can already contain files in it, so scan and emit them.
                 fullPath.scan(filePathFilter).forEach {
                   if (it.relativePath != null) {
@@ -245,7 +247,7 @@ fun Path.watchedEventFlow(filePathFilter: (Path)->Boolean): Flow<WatchResult> {
       }
     }
   }.onCompletion {
-    logger.info { "Closing watcher for path '$rootPath'"}
+    logger.info { "Closing watcher for path '$rootPath'" }
     withContext(Dispatchers.IO) {
       watcher.close()
     }
@@ -257,7 +259,7 @@ private suspend fun waitForFileToSettle(file: File): Boolean {
   var lastSize = -1L
   var currentSize = file.length()
   val checkInterval = 200.milliseconds // Time to wait between checks
-  val maxWaitAttempts = 15   // Prevents infinite loops if a file is permanently locked
+  val maxWaitAttempts = 15 // Prevents infinite loops if a file is permanently locked
 
   var attempts = 0
   while (currentSize != lastSize && attempts < maxWaitAttempts) {
@@ -269,21 +271,20 @@ private suspend fun waitForFileToSettle(file: File): Boolean {
     attempts++
   }
   if (currentSize != lastSize) {
-    throw IllegalStateException("File $file never settled after ${checkInterval*maxWaitAttempts}")
+    throw IllegalStateException("File $file never settled after ${checkInterval * maxWaitAttempts}")
   }
 
   // Final sanity check: try to open it briefly to verify exclusive write lock is released
   return isFileAccessible(file)
 }
 
-private fun isFileAccessible(file: File): Boolean {
-  return try {
+private fun isFileAccessible(file: File): Boolean =
+  try {
     // Attempt to open in read/write mode. If OS flush is incomplete, this will throw an IOException
     java.io.RandomAccessFile(file, "rw").use { true }
   } catch (_: Exception) {
     throw IllegalStateException("File $file is not accessible")
   }
-}
 
 private val eventsToWatch = arrayOf(
   StandardWatchEventKinds.ENTRY_CREATE,
@@ -293,8 +294,10 @@ private val eventsToWatch = arrayOf(
 )
 private val ignorePathRegex = Regex("(^_)|(/_)")
 private const val ANSI_RESET = "\u001B[0m"
+
 // private const val ANSI_RED = "\u001B[31m"
 // private const val ANSI_GREEN = "\u001B[32m"
 private const val ANSI_YELLOW = "\u001B[33m"
+
 // private const val ANSI_BLUE = "\u001B[34m"
 private val logger = KotlinLogging.logger {}

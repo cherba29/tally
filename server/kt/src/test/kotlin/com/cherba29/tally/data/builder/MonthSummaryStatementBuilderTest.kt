@@ -2,9 +2,9 @@ package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.JUL
-import com.cherba29.tally.utils.root
 import com.cherba29.tally.data.Profile
 import com.cherba29.tally.statement.TransactionStatement
+import com.cherba29.tally.utils.root
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe

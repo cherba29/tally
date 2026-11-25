@@ -27,14 +27,14 @@ data class GqlAccount(
   val password: String,
   val phone: String,
   @param:GraphQLDescription("Day of the month when usually statement for this account close.")
-  val statementCloseDay: String?,
+  val statementCloseDay: String?
 )
 
 data class GqlBalance(
   val amount: Long,
   val date: LocalDate,
   val type: String,
-  val desc: String,
+  val desc: String
 )
 
 data class GqlStatement(
@@ -56,7 +56,7 @@ data class GqlStatement(
   val percentChange: Float,
   val annualizedPercentChange: Float,
   val unaccounted: Long,
-  val transactions: List<GqlTransaction>,
+  val transactions: List<GqlTransaction>
 )
 
 data class GqlSummaryStatement(
@@ -73,7 +73,7 @@ data class GqlSummaryStatement(
   val totalTransfers: Long,
   val unaccounted: Long,
   val endBalance: GqlBalance?,
-  val startBalance: GqlBalance?,
+  val startBalance: GqlBalance?
 )
 
 data class GqlSummaryData(val statements: List<GqlStatement>, val total: GqlSummaryStatement)
@@ -109,7 +109,7 @@ data class GqlMonthTransferSummary(
   @param:GraphQLDescription("Weighted age of the deposited amounts.")
   val weightedAge: Float,
   @param:GraphQLDescription("Difference between recorded balance and running totalTransfers.")
-  val unaccounted: Long,
+  val unaccounted: Long
 )
 
 @GraphQLDescription("Return payload for transfersSummary query.")
@@ -132,7 +132,7 @@ data class GqlTableCell(
   val percentChange: Float,
   val annualizedPercentChange: Float,
   val unaccounted: Long?,
-  val balanced: Boolean,
+  val balanced: Boolean
 )
 
 data class GqlTableRow(
@@ -162,5 +162,5 @@ data class GqlTransaction(
   val isExpense: Boolean,
   val balance: GqlBalance,
   val balanceFromStart: Long,
-  val description: String,
+  val description: String
 )

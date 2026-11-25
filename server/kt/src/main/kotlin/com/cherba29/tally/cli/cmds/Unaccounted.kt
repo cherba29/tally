@@ -1,11 +1,11 @@
 package com.cherba29.tally.cli.cmds
 
 import com.cherba29.tally.core.Balance
-import com.cherba29.tally.utils.TreeNode
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.data.Profile
 import com.cherba29.tally.statement.TransactionStatement
+import com.cherba29.tally.utils.TreeNode
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.arguments.argument
@@ -51,7 +51,7 @@ class Unaccounted : CliktCommand() {
 
     val unaccountedEntries = mutableListOf<UnaccountedEntry>()
     for ((treeNode, monthTransactionStatements) in budget.nodeToStatement) {
-      if (treeNode.children.isNotEmpty()) continue  // Only leaf nodes get processed.
+      if (treeNode.children.isNotEmpty()) continue // Only leaf nodes get processed.
       if (owner != null && owner != treeNode.path.first()) {
         continue
       }
@@ -86,9 +86,12 @@ class Unaccounted : CliktCommand() {
           b.statement.transactions.size - a.statement.transactions.size
         }
         abs((b.statement.unaccounted ?: 0) / 100).compareTo(a.statement.transactions.size)
-      } else b.statement.transactions.size.compareTo(abs((a.statement.unaccounted) / 100))
+      } else {
+        b.statement.transactions.size
+          .compareTo(abs((a.statement.unaccounted) / 100))
+      }
     }
-    for ((treeNode, statement) in unaccountedEntries.slice(0..< min(unaccountedEntries.size, limit))) {
+    for ((treeNode, statement) in unaccountedEntries.slice(0..<min(unaccountedEntries.size, limit))) {
       val unaccountedValue = if (statement.unaccounted != null && statement.unaccounted != 0L) {
         statement.unaccounted.asAmount().padStart(10)
       } else {
@@ -103,6 +106,7 @@ class Unaccounted : CliktCommand() {
 
   companion object {
     private fun Long.asAmount(): String = "%.2f".format(this / 100.0)
+
     data class UnaccountedEntry(
       val treeNode: TreeNode<Profile>,
       val statement: TransactionStatement

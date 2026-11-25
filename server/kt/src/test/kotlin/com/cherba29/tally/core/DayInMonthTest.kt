@@ -19,22 +19,24 @@ class DayInMonthTest : DescribeSpec({
     }
     it("parses absolute") {
       DayInMonth.fromString("5") shouldBe
-          DayInMonth.AbsoluteDay(5)
+        DayInMonth.AbsoluteDay(5)
     }
     it("parses relative first") {
       DayInMonth.fromString("first_of_month") shouldBe
-          DayInMonth.RelativeDay(DayInMonth.Relative.FIRST_OF_MONTH)
+        DayInMonth.RelativeDay(DayInMonth.Relative.FIRST_OF_MONTH)
     }
     it("parses relative last") {
       DayInMonth.fromString("last_of_month") shouldBe
-          DayInMonth.RelativeDay(DayInMonth.Relative.LAST_OF_MONTH)
+        DayInMonth.RelativeDay(DayInMonth.Relative.LAST_OF_MONTH)
     }
   }
   describe("compareTo") {
     it("absolute greater than relative") {
-      DayInMonth.AbsoluteDay(5)
+      DayInMonth
+        .AbsoluteDay(5)
         .compareTo(DayInMonth.RelativeDay(DayInMonth.Relative.FIRST_OF_MONTH)) shouldBe 1
-      DayInMonth.RelativeDay(DayInMonth.Relative.FIRST_OF_MONTH)
+      DayInMonth
+        .RelativeDay(DayInMonth.Relative.FIRST_OF_MONTH)
         .compareTo(DayInMonth.AbsoluteDay(5)) shouldBe -1
     }
     it("absolute greater than unknown") {

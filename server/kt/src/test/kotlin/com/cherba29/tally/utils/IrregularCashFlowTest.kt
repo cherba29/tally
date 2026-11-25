@@ -203,7 +203,7 @@ class IrregularCashFlowTest : DescribeSpec({
 
     it("remaining retain age") {
       val cashFlow = IrregularCashFlow()
-      cashFlow.add(0,100)
+      cashFlow.add(0, 100)
       cashFlow.add(0, -10)
       cashFlow.add(0, -20)
       cashFlow.weightedGainsAge() shouldBe (3.0 plusOrMinus 0.001)

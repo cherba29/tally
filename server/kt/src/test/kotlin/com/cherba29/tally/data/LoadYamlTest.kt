@@ -7,15 +7,15 @@ import com.cherba29.tally.core.MonthName.FEB
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthName.NOV
-import com.cherba29.tally.utils.root
+import com.cherba29.tally.core.Transaction
 import com.cherba29.tally.data.builder.BudgetBuilder
 import com.cherba29.tally.data.builder.budget
 import com.cherba29.tally.data.yaml.BalanceYamlData
+import com.cherba29.tally.data.yaml.TransferDataWrapper
 import com.cherba29.tally.data.yaml.TransferYamlData
 import com.cherba29.tally.data.yaml.YamlData
-import com.cherba29.tally.core.Transaction
-import com.cherba29.tally.data.yaml.TransferDataWrapper
 import com.cherba29.tally.statement.TransactionStatement
+import com.cherba29.tally.utils.root
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -227,18 +227,20 @@ class LoadYamlTest : DescribeSpec({
           BalanceYamlData(grp = JAN / 2020, date = LocalDate(2020, 1, 1), camt = 0.0)
         ),
         transfersTo = mapOf(
-          "external" to TransferDataWrapper(listOf(
-            TransferYamlData(
-              grp = JAN / 2020,
-              date = LocalDate(2020, 1, 17),
-              pamt = 37.5
-            ),
-            TransferYamlData(
-              grp = JAN / 2020,
-              date = LocalDate(2020, 1, 15),
-              camt = -22.48
+          "external" to TransferDataWrapper(
+            listOf(
+              TransferYamlData(
+                grp = JAN / 2020,
+                date = LocalDate(2020, 1, 17),
+                pamt = 37.5
+              ),
+              TransferYamlData(
+                grp = JAN / 2020,
+                date = LocalDate(2020, 1, 15),
+                camt = -22.48
+              )
             )
-          ))
+          )
         )
       )
 
@@ -303,13 +305,13 @@ class LoadYamlTest : DescribeSpec({
           targetTreeNode = budget.tree[listOf("someone", "external", "test-account")]!!,
           balance = Balance(3750, LocalDate.parse("2020-01-17"), Balance.Type.PROJECTED),
           description = null,
-          type = Transaction.Type.INCOME,
+          type = Transaction.Type.INCOME
         ),
         Transaction(
           targetTreeNode = budget.tree[listOf("someone", "external", "test-account")]!!,
           balance = Balance(-2248, LocalDate.parse("2020-01-15"), Balance.Type.CONFIRMED),
           description = null,
-          type = Transaction.Type.EXPENSE,
+          type = Transaction.Type.EXPENSE
         )
       )
     }
@@ -322,12 +324,14 @@ class LoadYamlTest : DescribeSpec({
         openedOn = JAN / 2020,
         owner = listOf("someone"),
         transfersTo = mapOf(
-          "external" to TransferDataWrapper(listOf(
-            TransferYamlData(
-              date = LocalDate(2020, 1, 17),
-              pamt = 37.5
+          "external" to TransferDataWrapper(
+            listOf(
+              TransferYamlData(
+                date = LocalDate(2020, 1, 17),
+                pamt = 37.5
+              )
             )
-          ))
+          )
         )
       )
 
@@ -348,12 +352,14 @@ class LoadYamlTest : DescribeSpec({
         openedOn = JAN / 2020,
         owner = listOf("someone"),
         transfersTo = mapOf(
-          "external" to TransferDataWrapper(listOf(
-            TransferYamlData(
-              grp = JAN / 2020,
-              pamt = 37.5
+          "external" to TransferDataWrapper(
+            listOf(
+              TransferYamlData(
+                grp = JAN / 2020,
+                pamt = 37.5
+              )
             )
-          ))
+          )
         )
       )
 
@@ -374,12 +380,14 @@ class LoadYamlTest : DescribeSpec({
         openedOn = JAN / 2020,
         owner = listOf("someone"),
         transfersTo = mapOf(
-          "external" to TransferDataWrapper(listOf(
-            TransferYamlData(
-              grp = JAN / 2020,
-              date = LocalDate(2020, 4, 1),
-              pamt = 37.5
-            ))
+          "external" to TransferDataWrapper(
+            listOf(
+              TransferYamlData(
+                grp = JAN / 2020,
+                date = LocalDate(2020, 4, 1),
+                pamt = 37.5
+              )
+            )
           )
         )
       )
@@ -401,12 +409,14 @@ class LoadYamlTest : DescribeSpec({
         openedOn = JAN / 2020,
         owner = listOf("someone"),
         transfersTo = mapOf(
-          "external" to TransferDataWrapper(listOf(
-            TransferYamlData(
-              grp = JAN / 2020,
-              date = LocalDate(2020, 1, 17)
+          "external" to TransferDataWrapper(
+            listOf(
+              TransferYamlData(
+                grp = JAN / 2020,
+                date = LocalDate(2020, 1, 17)
+              )
             )
-          ))
+          )
         )
       )
 

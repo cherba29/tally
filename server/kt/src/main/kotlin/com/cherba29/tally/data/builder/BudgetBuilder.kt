@@ -6,13 +6,13 @@ import com.cherba29.tally.core.Account.Companion.INACTIVE_NAME
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthRange
-import com.cherba29.tally.utils.TreeNode
 import com.cherba29.tally.core.plus
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.data.BudgetLoadingException
 import com.cherba29.tally.data.Profile
 import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.TransactionStatement
+import com.cherba29.tally.utils.TreeNode
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import kotlin.collections.component1
@@ -32,14 +32,14 @@ class BudgetBuilder {
   private var monthRange: MonthRange? = null
 
   data class TransferRecord(
-    val toAccountName: String,  // Full path is unknown at time of record.
+    val toAccountName: String, // Full path is unknown at time of record.
     val fromAccountPath: List<String>,
     val month: Month,
     val balance: Balance,
     val description: String?,
     val tags: List<String>,
     val sourceFile: Path? = null,
-    val lineNumber: Int? = null,
+    val lineNumber: Int? = null
   )
 
   private val treeNodeBuilder = TreeNode.Builder<Profile>()
@@ -48,7 +48,7 @@ class BudgetBuilder {
   fun addAccount(
     account: Account,
     accountBalances: Map<Month, Balance>,
-    sourceFile: Path? = null,
+    sourceFile: Path? = null
   ) {
     for (owner in account.owners) {
       val fullPath = listOf(owner) + account.path + listOf(account.name)
@@ -67,7 +67,10 @@ class BudgetBuilder {
       val closingBalance = accountBalances[account.closedOn]
       if (closingBalance != null) {
         inactiveAccountBalances[inactiveAccount.openedOn] = Balance(
-          0, inactiveAccount.openedOn.toDate(), Balance.Type.CONFIRMED)
+          0,
+          inactiveAccount.openedOn.toDate(),
+          Balance.Type.CONFIRMED
+        )
         inactiveAccountBalances[inactiveAccount.openedOn.next()] = closingBalance
       }
       for (owner in inactiveAccount.owners) {
@@ -92,29 +95,38 @@ class BudgetBuilder {
           account.closedOn,
           closingBalance.copy(date = inactiveAccount.openedOn.toDate()),
           "Moving ending balance to corresponding inactive account"
-          )
+        )
       }
     }
   }
 
   private val processedPath = mutableSetOf<List<String>>()
-  fun setAccount(fullPath: List<String>, account: Account): BudgetBuilder {
+
+  fun setAccount(
+    fullPath: List<String>,
+    account: Account
+  ): BudgetBuilder {
     for (i in fullPath.indices) {
       val subPath = fullPath.subList(0, i)
       if (processedPath.add(subPath)) {
         treeNodeBuilder.addPath(
-          subPath, Profile(
+          subPath,
+          Profile(
             isExternal = subPath.contains(EXTERNAL_NAME),
             isInactive = subPath.contains(INACTIVE_NAME)
           )
         )
       }
     }
-    treeNodeBuilder.addPath(fullPath, Profile(
-      account,
-      isExternal = fullPath.contains(EXTERNAL_NAME),
-      isInactive = fullPath.contains(INACTIVE_NAME)
-    ), account.rank)
+    treeNodeBuilder.addPath(
+      fullPath,
+      Profile(
+        account,
+        isExternal = fullPath.contains(EXTERNAL_NAME),
+        isInactive = fullPath.contains(INACTIVE_NAME)
+      ),
+      account.rank
+    )
 
     pathToAccount[fullPath] = account
     monthRange += account.openedOn
@@ -122,7 +134,11 @@ class BudgetBuilder {
     return this
   }
 
-  fun setBalance(accountPath: List<String>, month: Month, balance: Balance): BudgetBuilder {
+  fun setBalance(
+    accountPath: List<String>,
+    month: Month,
+    balance: Balance
+  ): BudgetBuilder {
     val accountBalances = balances.getOrPut(accountPath) { mutableMapOf() }
     if (accountBalances.put(month, balance) != null) {
       throw IllegalArgumentException(
@@ -141,11 +157,13 @@ class BudgetBuilder {
     description: String? = null,
     tags: List<String> = listOf(),
     sourceFile: Path? = null,
-    lineNumber: Int? = null,
+    lineNumber: Int? = null
   ) {
     for (owner in fromAccount.owners) {
       val fromAccountPath = listOf(owner) + fromAccount.path + listOf(fromAccount.name)
-      addTransfer(TransferRecord(toAccountName, fromAccountPath, month, balance, description, tags, sourceFile, lineNumber))
+      addTransfer(
+        TransferRecord(toAccountName, fromAccountPath, month, balance, description, tags, sourceFile, lineNumber)
+      )
     }
   }
 
@@ -189,7 +207,8 @@ class BudgetBuilder {
         builder.months = monthRange!!
         builder.monthlyBalances = leafToBalances[it] ?: mapOf()
         builder
-      })
+      }
+    )
 
     val cachedNameToTreenodeMap = mutableMapOf<String, TreeNode.Leaf<Profile>>()
 
@@ -199,14 +218,15 @@ class BudgetBuilder {
         if (toAccounts.isEmpty()) {
           throw IllegalArgumentException(
             "Unknown to account $toAccountName in " +
-                "${fromAccountPath.joinToString("/")}, " +
-                "known accounts\n${treeRoot.toPrettyString()}"
+              "${fromAccountPath.joinToString("/")}, " +
+              "known accounts\n${treeRoot.toPrettyString()}"
           )
         } else if (toAccounts.size > 1) {
           throw IllegalArgumentException(
             "Ambiguous transfer from ${fromAccountPath.joinToString("/")} to " +
-                "$toAccountName, found multiple candidate accounts " +
-                toAccounts.joinToString { it.joinToString("/") })
+              "$toAccountName, found multiple candidate accounts " +
+              toAccounts.joinToString { it.joinToString("/") }
+          )
         }
 
         treeRoot[toAccounts.first()] as? TreeNode.Leaf
@@ -221,8 +241,8 @@ class BudgetBuilder {
       if (fromOwner != toOwner) {
         logger.warn {
           "WARNING: Transaction in $month has " +
-              "to account ${toAccountNode.name} from ${fromAccountNode.name} with different owners " +
-              "$fromOwner vs $toOwner"
+            "to account ${toAccountNode.name} from ${fromAccountNode.name} with different owners " +
+            "$fromOwner vs $toOwner"
         }
       }
       val fromAccount = fromAccountNode.data.account
@@ -230,7 +250,7 @@ class BudgetBuilder {
       if (fromAccount.isClosed(month)) {
         throw IllegalArgumentException(
           "Account ${fromAccountNode.pathString} " +
-              "has transfer during closed month $month to ${toAccountNode.pathString}"
+            "has transfer during closed month $month to ${toAccountNode.pathString}"
         )
       }
       val toAccount = toAccountNode.data.account
@@ -238,24 +258,24 @@ class BudgetBuilder {
       if (toAccount.isClosed(month)) {
         throw IllegalArgumentException(
           "Account ${toAccountNode.pathString} " +
-              "has transfer during closed month $month from ${fromAccountNode.pathString}"
+            "has transfer during closed month $month from ${fromAccountNode.pathString}"
         )
       }
 
       (statementBuilders[fromAccountNode] ?: throw IllegalStateException()).addTransfer(
-          fromAccountNode,
-          toAccountNode,
-          month,
-          -balance,
-          description
-        )
+        fromAccountNode,
+        toAccountNode,
+        month,
+        -balance,
+        description
+      )
       (statementBuilders[toAccountNode] ?: throw IllegalStateException()).addTransfer(
-          toAccountNode,
-          fromAccountNode,
-          month,
-          balance,
-          description
-        )
+        toAccountNode,
+        fromAccountNode,
+        month,
+        balance,
+        description
+      )
     }
     return statementBuilders.mapValues {
       try {
@@ -264,7 +284,6 @@ class BudgetBuilder {
         e.addSuppressed(Exception("while processing ${it.key.pathString}"))
         throw e
       }
-
     }
   }
 
@@ -307,7 +326,7 @@ class BudgetBuilder {
         val fromAccountName = fromAccountPath.last()
         throw BudgetLoadingException(
           "For account '$fromAccountName' transfer to '$toAccountName' " +
-              "for $month date ${balance.date} ($balanceMonth) are too far apart$fileContext",
+            "for $month date ${balance.date} ($balanceMonth) are too far apart$fileContext",
           fileName = sourceFile.toString(),
           lineNumber = lineNumber
         )
@@ -318,16 +337,16 @@ class BudgetBuilder {
         if (toAccounts.isEmpty()) {
           throw BudgetLoadingException(
             "Unknown to account $toAccountName in " +
-                "${fromAccountPath.joinToString("/")}, " +
-                "known accounts\n${treeRoot.toPrettyString()}$fileContext",
+              "${fromAccountPath.joinToString("/")}, " +
+              "known accounts\n${treeRoot.toPrettyString()}$fileContext",
             fileName = sourceFile?.toString(),
             lineNumber = lineNumber
           )
         } else if (toAccounts.size > 1) {
           throw BudgetLoadingException(
             "Ambiguous transfer from ${fromAccountPath.joinToString("/")} to " +
-                "$toAccountName, found multiple candidate accounts " +
-                toAccounts.joinToString { it.joinToString("/") } + fileContext,
+              "$toAccountName, found multiple candidate accounts " +
+              toAccounts.joinToString { it.joinToString("/") } + fileContext,
             fileName = sourceFile?.toString(),
             lineNumber = lineNumber
           )
@@ -349,7 +368,7 @@ class BudgetBuilder {
       if (fromAccount.isClosed(month)) {
         throw BudgetLoadingException(
           "Account ${fromAccountNode.pathString} " +
-              "has transfer during closed month $month to ${toAccountNode.pathString}$fileContext",
+            "has transfer during closed month $month to ${toAccountNode.pathString}$fileContext",
           fileName = sourceFile?.toString(),
           lineNumber = lineNumber
         )
@@ -360,7 +379,7 @@ class BudgetBuilder {
       if (toAccount.isClosed(month)) {
         throw BudgetLoadingException(
           "Account ${toAccountNode.pathString} " +
-              "has transfer during closed month $month from ${fromAccountNode.pathString}$fileContext",
+            "has transfer during closed month $month from ${fromAccountNode.pathString}$fileContext",
           fileName = sourceFile?.toString(),
           lineNumber = lineNumber
         )
@@ -374,9 +393,10 @@ class BudgetBuilder {
     }
 
     val treeRoot = treeNodeBuilder.build()
-    val leafNodes = pathToAccount.map {
-      treeRoot[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
-    }.toSet()
+    val leafNodes = pathToAccount
+      .map {
+        treeRoot[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
+      }.toSet()
 
     validate(treeRoot)
 
@@ -395,7 +415,7 @@ class BudgetBuilder {
     nodeToStatement.putAll(summaryNameMonthMap)
 
     logger.info {
-        "Build ${leafNodes.size} accounts, " +
+      "Build ${leafNodes.size} accounts, " +
         "$numTransactions transactions in $elapsedTransactionTime, " +
         "${summaryNameMonthMap.size} summaries in $elapsedBuildSummaryStatements, " +
         "total in ${elapsedTransactionTime + elapsedBuildSummaryStatements}"
@@ -404,7 +424,7 @@ class BudgetBuilder {
     return Budget(
       monthRange!!,
       treeRoot,
-      nodeToStatement,
+      nodeToStatement
     )
   }
 

@@ -17,7 +17,7 @@ class TransfersSummaryBuilder(
   private val budget: Budget,
   private val accountPath: String,
   private val startMonth: Month? = null,
-  private val endMonth: Month,
+  private val endMonth: Month
 ) {
   fun build(): GqlTransfersSummary {
     val treePath = accountPath.split("/").filter { it.isNotEmpty() }
@@ -29,9 +29,11 @@ class TransfersSummaryBuilder(
   fun build(treeNode: TreeNode<Profile>): GqlTransfersSummary {
     val monthlyStatements = budget.nodeToStatement[treeNode]
       ?: throw IllegalStateException("Could not find statements for $accountPath")
-    val ascMonthList = monthlyStatements.filter {
-      !budget.isClosed(treeNode, it.key)
-    }.keys.sorted()
+    val ascMonthList = monthlyStatements
+      .filter {
+        !budget.isClosed(treeNode, it.key)
+      }.keys
+      .sorted()
     if (ascMonthList.isEmpty()) {
       throw NotFoundException("Could not any non-closed statements for $accountPath between $startMonth..$endMonth")
     }
@@ -59,8 +61,10 @@ class TransfersSummaryBuilder(
         totalTransfers = cashFlow.total,
         totalAnnualPrct = cashFlow.effectiveRateOfReturn().asRoundedPercent(2),
         weightedAge = cashFlow.weightedAverageAmountAge().asRounded(2),
-        unaccounted = (statement.startBalance?.amount
-          ?: 0) - cashFlow.total + internalTransfers + externalTransfers,
+        unaccounted = (
+          statement.startBalance?.amount
+            ?: 0
+        ) - cashFlow.total + internalTransfers + externalTransfers
       )
     }
 
@@ -68,7 +72,11 @@ class TransfersSummaryBuilder(
       ?: throw NotFoundException("Not statements for $accountPath for month range $startMonth..$endMonth")
     return GqlTransfersSummary(
       months = limitMonths.reversed(),
-      data = summaries.filterKeys { it in limitMonths }.toSortedMap().values.reversed()
+      data = summaries
+        .filterKeys { it in limitMonths }
+        .toSortedMap()
+        .values
+        .reversed()
     )
   }
 }

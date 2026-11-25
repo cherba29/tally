@@ -8,11 +8,11 @@ import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.JUL
 import com.cherba29.tally.core.MonthName.JUN
 import com.cherba29.tally.core.MonthName.NOV
-import com.cherba29.tally.utils.TreeNode
-import com.cherba29.tally.utils.root
 import com.cherba29.tally.core.Transaction
 import com.cherba29.tally.data.Profile
 import com.cherba29.tally.testing.toSnapshot
+import com.cherba29.tally.utils.TreeNode
+import com.cherba29.tally.utils.root
 import com.diffplug.selfie.coroutines.expectSelfie
 import io.kotest.assertions.assertSoftly
 import io.kotest.core.spec.style.DescribeSpec
@@ -64,7 +64,7 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
     }
 
     it("closed internal accounts do not produce statements") {
-      val months = JUN / 2020 .. JUN / 2020
+      val months = JUN / 2020..JUN / 2020
       val builder = MonthTransactionStatementBuilder()
       builder.months = months
       val table = builder.build()
@@ -72,7 +72,7 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
     }
 
     it("closed external accounts still produce statements") {
-      val months = JUN / 2020 .. JUN / 2020
+      val months = JUN / 2020..JUN / 2020
       val builder = MonthTransactionStatementBuilder()
       builder.months = months
       val table = builder.build()
@@ -104,14 +104,14 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
       builder1.addTransfer(
         node1,
         node2,
-        DEC/2019,
+        DEC / 2019,
         Balance.projected(-2000, "2019-12-05"),
         "First transfer"
       )
       builder1.addTransfer(
         node1,
         node2,
-        DEC/2019,
+        DEC / 2019,
         Balance.projected(-1000, "2019-12-05"),
         "Second transfer"
       )
@@ -124,14 +124,14 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
       builder2.addTransfer(
         node2,
         node1,
-        DEC/2019,
+        DEC / 2019,
         Balance.projected(2000, "2019-12-05"),
         "First transfer"
       )
       builder2.addTransfer(
         node2,
         node1,
-        DEC/2019,
+        DEC / 2019,
         Balance.projected(1000, "2019-12-05"),
         "Second transfer"
       )
@@ -201,7 +201,7 @@ class MonthTransactionStatementBuilderTest : DescribeSpec({
       expectSelfie(table1.toSnapshot { false }).toMatchDisk("table1")
       expectSelfie(table2.toSnapshot { false }).toMatchDisk("table2")
     }
-    
+
     it("transfer to closed account") {
       val tree = root(Profile()) {
         branch("john", Profile()) {

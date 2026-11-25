@@ -11,11 +11,16 @@ import graphql.schema.CoercingSerializeException
 import java.util.Locale
 
 object LongCoercing : Coercing<Long, String> {
-  override fun parseValue(input: Any, graphQLContext: GraphQLContext, locale: Locale): Long = runCatching {
-    serialize(input, graphQLContext, locale).toLong()
-  }.getOrElse {
-    throw CoercingParseValueException("Expected valid Long but was '$input'")
-  }
+  override fun parseValue(
+    input: Any,
+    graphQLContext: GraphQLContext,
+    locale: Locale
+  ): Long =
+    runCatching {
+      serialize(input, graphQLContext, locale).toLong()
+    }.getOrElse {
+      throw CoercingParseValueException("Expected valid Long but was '$input'")
+    }
 
   override fun parseLiteral(
     input: Value<*>,
@@ -23,7 +28,9 @@ object LongCoercing : Coercing<Long, String> {
     graphQLContext: GraphQLContext,
     locale: Locale
   ): Long {
-    val longString = (input as? StringValue)?.value ?: throw CoercingParseLiteralException("Expected valid Long literal but was '$input'")
+    val longString =
+      (input as? StringValue)?.value
+        ?: throw CoercingParseLiteralException("Expected valid Long literal but was '$input'")
     return runCatching {
       longString.toLong()
     }.getOrElse {
@@ -31,9 +38,14 @@ object LongCoercing : Coercing<Long, String> {
     }
   }
 
-  override fun serialize(dataFetcherResult: Any, graphQLContext: GraphQLContext, locale: Locale): String = runCatching {
-    dataFetcherResult.toString()
-  }.getOrElse {
-    throw CoercingSerializeException("Data fetcher result '$dataFetcherResult' cannot be serialized to a String")
-  }
+  override fun serialize(
+    dataFetcherResult: Any,
+    graphQLContext: GraphQLContext,
+    locale: Locale
+  ): String =
+    runCatching {
+      dataFetcherResult.toString()
+    }.getOrElse {
+      throw CoercingSerializeException("Data fetcher result '$dataFetcherResult' cannot be serialized to a String")
+    }
 }

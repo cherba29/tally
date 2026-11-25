@@ -45,7 +45,7 @@ private fun YamlData.toAccount(): Account? {
     phone = phone,
     address = address,
     userName = username,
-    password = pswd,
+    password = pswd
   )
 }
 
@@ -60,7 +60,9 @@ private fun BalanceYamlData.toBalance(name: String): Balance {
     amount = (100.0 * pamt).roundToLong()
     balanceType = Balance.Type.PROJECTED
   } else {
-    throw IllegalArgumentException("For $name account balance for $grp does not have amount type set, expected camt or pamt entry")
+    throw IllegalArgumentException(
+      "For $name account balance for $grp does not have amount type set, expected camt or pamt entry"
+    )
   }
   if (date == null) {
     throw IllegalArgumentException("For $name account balance for $grp does not have date set")
@@ -71,13 +73,20 @@ private fun BalanceYamlData.toBalance(name: String): Balance {
 /**
  * Validates YamlData and atomically adds it to the budget.
  */
-private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData, relativeFilePath: Path? = null): Boolean {
+private fun processYamlData(
+  budgetBuilder: BudgetBuilder,
+  data: YamlData,
+  relativeFilePath: Path? = null
+): Boolean {
   // Ignore data which dont represent account.
   val account = data.toAccount() ?: return false
   val convertedBalances = data.balances?.associate {
-    (it.grp ?: throw IllegalArgumentException(
-      "For ${account.name} account balance entry with date '${it.date}' and desc '${it.desc}' has no grp setting"
-    )) to it.toBalance(account.name) } ?: mapOf()
+    (
+      it.grp ?: throw IllegalArgumentException(
+        "For ${account.name} account balance entry with date '${it.date}' and desc '${it.desc}' has no grp setting"
+      )
+    ) to it.toBalance(account.name)
+  } ?: mapOf()
 
   budgetBuilder.addAccount(account, convertedBalances, relativeFilePath)
 
@@ -112,8 +121,8 @@ private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData, relati
         if (balance == null) {
           throw IllegalArgumentException(
             "For account '${account.name}' transfer to '$toAccountName' " +
-                "for $transferMonth $date " +
-                "does not have 'pamt' or 'camt' field"
+              "for $transferMonth $date " +
+              "does not have 'pamt' or 'camt' field"
           )
         }
 
@@ -132,8 +141,12 @@ private fun processYamlData(budgetBuilder: BudgetBuilder, data: YamlData, relati
   return true
 }
 
-fun loadYamlFile(budgetBuilder: BudgetBuilder, accountData: YamlData, relativeFilePath: Path): Boolean {
-  return try {
+fun loadYamlFile(
+  budgetBuilder: BudgetBuilder,
+  accountData: YamlData,
+  relativeFilePath: Path
+): Boolean =
+  try {
     processYamlData(budgetBuilder, accountData, relativeFilePath)
   } catch (e: IllegalArgumentException) {
     logger.error { e.javaClass.simpleName + ": " + e.message }
@@ -148,6 +161,5 @@ fun loadYamlFile(budgetBuilder: BudgetBuilder, accountData: YamlData, relativeFi
     logger.info { "Account Data$accountData" }
     throw e.toBudgetLoadingException(relativeFilePath)
   }
-}
 
 private val logger = KotlinLogging.logger {}

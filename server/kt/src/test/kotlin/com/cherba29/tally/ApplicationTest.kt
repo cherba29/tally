@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.read.ListAppender
+import com.cherba29.tally.data.Loader
 import com.diffplug.selfie.coroutines.expectSelfie
 import com.expediagroup.graphql.server.execution.subscription.GRAPHQL_WS_PROTOCOL
 import com.expediagroup.graphql.server.execution.subscription.GraphQLWebSocketServer
@@ -13,6 +14,7 @@ import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.engine.spec.tempdir
 import io.kotest.matchers.collections.shouldBeEmpty
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
@@ -32,19 +34,20 @@ import io.ktor.http.contentType
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.config.MapApplicationConfig
 import io.ktor.server.config.mergeWith
+import io.ktor.server.plugins.di.dependencies
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
-import io.ktor.server.plugins.di.dependencies
 import io.ktor.websocket.Frame
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
-import com.cherba29.tally.data.Loader
-import io.kotest.matchers.nulls.shouldNotBeNull
 import io.mockk.every
 import io.mockk.mockkObject
 import io.mockk.spyk
 import io.mockk.unmockkObject
 import io.mockk.verify
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withTimeout
+import org.slf4j.LoggerFactory
 import java.nio.file.Path
 import kotlin.io.path.createDirectory
 import kotlin.io.path.createFile
@@ -53,9 +56,6 @@ import kotlin.io.path.pathString
 import kotlin.io.path.writeText
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withTimeout
-import org.slf4j.LoggerFactory
 
 fun ApplicationTestBuilder.configureTestClient(tallyPath: Path?) {
   application {
@@ -94,7 +94,7 @@ class ApplicationTest : DescribeSpec({
       val legacyDir = tempdir("tally-legacy-", keepOnFailure = false).toPath()
       val config = MapApplicationConfig(
         "tally.data.path" to primaryDir.pathString,
-        "tally.data.legacyPath" to legacyDir.pathString,
+        "tally.data.legacyPath" to legacyDir.pathString
       )
       resolveTallyDataPath(config, defaultPath = tallyPath.resolve("missing")) shouldBe primaryDir
     }
@@ -103,7 +103,7 @@ class ApplicationTest : DescribeSpec({
       val legacyDir = tempdir("tally-legacy-", keepOnFailure = false).toPath()
       val config = MapApplicationConfig(
         "tally.data.path" to "",
-        "tally.data.legacyPath" to legacyDir.pathString,
+        "tally.data.legacyPath" to legacyDir.pathString
       )
       resolveTallyDataPath(config, defaultPath = tallyPath.resolve("missing")) shouldBe legacyDir
     }
@@ -148,7 +148,7 @@ class ApplicationTest : DescribeSpec({
           config = config.mergeWith(
             MapApplicationConfig(
               "tally.data.path" to tallyPath.resolve("data").pathString,
-              "tally.client.path" to "",
+              "tally.client.path" to ""
             )
           )
         }
@@ -264,7 +264,8 @@ class ApplicationTest : DescribeSpec({
           }
         }
 
-        val tableQuery = """query { table(owner: "someone", startMonth: "Mar2019", endMonth: "Mar2019") { currentOwner } }"""
+        val tableQuery =
+          """query { table(owner: "someone", startMonth: "Mar2019", endMonth: "Mar2019") { currentOwner } }"""
 
         // 1. Initial valid query succeeds
         val initialResponse = client.post("/graphql") {

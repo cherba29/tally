@@ -2,8 +2,8 @@ package com.cherba29.tally.cli.cmds
 
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.data.Loader
 import com.cherba29.tally.core.Transaction
+import com.cherba29.tally.data.Loader
 import com.cherba29.tally.statement.TransactionStatement
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
@@ -54,22 +54,29 @@ class Generate : CliktCommand() {
     if (acctStmts.isNullOrEmpty()) throw UsageError("The account $account has no statements.")
 
     if (acctStmts.values.all { it.startBalance == null } &&
-      acctStmts.values.sumOf { it.transactions.size } == 0) {
+      acctStmts.values.sumOf { it.transactions.size } == 0
+    ) {
       throw UsageError("Account '$account' has no records for any month.")
     }
 
     // Find minimum/maximum month used by this account.
     val maxMonth = acctStmts.keys.max().next()
-    if (startMonth >= maxMonth ) {
+    if (startMonth >= maxMonth) {
       throw UsageError("The account $account has no balances or transactions after $maxMonth.")
     }
     val minMonth = acctStmts.keys.min()
     val firstMonth = if (startMonth < minMonth) minMonth.previous() else startMonth
 
     // Compute max padding for amounts to be right aligned.
-    val padAmtLength = (acctStmts.values.mapNotNull {
-      it.startBalance?.amount?.toString()?.length
-    }.maxOrNull() ?: 0) + 2  // 1 extra leading space plus "."
+    val padAmtLength = (
+      acctStmts.values
+        .mapNotNull {
+          it.startBalance
+            ?.amount
+            ?.toString()
+            ?.length
+        }.maxOrNull() ?: 0
+    ) + 2 // 1 extra leading space plus "."
 
     val lines = mutableListOf<String>()
     val flushLines = mutableListOf<String>()
@@ -107,13 +114,17 @@ class Generate : CliktCommand() {
       // Find first date of next month transaction, our predicated balance cannot be older.
       val nextStmt = acctStmts[currentMonth.next()]
       val minDateNextMonthTransfer: LocalDate? = if (nextStmt?.transactions?.isNotEmpty() ?: false) {
-        nextStmt.transactions.minBy { it.balance.date }.balance.date
-      } else null
+        nextStmt.transactions
+          .minBy { it.balance.date }
+          .balance.date
+      } else {
+        null
+      }
       if (withAnnualFlush && currentMonth.month == 0) {
         val amtValue = currentBalance.amount.asAmount().padStart(padAmtLength)
         flushLines.add(
-          "    - { grp: $currentMonth, date: ${currentMonth.year}-01-02, camt: ${amtValue}, " +
-              "desc: \"Total for ${currentMonth.year - 1}\" }"
+          "    - { grp: $currentMonth, date: ${currentMonth.year}-01-02, camt: $amtValue, " +
+            "desc: \"Total for ${currentMonth.year - 1}\" }"
         )
         currentBalance = Balance(0, currentBalance.date, currentBalance.type)
       }
@@ -138,11 +149,15 @@ class Generate : CliktCommand() {
   companion object {
     private fun Long.asAmount(): String = "%.2f".format(this / 100.0)
 
-    private fun printBalanceLine(month: Month, balance: Balance, padAmtLength: Int): String {
+    private fun printBalanceLine(
+      month: Month,
+      balance: Balance,
+      padAmtLength: Int
+    ): String {
       val amtPrefix = if (balance.type == Balance.Type.PROJECTED) "pamt" else "camt"
       val amtValue = balance.amount.asAmount().padStart(padAmtLength)
       val dateValue = balance.date.toString()
-      return "  - { grp: ${month}, date: ${dateValue}, ${amtPrefix}: $amtValue }"
+      return "  - { grp: $month, date: $dateValue, $amtPrefix: $amtValue }"
     }
 
     private fun nextBalance(
@@ -156,7 +171,7 @@ class Generate : CliktCommand() {
       val nextDate = startBalance.date + DatePeriod(months = 1)
       val balance = transfers.fold(
         Balance(startBalance.amount, nextDate, balanceType)
-      ) { total, current -> total + current.balance}
+      ) { total, current -> total + current.balance }
       // Make sure next balance start does not exceed its minimum transfer date.
       if (minDateNextMonthTransfer != null && balance.date > minDateNextMonthTransfer) {
         return Balance(balance.amount, minDateNextMonthTransfer, balance.type)

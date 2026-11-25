@@ -100,14 +100,16 @@ class YamlDataParserTest : DescribeSpec({
       data shouldBe YamlData(
         name = "test-account",
         transfersTo = mapOf(
-          "test-account2" to TransferDataWrapper(listOf(
-            TransferYamlData(
-              grp = JUN / 2026,
-              date = LocalDate(2026, 6, 20),
-              camt = 500.0,
-              desc = "Refund"
+          "test-account2" to TransferDataWrapper(
+            listOf(
+              TransferYamlData(
+                grp = JUN / 2026,
+                date = LocalDate(2026, 6, 20),
+                camt = 500.0,
+                desc = "Refund"
+              )
             )
-          ))
+          )
         )
       )
     }
@@ -143,13 +145,15 @@ class YamlDataParserTest : DescribeSpec({
       data shouldBe YamlData(
         name = "test-account",
         transfersTo = mapOf(
-          "test-account2" to TransferDataWrapper(listOf(
-            TransferYamlData(
-              grp = JUN / 2026,
-              date = LocalDate(2026, 6, 20),
-              camt = 500.0,
-              desc = "Refund"
-            ))
+          "test-account2" to TransferDataWrapper(
+            listOf(
+              TransferYamlData(
+                grp = JUN / 2026,
+                date = LocalDate(2026, 6, 20),
+                camt = 500.0,
+                desc = "Refund"
+              )
+            )
           )
         )
       )
@@ -205,7 +209,6 @@ class YamlDataParserTest : DescribeSpec({
       exception.lineNumber shouldBe 4
       exception.fieldPath shouldBe "\"transfers_to\"->\"External_Refunds\"->\"pamt\""
     }
-
 
     it("fails with bad balance month") {
       val relativeFilePath = Paths.get("path/file.yaml")

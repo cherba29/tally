@@ -1,7 +1,12 @@
 package com.cherba29.tally.data
 
 import com.cherba29.tally.core.Account
-import com.cherba29.tally.core.MonthName.*
+import com.cherba29.tally.core.MonthName.AUG
+import com.cherba29.tally.core.MonthName.DEC
+import com.cherba29.tally.core.MonthName.JUL
+import com.cherba29.tally.core.MonthName.NOV
+import com.cherba29.tally.core.MonthName.OCT
+import com.cherba29.tally.core.MonthName.SEP
 import com.cherba29.tally.utils.TreeNode
 import com.cherba29.tally.utils.root
 import io.kotest.core.spec.style.DescribeSpec
@@ -12,18 +17,26 @@ class BudgetTest : DescribeSpec({
     it("empty budget all accounts are closed") {
       val tree = root(Profile()) { }
       val budget = Budget(
-        months = AUG / 2026..SEP / 2026, tree = tree, nodeToStatement = mapOf()
+        months = AUG / 2026..SEP / 2026,
+        tree = tree,
+        nodeToStatement = mapOf()
       )
       budget.isClosed(tree, AUG / 2026) shouldBe true
     }
 
     it("single open account") {
       val tree = root(Profile()) {
-        leaf("test-account", Profile(
-          account = Account(
-            name = "test-account", path = listOf(), owners = setOf("john"), openedOn = AUG / 2026
+        leaf(
+          "test-account",
+          Profile(
+            account = Account(
+              name = "test-account",
+              path = listOf(),
+              owners = setOf("john"),
+              openedOn = AUG / 2026
+            )
           )
-        ))
+        )
       }
       val node = tree["test-account"] as TreeNode.Leaf
       val budget = Budget(
@@ -41,33 +54,45 @@ class BudgetTest : DescribeSpec({
     it("nested open - closed accounts") {
       val tree = root(Profile()) {
         branch("internal", Profile()) {
-          leaf("test-account1", Profile(
-            Account(
-              name = "test-account1", path = listOf("internal"), owners = setOf("john"), openedOn = AUG / 2026
+          leaf(
+            "test-account1",
+            Profile(
+              Account(
+                name = "test-account1",
+                path = listOf("internal"),
+                owners = setOf("john"),
+                openedOn = AUG / 2026
+              )
             )
-          ))
+          )
         }
         branch("external", Profile(isExternal = true)) {
-          leaf("test-account2", Profile(
+          leaf(
+            "test-account2",
+            Profile(
+              Account(
+                name = "test-account2",
+                path = listOf("external"),
+                owners = setOf("john"),
+                openedOn = AUG / 2026,
+                closedOn = AUG / 2026
+              ),
+              isExternal = true
+            )
+          )
+        }
+        leaf(
+          "test-account3",
+          Profile(
             Account(
-              name = "test-account2",
-              path = listOf("external"),
+              name = "test-account3",
+              path = listOf(),
               owners = setOf("john"),
               openedOn = AUG / 2026,
-              closedOn = AUG / 2026
-            ),
-            isExternal = true
-          ))
-        }
-        leaf("test-account3", Profile(
-          Account(
-            name = "test-account3",
-            path = listOf(),
-            owners = setOf("john"),
-            openedOn = AUG / 2026,
-            closedOn = SEP / 2026
+              closedOn = SEP / 2026
+            )
           )
-        ))
+        )
       }
       val node1 = tree[listOf("internal", "test-account1")] as TreeNode.Leaf
       val internalNode = tree[listOf("internal")] as TreeNode.Branch
@@ -75,7 +100,9 @@ class BudgetTest : DescribeSpec({
       val externalNode = tree[listOf("external")] as TreeNode.Branch
       val node3 = tree[listOf("test-account3")] as TreeNode.Leaf
       val budget = Budget(
-        months = AUG / 2026..SEP / 2026, tree = tree, nodeToStatement = mapOf()
+        months = AUG / 2026..SEP / 2026,
+        tree = tree,
+        nodeToStatement = mapOf()
       )
       (JUL / 2026..DEC / 2026).associateWith { budget.isClosed(node1, it) } shouldBe mapOf(
         JUL / 2026 to true,

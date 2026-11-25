@@ -9,29 +9,38 @@ data class Balance(
   val amount: Long,
   val date: LocalDate,
   val type: Type,
-  val description: String = "",
+  val description: String = ""
 ) : Comparable<Balance> {
   enum class Type(val id: String) {
     CONFIRMED("CONFIRMED"),
     PROJECTED("PROJECTED");
 
     companion object {
-      fun combineTypes(t1: Type, t2: Type): Type = if (t1.ordinal < t2.ordinal) t2 else t1
+      fun combineTypes(
+        t1: Type,
+        t2: Type
+      ): Type = if (t1.ordinal < t2.ordinal) t2 else t1
     }
   }
 
-  private fun max(date1: LocalDate, date2: LocalDate) = if (date1 < date2) date2 else date1
-  operator fun plus(other: Balance) = Balance(
-    amount + other.amount,
-    max(date,other.date),
-    Type.combineTypes(type, other.type)
-  )
+  private fun max(
+    date1: LocalDate,
+    date2: LocalDate
+  ) = if (date1 < date2) date2 else date1
 
-  operator fun minus(other: Balance) = Balance(
-    amount - other.amount,
-    max(date,other.date),
-    Type.combineTypes(type, other.type)
-  )
+  operator fun plus(other: Balance) =
+    Balance(
+      amount + other.amount,
+      max(date, other.date),
+      Type.combineTypes(type, other.type)
+    )
+
+  operator fun minus(other: Balance) =
+    Balance(
+      amount - other.amount,
+      max(date, other.date),
+      Type.combineTypes(type, other.type)
+    )
 
   operator fun unaryMinus() = Balance(-amount, date, type, description)
 
@@ -47,19 +56,20 @@ data class Balance(
     return type.compareTo(other.type)
   }
 
-  override fun toString(): String {
-    return "Balance { amount: ${String.format("%.2f", amount / 100.0)}, date: $date, type: ${type.id} }"
-  }
+  override fun toString(): String =
+    "Balance { amount: ${String.format("%.2f", amount / 100.0)}, date: $date, type: ${type.id} }"
 
   companion object {
     // Helper constructor.
-    fun confirmed(amount: Long, date: String): Balance {
-      return Balance(amount, LocalDate.parse(date), Type.CONFIRMED)
-    }
+    fun confirmed(
+      amount: Long,
+      date: String
+    ): Balance = Balance(amount, LocalDate.parse(date), Type.CONFIRMED)
 
-    fun projected(amount: Long, date: String): Balance {
-      return Balance(amount, LocalDate.parse(date), Type.PROJECTED)
-    }
+    fun projected(
+      amount: Long,
+      date: String
+    ): Balance = Balance(amount, LocalDate.parse(date), Type.PROJECTED)
   }
 }
 

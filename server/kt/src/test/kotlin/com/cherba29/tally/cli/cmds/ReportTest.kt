@@ -121,7 +121,8 @@ class ReportTest : DescribeSpec({
         )
       )
       result.stderr shouldBe ""
-      result.stdout shouldBe "Executing report for someone/external/test-account from Apr2026 to May2026 for $tallyPath\n" +
+      result.stdout shouldBe
+        "Executing report for someone/external/test-account from Apr2026 to May2026 for $tallyPath\n" +
         "Account,Path,OpenedOn,ClosedOn,External,Closed,Year,Month,Start Amount,Start Projected,End Amount," +
         "End Projected,Inflows,OutFlows,Income,Expense,Transfers,Unaccounted\n"
       result.statusCode shouldBe 0

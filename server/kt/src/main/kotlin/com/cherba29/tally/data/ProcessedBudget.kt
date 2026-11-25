@@ -19,7 +19,7 @@ class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
 
   val dataPayload: Budget get() = budget!!
   private val startTime = timeSource.markNow()
-  private var processedOn: Duration? = null  // Not yet processed
+  private var processedOn: Duration? = null // Not yet processed
   val loadedOn: Duration? get() = processedOn
 
   fun reProcess() {
@@ -47,7 +47,10 @@ class ProcessedBudget(val timeSource: TimeSource = TimeSource.Monotonic) {
     }
   }
 
-  fun addFile(rootPath: Path, relativeFilePath: Path) {
+  fun addFile(
+    rootPath: Path,
+    relativeFilePath: Path
+  ) {
     val key = relativeFilePath.toString()
     try {
       val content = rootPath.resolve(relativeFilePath).readText(Charsets.UTF_8)

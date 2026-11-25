@@ -50,6 +50,14 @@ jobs:
         working-directory: client
         run: '"$(realpath node_modules/@web/test-runner-puppeteer)/node_modules/.bin/puppeteer" browsers install chrome'
 
+      - name: Typecheck client
+        working-directory: client
+        run: pnpm typecheck
+
+      - name: Lint client
+        working-directory: client
+        run: pnpm lint
+
       - name: Build client
         working-directory: client
         run: pnpm build
@@ -92,9 +100,9 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      - name: Test and package fat JAR
+      - name: Lint, test, and package fat JAR
         working-directory: server/kt
-        run: ./gradlew test buildFatJar
+        run: ./gradlew ktlintCheck test buildFatJar
 
       - name: Upload fat JAR artifact
         uses: actions/upload-artifact@v7

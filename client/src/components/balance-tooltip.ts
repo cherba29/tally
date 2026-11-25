@@ -60,7 +60,7 @@ export class BalanceTooltip extends LitElement {
 
   copyToClipBoard(amount: number | null | undefined) {
     if (amount != null || amount != undefined) {
-      let text = (amount / 100.0).toFixed(2);
+      const text = (amount / 100.0).toFixed(2);
       navigator.clipboard.writeText(text);
       console.log(`Copied to clipboard '${text}'`);
     }

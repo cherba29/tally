@@ -12,8 +12,8 @@ import com.cherba29.tally.statement.SummaryStatement
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlin.time.measureTimedValue
 import kotlinx.coroutines.runBlocking
+import kotlin.time.measureTimedValue
 
 class SummaryService(val loader: Loader) : Query {
   /**
@@ -24,7 +24,11 @@ class SummaryService(val loader: Loader) : Query {
    * @return gql formatted summary data over specified period.
    */
   @GraphQLDescription("Generates delta summary table between two months.")
-  fun summary(accountPath: String, startMonth: Month? = null, endMonth: Month): GqlSummaryData {
+  fun summary(
+    accountPath: String,
+    startMonth: Month? = null,
+    endMonth: Month
+  ): GqlSummaryData {
     logger.info { "summary accountPath=$accountPath, startMonth=$startMonth, endMonth=$endMonth" }
     val (result, timeTaken) = measureTimedValue {
       try {
@@ -33,7 +37,10 @@ class SummaryService(val loader: Loader) : Query {
         val summaryNode = budget.tree[summaryPath]
           ?: throw NotFoundException("Summary '$accountPath' not found.")
         val monthRange = startMonth..endMonth
-        val summaryStatements = budget.nodeToStatement[summaryNode]!!.filter { it.key in monthRange }.mapValues { it.value as SummaryStatement }
+        val summaryStatements = budget.nodeToStatement[summaryNode]!!
+          .filter {
+            it.key in monthRange
+          }.mapValues { it.value as SummaryStatement }
         if (summaryStatements.isEmpty()) {
           throw NotFoundException(
             "Summary '$accountPath' for months [$startMonth, $endMonth] not found."
@@ -44,7 +51,7 @@ class SummaryService(val loader: Loader) : Query {
           for ((treeNode, subStatement) in summaryStatement.statements) {
             // Do not include closed statements in the summary.
             if (!budget.isClosed(treeNode, subStatement.monthRange.first)) {
-              builder.addStatement(treeNode,subStatement.monthRange.first, subStatement)
+              builder.addStatement(treeNode, subStatement.monthRange.first, subStatement)
             }
           }
         }
@@ -52,7 +59,7 @@ class SummaryService(val loader: Loader) : Query {
       } catch (e: Exception) {
         logger.error(e) {
           "Error while processing summary query accountType=$accountPath " +
-              "startMont=$startMonth, endMonth=$endMonth"
+            "startMont=$startMonth, endMonth=$endMonth"
         }
         throw e
       }
@@ -62,7 +69,11 @@ class SummaryService(val loader: Loader) : Query {
   }
 
   @GraphQLDescription("Generates sum of internal/external transfers for each month.")
-  fun transfersSummary(accountPath: String, startMonth: Month? = null, endMonth: Month): GqlTransfersSummary {
+  fun transfersSummary(
+    accountPath: String,
+    startMonth: Month? = null,
+    endMonth: Month
+  ): GqlTransfersSummary {
     logger.info { "summary accountPath=$accountPath, startMonth=$startMonth, endMonth=$endMonth" }
     val (result, timeTaken) = measureTimedValue {
       try {
@@ -71,7 +82,7 @@ class SummaryService(val loader: Loader) : Query {
       } catch (e: Exception) {
         logger.error(e) {
           "Error while processing summary query accountType=$accountPath " +
-              "startMont=$startMonth, endMonth=$endMonth"
+            "startMont=$startMonth, endMonth=$endMonth"
         }
         throw e
       }

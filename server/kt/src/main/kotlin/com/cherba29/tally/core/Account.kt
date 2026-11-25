@@ -34,13 +34,14 @@ data class Account(
   // Day when statement closes for this account.
   val statementCloseDate: DayInMonth = DayInMonth.Unknown()
 ) {
-  override fun toString(): String = "Account $name /${path.joinToString("/")}${if (closedOn == null) "" else " Closed $closedOn"}"
+  override fun toString(): String =
+    "Account $name /${path.joinToString("/")}${if (closedOn == null) "" else " Closed $closedOn"}"
 
   val isExternal = path.contains(EXTERNAL_NAME)
 
   fun isClosed(month: Month): Boolean {
     return (closedOn != null) && (closedOn < month) || // After closed.
-           (month < openedOn) // Before or on open.
+      (month < openedOn) // Before or on open.
   }
 
   fun cloneInactive(): Account =
@@ -50,6 +51,7 @@ data class Account(
       openedOn = closedOn!!,
       closedOn = null
     )
+
   companion object {
     const val EXTERNAL_NAME = "external"
     const val INACTIVE_NAME = "inactive"

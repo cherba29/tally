@@ -5,13 +5,13 @@ import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.FEB
 import com.cherba29.tally.core.MonthName.MAR
-import com.cherba29.tally.utils.root
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.data.Loader
 import com.cherba29.tally.data.Profile
 import com.cherba29.tally.data.builder.BudgetBuilder
 import com.cherba29.tally.data.builder.budget
 import com.cherba29.tally.testing.toSnapshot
+import com.cherba29.tally.utils.root
 import com.diffplug.selfie.coroutines.expectSelfie
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
@@ -224,7 +224,15 @@ class SummaryServiceTest : DescribeSpec({
     }
 
     it("closed accounts excluded") {
-      val account1 = Account("test-account1", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2025, closedOn = APR / 2025)
+      val account1 =
+        Account(
+          "test-account1",
+          owners = setOf("john"),
+          path = listOf("internal"),
+          openedOn = MAR / 2025,
+          closedOn =
+            APR / 2025
+        )
       val account2 = Account("test-account2", owners = setOf("john"), path = listOf("internal"), openedOn = MAR / 2025)
 
       val path1 = listOf("john", "internal", "test-account1")

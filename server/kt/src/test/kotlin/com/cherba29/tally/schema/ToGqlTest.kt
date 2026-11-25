@@ -11,8 +11,8 @@ class ToGqlTest : DescribeSpec({
   describe("SummaryStatement.toGqlSummaryData") {
     it("empty") {
       val statement = SummaryStatement(
-        monthRange = AUG / 2026 .. AUG / 2026,
-        startBalance = Balance.confirmed(100, "2026-08-01"),
+        monthRange = AUG / 2026..AUG / 2026,
+        startBalance = Balance.confirmed(100, "2026-08-01")
       )
       statement.toGqlSummaryData("summary1") { treeNode, month -> false } shouldBe GqlSummaryData(
         statements = listOf(),
@@ -30,7 +30,7 @@ class ToGqlTest : DescribeSpec({
           totalTransfers = 0,
           unaccounted = 0,
           endBalance = null,
-          startBalance = GqlBalance(amount=100, date= LocalDate(2026, 8, 1), type="CONFIRMED", desc="")
+          startBalance = GqlBalance(amount = 100, date = LocalDate(2026, 8, 1), type = "CONFIRMED", desc = "")
         )
       )
     }

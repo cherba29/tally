@@ -1,12 +1,24 @@
 package com.cherba29.tally.core
 
-import kotlin.math.absoluteValue
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format.MonthNames.Companion.ENGLISH_ABBREVIATED
 import kotlinx.datetime.number
+import kotlin.math.absoluteValue
 
 enum class MonthName {
-  JAN, FEB, MAR, APR, MAY, JUN, JUL, AUG, SEP, OCT, NOV, DEC;
+  JAN,
+  FEB,
+  MAR,
+  APR,
+  MAY,
+  JUN,
+  JUL,
+  AUG,
+  SEP,
+  OCT,
+  NOV,
+  DEC;
+
   operator fun div(year: Int) = Month(year, this.ordinal)
 }
 
@@ -28,6 +40,7 @@ data class Month(val year: Int, val month: Int) : Comparable<Month> {
   operator fun inc(): Month = next(1)
 
   operator fun plus(value: Int): Month = next(value)
+
   operator fun minus(value: Int): Month = next(-value)
 
   fun previous(amount: Int = 1): Month = next(-amount)
@@ -64,8 +77,11 @@ data class Month(val year: Int, val month: Int) : Comparable<Month> {
     }
 
     fun fromDate(date: LocalDate): Month = Month(date.year, date.month.number - 1)
+
     fun min(vararg args: Month): Month = args.min()
+
     fun max(vararg args: Month): Month = args.max()
+
     // Don't use absolute Int MIN / MAX values to ovoid overflow.
     val MIN_VALUE = Month(Int.MIN_VALUE / 16, 0)
     val MAX_VALUE = Month(Int.MAX_VALUE / 16, 11)
@@ -86,78 +102,98 @@ abstract class MonthIterator : Iterator<Month> {
  * A progression of values of type `Mont`.
  */
 open class MonthProgression
-internal constructor
-  (
-  start: Month,
-  endInclusive: Month,
-  /**
-   * The step of the progression.
-   */
-  val step: Int
-) : Iterable<Month> {
-  init {
-    if (step == 0) throw kotlin.IllegalArgumentException("Step must be non-zero.")
-    if (step == Int.MIN_VALUE) throw kotlin.IllegalArgumentException("Step must be greater than Int.MIN_VALUE to avoid overflow on negation.")
-  }
-
-  /**
-   * The first element in the progression.
-   */
-  val first: Month = start
-
-  /**
-   * The last element in the progression.
-   */
-  val last: Month = getProgressionLastElement(start, endInclusive, step)
-
-  override fun iterator(): MonthIterator = MonthProgressionIterator(first, last, step)
-
-  infix fun step(step: Int): MonthProgression {
-    checkStepIsPositive(step > 0, step)
-    return fromClosedRange(first, last, if (this.step > 0) step else -step)
-  }
-
-  /**
-   * Checks if the progression is empty.
-   *
-   * Progression with a positive step is empty if its first element is greater than the last element.
-   * Progression with a negative step is empty if its first element is less than the last element.
-   */
-  open fun isEmpty(): Boolean = if (step > 0) first > last else first < last
-
-  override fun equals(other: Any?): Boolean =
-    other is MonthProgression && (isEmpty() && other.isEmpty() ||
-        first == other.first && last == other.last && step == other.step)
-
-  override fun hashCode(): Int =
-    if (isEmpty()) -1 else (31 * (31 * first.hashCode() + last.hashCode()) + step)
-
-  override fun toString(): String = if (step > 0) "$first..$last step $step" else "$first downTo $last step ${-step}"
-
-  companion object {
+  internal constructor(
+    start: Month,
+    endInclusive: Month,
     /**
-     * Creates IntProgression within the specified bounds of a closed range.
-     *
-     * The progression starts with the [rangeStart] value and goes toward the [rangeEnd] value not excluding it, with the specified [step].
-     * In order to go backwards the [step] must be negative.
-     *
-     * [step] must be greater than `Int.MIN_VALUE` and not equal to zero.
+     * The step of the progression.
      */
-    fun fromClosedRange(rangeStart: Month, rangeEnd: Month, step: Int): MonthProgression = MonthProgression(rangeStart, rangeEnd, step)
+    val step: Int
+  ) : Iterable<Month> {
+    init {
+      if (step == 0) throw kotlin.IllegalArgumentException("Step must be non-zero.")
+      if (step ==
+        Int.MIN_VALUE
+      ) {
+        throw kotlin.IllegalArgumentException("Step must be greater than Int.MIN_VALUE to avoid overflow on negation.")
+      }
+    }
 
-    private fun getProgressionLastElement(start: Month, end: Month, step: Int): Month = when {
-      step > 0 -> if (start >= end) end else end - differenceModulo(end, start, step)
-      step < 0 -> if (start <= end) end else end + differenceModulo(start, end, -step)
-      else -> throw IllegalArgumentException("Step is zero.")
+    /**
+     * The first element in the progression.
+     */
+    val first: Month = start
+
+    /**
+     * The last element in the progression.
+     */
+    val last: Month = getProgressionLastElement(start, endInclusive, step)
+
+    override fun iterator(): MonthIterator = MonthProgressionIterator(first, last, step)
+
+    infix fun step(step: Int): MonthProgression {
+      checkStepIsPositive(step > 0, step)
+      return fromClosedRange(first, last, if (this.step > 0) step else -step)
     }
-    private fun differenceModulo(a: Month, b: Month, c: Int): Int {
-      return (a - b) % c
-    }
-    private fun checkStepIsPositive(isPositive: Boolean, step: Number) {
-      if (!isPositive) throw IllegalArgumentException("Step must be positive, was: $step.")
+
+    /**
+     * Checks if the progression is empty.
+     *
+     * Progression with a positive step is empty if its first element is greater than the last element.
+     * Progression with a negative step is empty if its first element is less than the last element.
+     */
+    open fun isEmpty(): Boolean = if (step > 0) first > last else first < last
+
+    override fun equals(other: Any?): Boolean =
+      other is MonthProgression && (
+        isEmpty() && other.isEmpty() ||
+          first == other.first && last == other.last && step == other.step
+      )
+
+    override fun hashCode(): Int = if (isEmpty()) -1 else (31 * (31 * first.hashCode() + last.hashCode()) + step)
+
+    override fun toString(): String = if (step > 0) "$first..$last step $step" else "$first downTo $last step ${-step}"
+
+    companion object {
+      /**
+       * Creates IntProgression within the specified bounds of a closed range.
+       *
+       * The progression starts with the [rangeStart] value and goes toward the [rangeEnd] value not excluding it, with the specified [step].
+       * In order to go backwards the [step] must be negative.
+       *
+       * [step] must be greater than `Int.MIN_VALUE` and not equal to zero.
+       */
+      fun fromClosedRange(
+        rangeStart: Month,
+        rangeEnd: Month,
+        step: Int
+      ): MonthProgression = MonthProgression(rangeStart, rangeEnd, step)
+
+      private fun getProgressionLastElement(
+        start: Month,
+        end: Month,
+        step: Int
+      ): Month =
+        when {
+          step > 0 -> if (start >= end) end else end - differenceModulo(end, start, step)
+          step < 0 -> if (start <= end) end else end + differenceModulo(start, end, -step)
+          else -> throw IllegalArgumentException("Step is zero.")
+        }
+
+      private fun differenceModulo(
+        a: Month,
+        b: Month,
+        c: Int
+      ): Int = (a - b) % c
+
+      private fun checkStepIsPositive(
+        isPositive: Boolean,
+        step: Number
+      ) {
+        if (!isPositive) throw IllegalArgumentException("Step must be positive, was: $step.")
+      }
     }
   }
-}
 
 class MonthProgressionIterator(first: Month, last: Month, val step: Int) : MonthIterator() {
   private val finalElement: Month = last
@@ -171,8 +207,7 @@ class MonthProgressionIterator(first: Month, last: Month, val step: Int) : Month
     if (value == finalElement) {
       if (!hasNext) throw kotlin.NoSuchElementException()
       hasNext = false
-    }
-    else {
+    } else {
       next += step
     }
     return value
@@ -182,7 +217,10 @@ class MonthProgressionIterator(first: Month, last: Month, val step: Int) : Month
 /**
  * A range of values of type `Month`.
  */
-class MonthRange(start: Month, endInclusive: Month) : MonthProgression(start, endInclusive, 1), ClosedRange<Month>, OpenEndRange<Month> {
+class MonthRange(
+  start: Month,
+  endInclusive: Month
+) : MonthProgression(start, endInclusive, 1), ClosedRange<Month>, OpenEndRange<Month> {
   override val start: Month get() = first
   override val endInclusive: Month get() = last
 
@@ -202,11 +240,12 @@ class MonthRange(start: Month, endInclusive: Month) : MonthProgression(start, en
   val size: Int = (last - first + 1).absoluteValue
 
   override fun equals(other: Any?): Boolean =
-    other is MonthRange && (isEmpty() && other.isEmpty() ||
-        first == other.first && last == other.last)
+    other is MonthRange && (
+      isEmpty() && other.isEmpty() ||
+        first == other.first && last == other.last
+    )
 
-  override fun hashCode(): Int =
-    if (isEmpty()) -1 else 31 * start.hashCode() + endInclusive.hashCode()
+  override fun hashCode(): Int = if (isEmpty()) -1 else 31 * start.hashCode() + endInclusive.hashCode()
 
   override fun toString(): String = "$first..$last"
 
@@ -234,5 +273,4 @@ fun MonthRange?.reduceTo(other: MonthRange?): MonthRange? {
   return Month.max(first, other.first)..Month.min(last, other.last)
 }
 
-operator fun Month?.rangeTo(other: Month?) =
-  MonthRange( this ?: Month.MIN_VALUE,other ?: Month.MAX_VALUE)
+operator fun Month?.rangeTo(other: Month?) = MonthRange(this ?: Month.MIN_VALUE, other ?: Month.MAX_VALUE)

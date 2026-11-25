@@ -13,27 +13,20 @@ import kotlin.math.sign
 sealed class Statement(
   /** Period of time for the statement. */
   val monthRange: MonthRange,
-
   /** Recorded start balance for the statement. */
   val startBalance: Balance? = null,
-
   /** Recorded end balance for the statement. */
   val endBalance: Balance? = null,
-
   /** Total transaction inflows. */
   val inFlows: Long = 0,
-
   /** Total transaction outflows. */
   val outFlows: Long = 0,
-
   /** Amount transferred to other accounts by same owner. */
   val totalTransfers: Long = 0,
-
   /** Amount transferred to external entities. */
   val totalPayments: Long = 0,
-
   /** Amount transferred from external entities. */
-  val income: Long = 0,
+  val income: Long = 0
 ) {
   /** Total known change based on transactions. */
   val addSub: Long = inFlows + outFlows
@@ -71,24 +64,23 @@ sealed class Statement(
   /** Marker if there has been any activity of this month and account. */
   val isEmpty: Boolean =
     startBalance == null && endBalance == null && totalTransfers == 0L && income == 0L &&
-        inFlows == 0L && outFlows == 0L && totalPayments == 0L
+      inFlows == 0L && outFlows == 0L && totalPayments == 0L
 
-  override fun toString(): String {
-    return "months=$monthRange startBalance=$startBalance endBalance=$endBalance inFlows=$inFlows outFlows=$outFlows"
-  }
+  override fun toString(): String =
+    "months=$monthRange startBalance=$startBalance endBalance=$endBalance inFlows=$inFlows outFlows=$outFlows"
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true
     if (other !is Statement) return false
 
-    return monthRange == other.monthRange
-        && startBalance == other.startBalance
-        && endBalance == other.endBalance
-        && inFlows == other.inFlows
-        && outFlows == other.outFlows
-        && totalPayments == other.totalPayments
-        && totalTransfers == other.totalTransfers
-        && income == other.income
+    return monthRange == other.monthRange &&
+      startBalance == other.startBalance &&
+      endBalance == other.endBalance &&
+      inFlows == other.inFlows &&
+      outFlows == other.outFlows &&
+      totalPayments == other.totalPayments &&
+      totalTransfers == other.totalTransfers &&
+      income == other.income
   }
 
   override fun hashCode(): Int {

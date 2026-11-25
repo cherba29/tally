@@ -12,9 +12,19 @@ class PrefixTree<P>(
 ) {
   private val children = mutableMapOf<String, PrefixTree<P>>()
 
-  private fun insert(name: String, data: P?, rank: Int = Int.MAX_VALUE) = children.computeIfAbsent(name) { PrefixTree(data, rank) }
+  private fun insert(
+    name: String,
+    data: P?,
+    rank: Int = Int.MAX_VALUE
+  ) = children.computeIfAbsent(name) {
+    PrefixTree(data, rank)
+  }
 
-  fun insert(path: List<String>, data: P?, rank: Int = Int.MAX_VALUE): PrefixTree<P> {
+  fun insert(
+    path: List<String>,
+    data: P?,
+    rank: Int = Int.MAX_VALUE
+  ): PrefixTree<P> {
     if (path.isNotEmpty()) {
       var node = this
       for (part in path.subList(0, path.size - 1)) {
@@ -64,9 +74,10 @@ class PrefixTree<P>(
   /**
    * Returns list of child nodes sorted by rank and then by name.
    */
-  val sortedEntries get() = children.entries.map {
-    Pair(it.key, it.value)
-  }.sortedWith(
-    compareBy<Pair<String, PrefixTree<P>>> { it.second.rank }.thenBy { it.first }
-  )
+  val sortedEntries get() = children.entries
+    .map {
+      Pair(it.key, it.value)
+    }.sortedWith(
+      compareBy<Pair<String, PrefixTree<P>>> { it.second.rank }.thenBy { it.first }
+    )
 }

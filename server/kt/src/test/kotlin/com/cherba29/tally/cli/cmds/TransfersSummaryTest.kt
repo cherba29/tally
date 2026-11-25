@@ -93,14 +93,18 @@ class TransfersSummaryTest : DescribeSpec({
 
     it("fails when tally path does not exist") {
       val command = TransfersSummary()
-      val result = command.test(listOf("test-account", "--start-month=Mar2026", "--end-month=Mar2026", "--tally-path=/path/does/not/exist"))
+      val result = command.test(
+        listOf("test-account", "--start-month=Mar2026", "--end-month=Mar2026", "--tally-path=/path/does/not/exist")
+      )
       result.stderr shouldContain "path \"/path/does/not/exist\" does not exist"
       result.statusCode shouldBe 1
     }
 
     it("fails on invalid width") {
       val command = TransfersSummary()
-      val result = command.test("test-account --start-month=Mar2026 --end-month=Mar2026 --tally-path=/tmp --width=not-a-number")
+      val result = command.test(
+        "test-account --start-month=Mar2026 --end-month=Mar2026 --tally-path=/tmp --width=not-a-number"
+      )
       result.stderr shouldContain "invalid value for --width"
       result.statusCode shouldBe 1
     }
@@ -119,7 +123,14 @@ class TransfersSummaryTest : DescribeSpec({
       )
       val command = TransfersSummary()
       val error = shouldThrow<NotFoundException> {
-        command.parse(listOf("someone/external/non-existent", "--start-month=Mar2019", "--end-month=Mar2019", "--tally-path=$tallyPath"))
+        command.parse(
+          listOf(
+            "someone/external/non-existent",
+            "--start-month=Mar2019",
+            "--end-month=Mar2019",
+            "--tally-path=$tallyPath"
+          )
+        )
       }
       error.message shouldBe "'someone/external/non-existent' not found."
     }
@@ -193,11 +204,14 @@ class TransfersSummaryTest : DescribeSpec({
       lines.size shouldBe 3
 
       // Header row
-      lines[0] shouldBe " Idx │   Month │ Internal │ External │ Change │ Tot Int │ Int % │ Int A % │ Tot Ext │ Ext % │ Ext A % │ Total │ Tot A % │ Unaccounted "
+      lines[0] shouldBe
+        " Idx │   Month │ Internal │ External │ Change │ Tot Int │ Int % │ Int A % │ Tot Ext │ Ext % │ Ext A % │ Total │ Tot A % │ Unaccounted "
       // Border divider
-      lines[1] shouldBe "─────┼─────────┼──────────┼──────────┼────────┼─────────┼───────┼─────────┼─────────┼───────┼─────────┼───────┼─────────┼─────────────"
+      lines[1] shouldBe
+        "─────┼─────────┼──────────┼──────────┼────────┼─────────┼───────┼─────────┼─────────┼───────┼─────────┼───────┼─────────┼─────────────"
       // Data row
-      lines[2] shouldBe "   1 │ Mar2019 │     0.00 │     0.00 │   0.00 │    0.00 │   0.0 │     0.0 │    0.00 │   0.0 │     0.0 │  0.00 │     0.0 │      100.00 "
+      lines[2] shouldBe
+        "   1 │ Mar2019 │     0.00 │     0.00 │   0.00 │    0.00 │   0.0 │     0.0 │    0.00 │   0.0 │     0.0 │  0.00 │     0.0 │      100.00 "
     }
 
     it("successfully for multi-month with internal and external transfers") {
@@ -269,19 +283,24 @@ class TransfersSummaryTest : DescribeSpec({
       lines.size shouldBe 7 // Header, divider, and 3 data rows separated by dividers
 
       // Header row
-      lines[0] shouldBe " Idx │   Month │ Internal │ External │  Change │ Tot Int │ Int % │ Int A % │ Tot Ext │ Ext % │  Ext A % │   Total │   Tot A % │ Unaccounted "
-      lines[1] shouldBe "─────┼─────────┼──────────┼──────────┼─────────┼─────────┼───────┼─────────┼─────────┼───────┼──────────┼─────────┼───────────┼─────────────"
+      lines[0] shouldBe
+        " Idx │   Month │ Internal │ External │  Change │ Tot Int │ Int % │ Int A % │ Tot Ext │ Ext % │  Ext A % │   Total │   Tot A % │ Unaccounted "
+      lines[1] shouldBe
+        "─────┼─────────┼──────────┼──────────┼─────────┼─────────┼───────┼─────────┼─────────┼───────┼──────────┼─────────┼───────────┼─────────────"
 
       // Row 1 (Mar2020)
-      lines[2] shouldBe "   1 │ Mar2020 │     0.00 │   -75.00 │  -75.00 │ -250.00 │  66.7 │ 1039.06 │ -125.00 │  33.3 │   6300.0 │ -375.00 │ 277991.44 │     1100.00 "
+      lines[2] shouldBe
+        "   1 │ Mar2020 │     0.00 │   -75.00 │  -75.00 │ -250.00 │  66.7 │ 1039.06 │ -125.00 │  33.3 │   6300.0 │ -375.00 │ 277991.44 │     1100.00 "
       lines[3] shouldBe lines[1]
 
       // Row 2 (Feb2020)
-      lines[4] shouldBe "   2 │ Feb2020 │  -150.00 │   -50.00 │ -200.00 │ -250.00 │  83.3 │  791.61 │  -50.00 │  16.7 │ 409500.0 │ -300.00 │  5.3144E7 │     1000.00 "
+      lines[4] shouldBe
+        "   2 │ Feb2020 │  -150.00 │   -50.00 │ -200.00 │ -250.00 │  83.3 │  791.61 │  -50.00 │  16.7 │ 409500.0 │ -300.00 │  5.3144E7 │     1000.00 "
       lines[5] shouldBe lines[1]
 
       // Row 3 (Jan2020)
-      lines[6] shouldBe "   3 │ Jan2020 │  -100.00 │     0.00 │ -100.00 │ -100.00 │ 100.0 │     0.0 │    0.00 │  -0.0 │      0.0 │ -100.00 │       0.0 │     1000.00 "
+      lines[6] shouldBe
+        "   3 │ Jan2020 │  -100.00 │     0.00 │ -100.00 │ -100.00 │ 100.0 │     0.0 │    0.00 │  -0.0 │      0.0 │ -100.00 │       0.0 │     1000.00 "
     }
 
     it("successfully for summary account path") {
@@ -353,19 +372,24 @@ class TransfersSummaryTest : DescribeSpec({
       lines.size shouldBe 7
 
       // Header row
-      lines[0] shouldBe " Idx │   Month │ Internal │ External │ Change │ Tot Int │ Int % │  Int A % │ Tot Ext │ Ext % │ Ext A % │   Total │  Tot A % │ Unaccounted "
-      lines[1] shouldBe "─────┼─────────┼──────────┼──────────┼────────┼─────────┼───────┼──────────┼─────────┼───────┼─────────┼─────────┼──────────┼─────────────"
+      lines[0] shouldBe
+        " Idx │   Month │ Internal │ External │ Change │ Tot Int │ Int % │  Int A % │ Tot Ext │ Ext % │ Ext A % │   Total │  Tot A % │ Unaccounted "
+      lines[1] shouldBe
+        "─────┼─────────┼──────────┼──────────┼────────┼─────────┼───────┼──────────┼─────────┼───────┼─────────┼─────────┼──────────┼─────────────"
 
       // Row 1 (Mar2020) - internal transfers net to 0.00
-      lines[2] shouldBe "   1 │ Mar2020 │     0.00 │   -75.00 │ -75.00 │    0.00 │  -0.0 │ 24314.06 │ -125.00 │ 100.0 │     0.0 │ -125.00 │ 24314.06 │     1600.00 "
+      lines[2] shouldBe
+        "   1 │ Mar2020 │     0.00 │   -75.00 │ -75.00 │    0.00 │  -0.0 │ 24314.06 │ -125.00 │ 100.0 │     0.0 │ -125.00 │ 24314.06 │     1600.00 "
       lines[3] shouldBe lines[1]
 
       // Row 2 (Feb2020)
-      lines[4] shouldBe "   2 │ Feb2020 │     0.00 │   -50.00 │ -50.00 │    0.00 │  -0.0 │      0.0 │  -50.00 │ 100.0 │     0.0 │  -50.00 │      0.0 │     1500.00 "
+      lines[4] shouldBe
+        "   2 │ Feb2020 │     0.00 │   -50.00 │ -50.00 │    0.00 │  -0.0 │      0.0 │  -50.00 │ 100.0 │     0.0 │  -50.00 │      0.0 │     1500.00 "
       lines[5] shouldBe lines[1]
 
       // Row 3 (Jan2020)
-      lines[6] shouldBe "   3 │ Jan2020 │     0.00 │     0.00 │   0.00 │    0.00 │   0.0 │      0.0 │    0.00 │   0.0 │     0.0 │    0.00 │      0.0 │     1500.00 "
+      lines[6] shouldBe
+        "   3 │ Jan2020 │     0.00 │     0.00 │   0.00 │    0.00 │   0.0 │      0.0 │    0.00 │   0.0 │     0.0 │    0.00 │      0.0 │     1500.00 "
     }
 
     it("successfully filters sub-range of months") {
@@ -490,9 +514,20 @@ class TransfersSummaryTest : DescribeSpec({
 
       // Verify 14 column headers in exact expected order
       val expectedHeaders = listOf(
-        "Idx", "Month", "Internal", "External", "Change",
-        "Tot Int", "Int %", "Int A %", "Tot Ext", "Ext %",
-        "Ext A %", "Total", "Tot A %", "Unaccounted"
+        "Idx",
+        "Month",
+        "Internal",
+        "External",
+        "Change",
+        "Tot Int",
+        "Int %",
+        "Int A %",
+        "Tot Ext",
+        "Ext %",
+        "Ext A %",
+        "Total",
+        "Tot A %",
+        "Unaccounted"
       )
       val actualHeaders = lines[0].split("│").map { it.trim() }
       actualHeaders shouldBe expectedHeaders
@@ -521,7 +556,12 @@ class TransfersSummaryTest : DescribeSpec({
 
       val command = TransfersSummary()
       val result = command.test(
-        listOf("someone/external/test-account", "--start-month=Mar2019", "--end-month=Mar2019", "--tally-path=$tallyPath"),
+        listOf(
+          "someone/external/test-account",
+          "--start-month=Mar2019",
+          "--end-month=Mar2019",
+          "--tally-path=$tallyPath"
+        ),
         width = 150,
         outputInteractive = true,
         ansiLevel = AnsiLevel.NONE

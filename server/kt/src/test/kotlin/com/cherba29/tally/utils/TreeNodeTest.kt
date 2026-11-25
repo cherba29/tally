@@ -619,14 +619,14 @@ class TreeNodeTest : DescribeSpec({
         tree[listOf("branch2")]!!,
         tree[listOf("child3")]!!,
         tree[listOf("branch1", "child1")]!!,
-        tree[listOf("branch2", "child2")]!!,
+        tree[listOf("branch2", "child2")]!!
       )
       unsortedList.sorted() shouldBe listOf(
         tree[listOf("branch1")]!!,
         tree[listOf("branch1", "child1")]!!,
         tree[listOf("branch2")]!!,
         tree[listOf("branch2", "child2")]!!,
-        tree[listOf("child3")]!!,
+        tree[listOf("child3")]!!
       )
     }
   }

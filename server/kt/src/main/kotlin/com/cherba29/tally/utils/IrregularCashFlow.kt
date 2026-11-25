@@ -19,13 +19,18 @@ class IrregularCashFlow {
   var total: Long = 0
     private set
 
-  fun add(contribution: Long, gain: Long) {
+  fun add(
+    contribution: Long,
+    gain: Long
+  ) {
     contributions.add(contribution)
     gains.add(gain)
     totalContributions += contribution
     totalGains += gain
     val totalWithNewContribution = total + contribution
-    percentChangeOnContributions.add(1.0 + if (totalWithNewContribution == 0L) 0.0 else gain.toDouble() / totalWithNewContribution)
+    percentChangeOnContributions.add(
+      1.0 + if (totalWithNewContribution == 0L) 0.0 else gain.toDouble() / totalWithNewContribution
+    )
     val totalWithNewGain = total + gain
     percentChangeOnGains.add(1.0 + if (totalWithNewGain == 0L) 0.0 else contribution.toDouble() / totalWithNewGain)
     percentChange.add(1.0 + if (total == 0L) 0.0 else (gain + contribution).toDouble() / total)
@@ -33,7 +38,9 @@ class IrregularCashFlow {
   }
 
   fun effectiveRateOfReturnOnContributions() = effectiveRateOfReturn(percentChangeOnContributions)
+
   fun effectiveRateOfReturnOnGains() = effectiveRateOfReturn(percentChangeOnGains)
+
   fun effectiveRateOfReturn() = effectiveRateOfReturn(percentChange)
 
   /**
@@ -82,11 +89,12 @@ class IrregularCashFlow {
   }
 
   companion object {
-    fun effectiveRateOfReturn(rates: List<Double>): Double
-      = if (rates.size < 2) 0.0
-        else {
-          val product = rates.reduce(Double::times)
-          product.sign * (product.absoluteValue.pow(12.0 / (rates.size - 1)) - 1)
-        }
+    fun effectiveRateOfReturn(rates: List<Double>): Double =
+      if (rates.size < 2) {
+        0.0
+      } else {
+        val product = rates.reduce(Double::times)
+        product.sign * (product.absoluteValue.pow(12.0 / (rates.size - 1)) - 1)
+      }
   }
 }

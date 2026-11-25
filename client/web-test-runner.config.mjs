@@ -1,3 +1,4 @@
+import process from 'node:process';
 import { esbuildPlugin } from '@web/dev-server-esbuild';
 import { puppeteerLauncher } from '@web/test-runner-puppeteer';
 

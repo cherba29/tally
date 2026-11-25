@@ -1,15 +1,15 @@
 package com.cherba29.tally.cli.cmds
 
 import com.cherba29.tally.core.Month
-import com.jsoizo.kotlincsv.csvReader
-import com.jsoizo.kotlincsv.reader.read
-import com.jsoizo.kotlincsv.reader.withHeader
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
 import com.github.ajalt.clikt.parameters.types.path
+import com.jsoizo.kotlincsv.csvReader
+import com.jsoizo.kotlincsv.reader.read
+import com.jsoizo.kotlincsv.reader.withHeader
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.format.char
 import kotlinx.datetime.number
@@ -20,7 +20,8 @@ class CsvToTransfers : CliktCommand("csv-to-transfers") {
   override fun help(context: Context) = "Convert give csv file to list of transfers"
 
   val csvPath: Path by option("--csv-file", help = "Path to the csv file with transactions")
-    .path(mustExist = true, canBeDir = false, mustBeReadable = true).required()
+    .path(mustExist = true, canBeDir = false, mustBeReadable = true)
+    .required()
 
   override fun run() {
     echo("Converting csv '$csvPath' to transfers")
@@ -66,9 +67,13 @@ class CsvToTransfers : CliktCommand("csv-to-transfers") {
 
     for ((i, date) in dates.withIndex()) {
       val description = descriptions[i]
-      val amount = amountFactor * (debits[i].asAmount() ?: (credits[i].asAmount()) ?:
-        throw IllegalArgumentException("'Credit' or 'Debit' field is not set on row $i for date $date"
-        + " debit='${debits[i]}' credit='${credits[i]}'"))
+      val amount = amountFactor * (
+        debits[i].asAmount() ?: (credits[i].asAmount())
+          ?: throw IllegalArgumentException(
+            "'Credit' or 'Debit' field is not set on row $i for date $date" +
+              " debit='${debits[i]}' credit='${credits[i]}'"
+          )
+      )
 
       if (amount < 0 && description.contains("payment", ignoreCase = true)) {
         continue
@@ -120,6 +125,7 @@ class CsvToTransfers : CliktCommand("csv-to-transfers") {
     }
 
     fun String.asAmount() = this.replace(Regex("[$,\\s]+"), "").toFloatOrNull()
+
     data class CsvMetadata(
       val name: String,
       val fields: Set<String>,
@@ -128,8 +134,9 @@ class CsvToTransfers : CliktCommand("csv-to-transfers") {
       val debitField: String,
       val creditField: String,
       val negated: Boolean,
-      val amountFormat: String,
+      val amountFormat: String
     )
+
     private val creditCardFields = listOf(
       CsvMetadata(
         name = "costco",
@@ -139,7 +146,7 @@ class CsvToTransfers : CliktCommand("csv-to-transfers") {
         debitField = "Debit",
         creditField = "Credit",
         negated = false,
-        amountFormat = "%7.2f",
+        amountFormat = "%7.2f"
       ),
       CsvMetadata(
         name = "citi-double",
@@ -149,19 +156,20 @@ class CsvToTransfers : CliktCommand("csv-to-transfers") {
         debitField = "Debit",
         creditField = "Credit",
         negated = false,
-        amountFormat = "%7.2f",
+        amountFormat = "%7.2f"
       ),
       CsvMetadata(
         name = "chase_amazon",
-          setOf("Transaction Date","Post Date","Description","Category","Type","Amount","Memo"),
+        setOf("Transaction Date", "Post Date", "Description", "Category", "Type", "Amount", "Memo"),
         dateField = "Transaction Date",
         descriptionField = "Description",
         debitField = "Amount",
         creditField = "Amount",
         negated = true,
-        amountFormat = "%7.2f",
+        amountFormat = "%7.2f"
       )
     )
+
     fun getCsvSource(header: Set<String>): CsvMetadata? {
       for (metadata in creditCardFields) {
         if (metadata.fields == header) return metadata

@@ -2,10 +2,10 @@ package com.cherba29.tally.data.builder
 
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.MonthName.JUL
-import com.cherba29.tally.utils.TreeNode
-import com.cherba29.tally.utils.root
 import com.cherba29.tally.core.Transaction
 import com.cherba29.tally.data.Profile
+import com.cherba29.tally.utils.TreeNode
+import com.cherba29.tally.utils.root
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.LocalDate
@@ -109,7 +109,7 @@ class TransactionStatementBuilderTest : DescribeSpec({
           balance = -testTransferBalance,
           description = "test transfer 1->2",
           type = Transaction.Type.TRANSFER
-        ),
+        )
       )
       transactionStatement.balanceFromStart shouldBe listOf(1000, 900)
     }

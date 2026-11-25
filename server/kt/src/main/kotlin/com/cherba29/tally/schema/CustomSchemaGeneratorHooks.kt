@@ -4,33 +4,37 @@ import com.cherba29.tally.core.Month
 import com.expediagroup.graphql.generator.hooks.FlowSubscriptionSchemaGeneratorHooks
 import graphql.schema.GraphQLScalarType
 import graphql.schema.GraphQLType
+import kotlinx.datetime.LocalDate
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
-import kotlinx.datetime.LocalDate
 
-val graphqlLongType: GraphQLScalarType? = GraphQLScalarType.newScalar()
+val graphqlLongType: GraphQLScalarType? = GraphQLScalarType
+  .newScalar()
   .name("Long")
   .description("Long 64-bit integer.")
   .coercing(LongCoercing)
   .build()
 
-val graphqlLocalDateType: GraphQLScalarType? = GraphQLScalarType.newScalar()
+val graphqlLocalDateType: GraphQLScalarType? = GraphQLScalarType
+  .newScalar()
   .name("Date")
   .description("Date representation in YYYY-MM-DD format.")
   .coercing(LocalDateCoercing)
   .build()
 
-val graphqlMonthType: GraphQLScalarType? = GraphQLScalarType.newScalar()
+val graphqlMonthType: GraphQLScalarType? = GraphQLScalarType
+  .newScalar()
   .name("GqlMonth")
   .description("Month representation in XxxYYYY format.")
   .coercing(MonthCoercing)
   .build()
 
 class CustomSchemaGeneratorHooks : FlowSubscriptionSchemaGeneratorHooks() {
-  override fun willGenerateGraphQLType(type: KType): GraphQLType? = when (type.classifier as? KClass<*>) {
-    LocalDate::class -> graphqlLocalDateType
-    Long::class -> graphqlLongType
-    Month::class -> graphqlMonthType
-    else -> super.willGenerateGraphQLType(type)
-  }
+  override fun willGenerateGraphQLType(type: KType): GraphQLType? =
+    when (type.classifier as? KClass<*>) {
+      LocalDate::class -> graphqlLocalDateType
+      Long::class -> graphqlLongType
+      Month::class -> graphqlMonthType
+      else -> super.willGenerateGraphQLType(type)
+    }
 }

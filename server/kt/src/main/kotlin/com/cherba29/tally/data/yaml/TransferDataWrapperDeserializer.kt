@@ -8,8 +8,11 @@ import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.JsonNode
 
 class TransferDataWrapperDeserializer : JsonDeserializer<TransferDataWrapper>() {
-  override fun deserialize(p: JsonParser, ctxt: DeserializationContext): TransferDataWrapper {
-    return if (p.isExpectedStartArrayToken) {
+  override fun deserialize(
+    p: JsonParser,
+    ctxt: DeserializationContext
+  ): TransferDataWrapper =
+    if (p.isExpectedStartArrayToken) {
       TransferDataWrapper(
         p.codec.readValue(p, transfersAsList)
       )
@@ -24,7 +27,6 @@ class TransferDataWrapperDeserializer : JsonDeserializer<TransferDataWrapper>() 
       val node: JsonNode = p.codec.readTree(p)
       throw IllegalArgumentException("Expecting an object or array but got $node")
     }
-  }
 
   companion object {
     private val transfersAsMap = object : TypeReference<Map<String, List<TransferYamlData>?>>() {}

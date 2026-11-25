@@ -1,8 +1,8 @@
 package com.cherba29.tally.data
 
 import com.cherba29.tally.core.MonthName.MAR
-import com.cherba29.tally.utils.root
 import com.cherba29.tally.statement.TransactionStatement
+import com.cherba29.tally.utils.root
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.engine.spec.tempdir

@@ -1,8 +1,8 @@
 package com.cherba29.tally.cli.cmds
 
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.data.Loader
 import com.cherba29.tally.core.Transaction
+import com.cherba29.tally.data.Loader
 import com.cherba29.tally.statement.TransactionStatement
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
@@ -22,26 +22,26 @@ class Transactions : CliktCommand() {
   val account by argument(help = "Account name").optional()
   val startMonth by option(
     "--start-month",
-    help="Inclusive start month, eg Apr2026"
+    help = "Inclusive start month, eg Apr2026"
   ).convert { Month.fromString(it) }
   val endMonth by option(
     "--end-month",
-    help="Inclusive end month, eg May2026"
+    help = "Inclusive end month, eg May2026"
   ).convert { Month.fromString(it) }
   val owner: String? by option(
     "--owner",
-    help="Owner of the account"
+    help = "Owner of the account"
   )
   val limit: Int by option(
     "--limit",
-    help="Number of transactions to list"
+    help = "Number of transactions to list"
   ).int().default(20)
 
   override fun run() {
     val budget = Loader.loadFrom(tallyPath)
     val entries = mutableMapOf<String, MutableList<Transaction>>()
     for ((treeNode, monthTransactionStatements) in budget.nodeToStatement) {
-      if (treeNode.children.isNotEmpty()) continue  // Only leaf nodes get processed.
+      if (treeNode.children.isNotEmpty()) continue // Only leaf nodes get processed.
       if (owner != null && owner != treeNode.path.first()) {
         continue
       }
@@ -64,11 +64,17 @@ class Transactions : CliktCommand() {
       }
     }
     for (accountEntries in entries.values) {
-      accountEntries.sortWith(Comparator { a, b ->
-        if (a.balance.date == b.balance.date) {
-          abs(a.balance.amount).compareTo(abs(b.balance.amount))
-        } else if (a.balance.date < b.balance.date) -1 else 1
-      })
+      accountEntries.sortWith(
+        Comparator { a, b ->
+          if (a.balance.date == b.balance.date) {
+            abs(a.balance.amount).compareTo(abs(b.balance.amount))
+          } else if (a.balance.date < b.balance.date) {
+            -1
+          } else {
+            1
+          }
+        }
+      )
     }
     echo("Date,Amount,From,To,Description")
     for ((accountName, accountEntries) in entries) {

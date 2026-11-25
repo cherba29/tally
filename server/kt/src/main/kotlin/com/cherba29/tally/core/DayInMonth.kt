@@ -1,19 +1,22 @@
 package com.cherba29.tally.core
 
-sealed interface DayInMonth : Comparable<DayInMonth>  {
+sealed interface DayInMonth : Comparable<DayInMonth> {
   enum class Relative {
     FIRST_OF_MONTH,
     LAST_OF_MONTH
   }
 
-  @JvmInline value class AbsoluteDay(val value: Int): DayInMonth
-  @JvmInline value class RelativeDay(val value: Relative): DayInMonth
-  class Unknown: DayInMonth {
+  @JvmInline value class AbsoluteDay(val value: Int) : DayInMonth
+
+  @JvmInline value class RelativeDay(val value: Relative) : DayInMonth
+
+  class Unknown : DayInMonth {
     override fun equals(other: Any?): Boolean {
       if (this === other) return true
       if (other !is Unknown) return false
       return true
     }
+
     override fun hashCode(): Int = javaClass.hashCode()
   }
 

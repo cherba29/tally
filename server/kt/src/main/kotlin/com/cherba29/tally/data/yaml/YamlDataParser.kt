@@ -9,8 +9,8 @@ import com.fasterxml.jackson.databind.module.SimpleModule
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.nio.file.Path
 import kotlinx.datetime.LocalDate
+import java.nio.file.Path
 
 class YamlDataParser {
   private val mapper = ObjectMapper(YAMLFactory()).registerKotlinModule()
@@ -25,7 +25,10 @@ class YamlDataParser {
     mapper.addHandler(problemHandler)
   }
 
-  fun parseContent(content: String, relativeFilePath: Path): YamlData {
+  fun parseContent(
+    content: String,
+    relativeFilePath: Path
+  ): YamlData {
     val result = try {
       mapper.readValue(content, YamlData::class.java)
     } catch (e: JsonProcessingException) {
@@ -77,6 +80,7 @@ class YamlDataParser {
     }
     return result
   }
+
   companion object {
     private val logger = KotlinLogging.logger {}
   }

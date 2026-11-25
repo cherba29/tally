@@ -11,7 +11,7 @@ describe('SummaryTable component', () => {
 
   it('renders with default property values', async () => {
     const onCellClick = (e: CustomEvent) => { console.log(e); };
-    const months: String[] = [];
+    const months: string[] = [];
     const rows: GqlTableRow[] = [];
 
     const element = await fixture<SummaryTable>(
@@ -39,7 +39,7 @@ describe('SummaryTable component', () => {
 
   it('renders over multiple months', async () => {
     const onCellClick = (e: CustomEvent) => { console.log(e); };
-    const months: String[] = ['Aug2026', 'Jul2026'];
+    const months: string[] = ['Aug2026', 'Jul2026'];
     const rows: GqlTableRow[] = [];
 
     const element = await fixture<SummaryTable>(
@@ -80,7 +80,7 @@ describe('SummaryTable component', () => {
   });
 
   it('renders over multiple months and rows', async () => {
-    const months: String[] = ['Aug2026', 'Jul2026'];
+    const months: string[] = ['Aug2026', 'Jul2026'];
     const rows: GqlTableRow[] = [
       {
         account: {
@@ -125,6 +125,7 @@ describe('SummaryTable component', () => {
         }],
         id: 'internal',
         indent: 0,
+        isInactive: false,
         isNormal: true,
         isSpace: false,
         isTotal: true,
@@ -173,6 +174,7 @@ describe('SummaryTable component', () => {
         }],
         id: 'internal/test-account1',
         indent: 0,
+        isInactive: false,
         isNormal: true,
         isSpace: false,
         isTotal: false,
@@ -371,7 +373,7 @@ describe('SummaryTable component', () => {
             isCovered: false,
             isProjectedCovered: true,
             hasProjectedTransfer: true,
-            percentChange: undefined,
+            percentChange: undefined as unknown as number,
             annualizedPercentChange: 0,
             unaccounted: 0,
             balanced: true,

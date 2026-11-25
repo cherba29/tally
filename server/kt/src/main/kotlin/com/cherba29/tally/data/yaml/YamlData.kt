@@ -11,7 +11,7 @@ data class BalanceYamlData(
   val date: LocalDate? = null,
   val camt: Double? = null,
   val pamt: Double? = null,
-  val desc: String? = null,
+  val desc: String? = null
 )
 
 data class TransferYamlData(
@@ -20,7 +20,7 @@ data class TransferYamlData(
   val camt: Double? = null,
   val pamt: Double? = null,
   val desc: String? = null,
-  val tags: List<String>? = null,
+  val tags: List<String>? = null
 )
 
 @JsonIgnoreProperties(value = [])
@@ -44,5 +44,5 @@ data class YamlData(
   val pswd: String? = null,
   val balances: List<BalanceYamlData>? = null,
   @param:JsonProperty("transfers_to")
-  val transfersTo: Map<String, TransferDataWrapper?>? = null,
+  val transfersTo: Map<String, TransferDataWrapper?>? = null
 )

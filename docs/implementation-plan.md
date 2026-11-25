@@ -19,9 +19,11 @@ Low-risk cleanup that reduces noise, removes dead code, and establishes automate
 - [x] Replaced the placeholder default `path: '$TALLY_FILES:123'` in [`server/kt/src/main/resources/application.yaml`](../server/kt/src/main/resources/application.yaml) with optional `$?TALLY_FILES` + `$?TALLY_PATH` and `resolveTallyDataPath()` in [`Application.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/Application.kt) (falls back to `./sample-data` if present, otherwise fails with a clear configuration message).
 - [x] Updated CLI documentation in [`README.md`](../README.md) and [`server/kt/README.md`](../server/kt/README.md), and added unit tests covering primary, fallback, default, and error cases.
 
-### 1.3 Enforce Static Checks in CI
-- Fix existing `tsc --noEmit` errors in `client/` (e.g., `@esm-bundle/chai` vs. `@types/chai` type conflicts) and `pnpm lint` findings.
-- Run `tsc --noEmit`, `pnpm lint`, and `./gradlew ktlintCheck` in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) so formatting and type regressions are caught automatically on every PR.
+### 1.3 Enforce Static Checks in CI — Done
+- [x] Fixed client `tsc --noEmit` errors (enabled `skipLibCheck` in [`client/tsconfig.json`](../client/tsconfig.json) for duplicate transitive `@types/chai`, moved `errorPolicy: 'all'` to per-query options in [`client/src/api.ts`](../client/src/api.ts), and fixed strict test types in `summary-table.test.ts` and `tally-app.test.ts`) and added `"typecheck"` script to [`client/package.json`](../client/package.json).
+- [x] Fixed all client `pnpm lint` findings (`prefer-const`, explicit D3 types in [`transfers-summary-tooltip.ts`](../client/src/components/transfers-summary-tooltip.ts), `node:process` import in [`web-test-runner.config.mjs`](../client/web-test-runner.config.mjs), `string[]` wrapper types, and Chai expression override in [`client/eslint.config.mjs`](../client/eslint.config.mjs)).
+- [x] Formatted Kotlin sources with `./gradlew ktlintFormat`, renamed `toSnapshot.kt`/`toObjectNode.kt` to PascalCase (`ToSnapshot.kt`/`ToObjectNode.kt`), and resolved remaining manual `ktlintCheck` violations (`ToGql.kt`, `ApplicationTest.kt`, `BudgetTest.kt`).
+- [x] Wired `pnpm typecheck`, `pnpm lint`, and `./gradlew ktlintCheck` into [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
 
 ### 1.4 Small Reliability & Hygiene Fixes
 - In [`Application.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/Application.kt), return `HttpStatusCode.InternalServerError` (`500`) instead of `400 Bad Request` for unhandled exceptions in `StatusPages`.

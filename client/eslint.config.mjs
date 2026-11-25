@@ -14,6 +14,8 @@ export default defineConfig([
       "src/gql_types.ts",
     ],
   },
+  eslint.configs.recommended,
+  tseslint.configs.recommended,
   {
     rules: {
       // Note: you must disable the base rule as it can report incorrect errors
@@ -29,6 +31,10 @@ export default defineConfig([
       ],
     },
   },
-  eslint.configs.recommended,
-  tseslint.configs.recommended,
+  {
+    files: ["**/*.test.ts", "**/*.spec.ts"],
+    rules: {
+      "@typescript-eslint/no-unused-expressions": "off",
+    },
+  },
 ]);

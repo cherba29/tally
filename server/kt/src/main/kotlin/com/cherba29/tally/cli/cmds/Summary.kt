@@ -21,11 +21,11 @@ class Summary : CliktCommand() {
   val account by argument(help = "Account name")
   val startMonth by option(
     "--start-month",
-    help="Inclusive start month, eg Apr2026"
+    help = "Inclusive start month, eg Apr2026"
   ).convert { Month.fromString(it) }.required()
   val endMonth by option(
     "--end-month",
-    help="Inclusive end month, eg May2026"
+    help = "Inclusive end month, eg May2026"
   ).convert { Month.fromString(it) }.required()
 
   override fun run() {
@@ -37,7 +37,10 @@ class Summary : CliktCommand() {
 
     val monthRange = startMonth..endMonth
 
-    val summaryStatements = payload.nodeToStatement[summaryNode]!!.filter { it.key in monthRange }.mapValues { it.value as SummaryStatement }
+    val summaryStatements = payload.nodeToStatement[summaryNode]!!
+      .filter {
+        it.key in monthRange
+      }.mapValues { it.value as SummaryStatement }
     if (summaryStatements.isEmpty()) {
       throw NotFoundException(
         "Summary '$account' for months [$startMonth, $endMonth] not found."
@@ -46,9 +49,9 @@ class Summary : CliktCommand() {
     // Multi-month queries will produce multiple summary statements which need to be combined,
     // but for single month we can simply return found single summary.
     val summary =
-      if (summaryStatements.size == 1)
+      if (summaryStatements.size == 1) {
         summaryStatements.entries.first().value
-      else {
+      } else {
         val builder = MonthRangeSummaryStatementBuilder()
         for (summaryStatement in summaryStatements.values) {
           for ((treeNode, subStatement) in summaryStatement.statements) {

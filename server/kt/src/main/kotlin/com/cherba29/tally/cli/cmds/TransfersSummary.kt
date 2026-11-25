@@ -31,7 +31,8 @@ class TransfersSummary : CliktCommand() {
   ).convert { Month.fromString(it) }.required()
 
   val width: Int by option(
-    "-w", "--width",
+    "-w",
+    "--width",
     help = "Output width in characters"
   ).int().default(120)
 

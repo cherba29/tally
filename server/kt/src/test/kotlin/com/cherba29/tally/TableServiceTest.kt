@@ -128,7 +128,7 @@ class TableServiceTest : DescribeSpec({
       val table = TableService(loader).table("john", startMonth = MAR / 2026, endMonth = MAR / 2026)
       expectSelfie(table.toSnapshot()).toMatchDisk()
     }
-    
+
     it("closed account within path - summary also closed") {
       val accountPath1 = listOf("john", "internal", "test-account1")
       val account1 = Account(

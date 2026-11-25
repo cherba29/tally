@@ -75,7 +75,8 @@ class PathWatcherTest : DescribeSpec({
         flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file2.yaml"), WatchResult.Action.ADD)
         flow.awaitItem() shouldBe WatchResult(folder, relativePath = null, WatchResult.Action.REPROCESS)
         targetFile.writeText("hello")
-        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file2.yaml"), WatchResult.Action.REPROCESS)
+        flow.awaitItem() shouldBe
+          WatchResult(folder, relativePath = Paths.get("file2.yaml"), WatchResult.Action.REPROCESS)
         flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
       }
     }
@@ -92,7 +93,8 @@ class PathWatcherTest : DescribeSpec({
           it.write("First line")
           it.write("Second line")
         }
-        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file2.yaml"), WatchResult.Action.REPROCESS)
+        flow.awaitItem() shouldBe
+          WatchResult(folder, relativePath = Paths.get("file2.yaml"), WatchResult.Action.REPROCESS)
         flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
       }
     }
@@ -106,12 +108,13 @@ class PathWatcherTest : DescribeSpec({
         flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file1.yaml"), WatchResult.Action.ADD)
         flow.awaitItem() shouldBe WatchResult(folder, relativePath = null, WatchResult.Action.REPROCESS)
         (folder / "file2.yaml").createFile()
-        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file2.yaml"), WatchResult.Action.REPROCESS)
+        flow.awaitItem() shouldBe
+          WatchResult(folder, relativePath = Paths.get("file2.yaml"), WatchResult.Action.REPROCESS)
         flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
       }
     }
 
-    it("returns new file within new directory")  {
+    it("returns new file within new directory") {
       val folder = tempdir("tally-", keepOnFailure = false).toPath()
       (folder / "file1.yaml").createFile()
 
@@ -121,7 +124,8 @@ class PathWatcherTest : DescribeSpec({
         flow.awaitItem() shouldBe WatchResult(folder, relativePath = null, WatchResult.Action.REPROCESS)
         val subFolder = (folder / "subpath").createDirectory()
         (subFolder / "file2.yaml").createFile()
-        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("subpath/file2.yaml"), WatchResult.Action.ADD)
+        flow.awaitItem() shouldBe
+          WatchResult(folder, relativePath = Paths.get("subpath/file2.yaml"), WatchResult.Action.ADD)
         flow.awaitItem() shouldBe WatchResult(folder, relativePath = null, WatchResult.Action.REPROCESS)
         flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
       }
@@ -148,18 +152,21 @@ class PathWatcherTest : DescribeSpec({
 
       turbineScope {
         val flow = folder.watchedEventFlow { true }.testIn(backgroundScope)
-        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("subpath/file1.yaml"), WatchResult.Action.ADD)
+        flow.awaitItem() shouldBe
+          WatchResult(folder, relativePath = Paths.get("subpath/file1.yaml"), WatchResult.Action.ADD)
         flow.awaitItem() shouldBe WatchResult(folder, relativePath = null, WatchResult.Action.REPROCESS)
 
         subFolder.toFile().deleteRecursively() shouldBe true
-        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("subpath/file1.yaml"), WatchResult.Action.REMOVE)
+        flow.awaitItem() shouldBe
+          WatchResult(folder, relativePath = Paths.get("subpath/file1.yaml"), WatchResult.Action.REMOVE)
         flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
 
         // Verify watcher is still active and detects new files after directory delete
         val flow2 = folder.watchedEventFlow { true }.testIn(backgroundScope)
         flow2.awaitItem() shouldBe WatchResult(folder, relativePath = null, WatchResult.Action.REPROCESS)
         (folder / "file2.yaml").createFile()
-        flow2.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file2.yaml"), WatchResult.Action.REPROCESS)
+        flow2.awaitItem() shouldBe
+          WatchResult(folder, relativePath = Paths.get("file2.yaml"), WatchResult.Action.REPROCESS)
         flow2.cancelAndConsumeRemainingEvents() shouldBe listOf()
       }
     }
@@ -177,7 +184,8 @@ class PathWatcherTest : DescribeSpec({
         // Directory deletion itself shouldn't emit a file REMOVE event.
         // Creating a new file in root should be detected, confirming watcher didn't break.
         (folder / "file1.yaml").createFile()
-        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file1.yaml"), WatchResult.Action.REPROCESS)
+        flow.awaitItem() shouldBe
+          WatchResult(folder, relativePath = Paths.get("file1.yaml"), WatchResult.Action.REPROCESS)
         flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
       }
     }
@@ -191,14 +199,15 @@ class PathWatcherTest : DescribeSpec({
 
         val subFolder = (folder / "subpath").createDirectory()
         (subFolder / "file1.yaml").createFile()
-        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("subpath/file1.yaml"), WatchResult.Action.ADD)
+        flow.awaitItem() shouldBe
+          WatchResult(folder, relativePath = Paths.get("subpath/file1.yaml"), WatchResult.Action.ADD)
         flow.awaitItem() shouldBe WatchResult(folder, relativePath = null, WatchResult.Action.REPROCESS)
 
         subFolder.toFile().deleteRecursively() shouldBe true
-        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("subpath/file1.yaml"), WatchResult.Action.REMOVE)
+        flow.awaitItem() shouldBe
+          WatchResult(folder, relativePath = Paths.get("subpath/file1.yaml"), WatchResult.Action.REMOVE)
         flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
       }
     }
-
   }
 })

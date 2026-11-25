@@ -9,5 +9,5 @@ data class Profile(
    * That is any node named "external" and all of its descendants are considered to be external.
    **/
   val isExternal: Boolean = false,
-  val isInactive: Boolean = false,
+  val isInactive: Boolean = false
 )

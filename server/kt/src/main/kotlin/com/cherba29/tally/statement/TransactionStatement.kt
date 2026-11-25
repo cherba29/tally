@@ -18,42 +18,34 @@ class TransactionStatement(
   income: Long = 0L,
   // True if any transactions in this statement "cover" previous statement.
   val coversPrevious: Boolean = false,
-
   // True if any projected transactions in this statement "cover"
   // previous statement.
   val coversProjectedPrevious: Boolean = false,
-
   // True if any of the transactions are projects.
   val hasProjectedTransfer: Boolean = false,
-
   // True if this statement is covered by next.
   val isCovered: Boolean = false,
-
   // True if this statement is covered by any projected transactions in next statement.
   val isProjectedCovered: Boolean = false,
-
   // List of transaction in this statement.
   val transactions: List<Transaction> = listOf(),
-
   /** Balance after each transaction. */
   val balanceFromStart: List<Long?> = listOf()
 ) :
   Statement(
-    monthRange,
-    startBalance,
-    endBalance,
-    inFlows,
-    outFlows,
-    totalTransfers,
-    totalPayments,
-    income
-  ) {
-
-  override fun toString(): String {
-    return super.toString() + " coversPrevious=$coversPrevious coversProjectPrevious=$coversProjectedPrevious" +
-        " hasProjectedTransfer=$hasProjectedTransfer isCovered=$isCovered isProjectedCovered=$isProjectedCovered" +
-        " transactions=$transactions"
-  }
+      monthRange,
+      startBalance,
+      endBalance,
+      inFlows,
+      outFlows,
+      totalTransfers,
+      totalPayments,
+      income
+    ) {
+  override fun toString(): String =
+    super.toString() + " coversPrevious=$coversPrevious coversProjectPrevious=$coversProjectedPrevious" +
+      " hasProjectedTransfer=$hasProjectedTransfer isCovered=$isCovered isProjectedCovered=$isProjectedCovered" +
+      " transactions=$transactions"
 
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

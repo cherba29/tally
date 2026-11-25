@@ -686,7 +686,7 @@ describe('TallyApp popup refresh on reload', () => {
     // Supersede by clicking another cell before previous settles, then reject stale promise
     let resolveSummary!: (val: unknown) => void;
     el.backendClient.loadSummaryData = () =>
-      new Promise((resolve) => {
+      new Promise<unknown>((resolve) => {
         resolveSummary = resolve;
       }) as ReturnType<BackendClient['loadSummaryData']>;
     getSummaryTable().dispatchEvent(
@@ -775,7 +775,7 @@ describe('TallyApp popup refresh on reload', () => {
     // 3. Stale transfers-summary resolve & reject ignored after supersede
     let resolveTransfers!: (val: unknown) => void;
     el.backendClient.loadTransferSummaryData = () =>
-      new Promise((resolve) => {
+      new Promise<unknown>((resolve) => {
         resolveTransfers = resolve;
       }) as ReturnType<BackendClient['loadTransferSummaryData']>;
     getSummaryTable().dispatchEvent(

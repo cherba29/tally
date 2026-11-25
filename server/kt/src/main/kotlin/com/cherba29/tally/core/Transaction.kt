@@ -10,15 +10,16 @@ data class Transaction(
   val targetTreeNode: TreeNode<Profile>,
   val balance: Balance,
   val description: String?,
-  val type: Type,
-)  : Comparable<Transaction> {
+  val type: Type
+) : Comparable<Transaction> {
   /**
    * Order transactions by balance amount.
    */
   override fun compareTo(other: Transaction): Int {
     val eq: Int = balance.compareTo(other.balance)
-    return if (eq != 0) eq
-    else {
+    return if (eq != 0) {
+      eq
+    } else {
       if (targetTreeNode.name != other.targetTreeNode.name) {
         if (targetTreeNode.name < other.targetTreeNode.name) -1 else 1
       } else if (description != other.description) {
@@ -51,13 +52,18 @@ data class Transaction(
     /**
      * Transfer from internal to external account.
      */
-    EXPENSE,
+    EXPENSE
   }
 
   companion object {
-    fun typeOf(fromAccount: TreeNode<Profile>, toAccount: TreeNode<Profile>, amount: Long): Type
-      = if ((toAccount.path.first() == fromAccount.path.first())
-            && !toAccount.data.isExternal && !fromAccount.data.isExternal) {
+    fun typeOf(
+      fromAccount: TreeNode<Profile>,
+      toAccount: TreeNode<Profile>,
+      amount: Long
+    ): Type =
+      if ((toAccount.path.first() == fromAccount.path.first()) &&
+        !toAccount.data.isExternal && !fromAccount.data.isExternal
+      ) {
         Type.TRANSFER
       } else {
         if (amount > 0) Type.INCOME else Type.EXPENSE

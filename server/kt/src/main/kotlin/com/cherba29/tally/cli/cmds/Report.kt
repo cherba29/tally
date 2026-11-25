@@ -2,8 +2,8 @@ package com.cherba29.tally.cli.cmds
 
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.utils.TreeNode
 import com.cherba29.tally.data.Loader
+import com.cherba29.tally.utils.TreeNode
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.CliktError
 import com.github.ajalt.clikt.core.Context
@@ -20,11 +20,11 @@ class Report : CliktCommand() {
   val account by argument(help = "Account name")
   val startMonth by option(
     "--start-month",
-    help="Inclusive start month, eg Apr2026"
+    help = "Inclusive start month, eg Apr2026"
   ).convert { Month.fromString(it) }.required()
   val endMonth by option(
     "--end-month",
-    help="Inclusive end month, eg May2026"
+    help = "Inclusive end month, eg May2026"
   ).convert { Month.fromString(it) }.required()
 
   override fun run() {
@@ -60,17 +60,21 @@ class Report : CliktCommand() {
         transactionStatement.startBalance?.amount?.asAmount() ?: "",
         if (transactionStatement.startBalance != null) {
           if (transactionStatement.startBalance.type == Balance.Type.PROJECTED) "P" else "C"
-        } else "",
+        } else {
+          ""
+        },
         transactionStatement.endBalance?.amount?.asAmount() ?: "",
         if (transactionStatement.endBalance != null) {
           if (transactionStatement.endBalance.type == Balance.Type.PROJECTED) "P" else "C"
-        } else "",
+        } else {
+          ""
+        },
         transactionStatement.inFlows.asAmount(),
         transactionStatement.outFlows.asAmount(),
         transactionStatement.income.asAmount(),
         transactionStatement.totalPayments.asAmount(),
         transactionStatement.totalTransfers.asAmount(),
-        transactionStatement.unaccounted?.asAmount(),
+        transactionStatement.unaccounted?.asAmount()
       )
       echo(row.joinToString(","))
     }
@@ -95,8 +99,9 @@ class Report : CliktCommand() {
       "Income",
       "Expense",
       "Transfers",
-      "Unaccounted",
+      "Unaccounted"
     )
+
     private fun Long.asAmount(): String = "%.2f".format(this / 100.0)
   }
 }

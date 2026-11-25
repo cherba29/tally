@@ -1,6 +1,7 @@
 package com.cherba29.tally.testing
 
 import com.cherba29.tally.core.Balance
+import com.cherba29.tally.core.Transaction
 import com.cherba29.tally.schema.GqlAccount
 import com.cherba29.tally.schema.GqlBalance
 import com.cherba29.tally.schema.GqlMonthTransferSummary
@@ -13,12 +14,14 @@ import com.cherba29.tally.schema.GqlTableRow
 import com.cherba29.tally.schema.GqlTransaction
 import com.cherba29.tally.schema.GqlTransfersSummary
 import com.cherba29.tally.statement.Statement
-import com.cherba29.tally.core.Transaction
 import com.cherba29.tally.statement.TransactionStatement
 import com.fasterxml.jackson.databind.node.ObjectNode
 import kotlin.math.absoluteValue
 
-fun Statement.toObjectNode(root: ObjectNode, isClosed: Boolean) {
+fun Statement.toObjectNode(
+  root: ObjectNode,
+  isClosed: Boolean
+) {
   root.put("__type", "Statement")
   root.put("months", monthRange.toString())
   root.put("isClosed", isClosed)
@@ -129,7 +132,10 @@ fun GqlTransaction.toObjectNode(root: ObjectNode) {
   root.put("description", description)
 }
 
-fun TransactionStatement.toObjectNode(root: ObjectNode, isClosed: Boolean) {
+fun TransactionStatement.toObjectNode(
+  root: ObjectNode,
+  isClosed: Boolean
+) {
   root.put("__type", this.javaClass.simpleName)
   (this as Statement).toObjectNode(root.putObject("__base"), isClosed)
   root.put("coversPrevious", coversPrevious)

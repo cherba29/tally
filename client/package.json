@@ -38,6 +38,7 @@
     "preview": "vite preview",
     "graphql-codegen": "graphql-codegen --config codegen.yml",
     "prettier-format": "prettier --config .prettierrc.yaml '**/*.ts' --write",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext .ts",
     "lint-fix": "eslint . --ext .ts --fix"
   },

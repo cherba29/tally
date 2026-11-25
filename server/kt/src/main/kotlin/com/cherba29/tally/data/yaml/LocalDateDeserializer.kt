@@ -6,7 +6,8 @@ import com.fasterxml.jackson.databind.JsonDeserializer
 import kotlinx.datetime.LocalDate
 
 class LocalDateDeserializer : JsonDeserializer<LocalDate>() {
-  override fun deserialize(p: JsonParser, ctxt: DeserializationContext): LocalDate {
-    return LocalDate.parse(p.text)
-  }
+  override fun deserialize(
+    p: JsonParser,
+    ctxt: DeserializationContext
+  ): LocalDate = LocalDate.parse(p.text)
 }

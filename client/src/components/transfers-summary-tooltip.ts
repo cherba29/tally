@@ -154,12 +154,12 @@ export class TransfersSummaryTooltip extends LitElement {
     // Left axis
     svg.append('g')
       .attr('transform', `translate(${marginLeft},0)`)
-      .call(d3.axisLeft(y).ticks(null, (d: any) => +Number(d).toFixed(6) + '×'))
+      .call(d3.axisLeft(y).ticks(null, (d: d3.NumberValue) => +Number(d).toFixed(6) + '×'))
       .call((g) => g.select('.domain').remove())
       .call((g) =>
         g.selectAll('.tick line')
           .clone()
-          .attr('stroke-opacity', (d: any) => (d === 1 ? 0.4 : 0.1))
+          .attr('stroke-opacity', (d) => (d === 1 ? 0.4 : 0.1))
           .attr('x2', width - marginLeft - marginRight)
       )
       .call((g) => {
@@ -215,9 +215,9 @@ export class TransfersSummaryTooltip extends LitElement {
       date = d3.utcDay.round(date);
       rule.attr('transform', `translate(${x(date) + 0.5},0)`);
 
-      serie.attr('transform', ({values}: any) => {
+      serie.attr('transform', ({values}: {values: Array<{date: Date; value: number}>}) => {
         const i = bisect(values, date);
-        const baselineRatio = values[i].value / values[0].value;
+        const baselineRatio = values[i]!.value / values[0]!.value;
         return `translate(0,${y(1) - y(baselineRatio)})`;
       });
     }

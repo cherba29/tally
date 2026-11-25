@@ -15,17 +15,20 @@ import com.github.ajalt.clikt.parameters.options.option
 
 class Cli : CliktCommand() {
   val verbose by option().flag("--no-verbose")
+
   override fun run() {
     echo("Verbose mode is ${if (verbose) "on" else "off"}")
   }
 }
 
-fun main(args: Array<String>) = Cli().subcommands(
-  CsvToTransfers(),
-  Generate(),
-  Report(),
-  Summary(),
-  Transactions(),
-  TransfersSummary(),
-  Unaccounted()
-).main(args)
+fun main(args: Array<String>) =
+  Cli()
+    .subcommands(
+      CsvToTransfers(),
+      Generate(),
+      Report(),
+      Summary(),
+      Transactions(),
+      TransfersSummary(),
+      Unaccounted()
+    ).main(args)

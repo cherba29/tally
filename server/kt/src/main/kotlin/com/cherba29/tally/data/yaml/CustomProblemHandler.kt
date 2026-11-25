@@ -20,7 +20,7 @@ class CustomProblemHandler : DeserializationProblemHandler() {
     if (propertyName != null) {
       yamlIgnoredFields.add(p.parsingContext.pathAsPointer(false).toString())
     }
-    p.skipChildren()  // Skip the unknown property's value
-    return true  // Mark as handled
+    p.skipChildren() // Skip the unknown property's value
+    return true // Mark as handled
   }
 }

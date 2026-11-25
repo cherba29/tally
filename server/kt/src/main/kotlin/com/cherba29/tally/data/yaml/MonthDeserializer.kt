@@ -6,7 +6,8 @@ import com.fasterxml.jackson.databind.DeserializationContext
 import com.fasterxml.jackson.databind.JsonDeserializer
 
 class MonthDeserializer : JsonDeserializer<Month>() {
-  override fun deserialize(p: JsonParser, ctxt: DeserializationContext): Month {
-    return Month.fromString(p.text)
-  }
+  override fun deserialize(
+    p: JsonParser,
+    ctxt: DeserializationContext
+  ): Month = Month.fromString(p.text)
 }

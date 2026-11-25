@@ -87,7 +87,7 @@ class GenerateTest : DescribeSpec({
         readEnvvar = {
           mapOf(
             "TALLY_FILES" to primaryPath.toString(),
-            "TALLY_PATH" to legacyPath.toString(),
+            "TALLY_PATH" to legacyPath.toString()
           )[it]
         }
       }
@@ -96,7 +96,7 @@ class GenerateTest : DescribeSpec({
 
       val result = Generate().test(
         listOf("test-account", "--start-month=Mar2019"),
-        envvars = mapOf("TALLY_PATH" to primaryPath.resolve("does-not-exist").toString()),
+        envvars = mapOf("TALLY_PATH" to primaryPath.resolve("does-not-exist").toString())
       )
       result.statusCode shouldBe 1
       result.stderr shouldContain "does not exist"
