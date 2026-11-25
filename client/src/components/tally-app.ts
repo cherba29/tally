@@ -37,8 +37,94 @@ type ActivePopupRequest =
 @customElement('tally-app')
 export class TallyApp extends LitElement {
   static override styles = css`
+    :host {
+      display: block;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .toolbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      background-color: #f6f8fa;
+      border-bottom: 1px solid #d0d7de;
+      font-size: 12px;
+    }
+    .control-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+    }
+    .group-label {
+      color: #57606a;
+      font-weight: 600;
+      margin-right: 3px;
+    }
+    .month-label {
+      font-family: monospace;
+      font-weight: 700;
+      padding: 0 4px;
+      min-width: 56px;
+      text-align: center;
+    }
+    .toolbar button {
+      padding: 2px 6px;
+      font-size: 11px;
+      border: 1px solid #c5ccd3;
+      border-radius: 3px;
+      background-color: #fff;
+      cursor: pointer;
+    }
+    .toolbar button:hover {
+      background-color: #eaeef2;
+    }
+    .owner-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 6px 8px 0;
+      border-bottom: 1px solid #d0d7de;
+      background-color: #fff;
+    }
+    .owner-tab {
+      padding: 4px 10px;
+      font-size: 12px;
+      border: 1px solid #d0d7de;
+      border-bottom: none;
+      border-radius: 4px 4px 0 0;
+      background-color: #f6f8fa;
+      color: #57606a;
+      cursor: pointer;
+    }
+    .owner-tab:hover {
+      background-color: #eaeef2;
+    }
+    .owner-tab.active {
+      background-color: #fff;
+      color: #1f2328;
+      font-weight: 700;
+      border-color: #8c959f;
+      margin-bottom: -1px;
+      padding-bottom: 5px;
+    }
+    .error-banner {
+      padding: 6px 8px;
+      color: #b42318;
+      background-color: #fef3f2;
+      border-bottom: 1px solid #fecdca;
+      font-size: 14px;
+    }
+    .error-banner pre {
+      margin: 0;
+      white-space: pre-wrap;
+    }
     .toolTip {
       position: absolute;
+      z-index: 30;
       padding: 5px;
       border: 1px solid #000;
       background-color: #ffff80;
@@ -49,6 +135,7 @@ export class TallyApp extends LitElement {
     }
     .tabcontent {
       border-top: none;
+      padding: 4px 8px 8px;
     }
   `;
 
@@ -92,34 +179,53 @@ export class TallyApp extends LitElement {
     });
 
     return html`
-      <div style="position: fixed;font-size: 80%;">
-        <button @click="${() => this.updateRange(0, 12)}">&lt;&lt;</button>
-        <button @click="${() => this.updateRange(0, 1)}">&lt;</button>
-        <span style="font-family: monospace;">${this.endMonth}</span>
-        <button @click="${() => this.updateRange(0, -1)}">&gt;</button>
-        <button @click="${() => this.updateRange(0, -12)}">&gt;&gt;</button>
-        &mdash;
-        <button @click="${() => this.updateRange(12, 0)}">&lt;&lt;</button>
-        <button @click="${() => this.updateRange(1, 0)}">&lt;</button>
-        <span style="font-family: monospace;">${this.startMonth}</span>
-        <button @click="${() => this.updateRange(-1, 0)}">&gt;</button>
-        <button @click="${() => this.updateRange(-12, 0)}">&gt;&gt;</button>
-
-        <button @click="${() => this.updateRange(12, 12)}">&lt;&lt;</button>
-        <button @click="${() => this.updateRange(1, 1)}">&lt;</button>
-        <button @click="${() => this.updateRange(-1, -1)}">&gt;</button>
-        <button @click="${() => this.updateRange(-12, -12)}">&gt;&gt;</button>
-        <button @click="${this.reloadTable}">Reload Table</button>
-      </div>
-      <div style="padding-top: 20px; color: red; font-size: 16px">
-        <pre>${this.errorMessage}</pre>
-      </div>
+      <header class="toolbar">
+        <span class="control-group" data-group="end">
+          <span class="group-label">End:</span>
+          <button title="Move end month forward 1 year" @click="${() => this.updateRange(0, 12)}">+1y</button>
+          <button title="Move end month forward 1 month" @click="${() => this.updateRange(0, 1)}">+1m</button>
+          <span class="month-label">${this.endMonth}</span>
+          <button title="Move end month back 1 month" @click="${() => this.updateRange(0, -1)}">-1m</button>
+          <button title="Move end month back 1 year" @click="${() => this.updateRange(0, -12)}">-1y</button>
+        </span>
+        <span class="control-group" data-group="start">
+          <span class="group-label">Start:</span>
+          <button title="Move start month forward 1 year" @click="${() => this.updateRange(12, 0)}">+1y</button>
+          <button title="Move start month forward 1 month" @click="${() => this.updateRange(1, 0)}">+1m</button>
+          <span class="month-label">${this.startMonth}</span>
+          <button title="Move start month back 1 month" @click="${() => this.updateRange(-1, 0)}">-1m</button>
+          <button title="Move start month back 1 year" @click="${() => this.updateRange(-12, 0)}">-1y</button>
+        </span>
+        <span class="control-group" data-group="shift">
+          <span class="group-label">Shift:</span>
+          <button title="Shift window forward 1 year" @click="${() => this.updateRange(12, 12)}">+1y</button>
+          <button title="Shift window forward 1 month" @click="${() => this.updateRange(1, 1)}">+1m</button>
+          <button title="Shift window back 1 month" @click="${() => this.updateRange(-1, -1)}">-1m</button>
+          <button title="Shift window back 1 year" @click="${() => this.updateRange(-12, -12)}">-1y</button>
+        </span>
+        <span class="control-group" data-group="actions">
+          <button title="Reset range to default window around today" @click="${this.resetRange}">Today</button>
+          <button title="Reload table data from server" @click="${this.reloadTable}">Reload Table</button>
+        </span>
+      </header>
+      ${this.errorMessage
+        ? html`<div class="error-banner"><pre>${this.errorMessage}</pre></div>`
+        : nothing}
       <div class="toolTip" style=${styleMap(popupStyle)}>${this.tooltipFragment()}</div>
-      <div>
-        ${this.owners.map(
-          (owner) => html`<button @click=${() => this.tabClick(owner)}>${owner[0]}</button>`
-        )}
-      </div>
+      ${this.owners.length > 0
+        ? html`<nav class="owner-tabs" role="tablist">
+            ${this.owners.map(
+              (owner) => html`<button
+                role="tab"
+                class="owner-tab ${this.currentOwner === owner ? 'active' : ''}"
+                aria-selected="${this.currentOwner === owner ? 'true' : 'false'}"
+                @click=${() => this.tabClick(owner)}
+              >
+                ${owner}
+              </button>`
+            )}
+          </nav>`
+        : nothing}
       ${Object.entries(this.rows).map(([owner, rows]) => {
         return html`<div class="tabcontent" style=${styleMap(tabStyle(owner))}>
           <summary-table
@@ -137,6 +243,13 @@ export class TallyApp extends LitElement {
   updateRange(startDelta: number, endDelta: number) {
     this.startMonth = this.startMonth.next(startDelta);
     this.endMonth = this.endMonth.next(endDelta);
+    this.reloadTable();
+  }
+
+  resetRange() {
+    const today = Month.fromDate(new Date());
+    this.startMonth = today.previous(12);
+    this.endMonth = today.next(2);
     this.reloadTable();
   }
 

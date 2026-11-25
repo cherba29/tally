@@ -479,17 +479,20 @@ describe('TallyApp popup refresh on reload', () => {
     el.backendClient.loadStatement = origLoadStatement;
   });
 
-  it('updates month range via toolbar buttons and reloads table', async () => {
-    const toolbarDiv = el.shadowRoot!.querySelector('div')!;
-    const buttons = Array.from(toolbarDiv.querySelectorAll('button'));
-    // 12 navigation buttons + Reload Table
-    expect(buttons).to.have.lengthOf(13);
+  it('updates month range via toolbar buttons and resets via Today button', async () => {
+    const toolbar = el.shadowRoot!.querySelector('header.toolbar')!;
+    const buttons = Array.from(toolbar.querySelectorAll('button'));
+    // 12 navigation buttons + Today + Reload Table
+    expect(buttons).to.have.lengthOf(14);
+    expect(buttons[0]!.textContent?.trim()).to.equal('+1y');
+    expect(buttons[0]!.getAttribute('title')).to.include('end month');
+    expect(buttons[12]!.textContent?.trim()).to.equal('Today');
 
     const initialCall = loadTableCalls[0]!;
     const initialStart = Month.fromString(initialCall[1]);
     const initialEnd = Month.fromString(initialCall[2]);
 
-    // Click all 12 navigation buttons: +12/-12/+1/-1 on end, start, and both (net delta 0)
+    // Click all 12 navigation buttons: +12/+1/-1/-12 on end, start, and shift (net delta 0)
     const expectedDeltas: Array<[number, number]> = [
       [0, 12],
       [0, 1],
@@ -516,9 +519,20 @@ describe('TallyApp popup refresh on reload', () => {
       expect(lastCall[1]).to.equal(curStart.toString());
       expect(lastCall[2]).to.equal(curEnd.toString());
     }
+
+    // Shift away, then click Today to reset back to default window
+    buttons[0]!.click();
+    await flush(el);
+    expect(loadTableCalls[loadTableCalls.length - 1]![2]).to.not.equal(initialEnd.toString());
+
+    buttons[12]!.click();
+    await flush(el);
+    const resetCall = loadTableCalls[loadTableCalls.length - 1]!;
+    expect(resetCall[1]).to.equal(initialStart.toString());
+    expect(resetCall[2]).to.equal(initialEnd.toString());
   });
 
-  it('switches owner tabs, closes popup on owner change, and keeps popup on same-owner click', async () => {
+  it('switches owner tabs with full names and active state, closing popup only on owner change', async () => {
     getSummaryTable().dispatchEvent(
       new CustomEvent<CellClickEventData>('cellclick', {
         detail: {
@@ -534,19 +548,27 @@ describe('TallyApp popup refresh on reload', () => {
     await flush(el);
     expect(el.shadowRoot!.querySelector('balance-tooltip')).to.not.equal(null);
 
-    const divs = el.shadowRoot!.querySelectorAll('div');
-    const ownerButtons = Array.from(divs[3]!.querySelectorAll('button'));
+    const ownerButtons = Array.from(
+      el.shadowRoot!.querySelectorAll<HTMLButtonElement>('nav.owner-tabs button')
+    );
     expect(ownerButtons).to.have.lengthOf(2);
+    expect(ownerButtons.map((b) => b.textContent?.trim())).to.deep.equal(['owner1', 'owner2']);
+    expect(ownerButtons[0]!.classList.contains('active')).to.equal(true);
+    expect(ownerButtons[0]!.getAttribute('aria-selected')).to.equal('true');
+    expect(ownerButtons[1]!.classList.contains('active')).to.equal(false);
 
     // Clicking the already-active owner keeps the popup open
     ownerButtons[0]!.click();
     await flush(el);
     expect(el.shadowRoot!.querySelector('balance-tooltip')).to.not.equal(null);
 
-    // Clicking owner2 closes the popup and reloads table for owner2
+    // Clicking owner2 closes the popup, updates active tab, and reloads table for owner2
     ownerButtons[1]!.click();
     await flush(el);
     expect(el.shadowRoot!.querySelector('balance-tooltip')).to.equal(null);
+    expect(ownerButtons[1]!.classList.contains('active')).to.equal(true);
+    expect(ownerButtons[1]!.getAttribute('aria-selected')).to.equal('true');
+    expect(ownerButtons[0]!.classList.contains('active')).to.equal(false);
     const lastCall = loadTableCalls[loadTableCalls.length - 1]!;
     expect(lastCall[0]).to.equal('owner2');
   });

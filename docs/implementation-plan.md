@@ -78,11 +78,10 @@ Low-risk cleanup that reduces noise, removes dead code, and establishes automate
 
 ## Phase 4: Usability & Day-to-Day UX Polish
 
-### 4.1 Clearer Date Toolbar & Owner Tabs
+### 4.1 Clearer Date Toolbar & Owner Tabs — Done
 - **File**: [`client/src/components/tally-app.ts`](../client/src/components/tally-app.ts)
-- **Action**:
-  - Replace the repeated unlabeled `<< < > >>` toolbar buttons with clearly labeled controls (`-1y`, `-1m`, `+1m`, `+1y`, `Today`) and tooltips, laid out in a clean header bar that does not overlap table rows.
-  - Render full owner names on owner tabs (instead of `${owner[0]}`, which collides when owners share an initial) with a clear active-tab style.
+- [x] Replaced the fixed unlabeled `<< < > >>` toolbar with a sticky flex `<header class="toolbar">` featuring labeled End/Start/Shift control groups (`+1y`, `+1m`, `-1m`, `-1y`), descriptive `title` tooltips, and a `Today` reset button (`resetRange()`).
+- [x] Updated owner tabs to render full owner names in a `<nav class="owner-tabs" role="tablist">` with active tab styling and `aria-selected`, and conditioned the error banner so it takes no space when empty.
 
 ### 4.2 Sticky Table Headers & Account Column
 - **File**: [`client/src/components/summary-table.ts`](../client/src/components/summary-table.ts)
