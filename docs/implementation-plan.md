@@ -88,12 +88,11 @@ Low-risk cleanup that reduces noise, removes dead code, and establishes automate
 - [x] Applied `position: sticky; top: 0` to `<thead>` and `position: sticky; left: 0` to `thead th:first-child` and `tbody td:first-child` (preserving `#ffd` background on total rows and `#f6f8fa` on headers with `border-collapse: separate`) and made `.tabcontent` scrollable so headers and account names stay pinned while scrolling wide/tall ledgers.
 - [x] Added computed-style assertions in [`summary-table.test.ts`](../client/src/components/summary-table.test.ts).
 
-### 4.3 Popup Ergonomics & Copy Feedback
-- **Files**: [`client/src/components/tally-app.ts`](../client/src/components/tally-app.ts), tooltip components
-- **Action**:
-  - Clamp popup `top`/`left` coordinates to the viewport so tooltips near the right or bottom edge never render off-screen.
-  - Support closing active popups via the **`Escape`** key and clicking outside (in addition to the `XXX` button).
-  - Show a brief non-intrusive visual indicator (toast or cell highlight) when copying an unaccounted or running-balance amount to the clipboard.
+### 4.3 Popup Ergonomics & Copy Feedback — Done
+- **Files**: [`client/src/components/tally-app.ts`](../client/src/components/tally-app.ts), [`client/src/components/summary-table.ts`](../client/src/components/summary-table.ts), [`client/src/components/balance-tooltip.ts`](../client/src/components/balance-tooltip.ts)
+- [x] Anchored fixed-position popups to the clicked cell's `DOMRect` (`anchorRect`), awaiting child tooltip render + `ResizeObserver` to flip above/left near viewport edges without flicker or covering the clicked cell, and constrained `.toolTip` with `max-width`/`max-height` + `overflow: auto`.
+- [x] Added `Escape`-key and click-outside dismissal (using `composedPath()` and ignoring the originating cell click) with full listener cleanup in `disconnectedCallback()`.
+- [x] Dispatched bubbling `copied` events from [`summary-table.ts`](../client/src/components/summary-table.ts) and [`balance-tooltip.ts`](../client/src/components/balance-tooltip.ts) and rendered an auto-dismissing status toast in [`tally-app.ts`](../client/src/components/tally-app.ts).
 
 ### 4.4 Live-Reload Status Indicator
 - **Files**: [`client/src/api.ts`](../client/src/api.ts), [`client/src/components/tally-app.ts`](../client/src/components/tally-app.ts)

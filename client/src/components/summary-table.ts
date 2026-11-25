@@ -10,6 +10,7 @@ import {Month} from '../month';
 
 export type CellClickEventData = {
   mouseEvent: MouseEvent;
+  anchorRect?: DOMRect;
   rowId: string;
   account?: GqlAccount | null;
   month?: Month;
@@ -142,9 +143,11 @@ export class SummaryTable extends LitElement {
     month: string,
     isSummary: boolean
   ) {
+    const anchorRect = (mouseEvent.currentTarget as HTMLElement | null)?.getBoundingClientRect();
     const options: CustomEventInit<CellClickEventData> = {
       detail: {
         mouseEvent,
+        anchorRect,
         rowId: rowId,
         month: Month.fromString(month),
         isSummary,
@@ -161,9 +164,11 @@ export class SummaryTable extends LitElement {
     month: string,
     isSummary: boolean
   ) {
+    const anchorRect = (mouseEvent.currentTarget as HTMLElement | null)?.getBoundingClientRect();
     const options: CustomEventInit<CellClickEventData> = {
       detail: {
         mouseEvent,
+        anchorRect,
         rowId: rowId,
         month: Month.fromString(month),
         isSummary,
@@ -175,9 +180,11 @@ export class SummaryTable extends LitElement {
   }
 
   onTitleCellClick(e: MouseEvent, rowId: string, account: GqlAccount | undefined | null) {
+    const anchorRect = (e.currentTarget as HTMLElement | null)?.getBoundingClientRect();
     const options: CustomEventInit<CellClickEventData> = {
       detail: {
         mouseEvent: e,
+        anchorRect,
         rowId: rowId,
         account,
       },
@@ -191,7 +198,13 @@ export class SummaryTable extends LitElement {
     if (amount != null || amount != undefined) {
       const text = (amount / 100.0).toFixed(2);
       navigator.clipboard.writeText(text);
-      console.log(`Copied to clipboard '${text}'`);
+      this.dispatchEvent(
+        new CustomEvent('copied', {
+          detail: {text},
+          bubbles: true,
+          composed: true,
+        })
+      );
     }
   }
 

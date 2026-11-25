@@ -861,4 +861,144 @@ describe('TallyApp popup refresh on reload', () => {
     expect(el.shadowRoot!.querySelector('pre')!.textContent).to.equal('backend unreachable');
     expect(el.shadowRoot!.querySelector('balance-tooltip')).to.equal(null);
   });
+
+  it('flips popup above/left near viewport edges without reverting on re-render, dismisses on Escape/outside click, and shows copy toast', async () => {
+    const month = Month.fromString('Jan2025');
+    const waitPositioned = async () => {
+      await flush(el);
+      const child = el.shadowRoot!.querySelector('.toolTip')?.firstElementChild as
+        | {updateComplete?: Promise<unknown>}
+        | null
+        | undefined;
+      if (child?.updateComplete) {
+        await child.updateComplete;
+      }
+      await flush(el);
+    };
+
+    // 1. Click a cell near the bottom-right corner -> flips left and above the cell
+    const anchorCell = document.createElement('td');
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const cornerRect = new DOMRect(vw - 80, vh - 40, 70, 24);
+    anchorCell.getBoundingClientRect = () => cornerRect;
+
+    const edgeClick = new MouseEvent('click', {bubbles: true, composed: true});
+    Object.defineProperty(edgeClick, 'target', {value: anchorCell});
+    getSummaryTable().dispatchEvent(
+      new CustomEvent<CellClickEventData>('cellclick', {
+        detail: {
+          mouseEvent: edgeClick,
+          rowId: 'owner1/checking/acct1',
+          month,
+          isSummary: false,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    await waitPositioned();
+
+    const tipEl = el.shadowRoot!.querySelector<HTMLElement>('.toolTip')!;
+    const tipRect = tipEl.getBoundingClientRect();
+    expect(el.shadowRoot!.querySelector('balance-tooltip')).to.not.equal(null);
+    expect(tipEl.style.visibility).to.equal('visible');
+    // Fits within viewport bounds and flips above & left of the corner cell
+    expect(tipRect.right).to.be.at.most(vw - 8 + 1);
+    expect(tipRect.bottom).to.be.at.most(cornerRect.top);
+    expect(tipRect.left).to.be.at.least(8);
+    expect(tipRect.top).to.be.at.least(8);
+
+    const savedLeft = tipEl.style.left;
+    const savedTop = tipEl.style.top;
+
+    // Subsequent unrelated re-render (e.g. toast update) must NOT revert popup position
+    getSummaryTable().dispatchEvent(
+      new CustomEvent('copied', {detail: {text: '1.00'}, bubbles: true, composed: true})
+    );
+    await flush(el);
+    expect(tipEl.style.left).to.equal(savedLeft);
+    expect(tipEl.style.top).to.equal(savedTop);
+
+    // Window resize re-applies position cleanly
+    window.dispatchEvent(new Event('resize'));
+    expect(parseFloat(tipEl.style.left) + tipRect.width).to.be.at.most(vw - 8 + 1);
+
+    // Clicking inside the popup keeps it open
+    tipEl.dispatchEvent(new MouseEvent('click', {bubbles: true, composed: true}));
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('balance-tooltip')).to.not.equal(null);
+
+    // Dispatching the originating cell click event does not close the popup
+    document.dispatchEvent(edgeClick);
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('balance-tooltip')).to.not.equal(null);
+
+    // Pressing a non-Escape key keeps the popup open; Escape closes it
+    window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter'}));
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('balance-tooltip')).to.not.equal(null);
+
+    window.dispatchEvent(new KeyboardEvent('keydown', {key: 'Escape'}));
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('balance-tooltip')).to.equal(null);
+
+    // 2. Click near top-left -> opens below and to the right of the anchor cell
+    const topLeftCell = document.createElement('td');
+    topLeftCell.getBoundingClientRect = () => new DOMRect(20, 40, 60, 20);
+    const topLeftClick = new MouseEvent('click', {bubbles: true, composed: true});
+    Object.defineProperty(topLeftClick, 'target', {value: topLeftCell});
+    getSummaryTable().dispatchEvent(
+      new CustomEvent<CellClickEventData>('cellclick', {
+        detail: {
+          mouseEvent: topLeftClick,
+          rowId: 'owner1/checking/acct1',
+          month,
+          isSummary: false,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
+    await waitPositioned();
+    expect(parseFloat(tipEl.style.left)).to.equal(20);
+    expect(parseFloat(tipEl.style.top)).to.equal(64);
+
+    // Outside click on document body closes popup
+    document.body.dispatchEvent(new MouseEvent('click', {bubbles: true, composed: true}));
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('balance-tooltip')).to.equal(null);
+
+    // Copy event shows toast and auto-clears after timer
+    const origSetTimeout = globalThis.setTimeout;
+    const origClearTimeout = globalThis.clearTimeout;
+    const timers: Array<() => void> = [];
+    globalThis.setTimeout = ((cb: () => void) => {
+      timers.push(cb);
+      return timers.length as unknown as ReturnType<typeof setTimeout>;
+    }) as typeof setTimeout;
+    globalThis.clearTimeout = (() => {}) as typeof clearTimeout;
+
+    try {
+      getSummaryTable().dispatchEvent(
+        new CustomEvent('copied', {detail: {text: '12.34'}, bubbles: true, composed: true})
+      );
+      await flush(el);
+      expect(el.shadowRoot!.querySelector('.toast')!.textContent).to.equal('Copied 12.34 to clipboard');
+
+      // Trigger a second copy before first clears to exercise timer replacement
+      getSummaryTable().dispatchEvent(
+        new CustomEvent('copied', {detail: {text: '56.78'}, bubbles: true, composed: true})
+      );
+      await flush(el);
+      expect(el.shadowRoot!.querySelector('.toast')!.textContent).to.equal('Copied 56.78 to clipboard');
+
+      timers[timers.length - 1]!();
+      await flush(el);
+      expect(el.shadowRoot!.querySelector('.toast')).to.equal(null);
+    } finally {
+      globalThis.setTimeout = origSetTimeout;
+      globalThis.clearTimeout = origClearTimeout;
+    }
+  });
 });

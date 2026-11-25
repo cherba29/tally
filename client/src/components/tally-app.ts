@@ -1,4 +1,4 @@
-import {LitElement, css, html, nothing} from 'lit';
+import {LitElement, css, html, nothing, type PropertyValues} from 'lit';
 import {customElement, state} from 'lit/decorators.js';
 import {BackendClient} from '../api';
 import {
@@ -33,6 +33,13 @@ type ActivePopupRequest =
     }
   | {type: 'statement'; accountName: string; month: Month}
   | {type: 'account'; rowId: string};
+
+type PopupAnchor = {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+};
 
 @customElement('tally-app')
 export class TallyApp extends LitElement {
@@ -123,15 +130,32 @@ export class TallyApp extends LitElement {
       white-space: pre-wrap;
     }
     .toolTip {
-      position: absolute;
+      position: fixed;
       z-index: 30;
       padding: 5px;
       border: 1px solid #000;
       background-color: #ffff80;
+      max-width: calc(100vw - 16px);
+      max-height: calc(100vh - 16px);
+      overflow: auto;
+      box-sizing: border-box;
       font:
         10px/12px Arial,
         Helvetica,
         sans-serif;
+    }
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 40;
+      padding: 6px 12px;
+      border-radius: 4px;
+      background-color: #1f2328;
+      color: #fff;
+      font-size: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      pointer-events: none;
     }
     .tabcontent {
       border-top: none;
@@ -145,17 +169,49 @@ export class TallyApp extends LitElement {
   private unsubscribeUpdates?: () => void;
   private activePopup: ActivePopupRequest | undefined = undefined;
   private popupRequestId = 0;
+  private popupAnchor: PopupAnchor = {left: 0, right: 0, top: 0, bottom: 0};
+  private popupPositionToken = 0;
+  private popupResizeObserver?: ResizeObserver;
+  private lastCellClickEvent?: MouseEvent;
+  private toastTimeout?: ReturnType<typeof setTimeout>;
 
   // Rendered reactive state.
   @state() private startMonth: Month = Month.fromDate(new Date()).previous(12);
   @state() private endMonth: Month = Month.fromDate(new Date()).next(2);
   @state() private errorMessage: string = '';
+  @state() private toastMessage: string = '';
   @state() private months: string[] = [];
   @state() private rows: Rows = {};
   @state() private popupData: PopupData | undefined = undefined;
-  @state() private popupOffset = {top: 0, left: 0};
   @state() private currentOwner: string | undefined = undefined;
   @state() private owners: string[] = [];
+
+  private readonly handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape' && (this.popupData || this.activePopup)) {
+      this.closePopup();
+    }
+  };
+
+  private readonly handleDocumentClick = (e: MouseEvent) => {
+    if (!this.popupData && !this.activePopup) {
+      return;
+    }
+    if (e === this.lastCellClickEvent) {
+      return;
+    }
+    const path = e.composedPath();
+    const keepOpenEls = this.shadowRoot?.querySelectorAll('.toolTip, header.toolbar, nav.owner-tabs');
+    if (keepOpenEls && Array.from(keepOpenEls).some((el) => path.includes(el))) {
+      return;
+    }
+    this.closePopup();
+  };
+
+  private readonly handleWindowResize = () => {
+    if (this.popupData) {
+      this.applyPopupPosition();
+    }
+  };
 
   override connectedCallback() {
     super.connectedCallback();
@@ -163,18 +219,140 @@ export class TallyApp extends LitElement {
     this.endMonth = Month.fromDate(new Date()).next(2);
     this.reloadTable();
     this.unsubscribeUpdates = this.backendClient.subscribeToUpdates(() => this.reloadTable());
+    window.addEventListener('keydown', this.handleKeyDown);
+    window.addEventListener('resize', this.handleWindowResize);
+    document.addEventListener('click', this.handleDocumentClick);
   }
 
   override disconnectedCallback() {
     super.disconnectedCallback();
     this.unsubscribeUpdates?.();
+    window.removeEventListener('keydown', this.handleKeyDown);
+    window.removeEventListener('resize', this.handleWindowResize);
+    document.removeEventListener('click', this.handleDocumentClick);
+    this.popupResizeObserver?.disconnect();
+    this.popupResizeObserver = undefined;
+    if (this.toastTimeout) {
+      clearTimeout(this.toastTimeout);
+      this.toastTimeout = undefined;
+    }
+  }
+
+  override firstUpdated() {
+    const tipEl = this.shadowRoot?.querySelector<HTMLElement>('.toolTip');
+    if (tipEl && typeof ResizeObserver !== 'undefined') {
+      this.popupResizeObserver = new ResizeObserver(() => {
+        if (this.popupData) {
+          this.applyPopupPosition();
+        }
+      });
+      this.popupResizeObserver.observe(tipEl);
+    }
+  }
+
+  override updated(changedProperties: PropertyValues) {
+    if (changedProperties.has('popupData') && this.popupData) {
+      void this.positionPopupAfterChildRender();
+    }
+  }
+
+  private capturePopupAnchor(detail: CellClickEventData): PopupAnchor {
+    const rect =
+      detail.anchorRect && (detail.anchorRect.width > 0 || detail.anchorRect.height > 0)
+        ? detail.anchorRect
+        : ((detail.mouseEvent.target as HTMLElement | null)?.closest?.('td') ??
+            (detail.mouseEvent.target as HTMLElement | null))?.getBoundingClientRect?.();
+    if (rect && (rect.width > 0 || rect.height > 0)) {
+      return {
+        left: rect.left,
+        right: rect.right,
+        top: rect.top,
+        bottom: rect.bottom,
+      };
+    }
+    const x = detail.mouseEvent.clientX || detail.mouseEvent.pageX;
+    const y = detail.mouseEvent.clientY || detail.mouseEvent.pageY;
+    return {left: x, right: x, top: y, bottom: y};
+  }
+
+  private async positionPopupAfterChildRender() {
+    const token = ++this.popupPositionToken;
+    const tipEl = this.shadowRoot?.querySelector<HTMLElement>('.toolTip');
+    if (!tipEl) return;
+
+    // Hide briefly while nested Lit tooltip finishes rendering so we measure its real size
+    // and never flash an unclamped/misplaced frame.
+    tipEl.style.visibility = 'hidden';
+
+    const childTooltip = tipEl.firstElementChild as (LitElement & {updateComplete?: Promise<unknown>}) | null;
+    if (childTooltip?.updateComplete) {
+      await childTooltip.updateComplete;
+    }
+    if (token !== this.popupPositionToken || !this.popupData) {
+      return;
+    }
+    this.applyPopupPosition();
+    tipEl.style.visibility = 'visible';
+  }
+
+  private applyPopupPosition() {
+    const tipEl = this.shadowRoot?.querySelector<HTMLElement>('.toolTip');
+    if (!tipEl || !this.popupData) return;
+
+    const margin = 8;
+    const gap = 4;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const rect = tipEl.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const anchor = this.popupAnchor;
+
+    // Prefer placing below or above the clicked cell so it stays visible.
+    // If neither fits vertically, place beside the cell (right or left) instead of covering it.
+    const spaceBelow = vh - margin - (anchor.bottom + gap);
+    const spaceAbove = anchor.top - gap - margin;
+    const spaceRight = vw - margin - (anchor.right + gap);
+    const spaceLeft = anchor.left - gap - margin;
+    const maxLeft = Math.max(margin, vw - width - margin);
+    const maxTop = Math.max(margin, vh - height - margin);
+
+    let left: number;
+    let top: number;
+
+    if (height <= spaceBelow || height <= spaceAbove) {
+      top = height <= spaceBelow ? anchor.bottom + gap : anchor.top - height - gap;
+      // Align left edge to anchor.left opening rightward; flip leftward aligned to anchor.right if overflowing.
+      left = anchor.left + width <= vw - margin ? anchor.left : anchor.right - width;
+    } else if (width <= spaceRight || width <= spaceLeft) {
+      left = width <= spaceRight ? anchor.right + gap : anchor.left - width - gap;
+      top = anchor.bottom - height >= margin ? anchor.bottom - height : anchor.top;
+    } else {
+      left = spaceLeft > spaceRight ? anchor.right - width : anchor.left;
+      top = spaceAbove > spaceBelow ? anchor.top - height - gap : anchor.bottom + gap;
+    }
+
+    left = Math.min(Math.max(margin, left), maxLeft);
+    top = Math.min(Math.max(margin, top), maxTop);
+
+    tipEl.style.left = `${left}px`;
+    tipEl.style.top = `${top}px`;
+  }
+
+  private onCopied(e: CustomEvent<{text: string}>) {
+    this.toastMessage = `Copied ${e.detail.text} to clipboard`;
+    if (this.toastTimeout) {
+      clearTimeout(this.toastTimeout);
+    }
+    this.toastTimeout = setTimeout(() => {
+      this.toastMessage = '';
+      this.toastTimeout = undefined;
+    }, 2000);
   }
 
   override render() {
     const popupStyle: StyleInfo = {
       display: this.popupData ? null : 'none',
-      top: this.popupOffset.top + 'px',
-      left: this.popupOffset.left + 'px',
     };
     const tabStyle = (owner: string): StyleInfo => ({
       display: this.currentOwner === owner ? null : 'none',
@@ -213,7 +391,12 @@ export class TallyApp extends LitElement {
       ${this.errorMessage
         ? html`<div class="error-banner"><pre>${this.errorMessage}</pre></div>`
         : nothing}
-      <div class="toolTip" style=${styleMap(popupStyle)}>${this.tooltipFragment()}</div>
+      <div class="toolTip" style=${styleMap(popupStyle)} @copied=${this.onCopied}>
+        ${this.tooltipFragment()}
+      </div>
+      ${this.toastMessage
+        ? html`<div class="toast" role="status" aria-live="polite">${this.toastMessage}</div>`
+        : nothing}
       ${this.owners.length > 0
         ? html`<nav class="owner-tabs" role="tablist">
             ${this.owners.map(
@@ -236,6 +419,7 @@ export class TallyApp extends LitElement {
             .rows=${rows}
             @addSubCellClick=${this.onAddSubCellClick}
             @cellclick=${this.onCellClick}
+            @copied=${this.onCopied}
           ></summary-table>
         </div>`;
       })}
@@ -306,6 +490,7 @@ export class TallyApp extends LitElement {
 
   private closePopup() {
     this.popupRequestId++;
+    this.popupPositionToken++;
     this.activePopup = undefined;
     this.popupData = undefined;
   }
@@ -339,10 +524,8 @@ export class TallyApp extends LitElement {
   }
 
   private onAddSubCellClick(e: CustomEvent<CellClickEventData>) {
-    this.popupOffset = {
-      top: e.detail.mouseEvent.pageY + 10,
-      left: e.detail.mouseEvent.pageX,
-    };
+    this.lastCellClickEvent = e.detail.mouseEvent;
+    this.popupAnchor = this.capturePopupAnchor(e.detail);
     this.activePopup = {
       type: 'transfers-summary',
       accountPath: e.detail.rowId,
@@ -353,10 +536,8 @@ export class TallyApp extends LitElement {
   }
 
   private onCellClick(e: CustomEvent<CellClickEventData>) {
-    this.popupOffset = {
-      top: e.detail.mouseEvent.pageY + 10,
-      left: e.detail.mouseEvent.pageX,
-    };
+    this.lastCellClickEvent = e.detail.mouseEvent;
+    this.popupAnchor = this.capturePopupAnchor(e.detail);
     if (e.detail.isSummary) {
       const accountName = e.detail.rowId ?? '';
       this.activePopup = {

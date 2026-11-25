@@ -62,7 +62,13 @@ export class BalanceTooltip extends LitElement {
     if (amount != null || amount != undefined) {
       const text = (amount / 100.0).toFixed(2);
       navigator.clipboard.writeText(text);
-      console.log(`Copied to clipboard '${text}'`);
+      this.dispatchEvent(
+        new CustomEvent('copied', {
+          detail: {text},
+          bubbles: true,
+          composed: true,
+        })
+      );
     }
   }
 
