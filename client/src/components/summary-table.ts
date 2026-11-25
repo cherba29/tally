@@ -1,8 +1,8 @@
 import './expand-button';
 
-import {LitElement, css, html, nothing} from 'lit';
+import {LitElement, css, html, nothing, type PropertyValues} from 'lit';
 import {styleMap, type StyleInfo} from 'lit/directives/style-map.js';
-import {customElement, property} from 'lit/decorators.js';
+import {customElement, property, state} from 'lit/decorators.js';
 import {currency} from '../format';
 import {type GqlAccount, type GqlTableRow, type GqlTableCell} from '../gql_types';
 import {classMap, type ClassInfo} from 'lit/directives/class-map.js';
@@ -14,14 +14,6 @@ export type CellClickEventData = {
   account?: GqlAccount | null;
   month?: Month;
   isSummary?: boolean;
-};
-
-// Represents tree structure of table rows.
-type RowInfo = {
-  index: number;
-  indent: number;
-  expanded: boolean;
-  childrenIdxs: Array<number>;
 };
 
 @customElement('summary-table')
@@ -86,29 +78,35 @@ export class SummaryTable extends LitElement {
     }
   `;
 
-  private __months: Month[] = [];
-  private __rows: GqlTableRow[] = [];
-  // All rows rendered in the table.
-  private childTableRows: Array<RowInfo> = [];
+  @property({attribute: false}) months: Array<Month | string> = [];
+  @property({attribute: false}) rows: GqlTableRow[] = [];
 
-  @property()
-  set months(values: Month[]) {
-    const oldMonths = this.__months;
-    this.__months = values;
-    this.requestUpdate('months', oldMonths);
-  }
-  get months() {
-    return this.__months;
+  @state() private collapsedIds: Set<string> = new Set();
+  @state() private expandedIds: Set<string> = new Set();
+  private seenTotalIds: Set<string> = new Set();
+
+  override willUpdate(changedProperties: PropertyValues<this>) {
+    if (changedProperties.has('rows')) {
+      let updatedCollapsed: Set<string> | undefined;
+      this.rows.forEach((r, rowIdx) => {
+        if (!r.isTotal) return;
+        const key = this.getRowKey(r, rowIdx);
+        if (!this.seenTotalIds.has(key)) {
+          this.seenTotalIds.add(key);
+          if (r.isInactive) {
+            updatedCollapsed ??= new Set(this.collapsedIds);
+            updatedCollapsed.add(key);
+          }
+        }
+      });
+      if (updatedCollapsed) {
+        this.collapsedIds = updatedCollapsed;
+      }
+    }
   }
 
-  @property()
-  set rows(values: GqlTableRow[]) {
-    const oldRows = this.__rows;
-    this.__rows = values;
-    this.requestUpdate('rows', oldRows);
-  }
-  get rows(): GqlTableRow[] {
-    return this.__rows;
+  private getRowKey(r: GqlTableRow, rowIdx: number): string {
+    return r.id ?? r.account?.name ?? r.title ?? String(rowIdx);
   }
 
   onCellClick(
@@ -170,59 +168,18 @@ export class SummaryTable extends LitElement {
     }
   }
 
-  // Taggle child row visibility
-  private toggleChildRows(rowIdx: number, expanded: boolean) {
-    const rowInfo = this.childTableRows[rowIdx];
-    if (!rowInfo) {
-      throw new Error(`No such row ${rowIdx} have been registered.`);
+  private toggleRow(rowKey: string, expanded: boolean) {
+    const nextCollapsed = new Set(this.collapsedIds);
+    const nextExpanded = new Set(this.expandedIds);
+    if (expanded) {
+      nextCollapsed.delete(rowKey);
+      nextExpanded.add(rowKey);
+    } else {
+      nextCollapsed.add(rowKey);
+      nextExpanded.delete(rowKey);
     }
-    rowInfo.expanded = expanded;
-    this.setChildrenRowsVisibility(rowInfo, expanded);
-  }
-
-  // Recursively show/hide child table rows.
-  private setChildrenRowsVisibility(rowInfo: RowInfo, visible: boolean) {
-    // Child is visible if its parent is also expanded.
-    const childVisibility = visible && rowInfo.expanded;
-    for (const childIdx of rowInfo.childrenIdxs) {
-      const childRowInfo = this.childTableRows[childIdx];
-      if (childRowInfo) {
-        this.setChildrenRowsVisibility(childRowInfo, childVisibility);
-      }
-      const childElement = this.shadowRoot?.getElementById(`row-${childIdx}`);
-      if (childElement) {
-        childElement.style.display = childVisibility ? 'table-row' : 'none';
-      }
-    }
-  }
-
-  // Register row in the tree by row number and its indent.
-  private addRow(index: number, indent: number) {
-    this.childTableRows[index] = {
-      index,
-      indent,
-      expanded: true,
-      childrenIdxs: [],
-    };
-    if (indent <= 0) {
-      return;
-    }
-    // Look for parent based on indent, ie first row with smaller indent.
-    const findParent = (index: number, indent: number): RowInfo | undefined => {
-      for (let i = index - 1; i >= 0; i--) {
-        const rowInfo = this.childTableRows[i];
-        if ((rowInfo?.indent ?? 0) < indent) {
-          return rowInfo;
-        }
-      }
-      return undefined;
-    };
-    const parentInfo = findParent(index, indent);
-    if (!parentInfo) {
-      // This should never happen.
-      throw new Error(`Failed to find parent for row ${index} with indent ${indent}`);
-    }
-    parentInfo.childrenIdxs.push(index);
+    this.collapsedIds = nextCollapsed;
+    this.expandedIds = nextExpanded;
   }
 
   override render() {
@@ -236,6 +193,8 @@ export class SummaryTable extends LitElement {
       color: c.isCovered ? null : c.isProjectedCovered ? '#fa0' : '#f00',
       fontWeight: c.isCovered ? null : 700,
     });
+
+    const ancestorStack: Array<{indent: number; key: string; collapsed: boolean}> = [];
 
     return html`
       <table>
@@ -257,22 +216,34 @@ export class SummaryTable extends LitElement {
         </thead>
         <tbody>
           ${this.rows.map((r, rowIdx) => {
-            this.addRow(rowIdx, r.indent ?? 0);
+            const indent = r.indent ?? 0;
+            const rowKey = this.getRowKey(r, rowIdx);
+            while (
+              ancestorStack.length > 0 &&
+              ancestorStack[ancestorStack.length - 1]!.indent >= indent
+            ) {
+              ancestorStack.pop();
+            }
+            const parent = ancestorStack[ancestorStack.length - 1];
+            const ancestorCollapsed = ancestorStack.some((a) => a.collapsed);
+
             if (r.isSpace) {
-              return html`<tr id="row-${rowIdx}">
+              return html`<tr id="row-${rowIdx}" ?hidden=${ancestorCollapsed}>
                 <td class="account_type">${r.title}</td>
                 ${this.months.map(
                   () => html`<td colspan="4" style="border-right:2px double #a00"></td>`
                 )}
               </tr>`;
             } else if (r.isTotal) {
-              return html`<tr id="row-${rowIdx}" bgcolor="#ffd">
+              const isExpanded = !this.collapsedIds.has(rowKey);
+              ancestorStack.push({indent, key: rowKey, collapsed: !isExpanded});
+              return html`<tr id="row-${rowIdx}" bgcolor="#ffd" ?hidden=${ancestorCollapsed}>
                 <td>
                   <expand-button
-                    .expanded="${!r.isInactive}"
-                    @toggle="${(e: CustomEvent) => this.toggleChildRows(rowIdx, e.detail.expanded)}"
+                    .expanded="${isExpanded}"
+                    @toggle="${(e: CustomEvent) => this.toggleRow(rowKey, e.detail.expanded)}"
                   ></expand-button>
-                  ${Array(r.indent ?? 0)
+                  ${Array(indent)
                     .fill(0)
                     .map((_) => html`&nbsp;`)}<b>${r.title}</b>
                 </td>
@@ -313,12 +284,14 @@ export class SummaryTable extends LitElement {
               </tr>`;
             } else if (r.isNormal) {
               const account = r.account!;
-              return html`<tr id="row-${rowIdx}" ?hidden=${r.isInactive}>
+              const hiddenByInactive = r.isInactive && !(parent && this.expandedIds.has(parent.key));
+              const isHidden = ancestorCollapsed || hiddenByInactive;
+              return html`<tr id="row-${rowIdx}" ?hidden=${isHidden}>
                 <td
                   id="${account.name}"
                   @click="${(e: MouseEvent) => this.onTitleCellClick(e, r.id, r.account)}"
                 >
-                  ${Array(r.indent ?? 0)
+                  ${Array(indent)
                     .fill(0)
                     .map((_) => html`&nbsp;`)}
                   ${account.url

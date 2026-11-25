@@ -1,5 +1,5 @@
 import {LitElement, css, html, nothing} from 'lit';
-import {customElement} from 'lit/decorators.js';
+import {customElement, state} from 'lit/decorators.js';
 import {BackendClient} from '../api';
 import {
   type HeadingPopupData, 
@@ -54,20 +54,19 @@ export class TallyApp extends LitElement {
 
   backendClient = new BackendClient();
   private unsubscribeUpdates?: () => void;
-  private popupMap = new Map<string, PopupData>();
-
-  // Rendered values.
-  private startMonth: Month = Month.fromDate(new Date()).previous(12);
-  private endMonth: Month = Month.fromDate(new Date()).next(2);
-  private errorMessage: string = '';
-  private months: string[] = [];
-  private rows: Rows = {};
-  private popupData: PopupData | undefined = undefined;
   private activePopup: ActivePopupRequest | undefined = undefined;
   private popupRequestId = 0;
-  private popupOffset = {top: 0, left: 0};
-  private currentOwner: string | undefined = undefined;
-  private owners: string[] = [];
+
+  // Rendered reactive state.
+  @state() private startMonth: Month = Month.fromDate(new Date()).previous(12);
+  @state() private endMonth: Month = Month.fromDate(new Date()).next(2);
+  @state() private errorMessage: string = '';
+  @state() private months: string[] = [];
+  @state() private rows: Rows = {};
+  @state() private popupData: PopupData | undefined = undefined;
+  @state() private popupOffset = {top: 0, left: 0};
+  @state() private currentOwner: string | undefined = undefined;
+  @state() private owners: string[] = [];
 
   override connectedCallback() {
     super.connectedCallback();
@@ -146,12 +145,7 @@ export class TallyApp extends LitElement {
       this.closePopup();
     }
     this.currentOwner = owner;
-    if (this.popupMap.size === 0) {
-      // If data was loading individually.
-      this.reloadTable();
-    } else {
-      this.requestUpdate();
-    }
+    this.reloadTable();
   }
 
   tooltipFragment() {
@@ -200,7 +194,6 @@ export class TallyApp extends LitElement {
     this.popupRequestId++;
     this.activePopup = undefined;
     this.popupData = undefined;
-    this.requestUpdate();
   }
 
   private popupMonthRangeChange(e: CustomEvent<MonthRangeChange>) {
@@ -277,7 +270,6 @@ export class TallyApp extends LitElement {
         account: e.detail.account!,
       };
       this.popupData = popupData;
-      this.requestUpdate();
     }
   }
 
@@ -298,12 +290,10 @@ export class TallyApp extends LitElement {
           };
           this.popupData = popupData;
         }
-        this.requestUpdate();
       })
       .catch(() => {
         if (requestId !== this.popupRequestId) return;
         this.popupData = undefined;
-        this.requestUpdate();
       });
   }
 
@@ -333,12 +323,10 @@ export class TallyApp extends LitElement {
           };
           this.popupData = popupData;
         }
-        this.requestUpdate();
       })
       .catch(() => {
         if (requestId !== this.popupRequestId) return;
         this.popupData = undefined;
-        this.requestUpdate();
       });
   }
 
@@ -363,12 +351,10 @@ export class TallyApp extends LitElement {
           };
           this.popupData = popupData;
         }
-        this.requestUpdate();
       })
       .catch(() => {
         if (requestId !== this.popupRequestId) return;
         this.popupData = undefined;
-        this.requestUpdate();
       });
   }
 
@@ -427,15 +413,12 @@ export class TallyApp extends LitElement {
           this.rows = {
             [this.currentOwner ?? '']: freshRows,
           };
-          this.popupMap = new Map<string, PopupData>();
           this.refreshActivePopup(freshRows);
         }
-        this.requestUpdate();
       })
       .catch((error: Error) => {
         this.errorMessage = error.message;
         this.popupData = undefined;
-        this.requestUpdate();
       });
   }
 }

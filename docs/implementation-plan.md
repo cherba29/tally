@@ -57,15 +57,11 @@ Low-risk cleanup that reduces noise, removes dead code, and establishes automate
 
 ## Phase 3: Frontend Architecture & Maintainability (`client/src`)
 
-### 3.1 Declarative State & Row Folding in Lit
+### 3.1 Declarative State & Row Folding in Lit — Done
 - **Files**: [`client/src/components/summary-table.ts`](../client/src/components/summary-table.ts), [`client/src/components/tally-app.ts`](../client/src/components/tally-app.ts)
-- **Problem**:
-  - `SummaryTable.render()` mutates `childTableRows` via `addRow(...)` as a render side effect and toggles row visibility imperatively via `childElement.style.display`. Live YAML reloads reset all rows to expanded.
-  - `TallyApp` relies on manual `this.requestUpdate()` calls and still carries an unused `popupMap` field.
-- **Action**:
-  - Replace `childTableRows` in `SummaryTable` with `@state() private collapsedIds = new Set<string>()` and compute row visibility purely during `render()`—preserving collapsed groups across live reloads.
-  - Simplify `months` and `rows` getters/setters to `@property({attribute: false})`.
-  - Convert `TallyApp` state fields to Lit `@state()` decorators and delete dead `popupMap` code.
+- [x] Replaced imperative `childTableRows` mutation and DOM `style.display` toggling in `SummaryTable` with `@state() collapsedIds`/`expandedIds` and a pure O(N) indent stack in `render()`, preserving collapsed groups across live reloads and keeping inactive groups collapsed initially.
+- [x] Simplified `months` and `rows` in `SummaryTable` to `@property({attribute: false})`.
+- [x] Converted `TallyApp` UI fields to Lit `@state()` decorators, removed manual `requestUpdate()` calls, and deleted dead `popupMap` code.
 
 ### 3.2 Discriminated Union for `PopupData`
 - **Files**: [`client/src/utils.ts`](../client/src/utils.ts), [`client/src/components/tally-app.ts`](../client/src/components/tally-app.ts)

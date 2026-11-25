@@ -542,22 +542,97 @@ describe('SummaryTable component', () => {
     const row1Btn = row1.querySelector('expand-button')!;
 
     row0Btn.dispatchEvent(new CustomEvent('toggle', {detail: {expanded: false}}));
-    expect(row1.style.display).to.equal('none');
-    expect(row2.style.display).to.equal('none');
+    await element.updateComplete;
+    expect(row1.hidden).to.equal(true);
+    expect(row2.hidden).to.equal(true);
 
     row0Btn.dispatchEvent(new CustomEvent('toggle', {detail: {expanded: true}}));
-    expect(row1.style.display).to.equal('table-row');
-    expect(row2.style.display).to.equal('table-row');
+    await element.updateComplete;
+    expect(row1.hidden).to.equal(false);
+    expect(row2.hidden).to.equal(false);
 
     // Collapse child (row1), then collapse & re-expand parent (row0) -> grandchild stays hidden
     row1Btn.dispatchEvent(new CustomEvent('toggle', {detail: {expanded: false}}));
-    expect(row2.style.display).to.equal('none');
+    await element.updateComplete;
+    expect(row2.hidden).to.equal(true);
     row0Btn.dispatchEvent(new CustomEvent('toggle', {detail: {expanded: false}}));
-    expect(row1.style.display).to.equal('none');
-    expect(row2.style.display).to.equal('none');
+    await element.updateComplete;
+    expect(row1.hidden).to.equal(true);
+    expect(row2.hidden).to.equal(true);
     row0Btn.dispatchEvent(new CustomEvent('toggle', {detail: {expanded: true}}));
-    expect(row1.style.display).to.equal('table-row');
-    expect(row2.style.display).to.equal('none');
+    await element.updateComplete;
+    expect(row1.hidden).to.equal(false);
+    expect(row2.hidden).to.equal(true);
+
+    // Live reload with fresh rows preserves collapsed state of row1
+    element.rows = rows.map((r) => ({...r}));
+    await element.updateComplete;
+    expect(element.shadowRoot!.getElementById('row-1')!.hidden).to.equal(false);
+    expect(element.shadowRoot!.getElementById('row-2')!.hidden).to.equal(true);
+
+    // Expanding row1 reveals row2 (and inactive child row3 when explicitly expanded)
+    row1Btn.dispatchEvent(new CustomEvent('toggle', {detail: {expanded: true}}));
+    await element.updateComplete;
+    expect(element.shadowRoot!.getElementById('row-2')!.hidden).to.equal(false);
+    expect(element.shadowRoot!.getElementById('row-3')!.hidden).to.equal(false);
+  });
+
+  it('starts inactive summary groups collapsed and expands them on toggle', async () => {
+    const months = ['Aug2026'];
+    const rows: GqlTableRow[] = [
+      {
+        id: 'external/inactive',
+        title: 'inactive',
+        indent: 0,
+        isSpace: false,
+        isTotal: true,
+        isNormal: false,
+        isInactive: true,
+        account: null,
+        cells: [],
+      },
+      {
+        id: 'external/inactive/old-acct',
+        title: 'old-acct',
+        indent: 1,
+        isSpace: false,
+        isTotal: false,
+        isNormal: true,
+        isInactive: true,
+        account: {
+          address: '',
+          closedOn: undefined,
+          description: '',
+          external: true,
+          name: 'old-acct',
+          number: undefined,
+          openedOn: undefined,
+          owners: [],
+          password: '',
+          path: ['external', 'inactive'],
+          phone: '',
+          summary: false,
+          url: '',
+          userName: '',
+        },
+        cells: [],
+      },
+    ];
+
+    const element = await fixture<SummaryTable>(
+      html`<summary-table .months=${months} .rows=${rows}></summary-table>`
+    );
+
+    const groupRow = element.shadowRoot!.getElementById('row-0')!;
+    const childRow = element.shadowRoot!.getElementById('row-1')!;
+    const btn = groupRow.querySelector('expand-button')!;
+    expect(btn.expanded).to.equal(false);
+    expect(childRow.hidden).to.equal(true);
+
+    btn.dispatchEvent(new CustomEvent('toggle', {detail: {expanded: true}}));
+    await element.updateComplete;
+    expect(btn.expanded).to.equal(true);
+    expect(childRow.hidden).to.equal(false);
   });
 
   it('handles optional indent/cells and total-row rowId fallbacks on click', async () => {
