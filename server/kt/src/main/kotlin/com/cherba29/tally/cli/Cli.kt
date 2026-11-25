@@ -2,6 +2,7 @@ package com.cherba29.tally.cli
 
 import com.cherba29.tally.cli.cmds.CsvToTransfers
 import com.cherba29.tally.cli.cmds.Generate
+import com.cherba29.tally.cli.cmds.Recurring
 import com.cherba29.tally.cli.cmds.Report
 import com.cherba29.tally.cli.cmds.Summary
 import com.cherba29.tally.cli.cmds.Transactions
@@ -26,6 +27,7 @@ fun createCli(): CliktCommand =
     .subcommands(
       CsvToTransfers(),
       Generate(),
+      Recurring(),
       Report(),
       Summary(),
       Transactions(),

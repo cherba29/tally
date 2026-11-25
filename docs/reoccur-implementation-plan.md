@@ -195,7 +195,7 @@ Create a self-contained, independently testable package `com.cherba29.tally.recu
 
 ### Phase 3 — CLI Inspection Command (Optional but Recommended for Validation)
 
-- [ ] **3.1 Add `recurring` CLI subcommand**
+- [x] **3.1 Add `recurring` CLI subcommand**
   - **New file:** `server/kt/src/main/kotlin/com/cherba29/tally/cli/cmds/Recurring.kt`
   - **Modify:** `server/kt/src/main/kotlin/com/cherba29/tally/cli/Cli.kt` (register `Recurring()`).
   - **New file:** `server/kt/src/test/kotlin/com/cherba29/tally/cli/cmds/RecurringTest.kt`

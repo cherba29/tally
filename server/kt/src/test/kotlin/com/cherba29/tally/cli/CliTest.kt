@@ -30,6 +30,7 @@ class CliTest : DescribeSpec({
       result.statusCode shouldBe 0
       result.stdout shouldContain "csv-to-transfers"
       result.stdout shouldContain "generate"
+      result.stdout shouldContain "recurring"
       result.stdout shouldContain "report"
       result.stdout shouldContain "summary"
       result.stdout shouldContain "transactions"
