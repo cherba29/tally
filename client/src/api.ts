@@ -50,7 +50,6 @@ export class BackendClient {
     startMonth: string,
     endMonth: string
   ): Promise<ApolloClient.QueryResult<Query>> {
-    console.log(`### loadTable owner=${owner} ${startMonth}-${endMonth}`);
     return this.gqlClient.query<Query>({
       errorPolicy: 'all',
       query: gql`
@@ -119,7 +118,6 @@ export class BackendClient {
     startMonth: string | undefined,
     endMonth: string
   ): Promise<ApolloClient.QueryResult<Query>> {
-    console.log(`### loadSummaryData owner=${accountPath} ${startMonth}-${endMonth}`);
     return this.gqlClient.query<Query>({
       errorPolicy: 'all',
       query: gql`

@@ -12,7 +12,6 @@ import com.expediagroup.graphql.server.ktor.graphQLGetRoute
 import com.expediagroup.graphql.server.ktor.graphQLPostRoute
 import com.expediagroup.graphql.server.ktor.graphQLSDLRoute
 import com.expediagroup.graphql.server.ktor.graphiQLRoute
-import com.expediagroup.graphql.server.operations.Query
 import graphql.ErrorType
 import graphql.ExceptionWhileDataFetching
 import graphql.ExecutionResult
@@ -78,10 +77,6 @@ fun main(args: Array<String>) {
 )
 @GraphQLDescription("Schema for Tally data")
 class TallySchema : Schema
-
-class HelloWorldQuery : Query {
-  fun hello(): String = "Hello GraphQL!"
-}
 
 private const val TALLY_PATH_ENV_SETTING = "tally.data.path"
 private const val TALLY_LEGACY_PATH_ENV_SETTING = "tally.data.legacyPath"
@@ -255,18 +250,19 @@ fun Application.graphQLModule() {
 
   install(StatusPages) {
     exception<Throwable> { call, cause ->
-      when (cause) {
-        is UnsupportedOperationException -> {
+      when {
+        cause is UnsupportedOperationException -> {
           logger.warn(cause) { "Method not allowed for ${call.request.uri}: ${cause.message}" }
           call.respond(HttpStatusCode.MethodNotAllowed)
         }
-        is IllegalArgumentException -> {
+        cause is IllegalArgumentException ||
+          (cause is IllegalStateException && cause.message?.startsWith("Invalid HTTP request") == true) -> {
           logger.warn(cause) { "Bad request on ${call.request.uri}: ${cause.message}" }
           call.respond(HttpStatusCode.BadRequest)
         }
         else -> {
           logger.error(cause) { "Unhandled server error on ${call.request.uri}: ${cause.message}" }
-          call.respond(HttpStatusCode.BadRequest)
+          call.respond(HttpStatusCode.InternalServerError)
         }
       }
     }
@@ -288,7 +284,6 @@ fun Application.graphQLModule() {
     schema {
       packages = listOf("com.cherba29.tally", "kotlinx.datetime")
       queries = listOf(
-        HelloWorldQuery(),
         TableService(loader),
         SummaryService(loader),
         StatementService(loader)
@@ -313,7 +308,7 @@ fun Application.graphQLModule() {
         logger.info { "Pre-warming budget loader and GraphQL engine..." }
         val warmUpDuration = measureTime {
           loader.budget()
-          plugin(GraphQL).engine.execute("query WarmUp { hello }")
+          plugin(GraphQL).engine.execute("query WarmUp { __typename }")
         }
         logger.info { "Pre-warming complete in ${warmUpDuration.inWholeMilliseconds}ms" }
       } catch (e: Exception) {

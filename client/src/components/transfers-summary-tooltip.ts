@@ -62,7 +62,6 @@ export class TransfersSummaryTooltip extends LitElement {
   }
 
   switchView(e: CustomEvent) {
-    console.log(`### switchView changed month range ${e.detail.startMonth} - ${e.detail.endMonth}`);
     this.dispatchEvent(
       new CustomEvent<TransfersSummaryMonthRangeChange>('month-range-change', {
         detail: {

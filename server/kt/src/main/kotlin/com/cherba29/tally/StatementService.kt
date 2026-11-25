@@ -34,7 +34,7 @@ class StatementService(val loader: Loader) : Query {
           ?: throw NotFoundException("Did not find statement for month '$month' for account '$accountPath'")
         statement.toGql(accountNode.name, account.isClosed(statement.monthRange.first))
       } catch (e: Exception) {
-        logger.error(e) { "Error while processing table query account=$accountPath month=$month" }
+        logger.error(e) { "Error while processing statement query account=$accountPath month=$month" }
         throw e
       }
     }

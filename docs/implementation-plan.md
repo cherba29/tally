@@ -25,11 +25,11 @@ Low-risk cleanup that reduces noise, removes dead code, and establishes automate
 - [x] Formatted Kotlin sources with `./gradlew ktlintFormat`, renamed `toSnapshot.kt`/`toObjectNode.kt` to PascalCase (`ToSnapshot.kt`/`ToObjectNode.kt`), and resolved remaining manual `ktlintCheck` violations (`ToGql.kt`, `ApplicationTest.kt`, `BudgetTest.kt`).
 - [x] Wired `pnpm typecheck`, `pnpm lint`, and `./gradlew ktlintCheck` into [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
 
-### 1.4 Small Reliability & Hygiene Fixes
-- In [`Application.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/Application.kt), return `HttpStatusCode.InternalServerError` (`500`) instead of `400 Bad Request` for unhandled exceptions in `StatusPages`.
-- Remove unused `HelloWorldQuery` from the GraphQL schema (warm up GraphQL via schema initialization or an introspection query instead of exposing `hello: String!`).
-- Fix minor log typos (`startMont=` in `TableService`/`SummaryService`, `"Error while processing table query"` in `StatementService`) and remove debug `console.log('###', ...)` calls in `client/src/`.
-- In [`tally-app.ts`](../client/src/components/tally-app.ts), stop rethrowing inside `reloadTable().catch(...)` after updating `errorMessage`, preventing noisy unhandled promise rejections in the browser console.
+### 1.4 Small Reliability & Hygiene Fixes — Done
+- [x] Updated `StatusPages` in [`Application.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/Application.kt) to return `500 Internal Server Error` instead of `400 Bad Request` for unhandled exceptions (verified via `ApplicationTest`).
+- [x] Removed `HelloWorldQuery` from [`Application.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/Application.kt) and the SDL snapshot ([`ApplicationTest.ss`](../server/kt/src/test/kotlin/com/cherba29/tally/ApplicationTest.ss)); warm-up now executes `query WarmUp { __typename }`.
+- [x] Fixed backend log typos (`startMonth=` in [`TableService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/TableService.kt) and [`SummaryService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/SummaryService.kt), `"statement query"` in [`StatementService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/StatementService.kt)) and removed debug `console.log` statements from `client/src/`.
+- [x] Removed rethrow inside `reloadTable().catch(...)` in [`tally-app.ts`](../client/src/components/tally-app.ts) so rejected table loads update `errorMessage` and clear popups without unhandled promise rejections (covered in [`tally-app.test.ts`](../client/src/components/tally-app.test.ts)).
 
 ---
 

@@ -59,7 +59,7 @@ class SummaryService(val loader: Loader) : Query {
       } catch (e: Exception) {
         logger.error(e) {
           "Error while processing summary query accountType=$accountPath " +
-            "startMont=$startMonth, endMonth=$endMonth"
+            "startMonth=$startMonth, endMonth=$endMonth"
         }
         throw e
       }
@@ -74,15 +74,15 @@ class SummaryService(val loader: Loader) : Query {
     startMonth: Month? = null,
     endMonth: Month
   ): GqlTransfersSummary {
-    logger.info { "summary accountPath=$accountPath, startMonth=$startMonth, endMonth=$endMonth" }
+    logger.info { "transfersSummary accountPath=$accountPath, startMonth=$startMonth, endMonth=$endMonth" }
     val (result, timeTaken) = measureTimedValue {
       try {
         val budget = runBlocking { loader.budget() }
         budget.transfersSummary(accountPath, startMonth, endMonth)
       } catch (e: Exception) {
         logger.error(e) {
-          "Error while processing summary query accountType=$accountPath " +
-            "startMont=$startMonth, endMonth=$endMonth"
+          "Error while processing transfersSummary query accountType=$accountPath " +
+            "startMonth=$startMonth, endMonth=$endMonth"
         }
         throw e
       }

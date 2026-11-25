@@ -200,7 +200,6 @@ type GqlTransfersSummary {
 }
 
 type Query {
-  hello: String!
   "Returns a monthly statement for given account."
   statement(accountPath: String!, month: GqlMonth!): GqlStatement!
   "Generates delta summary table between two months."

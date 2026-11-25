@@ -73,7 +73,6 @@ export class TallyApp extends LitElement {
     super.connectedCallback();
     this.startMonth = Month.fromDate(new Date()).previous(12);
     this.endMonth = Month.fromDate(new Date()).next(2);
-    console.log('###', this.startMonth, this.endMonth);
     this.reloadTable();
     this.unsubscribeUpdates = this.backendClient.subscribeToUpdates(() => this.reloadTable());
   }
@@ -205,7 +204,6 @@ export class TallyApp extends LitElement {
   }
 
   private popupMonthRangeChange(e: CustomEvent<MonthRangeChange>) {
-    console.log('### popup month range change', e.detail.startMonth, '-->', e.detail.endMonth);
     this.activePopup = {
       type: 'summary',
       accountName: e.detail.accountName,
@@ -220,7 +218,6 @@ export class TallyApp extends LitElement {
   }
 
   private popupTransfersSummaryMonthRangeChange(e: CustomEvent<TransfersSummaryMonthRangeChange>) {
-    console.log('### popup transfers-summary month range change', e.detail.startMonth, '--', e.detail.endMonth);
     this.activePopup = {
       type: 'transfers-summary',
       accountPath: e.detail.accountPath,
@@ -235,7 +232,6 @@ export class TallyApp extends LitElement {
   }
 
   private onAddSubCellClick(e: CustomEvent<CellClickEventData>) {
-    console.log(e);
     this.popupOffset = {
       top: e.detail.mouseEvent.pageY + 10,
       left: e.detail.mouseEvent.pageX,
@@ -291,7 +287,6 @@ export class TallyApp extends LitElement {
       .loadStatement(accountName, month.toString())
       .then((result) => {
         if (requestId !== this.popupRequestId) return;
-        console.log(`PopupData for ${accountName} ${month}`, result);
         const statement = result.data?.statement;
         if (result.error || !statement) {
           this.popupData = undefined;
@@ -322,7 +317,6 @@ export class TallyApp extends LitElement {
       .loadSummaryData(accountName, startMonth?.toString(), endMonth.toString())
       .then((result) => {
         if (requestId !== this.popupRequestId) return;
-        console.log(`PopupData for ${accountName} ${startMonth}-${endMonth}`, result);
         const summary = result.data?.summary;
         if (result.error || !summary) {
           this.popupData = undefined;
@@ -358,7 +352,6 @@ export class TallyApp extends LitElement {
       .loadTransferSummaryData(accountPath, startMonth?.toString(), endMonth.toString())
       .then((result) => {
         if (requestId !== this.popupRequestId) return;
-        console.log(`addSub data for ${accountPath}`, result);
         const transfersSummary = result.data?.transfersSummary;
         if (result.error || !transfersSummary) {
           this.popupData = undefined;
@@ -418,11 +411,9 @@ export class TallyApp extends LitElement {
   }
 
   private reloadTable() {
-    console.log(`tally-app Loading graphql table ${this.startMonth} - ${this.endMonth}`);
     this.backendClient
       .loadTable(this.currentOwner ?? '', this.startMonth.toString(), this.endMonth.toString())
       .then((result) => {
-        console.log('backend response', result);
         if (result.error) {
           this.errorMessage = result.error.message;
           this.popupData = undefined;
@@ -441,11 +432,10 @@ export class TallyApp extends LitElement {
         }
         this.requestUpdate();
       })
-      .catch((error) => {
+      .catch((error: Error) => {
         this.errorMessage = error.message;
         this.popupData = undefined;
         this.requestUpdate();
-        throw error;
       });
   }
 }

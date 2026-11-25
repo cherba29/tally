@@ -830,5 +830,13 @@ describe('TallyApp popup refresh on reload', () => {
     onSubscriptionReload!();
     await flush(el);
     expect(el.shadowRoot!.querySelector('summary-table')).to.not.equal(null);
+
+    // 5. Rejected table reload surfaces error message and clears popup without unhandled rejection
+    el.backendClient.loadTable = () =>
+      Promise.reject(new Error('backend unreachable')) as unknown as ReturnType<BackendClient['loadTable']>;
+    onSubscriptionReload!();
+    await flush(el);
+    expect(el.shadowRoot!.querySelector('pre')!.textContent).to.equal('backend unreachable');
+    expect(el.shadowRoot!.querySelector('balance-tooltip')).to.equal(null);
   });
 });

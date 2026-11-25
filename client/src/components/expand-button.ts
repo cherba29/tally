@@ -15,7 +15,6 @@ export class ExpandButton extends LitElement {
   @property() expanded = true;
 
   toggle() {
-    // console.log(`### expand button ${this.expanded}`)
     this.expanded = !this.expanded;
     const event = new CustomEvent('toggle', {
       detail: {expanded: this.expanded},

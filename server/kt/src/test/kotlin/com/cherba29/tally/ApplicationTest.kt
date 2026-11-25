@@ -35,6 +35,8 @@ import io.ktor.serialization.jackson.jackson
 import io.ktor.server.config.MapApplicationConfig
 import io.ktor.server.config.mergeWith
 import io.ktor.server.plugins.di.dependencies
+import io.ktor.server.routing.get
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import io.ktor.websocket.Frame
@@ -175,6 +177,19 @@ class ApplicationTest : DescribeSpec({
       }
     }
 
+    it("server should return Internal Server Error for unhandled exceptions") {
+      testApplication {
+        configureTestClient(tallyPath)
+        routing {
+          get("/boom") {
+            throw RuntimeException("unexpected failure")
+          }
+        }
+        val response = client.get("/boom")
+        response.status shouldBe HttpStatusCode.InternalServerError
+      }
+    }
+
     it("server should handle valid POST requests") {
       testApplication {
         configureTestClient(tallyPath)
@@ -185,10 +200,10 @@ class ApplicationTest : DescribeSpec({
         }
         val response = client.post("/graphql") {
           contentType(ContentType.Application.Json)
-          setBody(GraphQLRequest(query = "query HelloWorldQuery { hello }"))
+          setBody(GraphQLRequest(query = "query { __typename }"))
         }
         response.status shouldBe HttpStatusCode.OK
-        response.bodyAsText() shouldContain """"hello":"Hello GraphQL!""""
+        response.bodyAsText() shouldContain """"__typename":"Query""""
       }
     }
 
