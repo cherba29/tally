@@ -160,6 +160,53 @@ describe('BackendClient GraphQL queries', () => {
     });
     expect(result.data?.statement?.name).to.equal('checking');
   });
+
+  it('returns error object when GraphQL response contains errors', async () => {
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          data: null,
+          errors: [{message: 'YAML error'}, {}],
+        }),
+        {status: 200, headers: {'content-type': 'application/json'}}
+      )) as typeof fetch;
+
+    const client = new BackendClient();
+    const result = await client.loadTable('alex', 'Jul2026', 'Nov2026');
+    expect(result.error?.message).to.equal('YAML error\nGraphQL error');
+  });
+
+  it('throws descriptive Error on non-OK HTTP responses (JSON errors and non-JSON body)', async () => {
+    globalThis.fetch = (async () =>
+      new Response(JSON.stringify({errors: [{message: 'Bad query'}, {}]}), {
+        status: 400,
+        statusText: 'Bad Request',
+        headers: {'content-type': 'application/json'},
+      })) as typeof fetch;
+
+    const client = new BackendClient();
+    let err1: Error | undefined;
+    try {
+      await client.loadSummaryData('alex/internal', undefined, 'Nov2026');
+    } catch (e) {
+      err1 = e as Error;
+    }
+    expect(err1?.message).to.equal('Bad query\nGraphQL error');
+
+    globalThis.fetch = (async () =>
+      new Response('Internal error', {
+        status: 500,
+        statusText: 'Internal Server Error',
+      })) as typeof fetch;
+
+    let err2: Error | undefined;
+    try {
+      await client.loadStatement('alex/internal/checking', 'Nov2026');
+    } catch (e) {
+      err2 = e as Error;
+    }
+    expect(err2?.message).to.equal('GraphQL request failed (500 Internal Server Error)');
+  });
 });
 
 describe('BackendClient.subscribeToUpdates', () => {

@@ -68,10 +68,11 @@ Low-risk cleanup that reduces noise, removes dead code, and establishes automate
 - [x] Added `kind: 'summary' | 'transfers-summary' | 'statement' | 'account'` discriminant to all `PopupData` interfaces in [`client/src/utils.ts`](../client/src/utils.ts).
 - [x] Replaced `'...' in this.popupData` checks and the unreachable fallback throw in `TallyApp.tooltipFragment()` with an exhaustive `switch (this.popupData.kind)`.
 
-### 3.3 Simplify GraphQL Client (`api.ts`)
-- **File**: [`client/src/api.ts`](../client/src/api.ts)
-- **Problem**: `@apollo/client` is used exclusively for 4 static POST queries with `fetchPolicy: 'no-cache'`, while `graphql-transport-ws` subscriptions are already implemented manually. This contributes significantly to the ~345 kB client bundle size.
-- **Action**: Replace `@apollo/client` with a small typed `fetch('/graphql', ...)` helper while keeping `@graphql-codegen` for TypeScript schema/query types. Verify bundle size reduction and simplify unit test mocks.
+### 3.3 Simplify GraphQL Client (`api.ts`) — Done
+- **Files**: [`client/src/api.ts`](../client/src/api.ts), [`client/package.json`](../client/package.json), [`client/pnpm-lock.yaml`](../client/pnpm-lock.yaml), [`client/src/api.test.ts`](../client/src/api.test.ts)
+- [x] Replaced `@apollo/client` with a lightweight typed `fetch('/graphql', ...)` `executeQuery()` helper in [`client/src/api.ts`](../client/src/api.ts) while retaining `@graphql-codegen` generated types (`gql_types.ts`).
+- [x] Removed `@apollo/client` from [`client/package.json`](../client/package.json), moved `graphql` to `devDependencies`, and regenerated [`client/pnpm-lock.yaml`](../client/pnpm-lock.yaml).
+- [x] Reduced the production JS bundle from **344.5 kB (103.6 kB gzip, 631 modules)** to **148.7 kB (46.3 kB gzip, 70 modules)** — a **57% reduction** — and added error-handling unit tests in [`client/src/api.test.ts`](../client/src/api.test.ts).
 
 ---
 

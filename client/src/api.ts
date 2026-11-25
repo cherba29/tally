@@ -1,15 +1,18 @@
-import {ApolloClient, gql, type DefaultOptions, HttpLink, ApolloLink} from '@apollo/client/core';
-import {InMemoryCache} from '@apollo/client/cache';
-import { type Query} from './gql_types';
+import {type Query} from './gql_types';
 
-const defaultOptions: DefaultOptions = {
-  watchQuery: {
-    fetchPolicy: 'no-cache',
-  },
-  query: {
-    fetchPolicy: 'no-cache',
-  },
-};
+export interface GraphQLErrorInfo {
+  message: string;
+}
+
+export interface QueryResult<T> {
+  data?: T;
+  error?: GraphQLErrorInfo;
+}
+
+interface GraphQLResponse<T> {
+  data?: T;
+  errors?: Array<{message?: string}>;
+}
 
 const getGraphqlUrl = (): string => {
   if (typeof window !== 'undefined' && window.location && window.location.origin !== 'null') {
@@ -17,10 +20,6 @@ const getGraphqlUrl = (): string => {
   }
   return 'http://localhost:8080/graphql';
 };
-
-const link = ApolloLink.from([
-  new HttpLink({uri: getGraphqlUrl()}),
-]);
 
 const getSubscriptionUrl = (): string => {
   if (typeof window !== 'undefined' && window.location && window.location.host) {
@@ -31,28 +30,60 @@ const getSubscriptionUrl = (): string => {
 };
 
 /**
- * Gql Backend Client.
+ * GraphQL Backend Client.
  */
 export class BackendClient {
-  private readonly gqlCache: InMemoryCache = new InMemoryCache({});
-  private readonly gqlClient = new ApolloClient({
-    cache: this.gqlCache,
-    link,
-    defaultOptions,
-  });
+  private async executeQuery<T>(
+    operationName: string,
+    query: string,
+    variables: Record<string, unknown>
+  ): Promise<QueryResult<T>> {
+    const response = await fetch(getGraphqlUrl(), {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        accept: 'application/json',
+      },
+      body: JSON.stringify({operationName, query, variables}),
+    });
+
+    if (!response.ok) {
+      let message = `GraphQL request failed (${response.status} ${response.statusText})`;
+      try {
+        const errorBody = (await response.json()) as GraphQLResponse<T>;
+        if (errorBody.errors && errorBody.errors.length > 0) {
+          message = errorBody.errors.map((e) => e.message ?? 'GraphQL error').join('\n');
+        }
+      } catch {
+        // Non-JSON error response; keep HTTP status message.
+      }
+      throw new Error(message);
+    }
+
+    const payload = (await response.json()) as GraphQLResponse<T>;
+    if (payload.errors && payload.errors.length > 0) {
+      return {
+        data: payload.data,
+        error: {
+          message: payload.errors.map((e) => e.message ?? 'GraphQL error').join('\n'),
+        },
+      };
+    }
+    return {data: payload.data};
+  }
 
   /**
-   * Load summary table data via gql client.
+   * Load summary table data via GraphQL.
    * @return promise of query result.
    */
   loadTable(
     owner: string,
     startMonth: string,
     endMonth: string
-  ): Promise<ApolloClient.QueryResult<Query>> {
-    return this.gqlClient.query<Query>({
-      errorPolicy: 'all',
-      query: gql`
+  ): Promise<QueryResult<Query>> {
+    return this.executeQuery<Query>(
+      'table',
+      `
         query table($owner: String!, $startMonth: GqlMonth!, $endMonth: GqlMonth!) {
           table(owner: $owner, startMonth: $startMonth, endMonth: $endMonth) {
             currentOwner
@@ -101,26 +132,26 @@ export class BackendClient {
           }
         }
       `,
-      variables: {
+      {
         owner,
         startMonth,
         endMonth,
-      },
-    });
+      }
+    );
   }
 
   /**
-   * Load summary (popup) data data via gql client.
+   * Load summary (popup) data via GraphQL.
    * @return promise of query result.
    */
   loadSummaryData(
     accountPath: string,
     startMonth: string | undefined,
     endMonth: string
-  ): Promise<ApolloClient.QueryResult<Query>> {
-    return this.gqlClient.query<Query>({
-      errorPolicy: 'all',
-      query: gql`
+  ): Promise<QueryResult<Query>> {
+    return this.executeQuery<Query>(
+      'summary',
+      `
         query summary(
           $accountPath: String!
           $startMonth: GqlMonth = null
@@ -186,26 +217,26 @@ export class BackendClient {
           }
         }
       `,
-      variables: {
+      {
         accountPath,
-        startMonth,
+        startMonth: startMonth ?? null,
         endMonth,
-      },
-    });
+      }
+    );
   }
 
   /**
-   * Load summary (popup) data data via gql client.
+   * Load transfer summary (popup) data via GraphQL.
    * @return promise of query result.
    */
   loadTransferSummaryData(
     accountPath: string,
     startMonth: string | undefined,
     endMonth: string
-  ): Promise<ApolloClient.QueryResult<Query>> {
-    return this.gqlClient.query<Query>({
-      errorPolicy: 'all',
-      query: gql`
+  ): Promise<QueryResult<Query>> {
+    return this.executeQuery<Query>(
+      'transfersSummary',
+      `
         query transfersSummary(
           $accountPath: String!
           $startMonth: GqlMonth = null
@@ -237,22 +268,22 @@ export class BackendClient {
           }
         }
       `,
-      variables: {
+      {
         accountPath,
-        startMonth,
+        startMonth: startMonth ?? null,
         endMonth,
-      },
-    });
+      }
+    );
   }
 
   /**
-   * Load data via gql client.
+   * Load statement data via GraphQL.
    * @return promise of query result.
    */
-  loadStatement(accountPath: string, month: string): Promise<ApolloClient.QueryResult<Query>> {
-    return this.gqlClient.query<Query>({
-      errorPolicy: 'all',
-      query: gql`
+  loadStatement(accountPath: string, month: string): Promise<QueryResult<Query>> {
+    return this.executeQuery<Query>(
+      'statement',
+      `
         query statement($accountPath: String!, $month: GqlMonth!) {
           statement(accountPath: $accountPath, month: $month) {
             name
@@ -296,11 +327,11 @@ export class BackendClient {
           }
         }
       `,
-      variables: {
+      {
         accountPath,
         month,
-      },
-    });
+      }
+    );
   }
 
   /**
