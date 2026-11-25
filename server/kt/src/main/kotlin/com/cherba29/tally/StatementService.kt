@@ -2,15 +2,13 @@ package com.cherba29.tally
 
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.data.Loader
+import com.cherba29.tally.data.statement
 import com.cherba29.tally.schema.GqlStatement
 import com.cherba29.tally.schema.toGql
-import com.cherba29.tally.statement.TransactionStatement
-import com.cherba29.tally.utils.TreeNode
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
-import java.lang.IllegalStateException
 import kotlin.time.measureTimedValue
 
 class StatementService(val loader: Loader) : Query {
@@ -22,17 +20,9 @@ class StatementService(val loader: Loader) : Query {
     logger.info { "statement account=$accountPath, month=$month" }
     val (result, timeTaken) = measureTimedValue {
       try {
-        val payload = runBlocking { loader.budget() }
-        val accountNode = payload.tree[accountPath.split("/").filter { it.isNotEmpty() }]
-          ?: throw NotFoundException("Did not find account '$accountPath'")
-        if (accountNode !is TreeNode.Leaf) {
-          throw NotFoundException("'$accountPath' is not an account path")
-        }
-        val account = accountNode.data.account
-          ?: throw IllegalStateException("No corresponding account for $accountNode")
-        val statement: TransactionStatement = payload.nodeToStatement[accountNode]?.get(month) as? TransactionStatement
-          ?: throw NotFoundException("Did not find statement for month '$month' for account '$accountPath'")
-        statement.toGql(accountNode.name, account.isClosed(statement.monthRange.first))
+        val budget = runBlocking { loader.budget() }
+        val (accountNode, statement, isClosed) = budget.statement(accountPath, month)
+        statement.toGql(accountNode.name, isClosed)
       } catch (e: Exception) {
         logger.error(e) { "Error while processing statement query account=$accountPath month=$month" }
         throw e

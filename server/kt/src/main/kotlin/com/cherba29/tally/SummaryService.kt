@@ -1,14 +1,12 @@
 package com.cherba29.tally
 
 import com.cherba29.tally.core.Month
-import com.cherba29.tally.core.rangeTo
 import com.cherba29.tally.data.Loader
-import com.cherba29.tally.data.builder.MonthRangeSummaryStatementBuilder
 import com.cherba29.tally.data.builder.transfersSummary
+import com.cherba29.tally.data.summary
 import com.cherba29.tally.schema.GqlSummaryData
 import com.cherba29.tally.schema.GqlTransfersSummary
 import com.cherba29.tally.schema.toGqlSummaryData
-import com.cherba29.tally.statement.SummaryStatement
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.server.operations.Query
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -33,29 +31,8 @@ class SummaryService(val loader: Loader) : Query {
     val (result, timeTaken) = measureTimedValue {
       try {
         val budget = runBlocking { loader.budget() }
-        val summaryPath = accountPath.split("/").filter { it.isNotEmpty() }
-        val summaryNode = budget.tree[summaryPath]
-          ?: throw NotFoundException("Summary '$accountPath' not found.")
-        val monthRange = startMonth..endMonth
-        val summaryStatements = budget.nodeToStatement[summaryNode]!!
-          .filter {
-            it.key in monthRange
-          }.mapValues { it.value as SummaryStatement }
-        if (summaryStatements.isEmpty()) {
-          throw NotFoundException(
-            "Summary '$accountPath' for months [$startMonth, $endMonth] not found."
-          )
-        }
-        val builder = MonthRangeSummaryStatementBuilder()
-        for (summaryStatement in summaryStatements.values) {
-          for ((treeNode, subStatement) in summaryStatement.statements) {
-            // Do not include closed statements in the summary.
-            if (!budget.isClosed(treeNode, subStatement.monthRange.first)) {
-              builder.addStatement(treeNode, subStatement.monthRange.first, subStatement)
-            }
-          }
-        }
-        builder.build().toGqlSummaryData(summaryNode.name, budget::isClosed)
+        val (summaryNode, summaryStatement) = budget.summary(accountPath, startMonth, endMonth)
+        summaryStatement.toGqlSummaryData(summaryNode.name, budget::isClosed)
       } catch (e: Exception) {
         logger.error(e) {
           "Error while processing summary query accountType=$accountPath " +

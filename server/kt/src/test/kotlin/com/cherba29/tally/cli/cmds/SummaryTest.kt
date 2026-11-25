@@ -74,5 +74,41 @@ class SummaryTest : DescribeSpec({
       command.endMonth shouldBe MAR / 2026
       error.message shouldBe "Summary 'someone/external' for months [Mar2026, Mar2026] not found."
     }
+
+    it("computes multi-month summary excluding closed accounts") {
+      val tallyPath = tempdir("tally-", keepOnFailure = false).toPath()
+      (tallyPath / "active.yaml").createFile().writeText(
+        """
+        name: active-account
+        owner: [someone]
+        path: [internal]
+        opened_on: Mar2019
+        balances:
+          - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
+          - { grp: Apr2019, date: 2019-04-01, camt: 150.00 }
+          - { grp: May2019, date: 2019-05-01, camt: 200.00 }
+        """.trimIndent()
+      )
+      (tallyPath / "closed.yaml").createFile().writeText(
+        """
+        name: closed-account
+        owner: [someone]
+        path: [internal]
+        opened_on: Mar2019
+        closed_on: Mar2019
+        balances:
+          - { grp: Mar2019, date: 2019-03-01, camt: 500.00 }
+        """.trimIndent()
+      )
+
+      val result = Summary().test(
+        listOf("someone/internal", "--start-month=Apr2019", "--end-month=Apr2019"),
+        envvars = mapOf("TALLY_FILES" to tallyPath.toString())
+      )
+      result.statusCode shouldBe 0
+      result.stdout shouldContain "name: someone/internal"
+      result.stdout shouldContain "month: Apr2019..Apr2019"
+      result.stdout shouldContain "change: 50.00"
+    }
   }
 })

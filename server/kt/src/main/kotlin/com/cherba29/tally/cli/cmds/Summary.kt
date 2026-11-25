@@ -1,17 +1,14 @@
 package com.cherba29.tally.cli.cmds
 
-import com.cherba29.tally.NotFoundException
 import com.cherba29.tally.core.Month
 import com.cherba29.tally.data.Loader
-import com.cherba29.tally.data.builder.MonthRangeSummaryStatementBuilder
-import com.cherba29.tally.statement.SummaryStatement
+import com.cherba29.tally.data.summary
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.Context
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.options.required
-import kotlin.collections.filter
 
 class Summary : CliktCommand() {
   override fun help(context: Context) = "Full report"
@@ -31,35 +28,7 @@ class Summary : CliktCommand() {
   override fun run() {
     echo("Executing report for $account from $startMonth to $endMonth for $tallyPath")
     val payload = Loader.loadFrom(tallyPath)
-    val accountPath = account.split("/")
-    val summaryNode = payload.tree[accountPath]
-      ?: throw IllegalStateException("Account not found $account known accounts\n${payload.tree.toPrettyString()}")
-
-    val monthRange = startMonth..endMonth
-
-    val summaryStatements = payload.nodeToStatement[summaryNode]!!
-      .filter {
-        it.key in monthRange
-      }.mapValues { it.value as SummaryStatement }
-    if (summaryStatements.isEmpty()) {
-      throw NotFoundException(
-        "Summary '$account' for months [$startMonth, $endMonth] not found."
-      )
-    }
-    // Multi-month queries will produce multiple summary statements which need to be combined,
-    // but for single month we can simply return found single summary.
-    val summary =
-      if (summaryStatements.size == 1) {
-        summaryStatements.entries.first().value
-      } else {
-        val builder = MonthRangeSummaryStatementBuilder()
-        for (summaryStatement in summaryStatements.values) {
-          for ((treeNode, subStatement) in summaryStatement.statements) {
-            builder.addStatement(treeNode, subStatement.monthRange.first(), subStatement)
-          }
-        }
-        builder.build()
-      }
+    val (summaryNode, summary) = payload.summary(account, startMonth, endMonth)
     echo("name: ${summaryNode.path.joinToString("/")}")
     echo("month: ${summary.monthRange}")
     echo("addSub: ${summary.addSub.asAmount()}")

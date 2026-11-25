@@ -40,12 +40,10 @@ Low-risk cleanup that reduces noise, removes dead code, and establishes automate
 - [x] Replaced duplicate validation/lookup logic across `validateTransfers()` and `buildTransactionStatements()` with a single-pass `resolveTransfers()` returning `List<ResolvedTransfer>` (preserving `validate()` public API and `BudgetLoadingException` file/line context).
 - [x] Passed the resolved transfers directly into `buildTransactionStatements()` so transfer resolution and validation cannot diverge.
 
-### 2.2 Share Query & Aggregation Logic Between GraphQL Services and CLI
-- **Files**: [`SummaryService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/SummaryService.kt), [`StatementService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/StatementService.kt), [`TableService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/TableService.kt), [`cli/cmds/Summary.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/cli/cmds/Summary.kt)
-- **Problem**: `SummaryService` and `cli/cmds/Summary.kt` duplicate multi-month `MonthRangeSummaryStatementBuilder` aggregation and have diverged (`SummaryService` excludes closed statements via `!budget.isClosed(...)`, while the CLI does not).
-- **Action**:
-  - Move domain query functions (`summary(...)`, `statement(...)`, `table(...)`) onto `Budget` or a dedicated `BudgetQueries` helper (matching the existing `budget.transfersSummary(...)` pattern).
-  - Keep GraphQL resolvers and Clikt commands as thin presentation/formatting adapters.
+### 2.2 Share Query & Aggregation Logic Between GraphQL Services and CLI — Done
+- **Files**: [`BudgetQueries.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/data/BudgetQueries.kt), [`SummaryService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/SummaryService.kt), [`StatementService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/StatementService.kt), [`TableService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/TableService.kt), [`cli/cmds/Summary.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/cli/cmds/Summary.kt)
+- [x] Extracted `Budget.summary(...)`, `Budget.statement(...)`, and `Budget.table(...)` into [`BudgetQueries.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/data/BudgetQueries.kt) (matching `Budget.transfersSummary(...)`).
+- [x] Refactored `SummaryService`, `StatementService`, `TableService`, and CLI `Summary` into thin adapters over the shared `Budget` queries so CLI and GraphQL share identical aggregation and closed-account exclusion (verified in [`SummaryTest.kt`](../server/kt/src/test/kotlin/com/cherba29/tally/cli/cmds/SummaryTest.kt)).
 
 ### 2.3 Use `suspend` GraphQL Resolvers Instead of `runBlocking`
 - **Files**: [`TableService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/TableService.kt), [`SummaryService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/SummaryService.kt), [`StatementService.kt`](../server/kt/src/main/kotlin/com/cherba29/tally/StatementService.kt)
