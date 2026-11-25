@@ -1,7 +1,7 @@
 import {expect} from '@esm-bundle/chai';
 import './tally-app';
 import {type TallyApp} from './tally-app';
-import {type BackendClient} from '../api';
+import {type BackendClient, type ConnectionState} from '../api';
 import {type CellClickEventData} from './summary-table';
 import {type MonthRangeChange} from './balance-summary-tooltip';
 import {type TransfersSummaryMonthRangeChange} from './transfers-summary-tooltip';
@@ -92,6 +92,7 @@ const flush = async (el: TallyApp) => {
 describe('TallyApp popup refresh on reload', () => {
   let el: TallyApp;
   let onSubscriptionReload: (() => void) | undefined;
+  let onConnectionStateChange: ((state: ConnectionState) => void) | undefined;
   let tableRows: GqlTableRow[];
   let tableError: {message: string} | undefined;
   let statementAmount: number;
@@ -169,10 +170,12 @@ describe('TallyApp popup refresh on reload', () => {
           },
         });
       },
-      subscribeToUpdates: (cb: () => void) => {
+      subscribeToUpdates: (cb: () => void, onStateChange?: (state: ConnectionState) => void) => {
         onSubscriptionReload = cb;
+        onConnectionStateChange = onStateChange;
         return () => {
           onSubscriptionReload = undefined;
+          onConnectionStateChange = undefined;
         };
       },
     }) as unknown as BackendClient;
@@ -999,6 +1002,53 @@ describe('TallyApp popup refresh on reload', () => {
     } finally {
       globalThis.setTimeout = origSetTimeout;
       globalThis.clearTimeout = origClearTimeout;
+    }
+  });
+
+  it('displays live-reload connection state and last reload timestamp in the header', async () => {
+    const statusEl = el.shadowRoot!.querySelector<HTMLElement>('.live-status')!;
+    const labelEl = statusEl.querySelector<HTMLElement>('.status-label')!;
+    const reloadTimeEl = statusEl.querySelector<HTMLElement>('.last-reload');
+
+    // Initial state before WebSocket handshake completes, after initial table load succeeds
+    expect(statusEl.classList.contains('disconnected')).to.equal(true);
+    expect(labelEl.textContent?.trim()).to.equal('Disconnected');
+    expect(reloadTimeEl).to.not.equal(null);
+    expect(reloadTimeEl!.textContent).to.match(/\d{2}:\d{2}:\d{2}/);
+    expect(statusEl.getAttribute('title')).to.include('Live reload: disconnected');
+    expect(statusEl.getAttribute('title')).to.include('last updated');
+
+    // Transition to connected
+    onConnectionStateChange!('connected');
+    await flush(el);
+    expect(statusEl.classList.contains('connected')).to.equal(true);
+    expect(labelEl.textContent?.trim()).to.equal('Live');
+    expect(statusEl.getAttribute('title')).to.include('Live reload: connected');
+
+    // Transition to reconnecting
+    onConnectionStateChange!('reconnecting');
+    await flush(el);
+    expect(statusEl.classList.contains('reconnecting')).to.equal(true);
+    expect(labelEl.textContent?.trim()).to.equal('Reconnecting');
+    expect(statusEl.getAttribute('title')).to.include('Live reload: reconnecting');
+
+    // Fresh component whose initial load fails has no last-reload timestamp until a load succeeds
+    tableError = {message: 'initial failure'};
+    const el2 = document.createElement('tally-app') as TallyApp;
+    el2.backendClient = createMockClient();
+    document.body.appendChild(el2);
+    try {
+      await flush(el2);
+      const status2 = el2.shadowRoot!.querySelector<HTMLElement>('.live-status')!;
+      expect(status2.querySelector('.last-reload')).to.equal(null);
+      expect(status2.getAttribute('title')).to.equal('Live reload: disconnected');
+
+      tableError = undefined;
+      onSubscriptionReload!();
+      await flush(el2);
+      expect(status2.querySelector('.last-reload')?.textContent).to.match(/\d{2}:\d{2}:\d{2}/);
+    } finally {
+      el2.remove();
     }
   });
 });

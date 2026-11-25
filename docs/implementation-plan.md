@@ -94,9 +94,10 @@ Low-risk cleanup that reduces noise, removes dead code, and establishes automate
 - [x] Added `Escape`-key and click-outside dismissal (using `composedPath()` and ignoring the originating cell click) with full listener cleanup in `disconnectedCallback()`.
 - [x] Dispatched bubbling `copied` events from [`summary-table.ts`](../client/src/components/summary-table.ts) and [`balance-tooltip.ts`](../client/src/components/balance-tooltip.ts) and rendered an auto-dismissing status toast in [`tally-app.ts`](../client/src/components/tally-app.ts).
 
-### 4.4 Live-Reload Status Indicator
+### 4.4 Live-Reload Status Indicator — Done
 - **Files**: [`client/src/api.ts`](../client/src/api.ts), [`client/src/components/tally-app.ts`](../client/src/components/tally-app.ts)
-- **Action**: Expose WebSocket connection state (`connected` / `reconnecting` / `disconnected`) from `BackendClient` and display a compact status indicator (plus last reload timestamp) in the header so side-by-side YAML editing provides clear feedback.
+- [x] Exported `ConnectionState` (`'connected' | 'reconnecting' | 'disconnected'`) and added an optional `onStateChange` callback to `BackendClient.subscribeToUpdates()` emitting deduplicated WebSocket lifecycle transitions (covered in [`api.test.ts`](../client/src/api.test.ts)).
+- [x] Added a compact live-reload status badge (`.live-status`) with colored dot, connection label (`Live` / `Reconnecting` / `Disconnected`), and last-reload `HH:MM:SS` timestamp to the `<header class="toolbar">` in [`tally-app.ts`](../client/src/components/tally-app.ts) (covered in [`tally-app.test.ts`](../client/src/components/tally-app.test.ts)).
 
 ### 4.5 Fast CLI Invocation
 - **Files**: Root script (e.g., `./tally.sh`) and/or unified fat-JAR entry point in [`server/kt`](../server/kt)

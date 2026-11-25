@@ -1,6 +1,6 @@
 import {LitElement, css, html, nothing, type PropertyValues} from 'lit';
 import {customElement, state} from 'lit/decorators.js';
-import {BackendClient} from '../api';
+import {BackendClient, type ConnectionState} from '../api';
 import {
   type HeadingPopupData, 
   type PopupData, 
@@ -88,6 +88,38 @@ export class TallyApp extends LitElement {
     }
     .toolbar button:hover {
       background-color: #eaeef2;
+    }
+    .live-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-left: auto;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #d0d7de;
+      background-color: #fff;
+      font-size: 11px;
+      color: #57606a;
+      white-space: nowrap;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .live-status.connected .status-dot {
+      background-color: #1a7f37;
+    }
+    .live-status.reconnecting .status-dot {
+      background-color: #bf8700;
+    }
+    .live-status.disconnected .status-dot {
+      background-color: #cf222e;
+    }
+    .last-reload {
+      font-family: monospace;
+      color: #6e7781;
     }
     .owner-tabs {
       display: flex;
@@ -185,6 +217,8 @@ export class TallyApp extends LitElement {
   @state() private popupData: PopupData | undefined = undefined;
   @state() private currentOwner: string | undefined = undefined;
   @state() private owners: string[] = [];
+  @state() private connectionState: ConnectionState = 'disconnected';
+  @state() private lastReloadAt: Date | undefined = undefined;
 
   private readonly handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === 'Escape' && (this.popupData || this.activePopup)) {
@@ -218,7 +252,12 @@ export class TallyApp extends LitElement {
     this.startMonth = Month.fromDate(new Date()).previous(12);
     this.endMonth = Month.fromDate(new Date()).next(2);
     this.reloadTable();
-    this.unsubscribeUpdates = this.backendClient.subscribeToUpdates(() => this.reloadTable());
+    this.unsubscribeUpdates = this.backendClient.subscribeToUpdates(
+      () => this.reloadTable(),
+      (state) => {
+        this.connectionState = state;
+      }
+    );
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('resize', this.handleWindowResize);
     document.addEventListener('click', this.handleDocumentClick);
@@ -350,6 +389,22 @@ export class TallyApp extends LitElement {
     }, 2000);
   }
 
+  private formatReloadTime(date: Date): string {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  }
+
+  private connectionStatusLabel(): string {
+    switch (this.connectionState) {
+      case 'connected':
+        return 'Live';
+      case 'reconnecting':
+        return 'Reconnecting';
+      case 'disconnected':
+        return 'Disconnected';
+    }
+  }
+
   override render() {
     const popupStyle: StyleInfo = {
       display: this.popupData ? null : 'none',
@@ -357,6 +412,11 @@ export class TallyApp extends LitElement {
     const tabStyle = (owner: string): StyleInfo => ({
       display: this.currentOwner === owner ? null : 'none',
     });
+    const statusLabel = this.connectionStatusLabel();
+    const lastReloadTime = this.lastReloadAt ? this.formatReloadTime(this.lastReloadAt) : undefined;
+    const statusTitle = lastReloadTime
+      ? `Live reload: ${this.connectionState} (last updated ${lastReloadTime})`
+      : `Live reload: ${this.connectionState}`;
 
     return html`
       <header class="toolbar">
@@ -386,6 +446,16 @@ export class TallyApp extends LitElement {
         <span class="control-group" data-group="actions">
           <button title="Reset range to default window around today" @click="${this.resetRange}">Today</button>
           <button title="Reload table data from server" @click="${this.reloadTable}">Reload Table</button>
+        </span>
+        <span
+          class="live-status ${this.connectionState}"
+          role="status"
+          aria-live="polite"
+          title="${statusTitle}"
+        >
+          <span class="status-dot" aria-hidden="true"></span>
+          <span class="status-label">${statusLabel}</span>
+          ${lastReloadTime ? html`<span class="last-reload">&middot; ${lastReloadTime}</span>` : nothing}
         </span>
       </header>
       ${this.errorMessage
@@ -712,6 +782,7 @@ export class TallyApp extends LitElement {
           this.rows = {
             [this.currentOwner ?? '']: freshRows,
           };
+          this.lastReloadAt = new Date();
           this.refreshActivePopup(freshRows);
         }
       })

@@ -1,5 +1,7 @@
 import {type Query} from './gql_types';
 
+export type ConnectionState = 'connected' | 'reconnecting' | 'disconnected';
+
 export interface GraphQLErrorInfo {
   message: string;
 }
@@ -336,11 +338,15 @@ export class BackendClient {
 
   /**
    * Subscribes to table updates from the GraphQL backend.
-   * Calls onReload callback whenever data is reloaded.
-   * Returns an unsubscribe function.
+   * Calls onReload callback whenever data is reloaded, and onStateChange when WebSocket
+   * connection state changes. Returns an unsubscribe function.
    */
-  subscribeToUpdates(onReload: () => void): () => void {
+  subscribeToUpdates(
+    onReload: () => void,
+    onStateChange?: (state: ConnectionState) => void
+  ): () => void {
     if (typeof WebSocket === 'undefined') {
+      onStateChange?.('disconnected');
       return () => {};
     }
 
@@ -350,6 +356,14 @@ export class BackendClient {
     let resubscribeTimeout: ReturnType<typeof setTimeout> | null = null;
     let subId = 1;
     let activeSubId: string | null = null;
+    let connectionState: ConnectionState | null = null;
+
+    const setConnectionState = (next: ConnectionState) => {
+      if (next !== connectionState) {
+        connectionState = next;
+        onStateChange?.(next);
+      }
+    };
 
     const clearResubscribeTimeout = () => {
       if (resubscribeTimeout) {
@@ -395,6 +409,7 @@ export class BackendClient {
       if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
         ws.close();
       }
+      setConnectionState('disconnected');
     };
 
     const connect = () => {
@@ -417,6 +432,7 @@ export class BackendClient {
             const data = JSON.parse(event.data);
             if (data.type === 'connection_ack') {
               sendSubscribe(socket);
+              setConnectionState('connected');
             } else if (data.type === 'next') {
               onReload();
             } else if (data.type === 'complete') {
@@ -448,9 +464,10 @@ export class BackendClient {
           if (ws === socket) {
             activeSubId = null;
             clearResubscribeTimeout();
-          }
-          if (!isClosed) {
-            reconnectTimeout = setTimeout(connect, 3000);
+            if (!isClosed) {
+              setConnectionState('reconnecting');
+              reconnectTimeout = setTimeout(connect, 3000);
+            }
           }
         };
 
@@ -459,6 +476,7 @@ export class BackendClient {
         };
       } catch {
         if (!isClosed) {
+          setConnectionState('reconnecting');
           reconnectTimeout = setTimeout(connect, 3000);
         }
       }

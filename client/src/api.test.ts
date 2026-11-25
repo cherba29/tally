@@ -1,5 +1,5 @@
 import {expect} from '@esm-bundle/chai';
-import {BackendClient} from './api';
+import {BackendClient, type ConnectionState} from './api';
 
 class MockWebSocket {
   static readonly CONNECTING = 0;
@@ -297,12 +297,17 @@ describe('BackendClient.subscribeToUpdates', () => {
     expect(ws.closeCalls).to.equal(1);
   });
 
-  it('returns a no-op unsubscribe when WebSocket is unavailable', () => {
+  it('returns a no-op unsubscribe and reports disconnected when WebSocket is unavailable', () => {
     (globalThis as unknown as {WebSocket: unknown}).WebSocket = undefined;
     const client = new BackendClient();
-    const unsubscribe = client.subscribeToUpdates(() => {});
+    const states: ConnectionState[] = [];
+    const unsubscribe = client.subscribeToUpdates(
+      () => {},
+      (state) => states.push(state)
+    );
     expect(() => unsubscribe()).to.not.throw();
     expect(MockWebSocket.instances).to.have.lengthOf(0);
+    expect(states).to.deep.equal(['disconnected']);
   });
 
   it('handles server complete, malformed JSON, send errors on complete, and late onopen after close', () => {
@@ -362,13 +367,18 @@ describe('BackendClient.subscribeToUpdates', () => {
     try {
       const client = new BackendClient();
       let reloads = 0;
-      const unsubscribe = client.subscribeToUpdates(() => {
-        reloads++;
-      });
+      const states: ConnectionState[] = [];
+      const unsubscribe = client.subscribeToUpdates(
+        () => {
+          reloads++;
+        },
+        (state) => states.push(state)
+      );
 
       const ws1 = MockWebSocket.instances[0]!;
       ws1.emitOpen();
       ws1.emitMessage({type: 'connection_ack'});
+      expect(states).to.deep.equal(['connected']);
 
       // Error triggers reload and schedules 1000ms resubscribe
       ws1.emitMessage({id: '1', type: 'error', payload: [{message: 'err'}]});
@@ -385,9 +395,10 @@ describe('BackendClient.subscribeToUpdates', () => {
         payload: {query: 'subscription { tableUpdates }'},
       });
 
-      // Unexpected close schedules 3000ms reconnect
+      // Unexpected close schedules 3000ms reconnect and reports reconnecting
       ws1.readyState = MockWebSocket.CLOSED;
       ws1.onclose?.(new CloseEvent('close'));
+      expect(states).to.deep.equal(['connected', 'reconnecting']);
       expect(timers.size).to.equal(1);
       const reconnEntry = Array.from(timers.entries())[0]!;
       expect(reconnEntry[1].delay).to.equal(3000);
@@ -395,15 +406,29 @@ describe('BackendClient.subscribeToUpdates', () => {
       reconnEntry[1].cb();
       expect(MockWebSocket.instances).to.have.lengthOf(2);
 
-      // Unexpected close followed by unsubscribe clears pending reconnect timeout
+      // Reconnecting socket completes handshake -> back to connected
       const ws2 = MockWebSocket.instances[1]!;
+      ws2.emitOpen();
+      ws2.emitMessage({type: 'connection_ack'});
+      expect(states).to.deep.equal(['connected', 'reconnecting', 'connected']);
+
+      // Unexpected close followed by unsubscribe clears pending reconnect timeout and reports disconnected once
       ws2.readyState = MockWebSocket.CLOSED;
       ws2.onclose?.(new CloseEvent('close'));
+      expect(states).to.deep.equal(['connected', 'reconnecting', 'connected', 'reconnecting']);
       expect(timers.size).to.equal(1);
       unsubscribe();
+      unsubscribe();
       expect(timers.size).to.equal(0);
+      expect(states).to.deep.equal([
+        'connected',
+        'reconnecting',
+        'connected',
+        'reconnecting',
+        'disconnected',
+      ]);
 
-      // WebSocket constructor throwing schedules 3000ms reconnect
+      // WebSocket constructor throwing schedules 3000ms reconnect and reports reconnecting
       class ThrowingWebSocket {
         static readonly OPEN = 1;
         static readonly CONNECTING = 0;
@@ -412,10 +437,16 @@ describe('BackendClient.subscribeToUpdates', () => {
         }
       }
       (globalThis as unknown as {WebSocket: typeof ThrowingWebSocket}).WebSocket = ThrowingWebSocket;
-      const unsubscribeThrowing = client.subscribeToUpdates(() => {});
+      const throwingStates: ConnectionState[] = [];
+      const unsubscribeThrowing = client.subscribeToUpdates(
+        () => {},
+        (state) => throwingStates.push(state)
+      );
+      expect(throwingStates).to.deep.equal(['reconnecting']);
       expect(timers.size).to.equal(1);
       expect(Array.from(timers.values())[0]!.delay).to.equal(3000);
       unsubscribeThrowing();
+      expect(throwingStates).to.deep.equal(['reconnecting', 'disconnected']);
       expect(timers.size).to.equal(0);
     } finally {
       globalThis.setTimeout = origSetTimeout;
