@@ -52,12 +52,22 @@ class BudgetBuilder {
     val lineNumber: Int? = null
   )
 
-  private data class ResolvedTransfer(
+  internal data class ResolvedTransfer(
     val fromAccountNode: TreeNode.Leaf<Profile>,
     val toAccountNode: TreeNode.Leaf<Profile>,
     val month: Month,
     val balance: Balance,
-    val description: String?
+    val description: String?,
+    val sourceFileKey: String? = null
+  )
+
+  internal data class BuildSnapshot(
+    val budget: Budget,
+    val pathToLeaf: Map<List<String>, TreeNode.Leaf<Profile>>,
+    val accountNameToPaths: Map<String, List<List<String>>>,
+    val leafBalances: Map<TreeNode.Leaf<Profile>, Map<Month, Balance>>,
+    val resolvedTransfers: List<ResolvedTransfer>,
+    val transfersFingerprint: TransfersFingerprint
   )
 
   private val treeNodeBuilder = TreeNode.Builder<Profile>()
@@ -274,6 +284,117 @@ class BudgetBuilder {
   private fun validateBalances() {
     for ((accountPath, accountBalances) in balances) {
       val sourceFile = accountSourceFiles[accountPath] ?: continue
+      validateAccountBalances(accountPath, accountBalances, sourceFile)
+    }
+  }
+
+  private fun buildAccountNameToPaths(): Map<String, List<List<String>>> = pathToAccount.keys.groupBy { it.last() }
+
+  private fun resolveTransfers(
+    treeRoot: TreeNode<Profile>,
+    accountNameToPaths: Map<String, List<List<String>>> = buildAccountNameToPaths()
+  ): List<ResolvedTransfer> {
+    val cachedNameToTreenodeMap = mutableMapOf<String, TreeNode.Leaf<Profile>>()
+    val resolvedTransfers = ArrayList<ResolvedTransfer>(transferRecordList.size)
+
+    for (record in transferRecordList) {
+      val sourceFile = record.sourceFile ?: accountSourceFiles[record.fromAccountPath]
+      resolvedTransfers.add(
+        resolveTransferRecord(
+          record = record,
+          treeRoot = treeRoot,
+          accountNameToPaths = accountNameToPaths,
+          cachedNameToTreenodeMap = cachedNameToTreenodeMap,
+          fallbackSourceFile = sourceFile
+        )
+      )
+    }
+
+    return resolvedTransfers
+  }
+
+  data class RecurringBuildContext(
+    val previousFingerprint: TransfersFingerprint? = null,
+    val previousDeferred: Deferred<RecurringTransactionIndex>? = null,
+    val asyncScope: CoroutineScope? = null
+  )
+
+  fun build(recurringContext: RecurringBuildContext? = null): Budget = buildWithSnapshot(recurringContext).budget
+
+  internal fun buildWithSnapshot(recurringContext: RecurringBuildContext? = null): BuildSnapshot {
+    if (monthRange?.isEmpty() ?: true) {
+      throw IllegalArgumentException("Budget must have at least one month.")
+    }
+
+    val treeRoot = treeNodeBuilder.build()
+    val pathToLeaf = pathToAccount.keys.associateWith { path ->
+      treeRoot[path] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path $path")
+    }
+    val accountNameToPaths = buildAccountNameToPaths()
+
+    validateBalances()
+    val resolvedTransfers = resolveTransfers(treeRoot, accountNameToPaths)
+
+    val nodeToStatement = mutableMapOf<TreeNode<Profile>, Map<Month, Statement>>()
+    val (numTransactions, elapsedTransactionTime) = timeSource.measureTimedValue {
+      val transactionStatements = buildTransactionStatements(treeRoot, resolvedTransfers)
+      nodeToStatement.putAll(transactionStatements)
+      transactionStatements.values.sumOf { it.values.sumOf { stmt -> stmt.transactions.size } }
+    }
+
+    val (summaryNameMonthMap, elapsedBuildSummaryStatements) = timeSource.measureTimedValue {
+      val summaryMapBuilder = SummaryMapBuilder()
+      summaryMapBuilder.addAll(nodeToStatement)
+      summaryMapBuilder.build(treeRoot)
+    }
+    nodeToStatement.putAll(summaryNameMonthMap)
+
+    val fingerprint = computeResolvedTransfersFingerprint(resolvedTransfers)
+    val (recurringDeferred, recurringLogDetail, elapsedRecurring) = scheduleRecurringIndex(
+      candidatesProvider = { buildTransferCandidates(resolvedTransfers) },
+      fingerprint = fingerprint,
+      recurringContext = recurringContext,
+      timeSource = timeSource
+    )
+
+    logger.info {
+      "Build ${pathToLeaf.size} accounts, " +
+        "$numTransactions transactions in $elapsedTransactionTime, " +
+        "${summaryNameMonthMap.size} summaries in $elapsedBuildSummaryStatements, " +
+        "$recurringLogDetail, " +
+        "total in ${elapsedTransactionTime + elapsedBuildSummaryStatements + elapsedRecurring}"
+    }
+
+    val builtBudget = Budget(
+      months = monthRange!!,
+      tree = treeRoot,
+      nodeToStatement = nodeToStatement,
+      recurringIndexDeferred = recurringDeferred,
+      transfersFingerprint = fingerprint
+    )
+
+    val leafBalances = pathToLeaf.entries.associate { (path, leaf) ->
+      leaf to (balances[path]?.toMap() ?: emptyMap())
+    }
+
+    return BuildSnapshot(
+      budget = builtBudget,
+      pathToLeaf = pathToLeaf,
+      accountNameToPaths = accountNameToPaths,
+      leafBalances = leafBalances,
+      resolvedTransfers = resolvedTransfers,
+      transfersFingerprint = fingerprint
+    )
+  }
+
+  companion object {
+    private val logger = KotlinLogging.logger {}
+
+    internal fun validateAccountBalances(
+      accountPath: List<String>,
+      accountBalances: Map<Month, Balance>,
+      sourceFile: Path
+    ) {
       for ((month, balance) in accountBalances) {
         val balanceMonth = Month.fromDate(balance.date)
         val balanceMonthDiff = abs(balanceMonth - month)
@@ -287,17 +408,18 @@ class BudgetBuilder {
         }
       }
     }
-  }
 
-  private fun resolveTransfers(treeRoot: TreeNode<Profile>): List<ResolvedTransfer> {
-    val cachedNameToTreenodeMap = mutableMapOf<String, TreeNode.Leaf<Profile>>()
-    val resolvedTransfers = ArrayList<ResolvedTransfer>(transferRecordList.size)
-
-    for (record in transferRecordList) {
+    internal fun resolveTransferRecord(
+      record: TransferRecord,
+      treeRoot: TreeNode<Profile>,
+      accountNameToPaths: Map<String, List<List<String>>>,
+      cachedNameToTreenodeMap: MutableMap<String, TreeNode.Leaf<Profile>>,
+      fallbackSourceFile: Path?
+    ): ResolvedTransfer {
       val (toAccountName, fromAccountPath, month, balance, description, _, sourceFile1, lineNumber) = record
       val balanceMonth = Month.fromDate(balance.date)
       val balanceMonthDiff = abs(balanceMonth - month)
-      val sourceFile = sourceFile1 ?: accountSourceFiles[fromAccountPath]
+      val sourceFile = sourceFile1 ?: fallbackSourceFile
       val fileContext = sourceFile?.let {
         val lineInfo = lineNumber?.let { line -> ":$line" } ?: ""
         ", while processing $it$lineInfo"
@@ -314,7 +436,7 @@ class BudgetBuilder {
       }
 
       val toAccountNode = cachedNameToTreenodeMap.getOrPut(toAccountName) {
-        val toAccounts = pathToAccount.keys.filter { it.last() == toAccountName }
+        val toAccounts = accountNameToPaths[toAccountName].orEmpty()
         if (toAccounts.isEmpty()) {
           throw BudgetLoadingException(
             "Unknown to account $toAccountName in " +
@@ -366,60 +488,83 @@ class BudgetBuilder {
         )
       }
 
-      resolvedTransfers.add(
-        ResolvedTransfer(
-          fromAccountNode = fromAccountNode,
-          toAccountNode = toAccountNode,
-          month = month,
-          balance = balance,
-          description = description
-        )
+      return ResolvedTransfer(
+        fromAccountNode = fromAccountNode,
+        toAccountNode = toAccountNode,
+        month = month,
+        balance = balance,
+        description = description,
+        sourceFileKey = sourceFile1?.toString()
       )
     }
 
-    return resolvedTransfers
-  }
-
-  data class RecurringBuildContext(
-    val previousFingerprint: TransfersFingerprint? = null,
-    val previousDeferred: Deferred<RecurringTransactionIndex>? = null,
-    val asyncScope: CoroutineScope? = null
-  )
-
-  fun build(recurringContext: RecurringBuildContext? = null): Budget {
-    if (monthRange?.isEmpty() ?: true) {
-      throw IllegalArgumentException("Budget must have at least one month.")
+    internal fun canonicalTransferType(
+      fromNode: TreeNode.Leaf<Profile>,
+      toNode: TreeNode.Leaf<Profile>,
+      amount: Long
+    ): Transaction.Type {
+      val fromIsExternal = fromNode.data.isExternal
+      val toIsExternal = toNode.data.isExternal
+      return when {
+        !fromIsExternal && !toIsExternal && fromNode.top.name == toNode.top.name ->
+          Transaction.Type.TRANSFER
+        fromIsExternal && !toIsExternal ->
+          if (amount >= 0) Transaction.Type.INCOME else Transaction.Type.EXPENSE
+        else ->
+          if (amount >= 0) Transaction.Type.EXPENSE else Transaction.Type.INCOME
+      }
     }
 
-    val treeRoot = treeNodeBuilder.build()
-    val leafNodes = pathToAccount
-      .map {
-        treeRoot[it.key] as? TreeNode.Leaf ?: throw IllegalStateException("Could not find path ${it.key}")
-      }.toSet()
+    internal fun buildTransferCandidates(resolvedTransfers: List<ResolvedTransfer>): List<TransferCandidate> =
+      resolvedTransfers.mapIndexed { idx, transfer ->
+        val fromNode = transfer.fromAccountNode
+        val toNode = transfer.toAccountNode
+        TransferCandidate(
+          transferIndex = idx,
+          owner = fromNode.top.name,
+          fromAccountPath = fromNode.pathString,
+          fromAccountName = fromNode.name,
+          toAccountPath = toNode.pathString,
+          toAccountName = toNode.name,
+          month = transfer.month,
+          balance = transfer.balance,
+          description = transfer.description,
+          type = canonicalTransferType(fromNode, toNode, transfer.balance.amount)
+        )
+      }
 
-    validateBalances()
-    val resolvedTransfers = resolveTransfers(treeRoot)
-
-    val nodeToStatement = mutableMapOf<TreeNode<Profile>, Map<Month, Statement>>()
-    val (numTransactions, elapsedTransactionTime) = timeSource.measureTimedValue {
-      val transactionStatements = buildTransactionStatements(treeRoot, resolvedTransfers)
-      nodeToStatement.putAll(transactionStatements)
-      transactionStatements.values.sumOf { it.values.sumOf { stmt -> stmt.transactions.size } }
+    internal fun computeResolvedTransfersFingerprint(transfers: List<ResolvedTransfer>): TransfersFingerprint {
+      var sumHash = 0L
+      var xorHash = 0L
+      for (transfer in transfers) {
+        val fromNode = transfer.fromAccountNode
+        val toNode = transfer.toAccountNode
+        val canonicalType = canonicalTransferType(fromNode, toNode, transfer.balance.amount)
+        var h = 1125899906842597L
+        h = h * 31L + fromNode.top.name.hashCode()
+        h = h * 31L + fromNode.pathString.hashCode()
+        h = h * 31L + toNode.pathString.hashCode()
+        h = h * 31L + transfer.month.hashCode()
+        h = h * 31L + transfer.balance.amount
+        h = h * 31L + transfer.balance.date.toEpochDays()
+        h = h * 31L + transfer.balance.type.ordinal
+        h = h * 31L + (transfer.description?.hashCode() ?: 0)
+        h = h * 31L + canonicalType.ordinal
+        val mixed = splitMix64(h)
+        sumHash += mixed
+        xorHash = xorHash xor mixed
+      }
+      return TransfersFingerprint(transfers.size, sumHash, xorHash)
     }
 
-    val (summaryNameMonthMap, elapsedBuildSummaryStatements) = timeSource.measureTimedValue {
-      val summaryMapBuilder = SummaryMapBuilder()
-      summaryMapBuilder.addAll(nodeToStatement)
-      summaryMapBuilder.build(treeRoot)
-    }
-    nodeToStatement.putAll(summaryNameMonthMap)
-
-    val candidates = buildTransferCandidates(resolvedTransfers)
-    val fingerprint = computeTransfersFingerprint(candidates)
-    val prevDeferred = recurringContext?.previousDeferred
-
-    val (recurringDeferred, recurringLogDetail, elapsedRecurring) =
-      if (recurringContext?.previousFingerprint == fingerprint &&
+    internal fun scheduleRecurringIndex(
+      candidatesProvider: () -> List<TransferCandidate>,
+      fingerprint: TransfersFingerprint,
+      recurringContext: RecurringBuildContext?,
+      timeSource: TimeSource
+    ): Triple<Deferred<RecurringTransactionIndex>, String, kotlin.time.Duration> {
+      val prevDeferred = recurringContext?.previousDeferred
+      return if (recurringContext?.previousFingerprint == fingerprint &&
         prevDeferred != null &&
         !prevDeferred.isCancelled
       ) {
@@ -430,7 +575,7 @@ class BudgetBuilder {
         }
         val deferred = recurringContext.asyncScope.async(Dispatchers.Default) {
           val (index, bgElapsed) = timeSource.measureTimedValue {
-            RecurringTransactionDetector().detect(candidates)
+            RecurringTransactionDetector().detect(candidatesProvider())
           }
           logger.info { "Computed ${index.groups.size} recurring groups asynchronously in $bgElapsed" }
           index
@@ -438,79 +583,11 @@ class BudgetBuilder {
         Triple(deferred, "scheduled recurring detection asynchronously", kotlin.time.Duration.ZERO)
       } else {
         val (index, syncElapsed) = timeSource.measureTimedValue {
-          RecurringTransactionDetector().detect(candidates)
+          RecurringTransactionDetector().detect(candidatesProvider())
         }
         Triple(CompletableDeferred(index), "${index.groups.size} recurring groups in $syncElapsed", syncElapsed)
       }
-
-    logger.info {
-      "Build ${leafNodes.size} accounts, " +
-        "$numTransactions transactions in $elapsedTransactionTime, " +
-        "${summaryNameMonthMap.size} summaries in $elapsedBuildSummaryStatements, " +
-        "$recurringLogDetail, " +
-        "total in ${elapsedTransactionTime + elapsedBuildSummaryStatements + elapsedRecurring}"
     }
-
-    return Budget(
-      months = monthRange!!,
-      tree = treeRoot,
-      nodeToStatement = nodeToStatement,
-      recurringIndexDeferred = recurringDeferred,
-      transfersFingerprint = fingerprint
-    )
-  }
-
-  private fun buildTransferCandidates(resolvedTransfers: List<ResolvedTransfer>): List<TransferCandidate> =
-    resolvedTransfers.mapIndexed { idx, transfer ->
-      val fromNode = transfer.fromAccountNode
-      val toNode = transfer.toAccountNode
-      val fromIsExternal = fromNode.data.isExternal
-      val toIsExternal = toNode.data.isExternal
-      val canonicalType = when {
-        !fromIsExternal && !toIsExternal && fromNode.top.name == toNode.top.name ->
-          Transaction.Type.TRANSFER
-        fromIsExternal && !toIsExternal ->
-          if (transfer.balance.amount >= 0) Transaction.Type.INCOME else Transaction.Type.EXPENSE
-        else ->
-          if (transfer.balance.amount >= 0) Transaction.Type.EXPENSE else Transaction.Type.INCOME
-      }
-      TransferCandidate(
-        transferIndex = idx,
-        owner = fromNode.top.name,
-        fromAccountPath = fromNode.pathString,
-        fromAccountName = fromNode.name,
-        toAccountPath = toNode.pathString,
-        toAccountName = toNode.name,
-        month = transfer.month,
-        balance = transfer.balance,
-        description = transfer.description,
-        type = canonicalType
-      )
-    }
-
-  private fun computeTransfersFingerprint(candidates: List<TransferCandidate>): TransfersFingerprint {
-    var sumHash = 0L
-    var xorHash = 0L
-    for (c in candidates) {
-      var h = 1125899906842597L
-      h = h * 31L + c.owner.hashCode()
-      h = h * 31L + c.fromAccountPath.hashCode()
-      h = h * 31L + c.toAccountPath.hashCode()
-      h = h * 31L + c.month.hashCode()
-      h = h * 31L + c.balance.amount
-      h = h * 31L + c.balance.date.toEpochDays()
-      h = h * 31L + c.balance.type.ordinal
-      h = h * 31L + (c.description?.hashCode() ?: 0)
-      h = h * 31L + c.type.ordinal
-      val mixed = splitMix64(h)
-      sumHash += mixed
-      xorHash = xorHash xor mixed
-    }
-    return TransfersFingerprint(candidates.size, sumHash, xorHash)
-  }
-
-  companion object {
-    private val logger = KotlinLogging.logger {}
 
     private fun splitMix64(seed: Long): Long {
       var z = seed + -7046029254386353131L

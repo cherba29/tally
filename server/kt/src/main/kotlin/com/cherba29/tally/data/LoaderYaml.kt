@@ -3,12 +3,27 @@ package com.cherba29.tally.data
 import com.cherba29.tally.core.Account
 import com.cherba29.tally.core.Balance
 import com.cherba29.tally.core.DayInMonth
+import com.cherba29.tally.core.Month
 import com.cherba29.tally.data.builder.BudgetBuilder
 import com.cherba29.tally.data.yaml.BalanceYamlData
 import com.cherba29.tally.data.yaml.YamlData
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Path
 import kotlin.math.roundToLong
+
+data class ParsedYamlTransfer(
+  val toAccountName: String,
+  val month: Month,
+  val balance: Balance,
+  val description: String?,
+  val tags: List<String>
+)
+
+data class ParsedYamlAccount(
+  val account: Account,
+  val balances: Map<Month, Balance>,
+  val transfers: List<ParsedYamlTransfer>
+)
 
 private fun YamlData.toAccount(): Account? {
   if (name == null) {
@@ -71,15 +86,33 @@ private fun BalanceYamlData.toBalance(name: String): Balance {
 }
 
 /**
- * Validates YamlData and atomically adds it to the budget.
+ * Validates and converts [YamlData] into domain account, balances, and outgoing transfers.
+ * Returns null if the YAML file does not represent an account.
  */
-private fun processYamlData(
-  budgetBuilder: BudgetBuilder,
+fun extractYamlAccountData(
   data: YamlData,
   relativeFilePath: Path? = null
-): Boolean {
+): ParsedYamlAccount? =
+  try {
+    convertYamlData(data)
+  } catch (e: IllegalArgumentException) {
+    logger.error { e.javaClass.simpleName + ": " + e.message }
+    val suffix = if (relativeFilePath != null) ", while processing $relativeFilePath" else ""
+    throw BudgetLoadingException(
+      message = e.message + suffix,
+      cause = e,
+      fileName = relativeFilePath?.toString()
+    )
+  } catch (e: Exception) {
+    val suffix = if (relativeFilePath != null) ", while processing $relativeFilePath" else ""
+    logger.error { e.javaClass.simpleName + ": " + e.message + suffix }
+    logger.info { "Account Data$data" }
+    throw e.toBudgetLoadingException(relativeFilePath)
+  }
+
+private fun convertYamlData(data: YamlData): ParsedYamlAccount? {
   // Ignore data which dont represent account.
-  val account = data.toAccount() ?: return false
+  val account = data.toAccount() ?: return null
   val convertedBalances = data.balances?.associate {
     (
       it.grp ?: throw IllegalArgumentException(
@@ -88,8 +121,7 @@ private fun processYamlData(
     ) to it.toBalance(account.name)
   } ?: mapOf()
 
-  budgetBuilder.addAccount(account, convertedBalances, relativeFilePath)
-
+  val transfers = mutableListOf<ParsedYamlTransfer>()
   if (data.transfersTo != null) {
     for ((toAccountName, transfersWrapper) in data.transfersTo.entries) {
       if (transfersWrapper?.transfers == null) continue
@@ -126,19 +158,51 @@ private fun processYamlData(
           )
         }
 
-        budgetBuilder.addAccountTransfer(
-          account,
-          toAccountName,
-          transferMonth,
-          balance,
-          desc,
-          tags ?: listOf(),
-          relativeFilePath
+        transfers.add(
+          ParsedYamlTransfer(
+            toAccountName = toAccountName,
+            month = transferMonth,
+            balance = balance,
+            description = desc,
+            tags = tags ?: listOf()
+          )
         )
       }
     }
   }
+  return ParsedYamlAccount(account, convertedBalances, transfers)
+}
+
+/**
+ * Validates YamlData and atomically adds it to the budget.
+ */
+private fun processYamlData(
+  budgetBuilder: BudgetBuilder,
+  data: YamlData,
+  relativeFilePath: Path? = null
+): Boolean {
+  val parsed = convertYamlData(data) ?: return false
+  addParsedYamlAccount(budgetBuilder, parsed, relativeFilePath)
   return true
+}
+
+fun addParsedYamlAccount(
+  budgetBuilder: BudgetBuilder,
+  parsed: ParsedYamlAccount,
+  relativeFilePath: Path? = null
+) {
+  budgetBuilder.addAccount(parsed.account, parsed.balances, relativeFilePath)
+  for (transfer in parsed.transfers) {
+    budgetBuilder.addAccountTransfer(
+      parsed.account,
+      transfer.toAccountName,
+      transfer.month,
+      transfer.balance,
+      transfer.description,
+      transfer.tags,
+      relativeFilePath
+    )
+  }
 }
 
 fun loadYamlFile(
