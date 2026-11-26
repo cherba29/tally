@@ -5,9 +5,11 @@ import com.cherba29.tally.core.Month
 import com.cherba29.tally.core.MonthName.APR
 import com.cherba29.tally.core.MonthName.AUG
 import com.cherba29.tally.core.MonthName.DEC
+import com.cherba29.tally.core.MonthName.FEB
 import com.cherba29.tally.core.MonthName.JAN
 import com.cherba29.tally.core.MonthName.JUL
 import com.cherba29.tally.core.MonthName.JUN
+import com.cherba29.tally.core.MonthName.MAR
 import com.cherba29.tally.core.MonthName.MAY
 import com.cherba29.tally.core.MonthName.NOV
 import com.cherba29.tally.core.MonthName.OCT
@@ -17,6 +19,7 @@ import com.cherba29.tally.data.yaml.YamlDataParser
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.longs.shouldBeLessThan
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -25,6 +28,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.io.path.readText
 import kotlin.math.roundToLong
+import kotlin.time.TimeSource
 
 class RecurringTransactionDetectorTest : DescribeSpec({
   val detector = RecurringTransactionDetector()
@@ -437,6 +441,110 @@ class RecurringTransactionDetectorTest : DescribeSpec({
 
       val index = detector.detect(candidates)
       index.groups.single().label shouldBe "Acme Corp paycheck"
+    }
+
+    it("detects recurring groups across 50,000 realistic transfers quickly") {
+      fun alphaCode(value: Int): String {
+        val chars = CharArray(5)
+        var v = value
+        for (pos in 4 downTo 0) {
+          chars[pos] = ('a'.code + (v % 26)).toChar()
+          v /= 26
+        }
+        return String(chars)
+      }
+
+      val months = listOf(
+        JAN / 2025,
+        FEB / 2025,
+        MAR / 2025,
+        APR / 2025,
+        MAY / 2025,
+        JUN / 2025,
+        JUL / 2025,
+        AUG / 2025,
+        SEP / 2025,
+        OCT / 2025,
+        NOV / 2025,
+        DEC / 2025,
+        JAN / 2026,
+        FEB / 2026,
+        MAR / 2026,
+        APR / 2026,
+        MAY / 2026,
+        JUN / 2026,
+        JUL / 2026,
+        AUG / 2026,
+        SEP / 2026,
+        OCT / 2026,
+        NOV / 2026,
+        DEC / 2026
+      )
+      val candidates = ArrayList<TransferCandidate>(50_000)
+      var idx = 0
+
+      // 1,000 monthly recurring series x 24 months = 24,000 transfers
+      for (series in 0 until 1_000) {
+        val from = "alex/internal/acct_${series % 40}"
+        val to = "alex/external/cat_${series % 15}"
+        val day = (series % 25) + 1
+        val baseAmount = 1000L + (series % 500) * 100L
+        val code = alphaCode(series)
+        for ((mIdx, month) in months.withIndex()) {
+          val date = LocalDate(month.year, month.month + 1, day).toString()
+          val desc = when (series % 3) {
+            0 -> "MONTHLY SUBSCRIPTION $code PLAN"
+            1 -> "ACH DEBIT UTILITY $code $date REF#${100_000 + mIdx * 97}"
+            else -> if (mIdx % 4 == 0) "POS PAYMENT $code SERVICE BILLS" else "POS PAYMENT $code SERVICE BILL"
+          }
+          candidates.add(
+            makeCandidate(
+              index = idx++,
+              from = from,
+              to = to,
+              month = month,
+              date = date,
+              amount = baseAmount + (mIdx % 3) * 10L,
+              desc = desc
+            )
+          )
+        }
+      }
+
+      // 26,000 one-off transfers sharing noisy high-frequency boilerplate tokens
+      for (i in 0 until 26_000) {
+        val month = months[i % months.size]
+        val day = (i % 27) + 1
+        val date = LocalDate(month.year, month.month + 1, day).toString()
+        val code = alphaCode(10_000 + i)
+        candidates.add(
+          makeCandidate(
+            index = idx++,
+            from = "alex/internal/acct_${i % 40}",
+            to = "alex/external/cat_${i % 15}",
+            month = month,
+            date = date,
+            amount = 500L + (i % 10_000) * 17L,
+            desc = "POS PURCHASE US COM PAYMENT DEBIT INC MERCHANT $code #${10_000 + i}"
+          )
+        )
+      }
+
+      val coldStart = TimeSource.Monotonic.markNow()
+      val coldIndex = detector.detect(candidates)
+      val coldMs = coldStart.elapsedNow().inWholeMilliseconds
+
+      val warmStart = TimeSource.Monotonic.markNow()
+      val warmIndex = detector.detect(candidates)
+      val warmMs = warmStart.elapsedNow().inWholeMilliseconds
+
+      println(
+        "RecurringTransactionDetector 50k benchmark: cold=${coldMs}ms, warm=${warmMs}ms, groups=${coldIndex.groups.size}"
+      )
+      coldIndex.groups shouldHaveSize 1_000
+      warmIndex.groups shouldHaveSize 1_000
+      coldMs shouldBeLessThan 5_000L
+      warmMs shouldBeLessThan 3_000L
     }
   }
 })

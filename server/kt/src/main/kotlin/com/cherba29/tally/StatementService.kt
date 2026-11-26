@@ -21,8 +21,9 @@ class StatementService(val loader: Loader) : Query {
       try {
         val budget = loader.budget()
         val (accountNode, statement, isClosed) = budget.statement(accountPath, month)
+        val recurringIndex = budget.awaitRecurringIndex()
         statement.toGql(accountNode.name, isClosed) { tx ->
-          budget.recurringIndex.findGroup(
+          recurringIndex.findGroup(
             accountPath = accountNode.pathString,
             targetAccountPath = tx.targetTreeNode.pathString,
             month = month,

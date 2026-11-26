@@ -56,7 +56,7 @@ object TransactionSimilarity {
     // One empty and one non-empty description: treat as non-matching.
     if (aNorm.isEmpty || bNorm.isEmpty) return 0.0
 
-    val descScore = descriptionSimilarity(aNorm, bNorm)
+    val descScore = descriptionSimilarity(aNorm, bNorm, config.minDescriptionSimilarity)
     if (descScore < config.minDescriptionSimilarity) return 0.0
 
     val totalWeight = config.descWeight + config.accountWeight + config.amountWeight + config.timingWeight
@@ -73,32 +73,51 @@ object TransactionSimilarity {
   /**
    * Computes description similarity in `[0.0, 1.0]` combining token Dice similarity,
    * subset containment (for descriptions with extra notes), and normalized Levenshtein similarity.
+   *
+   * When [minRequired] > 0 and an exact upper bound proves the result cannot reach [minRequired],
+   * skips the O(L^2) Levenshtein computation and returns `0.0`.
    */
   fun descriptionSimilarity(
     a: NormalizedDescription,
-    b: NormalizedDescription
+    b: NormalizedDescription,
+    minRequired: Double = 0.0
   ): Double {
     if (a.isEmpty || b.isEmpty) return 0.0
     if (a.normalizedText == b.normalizedText) return 1.0
 
-    val intersectionSize = a.tokenSet.count { it in b.tokenSet }
+    val (smallerTokens, largerTokens) = if (a.tokenSet.size <= b.tokenSet.size) {
+      a.tokenSet to b.tokenSet
+    } else {
+      b.tokenSet to a.tokenSet
+    }
+    var intersectionSize = 0
+    for (tok in smallerTokens) {
+      if (tok in largerTokens) intersectionSize++
+    }
     val dice = (2.0 * intersectionSize) / (a.tokenSet.size + b.tokenSet.size).toDouble()
 
-    val smallerSize = min(a.tokenSet.size, b.tokenSet.size)
-    val largerSize = max(a.tokenSet.size, b.tokenSet.size)
+    val smallerSize = smallerTokens.size
+    val largerSize = largerTokens.size
     val containment = if (smallerSize >= 2 && intersectionSize == smallerSize) {
       (0.85 + 0.15 * (smallerSize.toDouble() / largerSize.toDouble())) * 0.90
     } else {
       0.0
     }
 
-    val maxLen = max(a.normalizedText.length, b.normalizedText.length)
-    val lev = if (maxLen == 0) {
-      1.0
-    } else {
-      1.0 - levenshteinDistance(a.normalizedText, b.normalizedText).toDouble() / maxLen.toDouble()
+    val lenA = a.normalizedText.length
+    val lenB = b.normalizedText.length
+    val maxLen = max(lenA, lenB)
+    if (maxLen == 0) return 1.0
+
+    // Upper bound on normalized Levenshtein similarity is minLen / maxLen.
+    if (minRequired > 0.0 && containment < minRequired) {
+      val maxPossibleLev = min(lenA, lenB).toDouble() / maxLen.toDouble()
+      if (0.65 * dice + 0.35 * maxPossibleLev < minRequired) {
+        return 0.0
+      }
     }
 
+    val lev = 1.0 - levenshteinDistance(a.normalizedText, b.normalizedText).toDouble() / maxLen.toDouble()
     val blended = 0.65 * dice + 0.35 * lev
     return max(blended, containment).coerceIn(0.0, 1.0)
   }

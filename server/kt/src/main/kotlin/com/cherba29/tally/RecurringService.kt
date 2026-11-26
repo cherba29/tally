@@ -1,7 +1,7 @@
 package com.cherba29.tally
 
 import com.cherba29.tally.data.Loader
-import com.cherba29.tally.data.recurringGroup
+import com.cherba29.tally.data.awaitRecurringGroup
 import com.cherba29.tally.schema.GqlRecurringGroup
 import com.cherba29.tally.schema.toGql
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
@@ -19,7 +19,7 @@ class RecurringService(val loader: Loader) : Query {
     val (result, timeTaken) = measureTimedValue {
       try {
         val budget = loader.budget()
-        budget.recurringGroup(groupId).toGql(accountPath)
+        budget.awaitRecurringGroup(groupId).toGql(accountPath)
       } catch (e: Exception) {
         logger.error(e) { "Error while processing recurringTransactions query groupId=$groupId" }
         throw e

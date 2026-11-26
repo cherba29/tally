@@ -11,6 +11,7 @@ import com.cherba29.tally.core.plus
 import com.cherba29.tally.data.Budget
 import com.cherba29.tally.data.BudgetLoadingException
 import com.cherba29.tally.data.Profile
+import com.cherba29.tally.data.TransfersFingerprint
 import com.cherba29.tally.recurring.RecurringTransactionDetector
 import com.cherba29.tally.recurring.RecurringTransactionIndex
 import com.cherba29.tally.recurring.TransferCandidate
@@ -18,6 +19,11 @@ import com.cherba29.tally.statement.Statement
 import com.cherba29.tally.statement.TransactionStatement
 import com.cherba29.tally.utils.TreeNode
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import java.nio.file.Path
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -374,7 +380,13 @@ class BudgetBuilder {
     return resolvedTransfers
   }
 
-  fun build(): Budget {
+  data class RecurringBuildContext(
+    val previousFingerprint: TransfersFingerprint? = null,
+    val previousDeferred: Deferred<RecurringTransactionIndex>? = null,
+    val asyncScope: CoroutineScope? = null
+  )
+
+  fun build(recurringContext: RecurringBuildContext? = null): Budget {
     if (monthRange?.isEmpty() ?: true) {
       throw IllegalArgumentException("Budget must have at least one month.")
     }
@@ -402,28 +414,54 @@ class BudgetBuilder {
     }
     nodeToStatement.putAll(summaryNameMonthMap)
 
-    val (recurringIndex, elapsedRecurring) = timeSource.measureTimedValue {
-      detectRecurringTransactions(resolvedTransfers)
-    }
+    val candidates = buildTransferCandidates(resolvedTransfers)
+    val fingerprint = computeTransfersFingerprint(candidates)
+    val prevDeferred = recurringContext?.previousDeferred
+
+    val (recurringDeferred, recurringLogDetail, elapsedRecurring) =
+      if (recurringContext?.previousFingerprint == fingerprint &&
+        prevDeferred != null &&
+        !prevDeferred.isCancelled
+      ) {
+        Triple(prevDeferred, "reused recurring index (transfers unchanged)", kotlin.time.Duration.ZERO)
+      } else if (recurringContext?.asyncScope != null) {
+        if (prevDeferred != null && prevDeferred.isActive) {
+          prevDeferred.cancel()
+        }
+        val deferred = recurringContext.asyncScope.async(Dispatchers.Default) {
+          val (index, bgElapsed) = timeSource.measureTimedValue {
+            RecurringTransactionDetector().detect(candidates)
+          }
+          logger.info { "Computed ${index.groups.size} recurring groups asynchronously in $bgElapsed" }
+          index
+        }
+        Triple(deferred, "scheduled recurring detection asynchronously", kotlin.time.Duration.ZERO)
+      } else {
+        val (index, syncElapsed) = timeSource.measureTimedValue {
+          RecurringTransactionDetector().detect(candidates)
+        }
+        Triple(CompletableDeferred(index), "${index.groups.size} recurring groups in $syncElapsed", syncElapsed)
+      }
 
     logger.info {
       "Build ${leafNodes.size} accounts, " +
         "$numTransactions transactions in $elapsedTransactionTime, " +
         "${summaryNameMonthMap.size} summaries in $elapsedBuildSummaryStatements, " +
-        "${recurringIndex.groups.size} recurring groups in $elapsedRecurring, " +
+        "$recurringLogDetail, " +
         "total in ${elapsedTransactionTime + elapsedBuildSummaryStatements + elapsedRecurring}"
     }
 
     return Budget(
-      monthRange!!,
-      treeRoot,
-      nodeToStatement,
-      recurringIndex
+      months = monthRange!!,
+      tree = treeRoot,
+      nodeToStatement = nodeToStatement,
+      recurringIndexDeferred = recurringDeferred,
+      transfersFingerprint = fingerprint
     )
   }
 
-  private fun detectRecurringTransactions(resolvedTransfers: List<ResolvedTransfer>): RecurringTransactionIndex {
-    val candidates = resolvedTransfers.mapIndexed { idx, transfer ->
+  private fun buildTransferCandidates(resolvedTransfers: List<ResolvedTransfer>): List<TransferCandidate> =
+    resolvedTransfers.mapIndexed { idx, transfer ->
       val fromNode = transfer.fromAccountNode
       val toNode = transfer.toAccountNode
       val fromIsExternal = fromNode.data.isExternal
@@ -449,16 +487,45 @@ class BudgetBuilder {
         type = canonicalType
       )
     }
-    return RecurringTransactionDetector().detect(candidates)
+
+  private fun computeTransfersFingerprint(candidates: List<TransferCandidate>): TransfersFingerprint {
+    var sumHash = 0L
+    var xorHash = 0L
+    for (c in candidates) {
+      var h = 1125899906842597L
+      h = h * 31L + c.owner.hashCode()
+      h = h * 31L + c.fromAccountPath.hashCode()
+      h = h * 31L + c.toAccountPath.hashCode()
+      h = h * 31L + c.month.hashCode()
+      h = h * 31L + c.balance.amount
+      h = h * 31L + c.balance.date.toEpochDays()
+      h = h * 31L + c.balance.type.ordinal
+      h = h * 31L + (c.description?.hashCode() ?: 0)
+      h = h * 31L + c.type.ordinal
+      val mixed = splitMix64(h)
+      sumHash += mixed
+      xorHash = xorHash xor mixed
+    }
+    return TransfersFingerprint(candidates.size, sumHash, xorHash)
   }
 
   companion object {
     private val logger = KotlinLogging.logger {}
+
+    private fun splitMix64(seed: Long): Long {
+      var z = seed + -7046029254386353131L
+      z = (z xor (z ushr 30)) * -4658895280553007687L
+      z = (z xor (z ushr 27)) * -7723592293110705685L
+      return z xor (z ushr 31)
+    }
   }
 }
 
-fun budget(block: BudgetBuilder.() -> Unit): Budget {
+fun budget(
+  recurringContext: BudgetBuilder.RecurringBuildContext? = null,
+  block: BudgetBuilder.() -> Unit
+): Budget {
   val builder = BudgetBuilder()
   block(builder)
-  return builder.build()
+  return builder.build(recurringContext)
 }

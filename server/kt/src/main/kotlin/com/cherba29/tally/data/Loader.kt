@@ -30,7 +30,7 @@ class Loader(
   pathUpdates: Flow<WatchResult>,
   watchScope: CoroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
   private val timeSource: TimeSource = TimeSource.Monotonic,
-  private val processedBudget: ProcessedBudget = ProcessedBudget(timeSource)
+  private val processedBudget: ProcessedBudget = ProcessedBudget(timeSource, watchScope)
 ) : AutoCloseable {
   val loadedOn: Duration? get() = processedBudget.loadedOn
   private val _updates =

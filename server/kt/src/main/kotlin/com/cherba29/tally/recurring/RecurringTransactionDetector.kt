@@ -10,7 +10,8 @@ import kotlin.math.roundToLong
 
 /**
  * Detects groups of recurring transactions from canonical transfer candidates using
- * token-blocked, anti-chaining average-linkage clustering and cadence inference.
+ * exact-template pre-grouping, rare-token (IDF) blocking, anti-chaining average-linkage
+ * clustering, and cadence inference.
  */
 class RecurringTransactionDetector(
   private val config: RecurringDetectionConfig = RecurringDetectionConfig()
@@ -25,6 +26,23 @@ class RecurringTransactionDetector(
     val type: Transaction.Type,
     val flowSign: Int
   )
+
+  private data class ExactTemplateKey(
+    val fromAccountPath: String,
+    val toAccountPath: String,
+    val normalizedText: String
+  )
+
+  private class TemplateBucket(
+    val normalized: NormalizedDescription,
+    val members: MutableList<NormalizedCandidate>,
+    val representative: NormalizedCandidate
+  )
+
+  private class TemplateCluster(first: TemplateBucket) {
+    val anchor: TemplateBucket = first
+    val buckets: MutableList<TemplateBucket> = mutableListOf(first)
+  }
 
   private class MutableCluster(first: NormalizedCandidate) {
     val anchor: NormalizedCandidate = first
@@ -65,12 +83,39 @@ class RecurringTransactionDetector(
       compareBy<PartitionKey>({ it.owner }, { it.type.name }, { it.flowSign })
     )
 
+    val totalWeight = config.descWeight + config.accountWeight + config.amountWeight + config.timingWeight
+    val exactSameAccountAlwaysMerges =
+      totalWeight > 0.0 && (config.descWeight + config.accountWeight) / totalWeight >= config.similarityThreshold
+
     for (key in sortedPartitionKeys) {
       val partitionItems = partitions[key].orEmpty()
       if (partitionItems.size < config.minOccurrences) continue
-      val clusters = clusterPartition(partitionItems)
-      for (cluster in clusters) {
-        buildRawGroupIfRecurring(cluster)?.let { rawGroups.add(it) }
+
+      val blankItems = mutableListOf<NormalizedCandidate>()
+      val nonBlankItems = mutableListOf<NormalizedCandidate>()
+      for (item in partitionItems) {
+        if (item.normalized.isEmpty) blankItems.add(item) else nonBlankItems.add(item)
+      }
+
+      if (nonBlankItems.size >= config.minOccurrences) {
+        val memberGroups = if (exactSameAccountAlwaysMerges) {
+          clusterNonBlankByTemplate(nonBlankItems)
+        } else {
+          clusterItemsDirectly(nonBlankItems)
+        }
+        for (members in memberGroups) {
+          buildRawGroupIfRecurring(members)?.let { rawGroups.add(it) }
+        }
+      }
+
+      if (blankItems.size >= config.minOccurrences) {
+        val byPair = blankItems.groupBy { it.candidate.fromAccountPath to it.candidate.toAccountPath }
+        for (pairItems in byPair.values) {
+          if (pairItems.size < config.minOccurrences) continue
+          for (members in clusterItemsDirectly(pairItems)) {
+            buildRawGroupIfRecurring(members)?.let { rawGroups.add(it) }
+          }
+        }
       }
     }
 
@@ -80,7 +125,214 @@ class RecurringTransactionDetector(
     return RecurringTransactionIndex.fromGroups(groups)
   }
 
-  private fun clusterPartition(items: List<NormalizedCandidate>): List<MutableCluster> {
+  /**
+   * Fast two-stage clustering for non-blank descriptions:
+   * 1. Pre-groups identical `(fromAccountPath, toAccountPath, normalizedText)` into compact [TemplateBucket]s
+   *    in O(N) time (guaranteed to belong to the same cluster when `descWeight + accountWeight >= threshold`).
+   * 2. Runs fuzzy anti-chaining clustering across the much smaller set of unique templates using
+   *    exact-text indexing + rare-token (IDF) blocking so common bank words (`com`, `us`, `payment`, etc.)
+   *    never cause quadratic blowup.
+   */
+  private fun clusterNonBlankByTemplate(items: List<NormalizedCandidate>): List<List<NormalizedCandidate>> {
+    val grouped = LinkedHashMap<ExactTemplateKey, MutableList<NormalizedCandidate>>()
+    for (item in items) {
+      val key = ExactTemplateKey(
+        fromAccountPath = item.candidate.fromAccountPath,
+        toAccountPath = item.candidate.toAccountPath,
+        normalizedText = item.normalized.normalizedText
+      )
+      grouped.getOrPut(key) { mutableListOf() }.add(item)
+    }
+
+    val buckets = grouped.values
+      .map { members -> buildTemplateBucket(members) }
+      .sortedWith(
+        compareBy<TemplateBucket>(
+          { it.normalized.normalizedText },
+          { it.representative.candidate.fromAccountPath },
+          { it.representative.candidate.toAccountPath },
+          { it.representative.candidate.balance.date },
+          { it.representative.candidate.balance.amount },
+          { it.representative.candidate.transferIndex }
+        )
+      )
+
+    // Compute document frequency of each token across unique templates to prune noisy high-frequency tokens.
+    val tokenDocFreq = HashMap<String, Int>()
+    for (bucket in buckets) {
+      for (token in bucket.normalized.tokenSet) {
+        tokenDocFreq[token] = (tokenDocFreq[token] ?: 0) + 1
+      }
+    }
+
+    val clusters = mutableListOf<TemplateCluster>()
+    val exactTextToClusterIndices = HashMap<String, MutableList<Int>>()
+    val tokenToClusterIndices = HashMap<String, MutableList<Int>>()
+    val anchorMinThreshold = config.similarityThreshold * ANCHOR_SIMILARITY_FACTOR
+
+    for (bucket in buckets) {
+      val candidateClusterIndices = LinkedHashSet<Int>()
+
+      // 1. Always consider exact normalized text matches across different accounts (O(1) lookup).
+      exactTextToClusterIndices[bucket.normalized.normalizedText]?.let { candidateClusterIndices.addAll(it) }
+
+      // 2. Collect candidate clusters sharing rare/informative tokens.
+      val blockingTokens = selectBlockingTokens(bucket.normalized.tokenSet, tokenDocFreq)
+      for (token in blockingTokens) {
+        val posting = tokenToClusterIndices[token] ?: continue
+        if (posting.size <= MAX_POSTING_LIST_SIZE) {
+          candidateClusterIndices.addAll(posting)
+        } else {
+          // Bound worst-case fan-out even when falling back to a common token.
+          val start = posting.size - MAX_POSTING_LIST_SIZE
+          for (i in start until posting.size) {
+            candidateClusterIndices.add(posting[i])
+          }
+        }
+      }
+
+      var bestClusterIdx = -1
+      var bestScore = 0.0
+
+      for (clusterIdx in candidateClusterIndices) {
+        val cluster = clusters[clusterIdx]
+        // Fast O(1) account overlap pre-check before touching string similarity.
+        if (TransactionSimilarity.accountSimilarity(
+            bucket.representative.candidate,
+            cluster.anchor.representative.candidate
+          ) == 0.0
+        ) {
+          continue
+        }
+
+        val anchorScore = TransactionSimilarity.score(
+          bucket.representative.candidate,
+          bucket.normalized,
+          cluster.anchor.representative.candidate,
+          cluster.anchor.normalized,
+          config
+        )
+        if (anchorScore < anchorMinThreshold) continue
+
+        val avgScore = averageTemplateClusterSimilarity(bucket, cluster)
+        if (avgScore >= config.similarityThreshold && avgScore > bestScore) {
+          bestScore = avgScore
+          bestClusterIdx = clusterIdx
+        }
+      }
+
+      if (bestClusterIdx >= 0) {
+        clusters[bestClusterIdx].buckets.add(bucket)
+        indexTemplateBucket(bestClusterIdx, bucket, blockingTokens, exactTextToClusterIndices, tokenToClusterIndices)
+      } else {
+        val newIdx = clusters.size
+        clusters.add(TemplateCluster(bucket))
+        indexTemplateBucket(newIdx, bucket, blockingTokens, exactTextToClusterIndices, tokenToClusterIndices)
+      }
+    }
+
+    return clusters.map { cluster ->
+      if (cluster.buckets.size == 1) {
+        cluster.buckets[0].members
+      } else {
+        val combined = ArrayList<NormalizedCandidate>(cluster.buckets.sumOf { it.members.size })
+        for (b in cluster.buckets) {
+          combined.addAll(b.members)
+        }
+        combined
+      }
+    }
+  }
+
+  private fun buildTemplateBucket(members: MutableList<NormalizedCandidate>): TemplateBucket {
+    if (members.size == 1) {
+      return TemplateBucket(members[0].normalized, members, members[0])
+    }
+    members.sortWith(
+      compareBy<NormalizedCandidate>(
+        { it.candidate.balance.date },
+        { it.candidate.balance.amount },
+        { it.candidate.transferIndex }
+      )
+    )
+    // Pick median-amount member with median day-of-month as representative for fuzzy template comparison.
+    val byAmount = members.sortedBy { it.candidate.balance.amount }
+    val medianAmount = byAmount[byAmount.size / 2].candidate.balance.amount
+    val byDay = members.sortedBy { it.candidate.balance.date.day }
+    val medianDateMember = byDay[byDay.size / 2]
+    val repCandidate = medianDateMember.candidate.copy(
+      balance = medianDateMember.candidate.balance.copy(amount = medianAmount)
+    )
+    val representative = NormalizedCandidate(repCandidate, medianDateMember.normalized)
+    return TemplateBucket(medianDateMember.normalized, members, representative)
+  }
+
+  private fun selectBlockingTokens(
+    tokens: Set<String>,
+    tokenDocFreq: Map<String, Int>
+  ): List<String> {
+    if (tokens.isEmpty()) return emptyList()
+    val rare = mutableListOf<String>()
+    var rarestToken: String? = null
+    var rarestFreq = Int.MAX_VALUE
+
+    for (token in tokens) {
+      val freq = tokenDocFreq[token] ?: 1
+      if (token.length >= MIN_INDEX_TOKEN_LENGTH && freq < rarestFreq) {
+        rarestFreq = freq
+        rarestToken = token
+      }
+      if (token.length >= MIN_BLOCKING_TOKEN_LENGTH && freq <= MAX_POSTING_LIST_SIZE) {
+        rare.add(token)
+      }
+    }
+
+    if (rare.isNotEmpty()) return rare
+    if (rarestToken != null) return listOf(rarestToken)
+    return tokens.toList()
+  }
+
+  private fun indexTemplateBucket(
+    clusterIdx: Int,
+    bucket: TemplateBucket,
+    blockingTokens: List<String>,
+    exactTextToClusterIndices: MutableMap<String, MutableList<Int>>,
+    tokenToClusterIndices: MutableMap<String, MutableList<Int>>
+  ) {
+    val exactList = exactTextToClusterIndices.getOrPut(bucket.normalized.normalizedText) { mutableListOf() }
+    if (exactList.lastOrNull() != clusterIdx) exactList.add(clusterIdx)
+
+    for (token in blockingTokens) {
+      val list = tokenToClusterIndices.getOrPut(token) { mutableListOf() }
+      if (list.lastOrNull() != clusterIdx) list.add(clusterIdx)
+    }
+  }
+
+  private fun averageTemplateClusterSimilarity(
+    bucket: TemplateBucket,
+    cluster: TemplateCluster
+  ): Double {
+    val buckets = cluster.buckets
+    val sample = if (buckets.size <= MAX_TEMPLATE_SAMPLE_SIZE) {
+      buckets
+    } else {
+      val step = buckets.size.toDouble() / MAX_TEMPLATE_SAMPLE_SIZE.toDouble()
+      List(MAX_TEMPLATE_SAMPLE_SIZE) { i -> buckets[(i * step).toInt()] }
+    }
+    var sum = 0.0
+    for (member in sample) {
+      sum += TransactionSimilarity.score(
+        bucket.representative.candidate,
+        bucket.normalized,
+        member.representative.candidate,
+        member.normalized,
+        config
+      )
+    }
+    return sum / sample.size.toDouble()
+  }
+
+  private fun clusterItemsDirectly(items: List<NormalizedCandidate>): List<List<NormalizedCandidate>> {
     val sorted = items.sortedWith(
       compareBy<NormalizedCandidate>(
         { it.normalized.normalizedText },
@@ -108,7 +360,6 @@ class RecurringTransactionDetector(
             tokenToClusterIndices[token]?.let { candidateClusterIndices.addAll(it) }
           }
         }
-        // Fallback for very short single-char tokens when no longer token exists.
         if (candidateClusterIndices.isEmpty()) {
           for (token in item.normalized.tokenSet) {
             tokenToClusterIndices[token]?.let { candidateClusterIndices.addAll(it) }
@@ -147,7 +398,7 @@ class RecurringTransactionDetector(
       }
     }
 
-    return clusters
+    return clusters.map { it.members }
   }
 
   private fun indexClusterItem(
@@ -192,8 +443,7 @@ class RecurringTransactionDetector(
     return sum / sample.size.toDouble()
   }
 
-  private fun buildRawGroupIfRecurring(cluster: MutableCluster): RawGroup? {
-    val members = cluster.members
+  private fun buildRawGroupIfRecurring(members: List<NormalizedCandidate>): RawGroup? {
     if (members.size < config.minOccurrences) return null
 
     val distinctDates = members.map { it.candidate.balance.date }.distinct().sorted()
@@ -341,6 +591,9 @@ class RecurringTransactionDetector(
 
   companion object {
     private const val MIN_INDEX_TOKEN_LENGTH = 2
+    private const val MIN_BLOCKING_TOKEN_LENGTH = 3
+    private const val MAX_POSTING_LIST_SIZE = 60
+    private const val MAX_TEMPLATE_SAMPLE_SIZE = 6
     private const val MAX_CLUSTER_SAMPLE_SIZE = 12
     private const val ANCHOR_SIMILARITY_FACTOR = 0.85
     private const val HASH_HEX_LENGTH = 12

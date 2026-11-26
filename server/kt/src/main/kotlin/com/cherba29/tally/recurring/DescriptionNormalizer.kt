@@ -2,6 +2,7 @@ package com.cherba29.tally.recurring
 
 import java.text.Normalizer
 import java.util.Locale
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Normalized representation of a transaction description with volatile tokens removed.
@@ -83,9 +84,22 @@ object DescriptionNormalizer {
   private val NON_ALNUM_REGEX = Regex("""[^a-z0-9]+""")
   private val WHITESPACE_REGEX = Regex("""\s+""")
 
+  private const val MAX_CACHE_SIZE = 100_000
+  private val normalizeCache = ConcurrentHashMap<String, NormalizedDescription>()
+
   fun normalize(rawDescription: String?): NormalizedDescription {
     if (rawDescription.isNullOrBlank()) return NormalizedDescription.EMPTY
+    normalizeCache[rawDescription]?.let { return it }
 
+    val result = computeNormalized(rawDescription)
+    if (normalizeCache.size >= MAX_CACHE_SIZE) {
+      normalizeCache.clear()
+    }
+    normalizeCache[rawDescription] = result
+    return result
+  }
+
+  private fun computeNormalized(rawDescription: String): NormalizedDescription {
     var text = Normalizer.normalize(rawDescription, Normalizer.Form.NFKC).lowercase(Locale.ROOT)
     text = STATUS_BRACKETED_REGEX.replace(text, " ")
     text = STATUS_WORD_REGEX.replace(text, " ")
@@ -121,6 +135,9 @@ object DescriptionNormalizer {
    */
   fun stripStatusSuffix(rawDescription: String?): String {
     if (rawDescription.isNullOrBlank()) return ""
+    if (!rawDescription.contains('(') && !rawDescription.contains('[')) {
+      return rawDescription.trim()
+    }
     val cleaned = STATUS_BRACKETED_REGEX
       .replace(rawDescription, " ")
       .replace(WHITESPACE_REGEX, " ")

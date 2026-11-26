@@ -83,10 +83,17 @@ fun Budget.statement(
 }
 
 /**
- * Looks up a detected [RecurringGroup] by [groupId].
+ * Looks up a detected [RecurringGroup] by [groupId] synchronously.
  */
 fun Budget.recurringGroup(groupId: String): RecurringGroup =
   recurringIndex.findGroupById(groupId)
+    ?: throw NotFoundException("Recurring transaction group '$groupId' not found.")
+
+/**
+ * Suspends until the recurring index is ready and looks up [groupId].
+ */
+suspend fun Budget.awaitRecurringGroup(groupId: String): RecurringGroup =
+  awaitRecurringIndex().findGroupById(groupId)
     ?: throw NotFoundException("Recurring transaction group '$groupId' not found.")
 
 /**
