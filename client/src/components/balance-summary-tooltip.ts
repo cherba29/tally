@@ -7,6 +7,7 @@ import {type GqlBalance, type GqlSummaryStatement} from '../gql_types';
 import {Month} from '../month';
 
 import './period-buttons';
+import {tooltipSharedStyles} from './tooltip-styles';
 
 export interface MonthRangeChange {
   accountName: string;
@@ -16,25 +17,21 @@ export interface MonthRangeChange {
 
 @customElement('balance-summary-tooltip')
 export class BalanceSummaryTooltip extends LitElement {
-  static override styles = css`
-    td {
-      border-left: 1px solid #c3c3c3;
-      border-top: 1px solid #c3c3c3;
-      padding: 1px;
-      vertical-align: middle;
-    }
-    .highlight:hover {
-      background-color: #40c340;
-    }
-    .projected {
-      background-color: #ddf;
-      text-align: right;
-    }
-    .confirmed {
-      background-color: #dd4;
-      text-align: right;
-    }
-  `;
+  static override styles = [
+    tooltipSharedStyles,
+    css`
+      tr.total-row td {
+        background-color: #f6f8fa;
+        font-weight: 700;
+      }
+      tr.total-row td.projected {
+        background-color: #ddf;
+      }
+      tr.total-row td.confirmed {
+        background-color: #dd4;
+      }
+    `,
+  ];
 
   private __startMonth!: Month;
   private __endMonth!: Month;
@@ -109,28 +106,41 @@ export class BalanceSummaryTooltip extends LitElement {
       };
     };
     return html`
-      <span @click="${this.onCloseButton}">XXX</span>
-      <period-buttons .currentMonth=${this.endMonth} @button-click=${this.switchView}></period-buttons>
-      <span style="float:right;"
-        >${this.accountName} ${this.startMonth} - ${this.endMonth}</span
-      >
+      <div class="header">
+        <button
+          type="button"
+          class="close-btn"
+          title="Close summary"
+          aria-label="Close"
+          @click="${this.onCloseButton}"
+        >
+          &times;
+        </button>
+        <span class="title">${this.accountName}</span>
+        <span class="meta-pill">${this.startMonth} &ndash; ${this.endMonth}</span>
+      </div>
+      <div class="controls-bar">
+        <period-buttons .currentMonth=${this.endMonth} @button-click=${this.switchView}></period-buttons>
+      </div>
       <table>
         <thead>
-          <th style="min-width:170px">Account</th>
-          <th style="min-width:60px">Start Date</th>
-          <th style="min-width:50px">Start<br />Balance</th>
-          <th style="min-width:60px">End Date</th>
-          <th style="min-width:50px">End<br />Balance</th>
-          <th style="min-width:50px">Change</th>
-          <th style="min-width:50px">Prct<br />Change</th>
-          <th style="min-width:50px">An Prct<br />Change</th>
-          <th style="min-width:50px">Inflows</th>
-          <th style="min-width:50px">OutFlows</th>
-          <th style="min-width:50px">AddSub</th>
-          <th style="min-width:50px">Income</th>
-          <th style="min-width:50px">Expenses</th>
-          <th style="min-width:50px">Transfers</th>
-          <th style="min-width:50px">Unaccounted</th>
+          <tr>
+            <th style="min-width:170px">Account</th>
+            <th style="min-width:60px">Start Date</th>
+            <th style="min-width:50px">Start<br />Balance</th>
+            <th style="min-width:60px">End Date</th>
+            <th style="min-width:50px">End<br />Balance</th>
+            <th style="min-width:50px">Change</th>
+            <th style="min-width:50px">Prct<br />Change</th>
+            <th style="min-width:50px">An Prct<br />Change</th>
+            <th style="min-width:50px">Inflows</th>
+            <th style="min-width:50px">OutFlows</th>
+            <th style="min-width:50px">AddSub</th>
+            <th style="min-width:50px">Income</th>
+            <th style="min-width:50px">Expenses</th>
+            <th style="min-width:50px">Transfers</th>
+            <th style="min-width:50px">Unaccounted</th>
+          </tr>
         </thead>
         <tbody>
           ${this.statementEntries.map(
@@ -157,7 +167,7 @@ export class BalanceSummaryTooltip extends LitElement {
                 <td align="right">${currency(e.stmt.unaccounted)}</td>
               </tr>`
           )}
-          <tr>
+          <tr class="total-row">
             <td><b>Total</b></td>
             <td align="middle">${dateFormat(this.summary?.startBalance?.date)}</td>
             <td class=${classMap(projectedClass(this.summary?.startBalance))}>

@@ -6,6 +6,7 @@ import { type GqlMonthTransferSummary } from '../gql_types';
 import { Month } from '../month';
 
 import './period-buttons';
+import {tooltipSharedStyles} from './tooltip-styles';
 
 export interface TransfersSummaryMonthRangeChange {
   accountPath: string;
@@ -16,19 +17,17 @@ export interface TransfersSummaryMonthRangeChange {
 
 @customElement('transfers-summary-tooltip')
 export class TransfersSummaryTooltip extends LitElement {
-  static override styles = css`
-    td {
-      border-left: 1px solid #c3c3c3;
-      border-top: 1px solid #c3c3c3;
-      padding: 1px;
-      vertical-align: middle;
-    }
-    .index-chart {
-      margin: 8px 0;
-      background: #fff;
-      border: 1px solid #e5e7eb;
-    }
-  `;
+  static override styles = [
+    tooltipSharedStyles,
+    css`
+      .index-chart {
+        margin: 6px 0;
+        background: #fff;
+        border: 1px solid #d0d7de;
+        border-radius: 3px;
+      }
+    `,
+  ];
 
   @property({attribute: false})
   accountPath: string = '';
@@ -238,34 +237,48 @@ export class TransfersSummaryTooltip extends LitElement {
       return nothing;
     }
     return html`
-      <span @click="${this.onCloseButton}">XXX</span>
-      <period-buttons
-        .currentMonth=${Month.fromString(this.months[0]!)}
-        @button-click=${this.switchView}
-      ></period-buttons>
-      <span style="float:right;">${this.accountPath}</span>
+      <div class="header">
+        <button
+          type="button"
+          class="close-btn"
+          title="Close transfers summary"
+          aria-label="Close"
+          @click="${this.onCloseButton}"
+        >
+          &times;
+        </button>
+        <span class="title">${this.accountPath}</span>
+      </div>
+      <div class="controls-bar">
+        <period-buttons
+          .currentMonth=${Month.fromString(this.months[0]!)}
+          @button-click=${this.switchView}
+        ></period-buttons>
+      </div>
       <div class="index-chart">
         ${this.renderIndexChart()}
       </div>
       <table>
         <thead>
-          <th style="min-width:20px"></th>
-          <th style="min-width:40px">Month</th>
-          <th style="min-width:50px">Internal</th>
-          <th style="min-width:50px">External</th>
-          <th style="min-width:50px">Total</th>
-          <th style="min-width:60px">Tot Internal</th>
-          <th style="min-width:40px">Internal %</th>
-          <th style="min-width:40px">Internal Annl %</th>
-          <th style="min-width:40px">Wgt Int Age</th>
-          <th style="min-width:60px">Tot External</th>
-          <th style="min-width:40px">External %</th>
-          <th style="min-width:40px">External Annl %</th>
-          <th style="min-width:40px">Wgt Ext Age</th>
-          <th style="min-width:60px">Total</th>
-          <th style="min-width:40px">Tot Annl %</th>
-          <th style="min-width:40px">Wgt Age</th>
-          <th style="min-width:60px">Unaccounted</th>
+          <tr>
+            <th style="min-width:20px"></th>
+            <th style="min-width:40px">Month</th>
+            <th style="min-width:50px">Internal</th>
+            <th style="min-width:50px">External</th>
+            <th style="min-width:50px">Total</th>
+            <th style="min-width:60px">Tot Internal</th>
+            <th style="min-width:40px">Internal %</th>
+            <th style="min-width:40px">Internal Annl %</th>
+            <th style="min-width:40px">Wgt Int Age</th>
+            <th style="min-width:60px">Tot External</th>
+            <th style="min-width:40px">External %</th>
+            <th style="min-width:40px">External Annl %</th>
+            <th style="min-width:40px">Wgt Ext Age</th>
+            <th style="min-width:60px">Total</th>
+            <th style="min-width:40px">Tot Annl %</th>
+            <th style="min-width:40px">Wgt Age</th>
+            <th style="min-width:60px">Unaccounted</th>
+          </tr>
         </thead>
         <tbody>
         ${this.monthlyData.map(

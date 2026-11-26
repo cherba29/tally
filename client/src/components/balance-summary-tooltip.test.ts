@@ -1,5 +1,5 @@
 import { assert } from '@esm-bundle/chai';
-import { html, fixture, expect } from '@open-wc/testing';
+import { html, fixture, expect, oneEvent } from '@open-wc/testing';
 import { type StatementEntry } from '../utils';
 import { type GqlSummaryStatement } from '../gql_types';
 import { BalanceSummaryTooltip } from './balance-summary-tooltip';
@@ -43,10 +43,15 @@ describe('BalanceSummaryTooltip component', () => {
 
     expect(element.shadowRoot).not.to.be.null;
     assert.shadowDom.equal(
-      element, 
-      `<span>XXX</span>
-      <period-buttons></period-buttons>
-      <span style="float:right;">${accountName}  -  </span>
+      element,
+      `<div class="header">
+        <button aria-label="Close" class="close-btn" title="Close summary" type="button">×</button>
+        <span class="title">${accountName}</span>
+        <span class="meta-pill">–</span>
+      </div>
+      <div class="controls-bar">
+        <period-buttons></period-buttons>
+      </div>
       <table>
         <thead>
           <tr>
@@ -68,7 +73,7 @@ describe('BalanceSummaryTooltip component', () => {
           </tr>
         </thead>
         <tbody>
-          <tr>
+          <tr class="total-row">
             <td><b>Total</b></td>
             <td align="middle">n/a</td>
             <td class="projected">—</td>
@@ -88,5 +93,10 @@ describe('BalanceSummaryTooltip component', () => {
         </tbody>
       </table>`
     );
+
+    const closeBtn = element.shadowRoot!.querySelector<HTMLButtonElement>('button.close-btn')!;
+    setTimeout(() => closeBtn.click());
+    const closeEvent = await oneEvent(element, 'close');
+    expect(closeEvent.type).to.equal('close');
   });
 });

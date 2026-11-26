@@ -65,7 +65,7 @@ describe('AccountTooltip component', () => {
     expect(tooltip.shadowRoot!.querySelector('table td:nth-child(2)')!.textContent!.trim()).to.equal("test-account2");
   });
 
-  it('renders account link, metadata fields, and dispatches close on XXX click', async () => {
+  it('renders account link, metadata fields, and dispatches close on close button click', async () => {
     const account = {
       name: 'checking',
       url: 'https://example.com/checking',
@@ -103,8 +103,8 @@ describe('AccountTooltip component', () => {
       '1',
     ]);
 
-    const closeSpan = element.shadowRoot!.querySelector('span')!;
-    setTimeout(() => closeSpan.click());
+    const closeBtn = element.shadowRoot!.querySelector<HTMLButtonElement>('button.close-btn')!;
+    setTimeout(() => closeBtn.click());
     const closeEvent = await oneEvent(element, 'close');
     expect(closeEvent.type).to.equal('close');
   });

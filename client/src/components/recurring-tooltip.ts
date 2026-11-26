@@ -16,114 +16,61 @@ import {
   type GqlRecurringTransaction,
 } from '../gql_types';
 import {type RecurringHighlightKey} from '../utils';
+import {tooltipSharedStyles} from './tooltip-styles';
 
 @customElement('recurring-tooltip')
 export class RecurringTooltip extends LitElement {
-  static override styles = css`
-    :host {
-      display: block;
-    }
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 4px;
-    }
-    .close-btn {
-      padding: 0 5px;
-      font-size: 12px;
-      line-height: 15px;
-      font-weight: 700;
-      border: 1px solid #8c959f;
-      border-radius: 3px;
-      background-color: #fff;
-      color: #1f2328;
-      cursor: pointer;
-    }
-    .close-btn:hover {
-      background-color: #eaeef2;
-    }
-    .title {
-      font-weight: 700;
-      font-size: 11px;
-      color: #1f2328;
-      flex: 1;
-    }
-    .cadence-pill {
-      padding: 1px 6px;
-      border-radius: 999px;
-      background-color: #ddf4ff;
-      border: 1px solid #54aeff;
-      color: #0969da;
-      font-weight: 700;
-      font-size: 9px;
-      white-space: nowrap;
-    }
-    .summary-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      padding: 3px 5px;
-      margin-bottom: 4px;
-      background-color: #f6f8fa;
-      border: 1px solid #d0d7de;
-      border-radius: 3px;
-      color: #24292f;
-      font-size: 10px;
-    }
-    .summary-item b {
-      color: #1f2328;
-    }
-    table {
-      table-layout: auto;
-      width: auto;
-      min-width: 390px;
-      max-width: 470px;
-      border-collapse: collapse;
-    }
-    th,
-    td {
-      border-left: 1px solid #c3c3c3;
-      border-top: 1px solid #c3c3c3;
-      padding: 2px 4px;
-      vertical-align: middle;
-    }
-    th {
-      background-color: #f0f3f6;
-      text-align: left;
-    }
-    tr.highlight:hover {
-      background-color: #40c340;
-    }
-    tr.current-occurrence {
-      background-color: #fff3b0;
-      font-weight: 700;
-    }
-    tr.current-occurrence td:first-child {
-      border-left: 3px solid #0969da;
-    }
-    .other-account-tag {
-      display: inline-block;
-      margin-left: 4px;
-      padding: 0 4px;
-      border-radius: 3px;
-      background-color: #eaeef2;
-      border: 1px solid #c5ccd3;
-      color: #57606a;
-      font-size: 85%;
-      font-weight: 400;
-    }
-    .projected {
-      background-color: #ddf;
-      text-align: right;
-      cursor: pointer;
-    }
-    .confirmed {
-      background-color: #dd4;
-      text-align: right;
-      cursor: pointer;
-    }
-  `;
+  static override styles = [
+    tooltipSharedStyles,
+    css`
+      .summary-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 3px 5px;
+        margin-bottom: 4px;
+        background-color: #f6f8fa;
+        border: 1px solid #d0d7de;
+        border-radius: 3px;
+        color: #24292f;
+        font-size: 10px;
+      }
+      .summary-item b {
+        color: #1f2328;
+      }
+      table {
+        table-layout: auto;
+        width: auto;
+        min-width: 390px;
+        max-width: 470px;
+      }
+      th {
+        text-align: left;
+      }
+      tr.current-occurrence {
+        background-color: #fff3b0;
+        font-weight: 700;
+      }
+      tr.current-occurrence td:first-child {
+        border-left: 3px solid #0969da;
+      }
+      .other-account-tag {
+        display: inline-block;
+        margin-left: 4px;
+        padding: 0 4px;
+        border-radius: 3px;
+        background-color: #eaeef2;
+        border: 1px solid #c5ccd3;
+        color: #57606a;
+        font-size: 85%;
+        font-weight: 400;
+      }
+      .projected,
+      .confirmed {
+        cursor: pointer;
+      }
+    `,
+  ];
 
   @property({attribute: false})
   group: GqlRecurringGroup | undefined = undefined;
@@ -194,7 +141,7 @@ export class RecurringTooltip extends LitElement {
           &times;
         </button>
         <span class="title">${this.group.label}</span>
-        <span class="cadence-pill">${cadenceLabel} &middot; ${this.group.occurrenceCount}</span>
+        <span class="cadence-pill meta-pill">${cadenceLabel} &middot; ${this.group.occurrenceCount}</span>
       </div>
       <div class="summary-bar">
         ${this.group.isFixedAmount

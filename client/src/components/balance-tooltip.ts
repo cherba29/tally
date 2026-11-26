@@ -5,6 +5,7 @@ import {customElement, property} from 'lit/decorators.js';
 
 import {dateFormat, currency, isProjected, formatCadence} from '../format';
 import {type GqlBalance, type GqlStatement, type GqlTransaction} from '../gql_types';
+import {tooltipSharedStyles} from './tooltip-styles';
 
 export interface RecurringClickEventData {
   groupId: string;
@@ -18,46 +19,38 @@ export interface RecurringClickEventData {
 
 @customElement('balance-tooltip')
 export class BalanceTooltip extends LitElement {
-  static override styles = css`
-    td {
-      border-left: 1px solid #c3c3c3;
-      border-top: 1px solid #c3c3c3;
-      padding: 1px;
-      vertical-align: middle;
-    }
-    .highlight:hover {
-      background-color: #40c340;
-    }
-    .projected {
-      background-color: #ddf;
-      text-align: right;
-    }
-    .confirmed {
-      background-color: #dd4;
-      text-align: right;
-    }
-    .recurring-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 2px;
-      margin-left: 4px;
-      padding: 0 5px;
-      font-size: 9px;
-      line-height: 13px;
-      font-weight: 700;
-      color: #0969da;
-      background-color: #ddf4ff;
-      border: 1px solid #54aeff;
-      border-radius: 999px;
-      cursor: pointer;
-      vertical-align: middle;
-      white-space: nowrap;
-    }
-    .recurring-badge:hover {
-      background-color: #b6e3ff;
-      border-color: #0969da;
-    }
-  `;
+  static override styles = [
+    tooltipSharedStyles,
+    css`
+      .recurring-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+        margin-left: 4px;
+        padding: 0 5px;
+        font-size: 9px;
+        line-height: 13px;
+        font-weight: 700;
+        color: #0969da;
+        background-color: #ddf4ff;
+        border: 1px solid #54aeff;
+        border-radius: 999px;
+        cursor: pointer;
+        vertical-align: middle;
+        white-space: nowrap;
+      }
+      .recurring-badge:hover {
+        background-color: #b6e3ff;
+        border-color: #0969da;
+      }
+      tr.summary-row td {
+        background-color: #f6f8fa;
+      }
+      td.copyable {
+        cursor: pointer;
+      }
+    `,
+  ];
 
   private __month: string = '';
   private __stmt: GqlStatement | undefined = undefined;
@@ -130,7 +123,7 @@ export class BalanceTooltip extends LitElement {
   copyToClipBoard(amount: number | null | undefined) {
     if (amount != null || amount != undefined) {
       const text = (amount / 100.0).toFixed(2);
-      navigator.clipboard.writeText(text);
+      void navigator.clipboard?.writeText(text)?.catch(() => {});
       this.dispatchEvent(
         new CustomEvent('copied', {
           detail: {text},
@@ -159,8 +152,19 @@ export class BalanceTooltip extends LitElement {
       };
     };
     return html`
-      <span @click="${this.onCloseButton}">XXX</span>
-      <span style="float:right;">${this.accountName} - ${this.month}</span>
+      <div class="header">
+        <button
+          type="button"
+          class="close-btn"
+          title="Close statement"
+          aria-label="Close"
+          @click="${this.onCloseButton}"
+        >
+          &times;
+        </button>
+        <span class="title">${this.accountName}</span>
+        <span class="meta-pill">${this.month}</span>
+      </div>
       <table style="table-layout: auto; width: 500px">
         <tr>
           <th align="left">Ending Balance</th>
@@ -181,59 +185,67 @@ export class BalanceTooltip extends LitElement {
                 ${currency(t?.balance?.amount)}
               </td>
               <td align="middle" style="min-width:60px">${dateFormat(t?.balance?.date)}</td>
-              <td align="right" style="min-width:50px" @click="${()=>this.copyToClipBoard(t?.balanceFromStart)}">${currency(t?.balanceFromStart)}</td>
+              <td
+                class="copyable"
+                align="right"
+                style="min-width:50px"
+                title="Click to copy running balance"
+                @click="${() => this.copyToClipBoard(t?.balanceFromStart)}"
+              >
+                ${currency(t?.balanceFromStart)}
+              </td>
             </tr>`
         )}
         <tr>
-          <th align="left">Starting Balance</td>
+          <th align="left">Starting Balance</th>
           <th></th>
           <th></th>
           <th>${dateFormat(this.stmt?.startBalance?.date)}</th>
           <th align="right" style="width:50px">${currency(this.stmt?.startBalance?.amount)}</th>
         </tr>
-        <tr>
+        <tr class="summary-row">
           <td align="right"><b>Income</b></td>
           <td></td>
           <td align="right">${currency(this.stmt?.income)}</td>
           <td></td>
           <td></td>
         </tr>
-        <tr>
+        <tr class="summary-row">
           <td align="right"><b>Expenses</b></td>
           <td></td>
           <td align="right">${currency(this.stmt?.totalPayments)}</td>
           <td></td>
           <td></td>
         </tr>
-        <tr>
+        <tr class="summary-row">
           <td align="right"><b>Transfers</b></td>
           <td></td>
           <td align="right">${currency(this.stmt?.totalTransfers)}</td>
           <td></td>
           <td></td>
         </tr>
-        <tr>
+        <tr class="summary-row">
           <td align="right"><b>Inflows</b></td>
           <td></td>
           <td align="right">${currency(this.stmt?.inFlows)}</td>
           <td></td>
           <td></td>
         </tr>
-        <tr>
+        <tr class="summary-row">
           <td align="right"><b>Outflows</b></td>
           <td></td>
           <td align="right">${currency(this.stmt?.outFlows)}</td>
           <td></td>
           <td></td>
         </tr>
-        <tr>
+        <tr class="summary-row">
           <td align="right"><b>Total</b></td>
           <td></td>
           <td align="right">${currency(this.stmt?.addSub)}</td>
           <td></td>
           <td></td>
         </tr>
-        <tr>
+        <tr class="summary-row">
           <td align="right"><b>Unaccounted</b></td>
           <td></td>
           <td align="right">${currency(this.stmt?.unaccounted)}</td>

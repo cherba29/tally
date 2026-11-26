@@ -61,11 +61,15 @@ describe('TransferSummaryTooltip component', () => {
 
     expect(element.shadowRoot).not.to.be.null;
     assert.shadowDom.equal(
-      element, 
-      `<span>XXX</span>
-       <period-buttons></period-buttons>
-       <span style="float:right;">john/internal/test-account1</span>
-       <div class="index-chart"></div>
+      element,
+      `<div class="header">
+        <button aria-label="Close" class="close-btn" title="Close transfers summary" type="button">×</button>
+        <span class="title">john/internal/test-account1</span>
+      </div>
+      <div class="controls-bar">
+        <period-buttons></period-buttons>
+      </div>
+      <div class="index-chart"></div>
       <table>
         <thead>
           <tr>
@@ -147,6 +151,11 @@ describe('TransferSummaryTooltip component', () => {
     // 9 months back from Jul2026 is Nov2025.
     expect(detail.startMonth.toString()).to.equal('Nov2025');
     expect(detail.endMonth.toString()).to.equal('Jul2026');
+
+    const closeBtn = element.shadowRoot!.querySelector<HTMLButtonElement>('button.close-btn')!;
+    setTimeout(() => closeBtn.click());
+    const closeEvent = await oneEvent(element, 'close');
+    expect(closeEvent.type).to.equal('close');
   });
 
   it('updates rule and serie position on mousemove over index-chart', async () => {

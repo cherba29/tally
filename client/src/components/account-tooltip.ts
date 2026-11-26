@@ -1,17 +1,24 @@
 import {LitElement, css, html, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {type GqlAccount} from '../gql_types';
+import {tooltipSharedStyles} from './tooltip-styles';
 
 @customElement('account-tooltip')
 export class AccountTooltip extends LitElement {
-  static override styles = css`
-    td {
-      border-left: 1px solid #c3c3c3;
-      border-top: 1px solid #c3c3c3;
-      padding: 1px;
-      vertical-align: middle;
-    }
-  `;
+  static override styles = [
+    tooltipSharedStyles,
+    css`
+      td:first-child {
+        font-weight: 700;
+        background-color: #f0f3f6;
+        color: #24292f;
+        white-space: nowrap;
+      }
+      a {
+        color: #0969da;
+      }
+    `,
+  ];
 
   private __account: GqlAccount | undefined = undefined;
 
@@ -33,7 +40,18 @@ export class AccountTooltip extends LitElement {
       return nothing;
     }
     return html`
-      <span @click="${this.onCloseButton}">XXX</span>
+      <div class="header">
+        <button
+          type="button"
+          class="close-btn"
+          title="Close account details"
+          aria-label="Close"
+          @click="${this.onCloseButton}"
+        >
+          &times;
+        </button>
+        <span class="title">${this.account.name}</span>
+      </div>
       <table>
         <tr>
           <td>Account</td>

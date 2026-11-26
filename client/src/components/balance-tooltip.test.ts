@@ -26,9 +26,12 @@ describe('BalanceTooltip component', () => {
 
     expect(element.shadowRoot).not.to.be.null;
     assert.shadowDom.equal(
-      element, 
-      `<span>XXX</span>
-      <span style="float:right;">${accountName} - ${month}</span>
+      element,
+      `<div class="header">
+        <button aria-label="Close" class="close-btn" title="Close statement" type="button">×</button>
+        <span class="title">${accountName}</span>
+        <span class="meta-pill">${month}</span>
+      </div>
       <table style="table-layout: auto; width: 500px">
         <tbody>
           <tr>
@@ -45,49 +48,49 @@ describe('BalanceTooltip component', () => {
             <th>n/a</th>
             <th align="right" style="width:50px">—</th>
           </tr>
-          <tr>
+          <tr class="summary-row">
             <td align="right"><b>Income</b></td>
             <td></td>
             <td align="right">—</td>
             <td></td>
             <td></td>
           </tr>
-          <tr>
+          <tr class="summary-row">
             <td align="right"><b>Expenses</b></td>
             <td></td>
             <td align="right">—</td>
             <td></td>
             <td></td>
           </tr>
-          <tr>
+          <tr class="summary-row">
             <td align="right"><b>Transfers</b></td>
             <td></td>
             <td align="right">—</td>
             <td></td>
             <td></td>
           </tr>
-          <tr>
+          <tr class="summary-row">
             <td align="right"><b>Inflows</b></td>
             <td></td>
             <td align="right">—</td>
             <td></td>
             <td></td>
           </tr>
-          <tr>
+          <tr class="summary-row">
             <td align="right"><b>Outflows</b></td>
             <td></td>
             <td align="right">—</td>
             <td></td>
             <td></td>
           </tr>
-          <tr>
+          <tr class="summary-row">
             <td align="right"><b>Total</b></td>
             <td></td>
             <td align="right">—</td>
             <td></td>
             <td></td>
           </tr>
-          <tr>
+          <tr class="summary-row">
             <td align="right"><b>Unaccounted</b></td>
             <td></td>
             <td align="right">—</td>
@@ -191,8 +194,8 @@ describe('BalanceTooltip component', () => {
     expect(trOutCells[1]!.style.backgroundColor).to.equal('');
 
     // Close button dispatches 'close' event
-    const closeSpan = element.shadowRoot!.querySelector('span')!;
-    setTimeout(() => closeSpan.click());
+    const closeBtn = element.shadowRoot!.querySelector<HTMLButtonElement>('button.close-btn')!;
+    setTimeout(() => closeBtn.click());
     const closeEvent = await oneEvent(element, 'close');
     expect(closeEvent.type).to.equal('close');
 

@@ -57,7 +57,31 @@ export function mapViewToMonths(viewMonthRange: SummaryView, currentMonth: Month
 
 @customElement('period-buttons')
 export class PeriodButtons extends LitElement {
-  static override styles = css``;
+  static override styles = css`
+    :host {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 2px;
+    }
+    button {
+      padding: 1px 5px;
+      font-size: 10px;
+      border: 1px solid #c5ccd3;
+      border-radius: 3px;
+      background-color: #fff;
+      color: #1f2328;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #eaeef2;
+    }
+    span {
+      margin-left: 3px;
+      color: #57606a;
+      font-weight: 600;
+    }
+  `;
 
   private __currentMonth!: Month;
 

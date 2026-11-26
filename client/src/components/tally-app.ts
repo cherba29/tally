@@ -168,9 +168,10 @@ export class TallyApp extends LitElement {
     .toolTip {
       position: fixed;
       z-index: 30;
-      padding: 5px;
-      border: 1px solid #000;
-      background-color: #ffff80;
+      padding: 6px;
+      border: 1px solid #1f6feb;
+      background-color: #fffef0;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
       max-width: calc(100vw - 16px);
       max-height: calc(100vh - 16px);
       overflow: auto;
