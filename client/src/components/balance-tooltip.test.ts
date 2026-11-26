@@ -87,13 +87,17 @@ describe('BalanceTooltip component', () => {
         <thead>
           <tr>
             <th>#</th>
-            <th align="left">Account</th>
-            <th align="left">Description</th>
-            <th>Recurrence</th>
-            <th>Type</th>
-            <th align="right">Amount</th>
-            <th>Date</th>
-            <th align="right">Balance</th>
+            <th align="left" aria-sort="none" class="sortable" data-sort-col="account" title="Click to sort by Account">Account</th>
+            <th align="left" aria-sort="none" class="sortable" data-sort-col="description" title="Click to sort by Description">Description</th>
+            <th aria-sort="none" class="sortable" data-sort-col="recurrence" title="Click to sort by Recurrence">Recurrence</th>
+            <th aria-sort="none" class="sortable" data-sort-col="type" title="Click to sort by Type">Type</th>
+            <th align="right" aria-sort="none" class="sortable" data-sort-col="amount" title="Secondary sort #2 (descending) — click to sort primarily by Amount">
+              Amount<span class="secondary sort-indicator">▼<span class="sort-priority">2</span></span>
+            </th>
+            <th aria-sort="descending" class="sortable" data-sort-col="date" title="Sorted by Date (descending) — click to reverse">
+              Date<span class="primary sort-indicator">▼</span>
+            </th>
+            <th align="right" aria-sort="none" class="sortable" data-sort-col="balance" title="Click to sort by Balance">Balance</th>
           </tr>
         </thead>
         <tbody>
@@ -179,10 +183,33 @@ describe('BalanceTooltip component', () => {
     const rows = Array.from(element.shadowRoot!.querySelectorAll('tr.highlight'));
     expect(rows).to.have.lengthOf(4);
 
-    // Expense (confirmed) — columns: [0]=#, [1]=Account, [2]=Description, [3]=Recurrence, [4]=Type, [5]=Amount, [6]=Date, [7]=Balance
-    const expCells = rows[0]!.querySelectorAll('td');
-    expect(expCells).to.have.lengthOf(8);
-    expect(expCells[0]!.textContent!.trim()).to.equal('1');
+    // Default sort is Date descending: [0]=Nov 20 (Card payment), [1]=Nov 18 (Transfer in),
+    // [2]=Nov 15 (Paycheck), [3]=Nov 5 (Groceries).
+    // Columns: [0]=#, [1]=Account, [2]=Description, [3]=Recurrence, [4]=Type, [5]=Amount, [6]=Date, [7]=Balance
+    const trOutCells = rows[0]!.querySelectorAll('td');
+    expect(trOutCells).to.have.lengthOf(8);
+    expect(trOutCells[0]!.textContent!.trim()).to.equal('1');
+    expect(trOutCells[4]!.textContent!.trim()).to.equal('T →');
+    expect(trOutCells[4]!.style.backgroundColor).to.equal('');
+    expect(trOutCells[7]!.textContent!.trim()).to.equal('3,850.00');
+
+    // Transfer in (positive)
+    const trInCells = rows[1]!.querySelectorAll('td');
+    expect(trInCells[4]!.textContent!.trim()).to.equal('T ←');
+    expect(trInCells[4]!.style.backgroundColor).to.equal('');
+    expect(trInCells[7]!.textContent!.trim()).to.equal('4,300.00');
+
+    // Income (projected)
+    const incCells = rows[2]!.querySelectorAll('td');
+    expect(incCells[4]!.textContent!.trim()).to.equal('I ←');
+    expect(incCells[4]!.style.backgroundColor).to.equal('rgb(170, 204, 170)');
+    expect(incCells[5]!.classList.contains('projected')).to.equal(true);
+    expect(incCells[5]!.textContent!.trim()).to.equal('2,600.00');
+    expect(incCells[7]!.textContent!.trim()).to.equal('3,550.00');
+
+    // Expense (confirmed)
+    const expCells = rows[3]!.querySelectorAll('td');
+    expect(expCells[0]!.textContent!.trim()).to.equal('4');
     expect(expCells[1]!.textContent!.trim()).to.equal('expenses');
     expect(expCells[2]!.textContent!.trim()).to.equal('Groceries');
     expect(expCells[3]!.textContent!.trim()).to.equal('');
@@ -192,23 +219,6 @@ describe('BalanceTooltip component', () => {
     expect(expCells[5]!.textContent!.trim()).to.equal('-50.00');
     expect(expCells[6]!.textContent!.trim()).to.equal('2026-11-05');
     expect(expCells[7]!.textContent!.trim()).to.equal('950.00');
-
-    // Income (projected)
-    const incCells = rows[1]!.querySelectorAll('td');
-    expect(incCells[4]!.textContent!.trim()).to.equal('I ←');
-    expect(incCells[4]!.style.backgroundColor).to.equal('rgb(170, 204, 170)');
-    expect(incCells[5]!.classList.contains('projected')).to.equal(true);
-    expect(incCells[5]!.textContent!.trim()).to.equal('2,600.00');
-
-    // Transfer in (positive)
-    const trInCells = rows[2]!.querySelectorAll('td');
-    expect(trInCells[4]!.textContent!.trim()).to.equal('T ←');
-    expect(trInCells[4]!.style.backgroundColor).to.equal('');
-
-    // Transfer out (negative)
-    const trOutCells = rows[3]!.querySelectorAll('td');
-    expect(trOutCells[4]!.textContent!.trim()).to.equal('T →');
-    expect(trOutCells[4]!.style.backgroundColor).to.equal('');
 
     // Close button dispatches 'close' event
     const closeBtn = element.shadowRoot!.querySelector<HTMLButtonElement>('button.close-btn')!;
@@ -420,5 +430,106 @@ describe('BalanceTooltip component', () => {
     expect(element.shadowRoot!.querySelector('.unaccounted-pill.nonzero')!.textContent).to.include(
       'Unaccounted: -12.50'
     );
+  });
+
+  it('sorts columns interactively, remembers previous sort order, recomputes running balances, and keeps index non-sortable', async () => {
+    const stmt: GqlStatement = {
+      name: 'checking',
+      month: 'Nov2026',
+      isClosed: false,
+      isCovered: true,
+      isProjectedCovered: true,
+      hasProjectedTransfer: false,
+      startBalance: {amount: 100000, date: '2026-11-01', desc: '', type: 'CONFIRMED'},
+      endBalance: {amount: 120000, date: '2026-12-01', desc: '', type: 'CONFIRMED'},
+      income: 50000,
+      totalPayments: -30000,
+      totalTransfers: 0,
+      inFlows: 50000,
+      outFlows: -30000,
+      addSub: 20000,
+      change: 20000,
+      percentChange: 20,
+      annualizedPercentChange: 0,
+      unaccounted: 0,
+      transactions: [
+        {
+          toAccountName: 'expenses',
+          description: 'Utility',
+          isExpense: true,
+          isIncome: false,
+          balance: {amount: -10000, date: '2026-11-15', desc: '', type: 'CONFIRMED'},
+          balanceFromStart: 140000,
+        },
+        {
+          toAccountName: 'expenses',
+          description: 'Groceries',
+          isExpense: true,
+          isIncome: false,
+          balance: {amount: -20000, date: '2026-11-15', desc: '', type: 'CONFIRMED'},
+          balanceFromStart: 120000,
+        },
+        {
+          toAccountName: 'payroll',
+          description: 'Paycheck',
+          isExpense: false,
+          isIncome: true,
+          balance: {amount: 50000, date: '2026-11-10', desc: '', type: 'CONFIRMED'},
+          balanceFromStart: 150000,
+        },
+      ],
+    };
+
+    const element = await fixture<BalanceTooltip>(
+      html`<balance-tooltip
+        .accountName=${'alex/internal/checking'}
+        .month=${'Nov2026'}
+        .stmt=${stmt}
+      ></balance-tooltip>`
+    );
+
+    const header = (col: string) =>
+      element.shadowRoot!.querySelector<HTMLElement>(`th[data-sort-col="${col}"]`)!;
+    const descriptions = () =>
+      Array.from(element.shadowRoot!.querySelectorAll('tr.highlight')).map(
+        (tr) => tr.querySelectorAll('td')[2]!.textContent!.trim()
+      );
+    const balances = () =>
+      Array.from(element.shadowRoot!.querySelectorAll('tr.highlight')).map(
+        (tr) => tr.querySelectorAll('td')[7]!.textContent!.trim()
+      );
+
+    // Index column is not sortable
+    const indexTh = element.shadowRoot!.querySelector('thead th')!;
+    expect(indexTh.classList.contains('sortable')).to.equal(false);
+
+    // Default: Date DESC, Amount DESC -> Nov 15 Utility (-100) before Groceries (-200), then Nov 10 Paycheck (+500)
+    expect(header('date').getAttribute('aria-sort')).to.equal('descending');
+    expect(descriptions()).to.deep.equal(['Utility', 'Groceries', 'Paycheck']);
+    // Bottom-to-top from 1,000.00: Paycheck (+500) = 1,500.00 -> Groceries (-200) = 1,300.00 -> Utility (-100) = 1,200.00
+    expect(balances()).to.deep.equal(['1,200.00', '1,300.00', '1,500.00']);
+
+    // Click Amount -> Amount DESC primary, Date DESC secondary: Paycheck (+500), Utility (-100), Groceries (-200)
+    header('amount').click();
+    await element.updateComplete;
+    expect(header('amount').getAttribute('aria-sort')).to.equal('descending');
+    expect(descriptions()).to.deep.equal(['Paycheck', 'Utility', 'Groceries']);
+    // Recomputed bottom-to-top from 1,000.00: Groceries (-200) = 800.00 -> Utility (-100) = 700.00 -> Paycheck (+500) = 1,200.00
+    expect(balances()).to.deep.equal(['1,200.00', '700.00', '800.00']);
+
+    // Click Amount again -> toggle to Amount ASC: Groceries (-200), Utility (-100), Paycheck (+500)
+    header('amount').click();
+    await element.updateComplete;
+    expect(header('amount').getAttribute('aria-sort')).to.equal('ascending');
+    expect(descriptions()).to.deep.equal(['Groceries', 'Utility', 'Paycheck']);
+
+    // Click Date -> Date DESC primary, remembering Amount ASC as secondary!
+    // On Nov 15, Groceries (-200) now comes BEFORE Utility (-100)!
+    header('date').click();
+    await element.updateComplete;
+    expect(header('date').getAttribute('aria-sort')).to.equal('descending');
+    expect(header('amount').querySelector('.sort-indicator.secondary')!.textContent).to.equal('▲2');
+    expect(descriptions()).to.deep.equal(['Groceries', 'Utility', 'Paycheck']);
+    expect(balances()).to.deep.equal(['1,200.00', '1,400.00', '1,500.00']);
   });
 });

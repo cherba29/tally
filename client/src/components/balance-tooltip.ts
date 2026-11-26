@@ -1,10 +1,17 @@
 import {LitElement, css, html, nothing, type TemplateResult} from 'lit';
 import {classMap, type ClassInfo} from 'lit/directives/class-map.js';
 import {styleMap, type StyleInfo} from 'lit/directives/style-map.js';
-import {customElement, property} from 'lit/decorators.js';
+import {customElement, property, state} from 'lit/decorators.js';
 
 import {dateFormat, currency, isProjected, formatCadence} from '../format';
 import {type GqlBalance, type GqlStatement, type GqlTransaction} from '../gql_types';
+import {
+  DEFAULT_SORT_ORDER,
+  sortTransactionsWithRunningBalance,
+  updateSortOrder,
+  type SortColumn,
+  type SortCriterion,
+} from '../statement-sort';
 import {tooltipSharedStyles} from './tooltip-styles';
 
 export interface RecurringClickEventData {
@@ -193,6 +200,31 @@ export class BalanceTooltip extends LitElement {
       tr.balance-row th {
         background-color: #f6f8fa;
       }
+      th.sortable {
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+      }
+      th.sortable:hover {
+        background-color: #e2e8f0;
+      }
+      .sort-indicator {
+        display: inline-block;
+        margin-left: 2px;
+        font-size: 8px;
+        line-height: 1;
+        vertical-align: middle;
+      }
+      .sort-indicator.primary {
+        color: #0969da;
+      }
+      .sort-indicator.secondary {
+        color: #6e7781;
+      }
+      .sort-priority {
+        font-size: 7px;
+        vertical-align: super;
+      }
       td.copyable {
         cursor: pointer;
         white-space: nowrap;
@@ -202,6 +234,9 @@ export class BalanceTooltip extends LitElement {
 
   private __month: string = '';
   private __stmt: GqlStatement | undefined = undefined;
+
+  @state()
+  private sortOrder: SortCriterion[] = [...DEFAULT_SORT_ORDER];
 
   @property({attribute: false})
   accountName: string = '';
@@ -228,6 +263,46 @@ export class BalanceTooltip extends LitElement {
 
   onCloseButton() {
     this.dispatchEvent(new CustomEvent('close'));
+  }
+
+  private onSortColumnClick(column: SortColumn) {
+    this.sortOrder = updateSortOrder(this.sortOrder, column);
+  }
+
+  private renderSortableHeader(
+    column: SortColumn,
+    label: string,
+    align?: 'left' | 'right'
+  ) {
+    const priorityIdx = this.sortOrder.findIndex((c) => c.column === column);
+    const criterion = priorityIdx >= 0 ? this.sortOrder[priorityIdx] : undefined;
+    const ariaSort =
+      priorityIdx === 0 && criterion
+        ? criterion.direction === 'asc'
+          ? 'ascending'
+          : 'descending'
+        : 'none';
+    const arrow = criterion ? (criterion.direction === 'asc' ? '▲' : '▼') : '';
+    const title = criterion
+      ? priorityIdx === 0
+        ? `Sorted by ${label} (${criterion.direction === 'asc' ? 'ascending' : 'descending'}) — click to reverse`
+        : `Secondary sort #${priorityIdx + 1} (${criterion.direction === 'asc' ? 'ascending' : 'descending'}) — click to sort primarily by ${label}`
+      : `Click to sort by ${label}`;
+
+    return html`<th
+      class="sortable"
+      data-sort-col="${column}"
+      align=${align ?? nothing}
+      aria-sort="${ariaSort}"
+      title="${title}"
+      @click=${() => this.onSortColumnClick(column)}
+    >
+      ${label}${criterion && priorityIdx === 0
+        ? html`<span class="sort-indicator primary">${arrow}</span>`
+        : criterion && priorityIdx === 1
+          ? html`<span class="sort-indicator secondary">${arrow}<span class="sort-priority">2</span></span>`
+          : nothing}
+    </th>`;
   }
 
   private onRecurringClick(e: MouseEvent, t: GqlTransaction) {
@@ -301,6 +376,11 @@ export class BalanceTooltip extends LitElement {
     };
     const unaccountedValue = Number(this.stmt?.unaccounted ?? 0);
     const hasUnaccounted = !Number.isNaN(unaccountedValue) && unaccountedValue !== 0;
+    const sortedRows = sortTransactionsWithRunningBalance(
+      this.stmt?.transactions ?? [],
+      this.stmt?.startBalance,
+      this.sortOrder
+    );
     return html`
       <div class="header">
         <button
@@ -386,13 +466,13 @@ export class BalanceTooltip extends LitElement {
         <thead>
           <tr>
             <th>#</th>
-            <th align="left">Account</th>
-            <th align="left">Description</th>
-            <th>Recurrence</th>
-            <th>Type</th>
-            <th align="right">Amount</th>
-            <th>Date</th>
-            <th align="right">Balance</th>
+            ${this.renderSortableHeader('account', 'Account', 'left')}
+            ${this.renderSortableHeader('description', 'Description', 'left')}
+            ${this.renderSortableHeader('recurrence', 'Recurrence')}
+            ${this.renderSortableHeader('type', 'Type')}
+            ${this.renderSortableHeader('amount', 'Amount', 'right')}
+            ${this.renderSortableHeader('date', 'Date')}
+            ${this.renderSortableHeader('balance', 'Balance', 'right')}
           </tr>
         </thead>
         <tbody>
@@ -401,8 +481,8 @@ export class BalanceTooltip extends LitElement {
             <th>${dateFormat(this.stmt?.endBalance?.date)}</th>
             <th align="right">${currency(this.stmt?.endBalance?.amount)}</th>
           </tr>
-          ${this.stmt?.transactions?.map(
-            (t: GqlTransaction, index: number) =>
+          ${sortedRows.map(
+            ({transaction: t, computedBalanceFromStart}, index: number) =>
               html`<tr class="highlight">
                 <td align="middle" class="nowrap">${index + 1}</td>
                 <td class="nowrap">${t?.toAccountName}</td>
@@ -420,9 +500,9 @@ export class BalanceTooltip extends LitElement {
                   align="right"
                   style="min-width:50px"
                   title="Click to copy running balance"
-                  @click="${() => this.copyToClipBoard(t?.balanceFromStart)}"
+                  @click="${() => this.copyToClipBoard(computedBalanceFromStart)}"
                 >
-                  ${currency(t?.balanceFromStart)}
+                  ${currency(computedBalanceFromStart)}
                 </td>
               </tr>`
           )}
