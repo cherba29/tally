@@ -89,6 +89,67 @@ cmd_build() {
   build_jar
 }
 
+PROD_RUNTIME_DIR=""
+PROD_JAVA_PID=""
+
+cleanup_prod_server() {
+  trap - EXIT INT TERM
+  if [[ -n "${PROD_JAVA_PID:-}" ]] && kill -0 "$PROD_JAVA_PID" 2>/dev/null; then
+    kill -TERM "$PROD_JAVA_PID" 2>/dev/null || true
+    wait "$PROD_JAVA_PID" 2>/dev/null || true
+  fi
+  if [[ -n "${PROD_RUNTIME_DIR:-}" ]]; then
+    rm -rf "$PROD_RUNTIME_DIR"
+    PROD_RUNTIME_DIR=""
+  fi
+  PROD_JAVA_PID=""
+}
+
+forward_prod_stop() {
+  # Backgrounded children in non-interactive shells ignore SIGINT per POSIX,
+  # so always forward SIGTERM to trigger the JVM's graceful KtorShutdownHook.
+  if [[ -n "${PROD_JAVA_PID:-}" ]] && kill -0 "$PROD_JAVA_PID" 2>/dev/null; then
+    kill -TERM "$PROD_JAVA_PID" 2>/dev/null || true
+  fi
+}
+
+run_prod_server() {
+  local data_dir="$1"
+  local port="$2"
+
+  ensure_jar
+
+  # Run from an isolated per-process copy of the fat JAR so rebuilding tally-all.jar
+  # while a server is running never invalidates the JVM's open ZipFile classloader
+  # (which otherwise causes NoClassDefFoundError during KtorShutdownHook on Ctrl-C).
+  PROD_RUNTIME_DIR="$(mktemp -d "${TMPDIR:-/tmp}/tally-server.XXXXXX")"
+  local runtime_jar="$PROD_RUNTIME_DIR/tally-all.jar"
+  cp --reflink=auto "$JAR_PATH" "$runtime_jar" 2>/dev/null || cp "$JAR_PATH" "$runtime_jar"
+
+  trap cleanup_prod_server EXIT
+  trap forward_prod_stop INT TERM
+
+  echo "Starting Tally production server on http://localhost:$port (data: $data_dir)"
+  env TALLY_FILES="$data_dir" TALLY_PORT="$port" java -jar "$runtime_jar" &
+  PROD_JAVA_PID=$!
+
+  local status=0
+  while true; do
+    if wait "$PROD_JAVA_PID"; then
+      status=0
+      break
+    else
+      status=$?
+      if ! kill -0 "$PROD_JAVA_PID" 2>/dev/null; then
+        break
+      fi
+    fi
+  done
+
+  cleanup_prod_server
+  return "$status"
+}
+
 run_dev_server() {
   local data_dir="$1"
   local port="$2"
@@ -299,9 +360,7 @@ cmd_server() {
       exec env TALLY_FILES="$data_dir" TALLY_PORT="$port" ./gradlew run --info
       ;;
     prod)
-      ensure_jar
-      echo "Starting Tally production server on http://localhost:$port (data: $data_dir)"
-      exec env TALLY_FILES="$data_dir" TALLY_PORT="$port" java -jar "$JAR_PATH"
+      run_prod_server "$data_dir" "$port"
       ;;
   esac
 }
