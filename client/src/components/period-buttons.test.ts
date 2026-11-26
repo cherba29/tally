@@ -26,80 +26,92 @@ describe('PeriodButtons component', () => {
     expect(mapViewToMonths(SummaryView.YEAR_MAX, jul2026)).to.equal(undefined);
   });
 
-  it('renders with default property values', async () => {
-    const onButtonClick = (_: CustomEvent) => { };
+  it('renders with default pressed 1m button and no text status span', async () => {
+    const onButtonClick = (_: CustomEvent) => {};
     const currentMonth = new Month(2026, 6);
     const element = await fixture<PeriodButtons>(
       html`<period-buttons .currentMonth=${currentMonth} @button-click=${onButtonClick}></period-buttons>`
     );
 
-    // Drill into the Shadow DOM to verify content.
     expect(element.shadowRoot).not.to.be.null;
     assert.shadowDom.equal(
-      element, 
-      `<button key="MONTH_1">1m</button>
-      <button key="MONTH_3">3m</button>
-      <button key="MONTH_6">6m</button>
-      <button key="MONTH_9">9m</button>
-      <button key="YTD">ytd</button>
-      <button key="YEAR_1">1y</button>
-      <button key="YEAR_2">2y</button>
-      <button key="YEAR_3">3y</button>
-      <button key="YEAR_5">5y</button>
-      <button key="YEAR_7">7y</button>
-      <button key="YEAR_10">10y</button>
-      <button key="YEAR_15">15y</button>
-      <button key="YEAR_20">20y</button>
-      <button key="YEAR_30">30y</button>
-      <button key="YEAR_MAX">Max</button>
-      <span>(1m)</span>`
+      element,
+      `<button aria-pressed="true" class="active" key="MONTH_1" type="button">1m</button>
+      <button aria-pressed="false" key="MONTH_3" type="button">3m</button>
+      <button aria-pressed="false" key="MONTH_6" type="button">6m</button>
+      <button aria-pressed="false" key="MONTH_9" type="button">9m</button>
+      <button aria-pressed="false" key="YTD" type="button">ytd</button>
+      <button aria-pressed="false" key="YEAR_1" type="button">1y</button>
+      <button aria-pressed="false" key="YEAR_2" type="button">2y</button>
+      <button aria-pressed="false" key="YEAR_3" type="button">3y</button>
+      <button aria-pressed="false" key="YEAR_5" type="button">5y</button>
+      <button aria-pressed="false" key="YEAR_7" type="button">7y</button>
+      <button aria-pressed="false" key="YEAR_10" type="button">10y</button>
+      <button aria-pressed="false" key="YEAR_15" type="button">15y</button>
+      <button aria-pressed="false" key="YEAR_20" type="button">20y</button>
+      <button aria-pressed="false" key="YEAR_30" type="button">30y</button>
+      <button aria-pressed="false" key="YEAR_MAX" type="button">Max</button>`
     );
-  
-      const button = element.shadowRoot!.querySelector('[key="MONTH_9"]') as HTMLElement;
-      setTimeout(() => {
-        button.click();
-      });
-      const { detail } = await oneEvent(element, 'button-click');
-      // 9 months back from Jul2026 is Nov2025.
-      expect(detail.startMonth.toString()).to.equal('Nov2025');
-      expect(detail.endMonth.toString()).to.equal('Jul2026');
-      const span = element.shadowRoot!.querySelector('span') as HTMLElement;
-      expect(span.textContent).to.equal('(9m)');
-    });
 
-  it('formats exact-year, mixed year+month, and Max periods and preserves period on currentMonth update', async () => {
+    const month1Btn = element.shadowRoot!.querySelector<HTMLButtonElement>('[key="MONTH_1"]')!;
+    const month9Btn = element.shadowRoot!.querySelector<HTMLButtonElement>('[key="MONTH_9"]')!;
+    setTimeout(() => {
+      month9Btn.click();
+    });
+    const {detail} = await oneEvent(element, 'button-click');
+    // 9 months back from Jul2026 is Nov2025.
+    expect(detail.startMonth.toString()).to.equal('Nov2025');
+    expect(detail.endMonth.toString()).to.equal('Jul2026');
+    await element.updateComplete;
+    expect(month1Btn.classList.contains('active')).to.be.false;
+    expect(month1Btn.getAttribute('aria-pressed')).to.equal('false');
+    expect(month9Btn.classList.contains('active')).to.be.true;
+    expect(month9Btn.getAttribute('aria-pressed')).to.equal('true');
+    expect(element.shadowRoot!.querySelector('span')).to.be.null;
+  });
+
+  it('highlights pressed button across 1y, YTD, and Max and preserves selection on currentMonth update', async () => {
     const currentMonth = new Month(2026, 6);
     const element = await fixture<PeriodButtons>(
       html`<period-buttons .currentMonth=${currentMonth}></period-buttons>`
     );
-    const span = element.shadowRoot!.querySelector('span') as HTMLElement;
 
-    // 1y (exact years, 0 remaining months)
-    const year1Btn = element.shadowRoot!.querySelector('[key="YEAR_1"]') as HTMLElement;
+    const getActiveKey = () =>
+      element.shadowRoot!.querySelector<HTMLButtonElement>('button.active')?.getAttribute('key');
+
+    expect(getActiveKey()).to.equal('MONTH_1');
+
+    // 1y
+    const year1Btn = element.shadowRoot!.querySelector<HTMLButtonElement>('[key="YEAR_1"]')!;
     setTimeout(() => year1Btn.click());
     const year1Event = await oneEvent(element, 'button-click');
     expect(year1Event.detail.startMonth.toString()).to.equal('Aug2025');
     expect(year1Event.detail.endMonth.toString()).to.equal('Jul2026');
     await element.updateComplete;
-    expect(span.textContent).to.equal('(1y)');
+    expect(getActiveKey()).to.equal('YEAR_1');
 
-    // Updating currentMonth after period is already set preserves existing period
+    // Updating currentMonth preserves existing pressed button
     element.currentMonth = new Month(2026, 7);
     await element.updateComplete;
-    expect(span.textContent).to.equal('(1y)');
+    expect(getActiveKey()).to.equal('YEAR_1');
 
-    // Mixed years and months (15m = 1y3m)
-    element.updatePeriod(15);
+    // YTD
+    const ytdBtn = element.shadowRoot!.querySelector<HTMLButtonElement>('[key="YTD"]')!;
+    setTimeout(() => ytdBtn.click());
+    const ytdEvent = await oneEvent(element, 'button-click');
+    expect(ytdEvent.detail.startMonth.toString()).to.equal('Jan2026');
+    expect(ytdEvent.detail.endMonth.toString()).to.equal('Aug2026');
     await element.updateComplete;
-    expect(span.textContent).to.equal('(1y3m)');
+    expect(getActiveKey()).to.equal('YTD');
 
-    // YEAR_MAX (undefined months -> falls back to currentMonth / 1m)
-    const maxBtn = element.shadowRoot!.querySelector('[key="YEAR_MAX"]') as HTMLElement;
+    // YEAR_MAX highlights Max button
+    const maxBtn = element.shadowRoot!.querySelector<HTMLButtonElement>('[key="YEAR_MAX"]')!;
     setTimeout(() => maxBtn.click());
     const maxEvent = await oneEvent(element, 'button-click');
     expect(maxEvent.detail.startMonth.toString()).to.equal('Aug2026');
     expect(maxEvent.detail.endMonth.toString()).to.equal('Aug2026');
     await element.updateComplete;
-    expect(span.textContent).to.equal('(1m)');
+    expect(getActiveKey()).to.equal('YEAR_MAX');
+    expect(element.shadowRoot!.querySelectorAll('button.active').length).to.equal(1);
   });
 });

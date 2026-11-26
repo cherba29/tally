@@ -1,6 +1,7 @@
-import { LitElement, css, html, type PropertyValues } from 'lit';
-import { customElement, state, property } from 'lit/decorators.js';
-import { Month } from '../month';
+import {LitElement, css, html} from 'lit';
+import {customElement, state, property} from 'lit/decorators.js';
+import {classMap} from 'lit/directives/class-map.js';
+import {Month} from '../month';
 
 export enum SummaryView {
   MONTH_1 = '1m',
@@ -76,10 +77,15 @@ export class PeriodButtons extends LitElement {
     button:hover {
       background-color: #eaeef2;
     }
-    span {
-      margin-left: 3px;
-      color: #57606a;
-      font-weight: 600;
+    button.active {
+      background-color: #1f6feb;
+      border-color: #0969da;
+      color: #fff;
+      font-weight: 700;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.25);
+    }
+    button.active:hover {
+      background-color: #1a62d6;
     }
   `;
 
@@ -95,59 +101,41 @@ export class PeriodButtons extends LitElement {
     return this.__currentMonth;
   }
 
-  
   @state()
-  private startMonth?: Month = undefined;
-  @state()
-  private period?: string = undefined;
+  private selectedView: keyof typeof SummaryView = 'MONTH_1';
 
-  protected override willUpdate(changedProperties: PropertyValues<this>) {
-    super.willUpdate(changedProperties);
-
-    if (changedProperties.has('currentMonth')) {
-      if (!this.period) {
-        this.updatePeriod(1);
-      }
-    }
-  }
-
-
-  updatePeriod(numberOfMonths?: number) {
+  switchView(e: Event) {
+    const viewType = (e.currentTarget as Element).getAttribute('key') as keyof typeof SummaryView;
+    const numberOfMonths = mapViewToMonths(SummaryView[viewType], this.currentMonth);
     const startMonth =
       numberOfMonths !== undefined ? this.currentMonth?.previous(numberOfMonths - 1) : undefined;
 
-    this.startMonth = startMonth ? startMonth : this.currentMonth;
-    const period = this.currentMonth.distance(startMonth ?? this.currentMonth) + 1;
-    const years = Math.floor(period / 12);
-    const months = period - 12 * years;
-    const oldPeriod = this.period;
-    this.period = (years ? years + 'y' : '') + (months ? months + 'm' : '');
-    this.requestUpdate('period', oldPeriod);
-  }
+    this.selectedView = viewType;
 
-  switchView(e: Event) {
-    const viewType = (e.target as Element).getAttribute('key') as keyof typeof SummaryView;
-    const numberOfMonths = mapViewToMonths(SummaryView[viewType], this.currentMonth);
-
-    this.updatePeriod(numberOfMonths);
-
-    this.dispatchEvent(new CustomEvent('button-click', {
-      detail: {
-       startMonth: this.startMonth,
-       endMonth: this.currentMonth,
-      }
-    }));
+    this.dispatchEvent(
+      new CustomEvent('button-click', {
+        detail: {
+          startMonth: startMonth ?? this.currentMonth,
+          endMonth: this.currentMonth,
+        },
+      })
+    );
   }
 
   override render() {
     return html`
-      ${Object.keys(SummaryView).map(
-        (key) =>
-          html`<button key="${key}" @click="${this.switchView}">
-            ${SummaryView[key as keyof typeof SummaryView]}
-          </button>`
-      )}
-      <span>(${this.period})</span>
+      ${Object.keys(SummaryView).map((key) => {
+        const isActive = key === this.selectedView;
+        return html`<button
+          type="button"
+          key="${key}"
+          class=${classMap({active: isActive})}
+          aria-pressed="${isActive ? 'true' : 'false'}"
+          @click="${this.switchView}"
+        >
+          ${SummaryView[key as keyof typeof SummaryView]}
+        </button>`;
+      })}
     `;
   }
 }
