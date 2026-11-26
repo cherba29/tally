@@ -32,6 +32,57 @@ describe('BalanceTooltip component', () => {
         <span class="title">${accountName}</span>
         <span class="meta-pill">${month}</span>
       </div>
+      <div class="summary-box">
+        <div class="breakdown-grid">
+          <div class="equations">
+            <div class="equation-row" data-equation="category">
+              <span class="income metric">
+                <span class="metric-label">Income</span>
+                <span class="metric-value">—</span>
+              </span>
+              <span class="op">+</span>
+              <span class="expenses metric">
+                <span class="metric-label">Expenses</span>
+                <span class="metric-value">—</span>
+              </span>
+              <span class="op">+</span>
+              <span class="metric">
+                <span class="metric-label">Transfers</span>
+                <span class="metric-value">—</span>
+              </span>
+            </div>
+            <div class="equation-row" data-equation="flow">
+              <span class="metric">
+                <span class="metric-label">Inflows</span>
+                <span class="metric-value">—</span>
+              </span>
+              <span class="op">+</span>
+              <span class="metric">
+                <span class="metric-label">Outflows</span>
+                <span class="metric-value">—</span>
+              </span>
+            </div>
+          </div>
+          <div class="total-cell">
+            <span class="op">=</span>
+            <div class="total-stack">
+              <span class="metric-label">Total</span>
+              <span class="metric-value">—</span>
+            </div>
+          </div>
+        </div>
+        <div class="reconciliation-bar">
+          <span class="reconciliation-formula">
+            <span>End − Start:</span>
+            <b>—</b>
+            <span class="op">−</span>
+            <span>Total:</span>
+            <b>—</b>
+            <span class="op">=</span>
+          </span>
+          <span class="balanced unaccounted-pill">✓ Unaccounted: —</span>
+        </div>
+      </div>
       <table>
         <thead>
           <tr>
@@ -55,41 +106,6 @@ describe('BalanceTooltip component', () => {
             <th align="left" colspan="6">Starting Balance</th>
             <th>n/a</th>
             <th align="right">—</th>
-          </tr>
-          <tr class="summary-row">
-            <td align="right" colspan="5"><b>Income</b></td>
-            <td align="right">—</td>
-            <td colspan="2"></td>
-          </tr>
-          <tr class="summary-row">
-            <td align="right" colspan="5"><b>Expenses</b></td>
-            <td align="right">—</td>
-            <td colspan="2"></td>
-          </tr>
-          <tr class="summary-row">
-            <td align="right" colspan="5"><b>Transfers</b></td>
-            <td align="right">—</td>
-            <td colspan="2"></td>
-          </tr>
-          <tr class="summary-row">
-            <td align="right" colspan="5"><b>Inflows</b></td>
-            <td align="right">—</td>
-            <td colspan="2"></td>
-          </tr>
-          <tr class="summary-row">
-            <td align="right" colspan="5"><b>Outflows</b></td>
-            <td align="right">—</td>
-            <td colspan="2"></td>
-          </tr>
-          <tr class="summary-row">
-            <td align="right" colspan="5"><b>Total</b></td>
-            <td align="right">—</td>
-            <td colspan="2"></td>
-          </tr>
-          <tr class="summary-row">
-            <td align="right" colspan="5"><b>Unaccounted</b></td>
-            <td align="right">—</td>
-            <td colspan="2"></td>
           </tr>
         </tbody>
       </table>`
@@ -305,5 +321,104 @@ describe('BalanceTooltip component', () => {
     expect(ev.detail.selectedDescription).to.equal('Fiber internet');
     expect(ev.detail.anchorRect).to.not.equal(undefined);
     expect(parentClicked).to.equal(false);
+  });
+
+  it('displays structured equation summary box and highlights non-zero unaccounted prominently with click-to-copy', async () => {
+    const stmt: GqlStatement = {
+      name: 'checking',
+      month: 'Nov2026',
+      isClosed: false,
+      isCovered: true,
+      isProjectedCovered: true,
+      hasProjectedTransfer: false,
+      startBalance: {amount: 100000, date: '2026-11-01', desc: '', type: 'CONFIRMED'},
+      endBalance: {amount: 125000, date: '2026-12-01', desc: '', type: 'CONFIRMED'},
+      income: 50000,
+      totalPayments: -20000,
+      totalTransfers: -10000,
+      inFlows: 50000,
+      outFlows: -30000,
+      addSub: 20000,
+      change: 25000,
+      percentChange: 25,
+      annualizedPercentChange: 0,
+      unaccounted: 5000,
+      transactions: [],
+    };
+
+    const element = await fixture<BalanceTooltip>(
+      html`<balance-tooltip
+        .accountName=${'alex/internal/checking'}
+        .month=${'Nov2026'}
+        .stmt=${stmt}
+      ></balance-tooltip>`
+    );
+
+    // Table no longer contains summary rows
+    expect(element.shadowRoot!.querySelectorAll('table tbody tr')).to.have.lengthOf(2);
+
+    const categoryText = element
+      .shadowRoot!.querySelector('[data-equation="category"]')!
+      .textContent!.replace(/\s+/g, ' ')
+      .trim();
+    expect(categoryText).to.equal('Income 500.00 + Expenses -200.00 + Transfers -100.00');
+
+    const flowText = element
+      .shadowRoot!.querySelector('[data-equation="flow"]')!
+      .textContent!.replace(/\s+/g, ' ')
+      .trim();
+    expect(flowText).to.equal('Inflows 500.00 + Outflows -300.00');
+
+    const totalText = element
+      .shadowRoot!.querySelector('.total-cell')!
+      .textContent!.replace(/\s+/g, ' ')
+      .trim();
+    expect(totalText).to.equal('= Total 200.00');
+
+    // Non-zero unaccounted renders prominent alert bar + clickable badge
+    const reconBar = element.shadowRoot!.querySelector('.reconciliation-bar')!;
+    expect(reconBar.classList.contains('unaccounted-alert')).to.equal(true);
+    const alertPill = element.shadowRoot!.querySelector<HTMLElement>('.unaccounted-pill.nonzero')!;
+    expect(alertPill).to.not.equal(null);
+    expect(alertPill.getAttribute('role')).to.equal('alert');
+    expect(alertPill.textContent).to.include('Unaccounted: 50.00');
+
+    const copied: string[] = [];
+    const origClipboardDesc = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+    Object.defineProperty(navigator, 'clipboard', {
+      value: {
+        writeText: (text: string) => {
+          copied.push(text);
+          return Promise.resolve();
+        },
+      },
+      configurable: true,
+    });
+    try {
+      setTimeout(() => alertPill.click());
+      const copiedEv = (await oneEvent(element, 'copied')) as CustomEvent<{text: string}>;
+      expect(copiedEv.detail.text).to.equal('50.00');
+      expect(copied).to.deep.equal(['50.00']);
+    } finally {
+      if (origClipboardDesc) {
+        Object.defineProperty(navigator, 'clipboard', origClipboardDesc);
+      }
+    }
+
+    // String "0" from GraphQL Long scalar is treated as balanced (not non-zero alert)
+    element.stmt = {...stmt, unaccounted: '0' as unknown as number};
+    await element.updateComplete;
+    expect(element.shadowRoot!.querySelector('.reconciliation-bar.unaccounted-alert')).to.equal(null);
+    expect(element.shadowRoot!.querySelector('.unaccounted-pill.balanced')!.textContent).to.include(
+      'Unaccounted: 0.00'
+    );
+
+    // Non-zero string "-1250" from GraphQL Long scalar triggers alert state
+    element.stmt = {...stmt, unaccounted: '-1250' as unknown as number};
+    await element.updateComplete;
+    expect(element.shadowRoot!.querySelector('.reconciliation-bar.unaccounted-alert')).to.not.equal(null);
+    expect(element.shadowRoot!.querySelector('.unaccounted-pill.nonzero')!.textContent).to.include(
+      'Unaccounted: -12.50'
+    );
   });
 });

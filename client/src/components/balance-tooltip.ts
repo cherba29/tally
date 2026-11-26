@@ -27,6 +27,142 @@ export class BalanceTooltip extends LitElement {
         width: auto;
         min-width: 500px;
       }
+      .summary-box {
+        margin-bottom: 6px;
+        background-color: #f6f8fa;
+        border: 1px solid #d0d7de;
+        border-radius: 4px;
+        overflow: hidden;
+        font-variant-numeric: tabular-nums;
+      }
+      .breakdown-grid {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: stretch;
+      }
+      .equations {
+        display: flex;
+        flex-direction: column;
+      }
+      .equation-row {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 6px;
+      }
+      .equation-row + .equation-row {
+        border-top: 1px dashed #d0d7de;
+      }
+      .metric {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 4px;
+        padding: 1px 5px;
+        border-radius: 3px;
+        background-color: #fff;
+        border: 1px solid #d8dee4;
+        white-space: nowrap;
+      }
+      .metric-label {
+        font-size: 9px;
+        color: #57606a;
+        font-weight: 600;
+      }
+      .metric-value {
+        font-weight: 700;
+        color: #1f2328;
+      }
+      .metric.income {
+        border-color: #82c982;
+        background-color: #eefbee;
+      }
+      .metric.expenses {
+        border-color: #d99b9b;
+        background-color: #fdf2f2;
+      }
+      .op {
+        color: #6e7781;
+        font-weight: 700;
+        font-size: 10px;
+      }
+      .total-cell {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 8px;
+        border-left: 2px solid #8c959f;
+        background-color: #eaeef2;
+        white-space: nowrap;
+      }
+      .total-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+      }
+      .total-stack .metric-label {
+        font-size: 9px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+      .total-stack .metric-value {
+        font-size: 12px;
+        line-height: 14px;
+      }
+      .reconciliation-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 4px 6px;
+        border-top: 1px solid #d0d7de;
+        background-color: #f0f3f6;
+        font-size: 10px;
+      }
+      .reconciliation-bar.unaccounted-alert {
+        background-color: #ffebe9;
+        border-top: 1px solid #cf222e;
+        color: #a40e26;
+      }
+      .reconciliation-formula {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 4px;
+        color: #57606a;
+      }
+      .reconciliation-bar.unaccounted-alert .reconciliation-formula {
+        color: #82071e;
+      }
+      .reconciliation-formula b {
+        color: #1f2328;
+      }
+      .reconciliation-bar.unaccounted-alert .reconciliation-formula b {
+        color: #82071e;
+      }
+      .unaccounted-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 1px 7px;
+        border-radius: 999px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      .unaccounted-pill.balanced {
+        color: #1a7f37;
+        background-color: #dafbe1;
+        border: 1px solid #4ac26b;
+      }
+      .unaccounted-pill.nonzero {
+        color: #fff;
+        background-color: #cf222e;
+        border: 1px solid #a40e26;
+        cursor: pointer;
+        box-shadow: 0 1px 3px rgba(207, 34, 46, 0.35);
+      }
+      .unaccounted-pill.nonzero:hover {
+        background-color: #a40e26;
+      }
       .recurring-badge {
         display: inline-flex;
         align-items: center;
@@ -55,9 +191,6 @@ export class BalanceTooltip extends LitElement {
         max-width: 240px;
       }
       tr.balance-row th {
-        background-color: #f6f8fa;
-      }
-      tr.summary-row td {
         background-color: #f6f8fa;
       }
       td.copyable {
@@ -166,6 +299,8 @@ export class BalanceTooltip extends LitElement {
         confirmed: !projected,
       };
     };
+    const unaccountedValue = Number(this.stmt?.unaccounted ?? 0);
+    const hasUnaccounted = !Number.isNaN(unaccountedValue) && unaccountedValue !== 0;
     return html`
       <div class="header">
         <button
@@ -179,6 +314,73 @@ export class BalanceTooltip extends LitElement {
         </button>
         <span class="title">${this.accountName}</span>
         <span class="meta-pill">${this.month}</span>
+      </div>
+      <div class="summary-box">
+        <div class="breakdown-grid">
+          <div class="equations">
+            <div class="equation-row" data-equation="category">
+              <span class="metric income">
+                <span class="metric-label">Income</span>
+                <span class="metric-value">${currency(this.stmt?.income)}</span>
+              </span>
+              <span class="op">+</span>
+              <span class="metric expenses">
+                <span class="metric-label">Expenses</span>
+                <span class="metric-value">${currency(this.stmt?.totalPayments)}</span>
+              </span>
+              <span class="op">+</span>
+              <span class="metric">
+                <span class="metric-label">Transfers</span>
+                <span class="metric-value">${currency(this.stmt?.totalTransfers)}</span>
+              </span>
+            </div>
+            <div class="equation-row" data-equation="flow">
+              <span class="metric">
+                <span class="metric-label">Inflows</span>
+                <span class="metric-value">${currency(this.stmt?.inFlows)}</span>
+              </span>
+              <span class="op">+</span>
+              <span class="metric">
+                <span class="metric-label">Outflows</span>
+                <span class="metric-value">${currency(this.stmt?.outFlows)}</span>
+              </span>
+            </div>
+          </div>
+          <div class="total-cell">
+            <span class="op">=</span>
+            <div class="total-stack">
+              <span class="metric-label">Total</span>
+              <span class="metric-value">${currency(this.stmt?.addSub)}</span>
+            </div>
+          </div>
+        </div>
+        <div
+          class=${classMap({
+            'reconciliation-bar': true,
+            'unaccounted-alert': hasUnaccounted,
+          })}
+        >
+          <span class="reconciliation-formula">
+            <span>End &minus; Start:</span>
+            <b>${currency(this.stmt?.change)}</b>
+            <span class="op">&minus;</span>
+            <span>Total:</span>
+            <b>${currency(this.stmt?.addSub)}</b>
+            <span class="op">=</span>
+          </span>
+          ${hasUnaccounted
+            ? html`<span
+                class="unaccounted-pill nonzero"
+                role="alert"
+                title="Balance change differs from total transactions — click to copy unaccounted amount"
+                @click="${() => this.copyToClipBoard(this.stmt?.unaccounted)}"
+              >
+                &#x26A0; Unaccounted: ${currency(this.stmt?.unaccounted)}
+              </span>`
+            : html`<span class="unaccounted-pill balanced">
+                &#x2713; Unaccounted: ${currency(this.stmt?.unaccounted)}
+              </span>`}
+        </div>
       </div>
       <table>
         <thead>
@@ -228,41 +430,6 @@ export class BalanceTooltip extends LitElement {
             <th colspan="6" align="left">Starting Balance</th>
             <th>${dateFormat(this.stmt?.startBalance?.date)}</th>
             <th align="right">${currency(this.stmt?.startBalance?.amount)}</th>
-          </tr>
-          <tr class="summary-row">
-            <td colspan="5" align="right"><b>Income</b></td>
-            <td align="right">${currency(this.stmt?.income)}</td>
-            <td colspan="2"></td>
-          </tr>
-          <tr class="summary-row">
-            <td colspan="5" align="right"><b>Expenses</b></td>
-            <td align="right">${currency(this.stmt?.totalPayments)}</td>
-            <td colspan="2"></td>
-          </tr>
-          <tr class="summary-row">
-            <td colspan="5" align="right"><b>Transfers</b></td>
-            <td align="right">${currency(this.stmt?.totalTransfers)}</td>
-            <td colspan="2"></td>
-          </tr>
-          <tr class="summary-row">
-            <td colspan="5" align="right"><b>Inflows</b></td>
-            <td align="right">${currency(this.stmt?.inFlows)}</td>
-            <td colspan="2"></td>
-          </tr>
-          <tr class="summary-row">
-            <td colspan="5" align="right"><b>Outflows</b></td>
-            <td align="right">${currency(this.stmt?.outFlows)}</td>
-            <td colspan="2"></td>
-          </tr>
-          <tr class="summary-row">
-            <td colspan="5" align="right"><b>Total</b></td>
-            <td align="right">${currency(this.stmt?.addSub)}</td>
-            <td colspan="2"></td>
-          </tr>
-          <tr class="summary-row">
-            <td colspan="5" align="right"><b>Unaccounted</b></td>
-            <td align="right">${currency(this.stmt?.unaccounted)}</td>
-            <td colspan="2"></td>
           </tr>
         </tbody>
       </table>
