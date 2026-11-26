@@ -78,7 +78,7 @@ class Loader(
       }
     }
 
-    fun watchPath(path: Path) = Loader(path.watchedEventFlow(filePathFilter))
+    fun watchPath(path: Path) = Loader(path.watchedEventFlow(filePathFilter = filePathFilter))
 
     private fun process(
       processedBudget: ProcessedBudget,

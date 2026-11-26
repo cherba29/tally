@@ -5,6 +5,7 @@ import app.cash.turbine.turbineScope
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.engine.coroutines.backgroundScope
 import io.kotest.engine.spec.tempdir
+import io.kotest.matchers.longs.shouldBeLessThan
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.toList
@@ -14,6 +15,8 @@ import kotlin.io.path.createFile
 import kotlin.io.path.deleteIfExists
 import kotlin.io.path.div
 import kotlin.io.path.writeText
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.TimeSource
 
 class PathWatcherTest : DescribeSpec({
   describe("empty directory") {
@@ -208,6 +211,106 @@ class PathWatcherTest : DescribeSpec({
           WatchResult(folder, relativePath = Paths.get("subpath/file1.yaml"), WatchResult.Action.REMOVE)
         flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
       }
+    }
+
+    it("detects single-file modification promptly on Linux and reliably on all OSes") {
+      val folder = tempdir("tally-fast-", keepOnFailure = false).toPath()
+      val targetFile = (folder / "file.yaml").createFile()
+      targetFile.writeText("initial: 1")
+
+      turbineScope {
+        val flow = folder.watchedEventFlow { true }.testIn(backgroundScope)
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file.yaml"), WatchResult.Action.ADD)
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = null, WatchResult.Action.REPROCESS)
+
+        val start = TimeSource.Monotonic.markNow()
+        targetFile.writeText("initial: 2")
+        flow.awaitItem() shouldBe
+          WatchResult(folder, relativePath = Paths.get("file.yaml"), WatchResult.Action.REPROCESS)
+        val elapsedMs = start.elapsedNow().inWholeMilliseconds
+        println("PathWatcher single-file modify latency: ${elapsedMs}ms")
+        val osName = System.getProperty("os.name").orEmpty()
+        if (osName.lowercase().contains("linux")) {
+          elapsedMs shouldBeLessThan 200L
+        }
+        flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
+      }
+    }
+
+    it("coalesces file creation followed immediately by write into one reprocess event") {
+      val folder = tempdir("tally-create-write-", keepOnFailure = false).toPath()
+
+      turbineScope {
+        val flow = folder.watchedEventFlow { true }.testIn(backgroundScope)
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = null, WatchResult.Action.REPROCESS)
+
+        val newFile = folder / "created.yaml"
+        newFile.writeText("name: created\n")
+        flow.awaitItem() shouldBe
+          WatchResult(folder, relativePath = Paths.get("created.yaml"), WatchResult.Action.REPROCESS)
+        flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
+      }
+    }
+
+    it("coalesces rapid back-to-back writes to the same file into one reprocess event") {
+      val folder = tempdir("tally-burst-", keepOnFailure = false).toPath()
+      val targetFile = (folder / "file.yaml").createFile()
+
+      turbineScope {
+        val flow = folder.watchedEventFlow { true }.testIn(backgroundScope)
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file.yaml"), WatchResult.Action.ADD)
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = null, WatchResult.Action.REPROCESS)
+
+        for (i in 1..5) {
+          targetFile.writeText("version: $i\n")
+        }
+        flow.awaitItem() shouldBe
+          WatchResult(folder, relativePath = Paths.get("file.yaml"), WatchResult.Action.REPROCESS)
+        flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
+      }
+    }
+
+    it("cancels pending settle check when modified file is deleted immediately") {
+      val folder = tempdir("tally-del-", keepOnFailure = false).toPath()
+      val targetFile = (folder / "file.yaml").createFile()
+
+      turbineScope {
+        val flow = folder.watchedEventFlow { true }.testIn(backgroundScope)
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file.yaml"), WatchResult.Action.ADD)
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = null, WatchResult.Action.REPROCESS)
+
+        targetFile.writeText("about to be deleted")
+        targetFile.deleteIfExists() shouldBe true
+        flow.awaitItem() shouldBe WatchResult(folder, relativePath = Paths.get("file.yaml"), WatchResult.Action.REMOVE)
+        flow.cancelAndConsumeRemainingEvents() shouldBe listOf()
+      }
+    }
+  }
+
+  describe("cross-platform configuration") {
+    it("selects OS-appropriate coalesce and settle timings") {
+      val linux = defaultWatchTimingForOs("Linux")
+      linux.coalesceDelay shouldBe 10.milliseconds
+      linux.settleCheckInterval shouldBe 25.milliseconds
+
+      val mac = defaultWatchTimingForOs("Mac OS X")
+      mac.coalesceDelay shouldBe 50.milliseconds
+      mac.settleCheckInterval shouldBe 50.milliseconds
+
+      val windows = defaultWatchTimingForOs("Windows 11")
+      windows.coalesceDelay shouldBe 25.milliseconds
+      windows.settleCheckInterval shouldBe 50.milliseconds
+    }
+
+    it("ignores underscore-prefixed segments with both POSIX and Windows separators") {
+      ignorePathRegex.containsMatchIn("_draft.yaml") shouldBe true
+      ignorePathRegex.containsMatchIn("credit_card/_draft.yaml") shouldBe true
+      ignorePathRegex.containsMatchIn("credit_card\\_draft.yaml") shouldBe true
+      ignorePathRegex.containsMatchIn("_hidden/account.yaml") shouldBe true
+      ignorePathRegex.containsMatchIn("_hidden\\account.yaml") shouldBe true
+
+      ignorePathRegex.containsMatchIn("credit_card/Citi_Double.yaml") shouldBe false
+      ignorePathRegex.containsMatchIn("credit_card\\Citi_Double.yaml") shouldBe false
     }
   }
 })

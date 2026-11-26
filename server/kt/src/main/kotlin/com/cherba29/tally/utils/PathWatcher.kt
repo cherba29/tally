@@ -2,6 +2,7 @@ package com.cherba29.tally.utils
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
@@ -32,6 +33,7 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.pathString
 import kotlin.io.path.relativeTo
 import kotlin.io.path.walk
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 data class WatchResult(
@@ -81,11 +83,40 @@ fun Path.scan(filePathFilter: (Path) -> Boolean) =
     yield(WatchResult(this@scan, null, WatchResult.Action.REPROCESS))
   }
 
+internal data class PathWatchDefaults(
+  val coalesceDelay: Duration,
+  val settleCheckInterval: Duration,
+  val maxSettleWait: Duration = DEFAULT_MAX_SETTLE_WAIT
+)
+
+internal fun defaultWatchTimingForOs(osName: String = System.getProperty("os.name").orEmpty()): PathWatchDefaults {
+  val normalized = osName.lowercase()
+  return when {
+    normalized.contains("mac") || normalized.contains("darwin") ->
+      PathWatchDefaults(coalesceDelay = 50.milliseconds, settleCheckInterval = 50.milliseconds)
+    normalized.contains("win") ->
+      PathWatchDefaults(coalesceDelay = 25.milliseconds, settleCheckInterval = 50.milliseconds)
+    else ->
+      PathWatchDefaults(coalesceDelay = 10.milliseconds, settleCheckInterval = 25.milliseconds)
+  }
+}
+
 /**
  * Watches for changes in this path and emits WatchResults.
  * Paths starting with '_' are skipped and ignored.
+ *
+ * @param coalesceDelay Brief delay after a filesystem event wakes the watcher so OS multi-part
+ *   flush bursts are drained together from the same [WatchKey]. Defaults are tuned per OS.
+ * @param settleCheckInterval Interval between size/mtime stability checks for created or modified
+ *   files. Defaults are tuned per OS.
+ * @param maxSettleWait Total maximum duration to wait for a file to finish writing.
  */
-fun Path.watchedEventFlow(filePathFilter: (Path) -> Boolean): Flow<WatchResult> {
+fun Path.watchedEventFlow(
+  coalesceDelay: Duration = defaultWatchTimingForOs().coalesceDelay,
+  settleCheckInterval: Duration = defaultWatchTimingForOs().settleCheckInterval,
+  maxSettleWait: Duration = DEFAULT_MAX_SETTLE_WAIT,
+  filePathFilter: (Path) -> Boolean
+): Flow<WatchResult> {
   val watcher: WatchService = FileSystems.getDefault().newWatchService()
   val watchedPath = try {
     this.toRealPath() // walk below does not work for relative paths.
@@ -115,8 +146,34 @@ fun Path.watchedEventFlow(filePathFilter: (Path) -> Boolean): Flow<WatchResult> 
   val rootPath = this
   // Keep track of watched files so that when directory is deleted,
   // delete events can be sent for all files within directory.
-  val watchedFiles = mutableSetOf<Path>()
+  val watchedFiles = ConcurrentHashMap.newKeySet<Path>()
   return channelFlow {
+    fun scheduleFileSettle(
+      fullPath: Path,
+      filePath: Path
+    ) {
+      val file = fullPath.toFile()
+      if (!file.exists() || !file.isFile) return
+      // Cancel any in-flight settle check for this file and restart the timer (Debounce/Settle).
+      activeChecks[fullPath]?.cancel()
+
+      val checkJob = watcherScope.launch(start = CoroutineStart.LAZY) {
+        val selfJob = coroutineContext[Job]
+        try {
+          if (waitForFileToSettle(file, settleCheckInterval, maxSettleWait)) {
+            watchedFiles.add(filePath)
+            send(WatchResult(rootPath, filePath, WatchResult.Action.REPROCESS))
+          }
+        } finally {
+          if (selfJob != null) {
+            activeChecks.remove(fullPath, selfJob)
+          }
+        }
+      }
+      activeChecks[fullPath] = checkJob
+      checkJob.start()
+    }
+
     // Emit existing files.
     scan(filePathFilter).forEach {
       if (it.relativePath != null) {
@@ -135,10 +192,10 @@ fun Path.watchedEventFlow(filePathFilter: (Path) -> Boolean): Flow<WatchResult> 
         break
       }
       val updatedFolderPath = watchKeyToFolderMap[key]
-      // Optional brief delay to let OS complete multipart flush operations.
-      // This almost eliminates multiple modify events for same file,
-      // the rest is taken care of by stability check.
-      delay(50.milliseconds)
+      // Brief delay to let OS queue multipart flush events into the same pollEvents() batch.
+      if (coalesceDelay.isPositive()) {
+        delay(coalesceDelay)
+      }
       if (updatedFolderPath != null) {
         for (event in key.pollEvents()) {
           val filePath = updatedFolderPath / (event.context() as Path) // Relative to watched root path.
@@ -175,8 +232,9 @@ fun Path.watchedEventFlow(filePathFilter: (Path) -> Boolean): Flow<WatchResult> 
                   }
                 }
               } else if (filePathFilter(filePath)) {
-                watchedFiles.add(filePath)
-                send(WatchResult(rootPath, filePath, WatchResult.Action.REPROCESS))
+                // Settle newly created files too so Windows/macOS writers release locks and finish
+                // flushing, and create + immediate modify events coalesce into one REPROCESS.
+                scheduleFileSettle(fullPath, filePath)
               }
             }
             StandardWatchEventKinds.ENTRY_DELETE -> {
@@ -193,7 +251,7 @@ fun Path.watchedEventFlow(filePathFilter: (Path) -> Boolean): Flow<WatchResult> 
                 val checksToCancel = activeChecks.filter { it.key.startsWith(fullPath) }
                 for ((p, job) in checksToCancel) {
                   job.cancel()
-                  activeChecks.remove(p)
+                  activeChecks.remove(p, job)
                 }
 
                 val filesToRemove = watchedFiles.filter { it.startsWith(filePath) }
@@ -202,28 +260,14 @@ fun Path.watchedEventFlow(filePathFilter: (Path) -> Boolean): Flow<WatchResult> 
                   send(WatchResult(rootPath, file, WatchResult.Action.REMOVE))
                 }
               } else if (filePathFilter(filePath)) {
+                activeChecks.remove(fullPath)?.cancel()
                 watchedFiles.remove(filePath)
                 send(WatchResult(rootPath, filePath, WatchResult.Action.REMOVE))
               }
             }
             StandardWatchEventKinds.ENTRY_MODIFY -> {
               if (filePathFilter(filePath)) {
-                val fullPath = watchedPath / filePath
-                val file = fullPath.toFile()
-                if (file.exists() && file.isFile) {
-                  // If we are already waiting for this file to settle, cancel the old check
-                  // and restart the timer (Debounce/Settle mechanism)
-                  activeChecks[fullPath]?.cancel()
-
-                  // Launch a non-blocking job to monitor stability
-                  activeChecks[fullPath] = watcherScope.launch {
-                    if (waitForFileToSettle(file)) {
-                      watchedFiles.add(filePath)
-                      send(WatchResult(rootPath, filePath, WatchResult.Action.REPROCESS))
-                    }
-                    activeChecks.remove(fullPath) // Clean up tracking map
-                  }
-                }
+                scheduleFileSettle(watchedPath / filePath, filePath)
               }
             }
             StandardWatchEventKinds.OVERFLOW -> {
@@ -264,36 +308,49 @@ fun Path.watchedEventFlow(filePathFilter: (Path) -> Boolean): Flow<WatchResult> 
   }
 }
 
-private suspend fun waitForFileToSettle(file: File): Boolean {
+private suspend fun waitForFileToSettle(
+  file: File,
+  checkInterval: Duration,
+  maxWait: Duration
+): Boolean {
+  val intervalMs = checkInterval.inWholeMilliseconds.coerceAtLeast(1L)
+  val maxWaitAttempts = (maxWait.inWholeMilliseconds / intervalMs).coerceAtLeast(1L).toInt()
   var lastSize = -1L
+  var lastModified = -1L
   var currentSize = file.length()
-  val checkInterval = 200.milliseconds // Time to wait between checks
-  val maxWaitAttempts = 15 // Prevents infinite loops if a file is permanently locked
+  var currentModified = file.lastModified()
 
   var attempts = 0
-  while (currentSize != lastSize && attempts < maxWaitAttempts) {
+  while (attempts < maxWaitAttempts) {
+    val stable = currentSize == lastSize && currentModified == lastModified
+    if (stable && isFileAccessible(file)) {
+      return true
+    }
     lastSize = currentSize
+    lastModified = currentModified
     delay(checkInterval) // Suspend thread safely, letting other tasks run
 
     if (!file.exists()) return false // File was deleted or moved mid-write
     currentSize = file.length()
+    currentModified = file.lastModified()
     attempts++
   }
-  if (currentSize != lastSize) {
-    throw IllegalStateException("File $file never settled after ${checkInterval * maxWaitAttempts}")
-  }
 
-  // Final sanity check: try to open it briefly to verify exclusive write lock is released
-  return isFileAccessible(file)
+  if (currentSize == lastSize && currentModified == lastModified && isFileAccessible(file)) {
+    return true
+  }
+  throw IllegalStateException("File $file never settled after ${checkInterval * maxWaitAttempts}")
 }
 
 private fun isFileAccessible(file: File): Boolean =
   try {
-    // Attempt to open in read/write mode. If OS flush is incomplete, this will throw an IOException
-    java.io.RandomAccessFile(file, "rw").use { true }
+    val mode = if (file.canWrite()) "rw" else "r"
+    java.io.RandomAccessFile(file, mode).use { true }
   } catch (_: Exception) {
-    throw IllegalStateException("File $file is not accessible")
+    false
   }
+
+private val DEFAULT_MAX_SETTLE_WAIT = 3_000.milliseconds
 
 private val eventsToWatch = arrayOf(
   StandardWatchEventKinds.ENTRY_CREATE,
@@ -301,7 +358,7 @@ private val eventsToWatch = arrayOf(
   StandardWatchEventKinds.ENTRY_MODIFY,
   StandardWatchEventKinds.OVERFLOW
 )
-private val ignorePathRegex = Regex("(^_)|(/_)")
+internal val ignorePathRegex = Regex("(^_)|([/\\\\]_)")
 private const val ANSI_RESET = "\u001B[0m"
 
 // private const val ANSI_RED = "\u001B[31m"
