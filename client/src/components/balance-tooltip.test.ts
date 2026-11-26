@@ -32,70 +32,64 @@ describe('BalanceTooltip component', () => {
         <span class="title">${accountName}</span>
         <span class="meta-pill">${month}</span>
       </div>
-      <table style="table-layout: auto; width: 500px">
-        <tbody>
+      <table>
+        <thead>
           <tr>
-            <th align="left">Ending Balance</th>
+            <th>#</th>
+            <th align="left">Account</th>
+            <th align="left">Description</th>
+            <th>Recurrence</th>
             <th>Type</th>
-            <th></th>
+            <th align="right">Amount</th>
+            <th>Date</th>
+            <th align="right">Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="balance-row">
+            <th align="left" colspan="6">Ending Balance</th>
             <th>n/a</th>
             <th align="right">—</th>
           </tr>
-          <tr>
-            <th align="left">Starting Balance</th>
-            <th></th>
-            <th></th>
+          <tr class="balance-row">
+            <th align="left" colspan="6">Starting Balance</th>
             <th>n/a</th>
-            <th align="right" style="width:50px">—</th>
+            <th align="right">—</th>
           </tr>
           <tr class="summary-row">
-            <td align="right"><b>Income</b></td>
-            <td></td>
+            <td align="right" colspan="5"><b>Income</b></td>
             <td align="right">—</td>
-            <td></td>
-            <td></td>
+            <td colspan="2"></td>
           </tr>
           <tr class="summary-row">
-            <td align="right"><b>Expenses</b></td>
-            <td></td>
+            <td align="right" colspan="5"><b>Expenses</b></td>
             <td align="right">—</td>
-            <td></td>
-            <td></td>
+            <td colspan="2"></td>
           </tr>
           <tr class="summary-row">
-            <td align="right"><b>Transfers</b></td>
-            <td></td>
+            <td align="right" colspan="5"><b>Transfers</b></td>
             <td align="right">—</td>
-            <td></td>
-            <td></td>
+            <td colspan="2"></td>
           </tr>
           <tr class="summary-row">
-            <td align="right"><b>Inflows</b></td>
-            <td></td>
+            <td align="right" colspan="5"><b>Inflows</b></td>
             <td align="right">—</td>
-            <td></td>
-            <td></td>
+            <td colspan="2"></td>
           </tr>
           <tr class="summary-row">
-            <td align="right"><b>Outflows</b></td>
-            <td></td>
+            <td align="right" colspan="5"><b>Outflows</b></td>
             <td align="right">—</td>
-            <td></td>
-            <td></td>
+            <td colspan="2"></td>
           </tr>
           <tr class="summary-row">
-            <td align="right"><b>Total</b></td>
-            <td></td>
+            <td align="right" colspan="5"><b>Total</b></td>
             <td align="right">—</td>
-            <td></td>
-            <td></td>
+            <td colspan="2"></td>
           </tr>
           <tr class="summary-row">
-            <td align="right"><b>Unaccounted</b></td>
-            <td></td>
+            <td align="right" colspan="5"><b>Unaccounted</b></td>
             <td align="right">—</td>
-            <td></td>
-            <td></td>
+            <td colspan="2"></td>
           </tr>
         </tbody>
       </table>`
@@ -169,29 +163,36 @@ describe('BalanceTooltip component', () => {
     const rows = Array.from(element.shadowRoot!.querySelectorAll('tr.highlight'));
     expect(rows).to.have.lengthOf(4);
 
-    // Expense (confirmed)
+    // Expense (confirmed) — columns: [0]=#, [1]=Account, [2]=Description, [3]=Recurrence, [4]=Type, [5]=Amount, [6]=Date, [7]=Balance
     const expCells = rows[0]!.querySelectorAll('td');
-    expect(expCells[1]!.textContent!.trim()).to.equal('E →');
-    expect(expCells[1]!.style.backgroundColor).to.equal('rgb(204, 170, 170)');
-    expect(expCells[2]!.classList.contains('confirmed')).to.equal(true);
-    expect(expCells[2]!.textContent!.trim()).to.equal('-50.00');
+    expect(expCells).to.have.lengthOf(8);
+    expect(expCells[0]!.textContent!.trim()).to.equal('1');
+    expect(expCells[1]!.textContent!.trim()).to.equal('expenses');
+    expect(expCells[2]!.textContent!.trim()).to.equal('Groceries');
+    expect(expCells[3]!.textContent!.trim()).to.equal('');
+    expect(expCells[4]!.textContent!.trim()).to.equal('E →');
+    expect(expCells[4]!.style.backgroundColor).to.equal('rgb(204, 170, 170)');
+    expect(expCells[5]!.classList.contains('confirmed')).to.equal(true);
+    expect(expCells[5]!.textContent!.trim()).to.equal('-50.00');
+    expect(expCells[6]!.textContent!.trim()).to.equal('2026-11-05');
+    expect(expCells[7]!.textContent!.trim()).to.equal('950.00');
 
     // Income (projected)
     const incCells = rows[1]!.querySelectorAll('td');
-    expect(incCells[1]!.textContent!.trim()).to.equal('I ←');
-    expect(incCells[1]!.style.backgroundColor).to.equal('rgb(170, 204, 170)');
-    expect(incCells[2]!.classList.contains('projected')).to.equal(true);
-    expect(incCells[2]!.textContent!.trim()).to.equal('2,600.00');
+    expect(incCells[4]!.textContent!.trim()).to.equal('I ←');
+    expect(incCells[4]!.style.backgroundColor).to.equal('rgb(170, 204, 170)');
+    expect(incCells[5]!.classList.contains('projected')).to.equal(true);
+    expect(incCells[5]!.textContent!.trim()).to.equal('2,600.00');
 
     // Transfer in (positive)
     const trInCells = rows[2]!.querySelectorAll('td');
-    expect(trInCells[1]!.textContent!.trim()).to.equal('T ←');
-    expect(trInCells[1]!.style.backgroundColor).to.equal('');
+    expect(trInCells[4]!.textContent!.trim()).to.equal('T ←');
+    expect(trInCells[4]!.style.backgroundColor).to.equal('');
 
     // Transfer out (negative)
     const trOutCells = rows[3]!.querySelectorAll('td');
-    expect(trOutCells[1]!.textContent!.trim()).to.equal('T →');
-    expect(trOutCells[1]!.style.backgroundColor).to.equal('');
+    expect(trOutCells[4]!.textContent!.trim()).to.equal('T →');
+    expect(trOutCells[4]!.style.backgroundColor).to.equal('');
 
     // Close button dispatches 'close' event
     const closeBtn = element.shadowRoot!.querySelector<HTMLButtonElement>('button.close-btn')!;
@@ -212,7 +213,7 @@ describe('BalanceTooltip component', () => {
       configurable: true,
     });
     try {
-      expCells[4]!.click();
+      expCells[7]!.click();
       expect(copied).to.deep.equal(['950.00']);
 
       element.copyToClipBoard(null);
@@ -280,14 +281,15 @@ describe('BalanceTooltip component', () => {
     );
 
     const rows = Array.from(element.shadowRoot!.querySelectorAll('tr.highlight'));
-    const badge = rows[0]!.querySelector<HTMLButtonElement>('button.recurring-badge');
+    const firstRowCells = rows[0]!.querySelectorAll('td');
+    const badge = firstRowCells[3]!.querySelector<HTMLButtonElement>('button.recurring-badge');
     expect(badge).to.not.equal(null);
     expect(badge!.textContent?.trim()).to.equal('↻ 5');
     expect(badge!.getAttribute('title')).to.include('Monthly');
     expect(badge!.getAttribute('title')).to.include('5 occurrences');
 
-    // Non-recurring row has no badge
-    expect(rows[1]!.querySelector('button.recurring-badge')).to.equal(null);
+    // Non-recurring row has no badge in Recurrence column
+    expect(rows[1]!.querySelectorAll('td')[3]!.querySelector('button.recurring-badge')).to.equal(null);
 
     // Clicking badge dispatches bubbling recurring-click event and stops native click propagation
     let parentClicked = false;

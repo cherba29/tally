@@ -395,6 +395,9 @@ export class TallyApp extends LitElement {
     const tipEl = this.shadowRoot?.querySelector<HTMLElement>('.toolTip');
     if (!tipEl || !this.popupData) return;
 
+    // Reset offset before measuring so auto-width tables are not squeezed by a previous right-side position.
+    tipEl.style.left = '0px';
+    tipEl.style.top = '0px';
     const rect = tipEl.getBoundingClientRect();
     const {left, top} = computePopupPosition(
       this.popupAnchor,
@@ -430,6 +433,8 @@ export class TallyApp extends LitElement {
     const tipEl = this.shadowRoot?.querySelector<HTMLElement>('.secondary-toolTip');
     if (!tipEl || !this.secondaryPopupData) return;
 
+    tipEl.style.left = '0px';
+    tipEl.style.top = '0px';
     const rect = tipEl.getBoundingClientRect();
     const {left, top} = computePopupPosition(
       this.secondaryPopupAnchor,

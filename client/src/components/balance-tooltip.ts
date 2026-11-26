@@ -22,11 +22,15 @@ export class BalanceTooltip extends LitElement {
   static override styles = [
     tooltipSharedStyles,
     css`
+      table {
+        table-layout: auto;
+        width: auto;
+        min-width: 500px;
+      }
       .recurring-badge {
         display: inline-flex;
         align-items: center;
         gap: 2px;
-        margin-left: 4px;
         padding: 0 5px;
         font-size: 9px;
         line-height: 13px;
@@ -43,11 +47,22 @@ export class BalanceTooltip extends LitElement {
         background-color: #b6e3ff;
         border-color: #0969da;
       }
+      td.nowrap {
+        white-space: nowrap;
+      }
+      td.desc-col {
+        min-width: 140px;
+        max-width: 240px;
+      }
+      tr.balance-row th {
+        background-color: #f6f8fa;
+      }
       tr.summary-row td {
         background-color: #f6f8fa;
       }
       td.copyable {
         cursor: pointer;
+        white-space: nowrap;
       }
     `,
   ];
@@ -165,93 +180,91 @@ export class BalanceTooltip extends LitElement {
         <span class="title">${this.accountName}</span>
         <span class="meta-pill">${this.month}</span>
       </div>
-      <table style="table-layout: auto; width: 500px">
-        <tr>
-          <th align="left">Ending Balance</th>
-          <th>Type</th>
-          <th></th>
-          <th>${dateFormat(this.stmt?.endBalance?.date)}</th>
-          <th align="right">${currency(this.stmt?.endBalance?.amount)}</th>
-        </tr>
-        ${this.stmt?.transactions?.map(
-          (t: GqlTransaction, index: number) =>
-            html`<tr class="highlight">
-              <td style="min-width:175px">
-                ${index + 1} ${t?.toAccountName}
-                <span style="font-size:75%">${t?.description}</span>${this.recurringBadge(t)}
-              </td>
-              <td align="middle" style=${styleMap(transactionColor(t))}>${transactionCode(t)}</td>
-              <td class=${classMap(projectedClass(t?.balance))} style="min-width:40px">
-                ${currency(t?.balance?.amount)}
-              </td>
-              <td align="middle" style="min-width:60px">${dateFormat(t?.balance?.date)}</td>
-              <td
-                class="copyable"
-                align="right"
-                style="min-width:50px"
-                title="Click to copy running balance"
-                @click="${() => this.copyToClipBoard(t?.balanceFromStart)}"
-              >
-                ${currency(t?.balanceFromStart)}
-              </td>
-            </tr>`
-        )}
-        <tr>
-          <th align="left">Starting Balance</th>
-          <th></th>
-          <th></th>
-          <th>${dateFormat(this.stmt?.startBalance?.date)}</th>
-          <th align="right" style="width:50px">${currency(this.stmt?.startBalance?.amount)}</th>
-        </tr>
-        <tr class="summary-row">
-          <td align="right"><b>Income</b></td>
-          <td></td>
-          <td align="right">${currency(this.stmt?.income)}</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr class="summary-row">
-          <td align="right"><b>Expenses</b></td>
-          <td></td>
-          <td align="right">${currency(this.stmt?.totalPayments)}</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr class="summary-row">
-          <td align="right"><b>Transfers</b></td>
-          <td></td>
-          <td align="right">${currency(this.stmt?.totalTransfers)}</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr class="summary-row">
-          <td align="right"><b>Inflows</b></td>
-          <td></td>
-          <td align="right">${currency(this.stmt?.inFlows)}</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr class="summary-row">
-          <td align="right"><b>Outflows</b></td>
-          <td></td>
-          <td align="right">${currency(this.stmt?.outFlows)}</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr class="summary-row">
-          <td align="right"><b>Total</b></td>
-          <td></td>
-          <td align="right">${currency(this.stmt?.addSub)}</td>
-          <td></td>
-          <td></td>
-        </tr>
-        <tr class="summary-row">
-          <td align="right"><b>Unaccounted</b></td>
-          <td></td>
-          <td align="right">${currency(this.stmt?.unaccounted)}</td>
-          <td></td>
-          <td></td>
-        </tr>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th align="left">Account</th>
+            <th align="left">Description</th>
+            <th>Recurrence</th>
+            <th>Type</th>
+            <th align="right">Amount</th>
+            <th>Date</th>
+            <th align="right">Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="balance-row">
+            <th colspan="6" align="left">Ending Balance</th>
+            <th>${dateFormat(this.stmt?.endBalance?.date)}</th>
+            <th align="right">${currency(this.stmt?.endBalance?.amount)}</th>
+          </tr>
+          ${this.stmt?.transactions?.map(
+            (t: GqlTransaction, index: number) =>
+              html`<tr class="highlight">
+                <td align="middle" class="nowrap">${index + 1}</td>
+                <td class="nowrap">${t?.toAccountName}</td>
+                <td class="desc-col">${t?.description}</td>
+                <td align="middle" class="nowrap">${this.recurringBadge(t)}</td>
+                <td align="middle" class="nowrap" style=${styleMap(transactionColor(t))}>
+                  ${transactionCode(t)}
+                </td>
+                <td class=${classMap({...projectedClass(t?.balance), nowrap: true})} style="min-width:45px">
+                  ${currency(t?.balance?.amount)}
+                </td>
+                <td align="middle" class="nowrap" style="min-width:60px">${dateFormat(t?.balance?.date)}</td>
+                <td
+                  class="copyable"
+                  align="right"
+                  style="min-width:50px"
+                  title="Click to copy running balance"
+                  @click="${() => this.copyToClipBoard(t?.balanceFromStart)}"
+                >
+                  ${currency(t?.balanceFromStart)}
+                </td>
+              </tr>`
+          )}
+          <tr class="balance-row">
+            <th colspan="6" align="left">Starting Balance</th>
+            <th>${dateFormat(this.stmt?.startBalance?.date)}</th>
+            <th align="right">${currency(this.stmt?.startBalance?.amount)}</th>
+          </tr>
+          <tr class="summary-row">
+            <td colspan="5" align="right"><b>Income</b></td>
+            <td align="right">${currency(this.stmt?.income)}</td>
+            <td colspan="2"></td>
+          </tr>
+          <tr class="summary-row">
+            <td colspan="5" align="right"><b>Expenses</b></td>
+            <td align="right">${currency(this.stmt?.totalPayments)}</td>
+            <td colspan="2"></td>
+          </tr>
+          <tr class="summary-row">
+            <td colspan="5" align="right"><b>Transfers</b></td>
+            <td align="right">${currency(this.stmt?.totalTransfers)}</td>
+            <td colspan="2"></td>
+          </tr>
+          <tr class="summary-row">
+            <td colspan="5" align="right"><b>Inflows</b></td>
+            <td align="right">${currency(this.stmt?.inFlows)}</td>
+            <td colspan="2"></td>
+          </tr>
+          <tr class="summary-row">
+            <td colspan="5" align="right"><b>Outflows</b></td>
+            <td align="right">${currency(this.stmt?.outFlows)}</td>
+            <td colspan="2"></td>
+          </tr>
+          <tr class="summary-row">
+            <td colspan="5" align="right"><b>Total</b></td>
+            <td align="right">${currency(this.stmt?.addSub)}</td>
+            <td colspan="2"></td>
+          </tr>
+          <tr class="summary-row">
+            <td colspan="5" align="right"><b>Unaccounted</b></td>
+            <td align="right">${currency(this.stmt?.unaccounted)}</td>
+            <td colspan="2"></td>
+          </tr>
+        </tbody>
       </table>
    `;
   }
