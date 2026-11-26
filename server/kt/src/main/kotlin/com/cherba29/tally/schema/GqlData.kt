@@ -153,6 +153,8 @@ data class GqlTable(
   val currentOwner: String,
   val owners: List<String>,
   val months: List<Month>,
+  @param:GraphQLDescription("Completeness percentage (0.0 to 100.0) for each month in months.")
+  val monthCompleteness: List<Float>,
   val rows: List<GqlTableRow>
 )
 

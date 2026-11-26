@@ -6,6 +6,9 @@
   months:
   - Jan2026
   - Dec2025
+  monthCompleteness:
+  - 10.0
+  - 20.0
   rows:
   - __type: GqlTableRow
     id: john
@@ -190,6 +193,8 @@
   - john
   months:
   - Mar2026
+  monthCompleteness:
+  - 0.0
   rows:
   - __type: GqlTableRow
     id: john
@@ -266,6 +271,8 @@
   - john
   months:
   - Mar2026
+  monthCompleteness:
+  - 20.0
   rows:
   - __type: GqlTableRow
     id: john
@@ -342,6 +349,8 @@
   - john
   months:
   - Mar2026
+  monthCompleteness:
+  - 20.0
   rows:
   - __type: GqlTableRow
     id: john

@@ -91,6 +91,7 @@ export class BackendClient {
             currentOwner
             owners
             months
+            monthCompleteness
             rows {
               id
               title

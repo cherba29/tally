@@ -169,6 +169,8 @@ export type GqlSummaryStatement = {
 export type GqlTable = {
   __typename?: 'GqlTable';
   currentOwner: Scalars['String']['output'];
+  /** Completeness percentage (0.0 to 100.0) for each month in months. */
+  monthCompleteness?: Array<Scalars['Float']['output']>;
   months: Array<Scalars['GqlMonth']['output']>;
   owners: Array<Scalars['String']['output']>;
   rows: Array<GqlTableRow>;

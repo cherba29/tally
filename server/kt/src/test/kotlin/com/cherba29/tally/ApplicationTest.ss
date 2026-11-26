@@ -178,6 +178,8 @@ type GqlSummaryStatement {
 
 type GqlTable {
   currentOwner: String!
+  "Completeness percentage (0.0 to 100.0) for each month in months."
+  monthCompleteness: [Float!]!
   months: [GqlMonth!]!
   owners: [String!]!
   rows: [GqlTableRow!]!

@@ -240,6 +240,7 @@ export class TallyApp extends LitElement {
   @state() private errorMessage: string = '';
   @state() private toastMessage: string = '';
   @state() private months: string[] = [];
+  @state() private monthCompleteness: number[] = [];
   @state() private rows: Rows = {};
   @state() private popupData: PopupData | undefined = undefined;
   @state() private secondaryPopupData: SecondaryPopupData | undefined = undefined;
@@ -576,6 +577,7 @@ export class TallyApp extends LitElement {
           <summary-table
             style="font-size: 80%;"
             .months=${this.months}
+            .monthCompleteness=${this.monthCompleteness}
             .rows=${rows}
             @addSubCellClick=${this.onAddSubCellClick}
             @cellclick=${this.onCellClick}
@@ -955,6 +957,7 @@ export class TallyApp extends LitElement {
           this.currentOwner = table?.currentOwner ?? undefined;
           this.owners = table?.owners?.filter((owner) => !!owner).map((owner) => owner!) ?? [];
           this.months = table?.months?.map((value) => value.toString()) || [];
+          this.monthCompleteness = table?.monthCompleteness ?? [];
           const freshRows = (table?.rows || []).map((r) => r!);
           this.rows = {
             [this.currentOwner ?? '']: freshRows,

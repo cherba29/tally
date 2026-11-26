@@ -104,9 +104,25 @@ export class SummaryTable extends LitElement {
       border-left: none;
       border-right: 2px solid #c3c3c3;
     }
+    .month-completeness {
+      font-size: 78%;
+      font-weight: 600;
+      margin-left: 3px;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .month-completeness.complete {
+      color: #1a7f37;
+    }
+    .month-completeness.partial {
+      color: #9a6700;
+    }
+    .month-completeness.low {
+      color: #cf222e;
+    }
   `;
 
   @property({attribute: false}) months: Array<Month | string> = [];
+  @property({attribute: false}) monthCompleteness: number[] = [];
   @property({attribute: false}) rows: GqlTableRow[] = [];
 
   @state() private collapsedIds: Set<string> = new Set();
@@ -222,6 +238,19 @@ export class SummaryTable extends LitElement {
     this.expandedIds = nextExpanded;
   }
 
+  private formatMonthCompleteness(pct: number): string {
+    if (pct >= 100) return '100%';
+    if (pct <= 0) return '0%';
+    const rounded = Math.min(99, Math.max(1, Math.round(pct)));
+    return `${rounded}%`;
+  }
+
+  private completenessClass(pct: number): string {
+    if (pct >= 100) return 'complete';
+    if (pct >= 75) return 'partial';
+    return 'low';
+  }
+
   override render() {
     const projectedClass = (c: GqlTableCell): ClassInfo => {
       return {projected: c.isProjected ?? false};
@@ -241,7 +270,18 @@ export class SummaryTable extends LitElement {
         <thead>
           <tr>
             <th>Account</th>
-            ${this.months.map((m) => html`<th colspan="4">${m}</th>`)}
+            ${this.months.map((m, idx) => {
+              const pct = this.monthCompleteness[idx];
+              return html`<th colspan="4">
+                ${m}${pct !== undefined && pct !== null
+                  ? html` <span
+                      class="month-completeness ${this.completenessClass(pct)}"
+                      title="Month completeness: ${pct.toFixed(1)}%"
+                      >${this.formatMonthCompleteness(pct)}</span
+                    >`
+                  : nothing}
+              </th>`;
+            })}
           </tr>
           <tr>
             <th></th>

@@ -755,4 +755,31 @@ describe('SummaryTable component', () => {
     const ev1Bal = await oneEvent(element, 'cellclick');
     expect(ev1Bal.detail.rowId).to.equal('title-only');
   });
+
+  it('renders month completeness next to each month header with color classes and clamping', async () => {
+    const months = ['Dec2026', 'Nov2026', 'Oct2026', 'Sep2026', 'Aug2026'];
+    const monthCompleteness = [0, 0.2, 87.3, 99.8, 100];
+
+    const element = await fixture<SummaryTable>(
+      html`<summary-table
+        .months=${months}
+        .monthCompleteness=${monthCompleteness}
+        .rows=${[]}
+      ></summary-table>`
+    );
+
+    const badges = Array.from(
+      element.shadowRoot!.querySelectorAll<HTMLSpanElement>('thead tr:first-child th .month-completeness')
+    );
+    expect(badges.map((b) => b.textContent)).to.deep.equal(['0%', '1%', '87%', '99%', '100%']);
+    expect(badges.map((b) => b.className)).to.deep.equal([
+      'month-completeness low',
+      'month-completeness low',
+      'month-completeness partial',
+      'month-completeness partial',
+      'month-completeness complete',
+    ]);
+    expect(badges[2]!.getAttribute('title')).to.equal('Month completeness: 87.3%');
+    expect(badges[4]!.getAttribute('title')).to.equal('Month completeness: 100.0%');
+  });
 });

@@ -182,6 +182,10 @@ fun GqlTable.toObjectNode(root: ObjectNode) {
     val monthsNode = root.putArray("months")
     months.forEach { monthsNode.add(it.toString()) }
   }
+  if (monthCompleteness.isNotEmpty()) {
+    val completenessNode = root.putArray("monthCompleteness")
+    monthCompleteness.forEach { completenessNode.add(it) }
+  }
   if (rows.isNotEmpty()) {
     val rowsNode = root.putArray("rows")
     rows.forEach { it.toObjectNode(rowsNode.addObject()) }

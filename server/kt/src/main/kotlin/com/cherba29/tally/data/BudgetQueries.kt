@@ -157,5 +157,14 @@ fun Budget.table(
       )
     }
   }
-  return GqlTable(currentOwner = forOwner, owners, requestedMonths, rows)
+  val monthCompleteness = requestedMonths.map { month ->
+    MonthCompleteness.monthCompletenessPercent(this, ownerTree, month)
+  }
+  return GqlTable(
+    currentOwner = forOwner,
+    owners = owners,
+    months = requestedMonths,
+    monthCompleteness = monthCompleteness,
+    rows = rows
+  )
 }
