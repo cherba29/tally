@@ -1,10 +1,16 @@
-import {LitElement, css, html, nothing} from 'lit';
-import {customElement, property} from 'lit/decorators.js';
-import { type StatementEntry } from '../utils';
+import {LitElement, css, html, nothing, type TemplateResult} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
+import {type StatementEntry} from '../utils';
 import {dateFormat, currency, isProjected} from '../format';
 import {classMap, type ClassInfo} from 'lit/directives/class-map.js';
 import {type GqlBalance, type GqlSummaryStatement} from '../gql_types';
 import {Month} from '../month';
+import {
+  sortSummaryEntries,
+  updateSummarySortOrder,
+  type SummarySortColumn,
+  type SummarySortCriterion,
+} from '../summary-sort';
 
 import './period-buttons';
 import {tooltipSharedStyles} from './tooltip-styles';
@@ -37,6 +43,9 @@ export class BalanceSummaryTooltip extends LitElement {
   private __endMonth!: Month;
   private __statementEntries: StatementEntry[] = [];
   private __summary: GqlSummaryStatement | undefined = undefined;
+
+  @state()
+  private sortOrder: SummarySortCriterion[] = [];
 
   @property({attribute: false})
   accountName: string = '';
@@ -73,7 +82,7 @@ export class BalanceSummaryTooltip extends LitElement {
 
   @property()
   set summary(value: GqlSummaryStatement | undefined) {
-    const oldValue = this.__statementEntries;
+    const oldValue = this.__summary;
     this.__summary = value;
     this.requestUpdate('summary', oldValue);
   }
@@ -97,6 +106,47 @@ export class BalanceSummaryTooltip extends LitElement {
     this.dispatchEvent(new CustomEvent('close'));
   }
 
+  private onSortColumnClick(column: SummarySortColumn) {
+    this.sortOrder = updateSummarySortOrder(this.sortOrder, column);
+  }
+
+  private renderSortableHeader(
+    column: SummarySortColumn,
+    label: string | TemplateResult,
+    plainLabel: string,
+    minWidth: string
+  ) {
+    const priorityIdx = this.sortOrder.findIndex((c) => c.column === column);
+    const criterion = priorityIdx >= 0 ? this.sortOrder[priorityIdx] : undefined;
+    const ariaSort =
+      priorityIdx === 0 && criterion
+        ? criterion.direction === 'asc'
+          ? 'ascending'
+          : 'descending'
+        : 'none';
+    const arrow = criterion ? (criterion.direction === 'asc' ? '▲' : '▼') : '';
+    const title = criterion
+      ? priorityIdx === 0
+        ? `Sorted by ${plainLabel} (${criterion.direction === 'asc' ? 'ascending' : 'descending'}) — click to reverse`
+        : `Secondary sort #${priorityIdx + 1} (${criterion.direction === 'asc' ? 'ascending' : 'descending'}) — click to sort primarily by ${plainLabel}`
+      : `Click to sort by ${plainLabel}`;
+
+    return html`<th
+      class="sortable"
+      data-sort-col="${column}"
+      style="min-width:${minWidth}"
+      aria-sort="${ariaSort}"
+      title="${title}"
+      @click=${() => this.onSortColumnClick(column)}
+    >
+      ${label}${criterion && priorityIdx === 0
+        ? html`<span class="sort-indicator primary">${arrow}</span>`
+        : criterion && priorityIdx === 1
+          ? html`<span class="sort-indicator secondary">${arrow}<span class="sort-priority">2</span></span>`
+          : nothing}
+    </th>`;
+  }
+
   override render() {
     const projectedClass = (b: GqlBalance | undefined | null): ClassInfo => {
       const projected = isProjected(b);
@@ -105,6 +155,7 @@ export class BalanceSummaryTooltip extends LitElement {
         confirmed: !projected,
       };
     };
+    const sortedEntries = sortSummaryEntries(this.statementEntries, this.sortOrder);
     return html`
       <div class="header">
         <button
@@ -125,25 +176,30 @@ export class BalanceSummaryTooltip extends LitElement {
       <table>
         <thead>
           <tr>
-            <th style="min-width:170px">Account</th>
-            <th style="min-width:60px">Start Date</th>
-            <th style="min-width:50px">Start<br />Balance</th>
-            <th style="min-width:60px">End Date</th>
-            <th style="min-width:50px">End<br />Balance</th>
-            <th style="min-width:50px">Change</th>
-            <th style="min-width:50px">Prct<br />Change</th>
-            <th style="min-width:50px">An Prct<br />Change</th>
-            <th style="min-width:50px">Inflows</th>
-            <th style="min-width:50px">OutFlows</th>
-            <th style="min-width:50px">AddSub</th>
-            <th style="min-width:50px">Income</th>
-            <th style="min-width:50px">Expenses</th>
-            <th style="min-width:50px">Transfers</th>
-            <th style="min-width:50px">Unaccounted</th>
+            ${this.renderSortableHeader('account', 'Account', 'Account', '170px')}
+            ${this.renderSortableHeader('startDate', 'Start Date', 'Start Date', '60px')}
+            ${this.renderSortableHeader('startBalance', html`Start<br />Balance`, 'Start Balance', '50px')}
+            ${this.renderSortableHeader('endDate', 'End Date', 'End Date', '60px')}
+            ${this.renderSortableHeader('endBalance', html`End<br />Balance`, 'End Balance', '50px')}
+            ${this.renderSortableHeader('change', 'Change', 'Change', '50px')}
+            ${this.renderSortableHeader('percentChange', html`Prct<br />Change`, 'Prct Change', '50px')}
+            ${this.renderSortableHeader(
+              'annualizedPercentChange',
+              html`An Prct<br />Change`,
+              'An Prct Change',
+              '50px'
+            )}
+            ${this.renderSortableHeader('inFlows', 'Inflows', 'Inflows', '50px')}
+            ${this.renderSortableHeader('outFlows', 'OutFlows', 'OutFlows', '50px')}
+            ${this.renderSortableHeader('addSub', 'AddSub', 'AddSub', '50px')}
+            ${this.renderSortableHeader('income', 'Income', 'Income', '50px')}
+            ${this.renderSortableHeader('expenses', 'Expenses', 'Expenses', '50px')}
+            ${this.renderSortableHeader('transfers', 'Transfers', 'Transfers', '50px')}
+            ${this.renderSortableHeader('unaccounted', 'Unaccounted', 'Unaccounted', '50px')}
           </tr>
         </thead>
         <tbody>
-          ${this.statementEntries.map(
+          ${sortedEntries.map(
             (e, index) =>
               html`<tr class="highlight">
                 <td>${index + 1} ${e.name.split('/').pop()}</td>

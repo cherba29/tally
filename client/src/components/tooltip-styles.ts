@@ -83,4 +83,29 @@ export const tooltipSharedStyles = css`
     background-color: #dd4;
     text-align: right;
   }
+  th.sortable {
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  th.sortable:hover {
+    background-color: #e2e8f0;
+  }
+  .sort-indicator {
+    display: inline-block;
+    margin-left: 2px;
+    font-size: 8px;
+    line-height: 1;
+    vertical-align: middle;
+  }
+  .sort-indicator.primary {
+    color: #0969da;
+  }
+  .sort-indicator.secondary {
+    color: #6e7781;
+  }
+  .sort-priority {
+    font-size: 7px;
+    vertical-align: super;
+  }
 `;
