@@ -9,6 +9,7 @@ import com.diffplug.selfie.coroutines.expectSelfie
 import com.expediagroup.graphql.server.execution.subscription.GRAPHQL_WS_PROTOCOL
 import com.expediagroup.graphql.server.execution.subscription.GraphQLWebSocketServer
 import com.expediagroup.graphql.server.types.GraphQLRequest
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.kotest.assertions.ktor.client.shouldHaveStatus
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
@@ -18,7 +19,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.HttpClient
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.client.request.get
@@ -26,12 +27,12 @@ import io.ktor.client.request.header
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import io.ktor.serialization.jackson.jackson
 import io.ktor.server.config.MapApplicationConfig
 import io.ktor.server.config.mergeWith
 import io.ktor.server.plugins.di.dependencies
@@ -58,6 +59,34 @@ import kotlin.io.path.pathString
 import kotlin.io.path.writeText
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
+
+private val testObjectMapper = ObjectMapper()
+
+// Serialize GraphQL POST bodies eagerly as ByteArrayContent/TextContent instead of streaming
+// OutputStreamContent via ContentNegotiation(jackson()), avoiding Ktor TestHttpClientEngine's
+// race where the server closes the request channel before the client flush coroutine completes.
+private suspend fun HttpClient.postGraphQL(query: String): HttpResponse =
+  post("/graphql") {
+    contentType(ContentType.Application.Json)
+    setBody(testObjectMapper.writeValueAsString(GraphQLRequest(query = query)))
+  }
+
+private suspend fun HttpClient.awaitGraphQLBody(
+  query: String,
+  predicate: (String) -> Boolean
+): Pair<HttpStatusCode, String> =
+  withTimeout(5.seconds) {
+    while (true) {
+      val response = postGraphQL(query)
+      val body = response.bodyAsText()
+      if (predicate(body)) {
+        return@withTimeout response.status to body
+      }
+      delay(30)
+    }
+    @Suppress("UNREACHABLE_CODE")
+    error("unreachable")
+  }
 
 fun ApplicationTestBuilder.configureTestClient(tallyPath: Path?) {
   application {
@@ -237,15 +266,7 @@ class ApplicationTest : DescribeSpec({
     it("server should handle valid POST requests") {
       testApplication {
         configureTestClient(tallyPath)
-        val client = createClient {
-          install(ContentNegotiation) {
-            jackson()
-          }
-        }
-        val response = client.post("/graphql") {
-          contentType(ContentType.Application.Json)
-          setBody(GraphQLRequest(query = "query { __typename }"))
-        }
+        val response = client.postGraphQL("query { __typename }")
         response.status shouldBe HttpStatusCode.OK
         response.bodyAsText() shouldContain """"__typename":"Query""""
       }
@@ -317,20 +338,12 @@ class ApplicationTest : DescribeSpec({
 
       testApplication {
         configureTestClient(testPath)
-        val client = createClient {
-          install(ContentNegotiation) {
-            jackson()
-          }
-        }
 
         val tableQuery =
           """query { table(owner: "someone", startMonth: "Mar2019", endMonth: "Mar2019") { currentOwner } }"""
 
         // 1. Initial valid query succeeds
-        val initialResponse = client.post("/graphql") {
-          contentType(ContentType.Application.Json)
-          setBody(GraphQLRequest(query = tableQuery))
-        }
+        val initialResponse = client.postGraphQL(tableQuery)
         initialResponse.status shouldBe HttpStatusCode.OK
         val initialBody = initialResponse.bodyAsText()
         initialBody shouldContain """"currentOwner":"someone""""
@@ -343,14 +356,8 @@ class ApplicationTest : DescribeSpec({
           owner: [someone
           """.trimIndent()
         )
-        Thread.sleep(700)
-
-        val parseErrResponse = client.post("/graphql") {
-          contentType(ContentType.Application.Json)
-          setBody(GraphQLRequest(query = tableQuery))
-        }
-        parseErrResponse.status shouldBe HttpStatusCode.OK
-        val parseErrBody = parseErrResponse.bodyAsText()
+        val (parseErrStatus, parseErrBody) = client.awaitGraphQLBody(tableQuery) { it.contains(""""errors":""") }
+        parseErrStatus shouldBe HttpStatusCode.OK
         parseErrBody shouldContain """"errors":"""
         parseErrBody shouldContain "account.yaml"
         parseErrBody shouldContain """"file":"account.yaml""""
@@ -366,14 +373,8 @@ class ApplicationTest : DescribeSpec({
             - { grp: Mar2019, date: 2020-05-01, camt: 100.00 }
           """.trimIndent()
         )
-        Thread.sleep(700)
-
-        val valErrResponse = client.post("/graphql") {
-          contentType(ContentType.Application.Json)
-          setBody(GraphQLRequest(query = tableQuery))
-        }
-        valErrResponse.status shouldBe HttpStatusCode.OK
-        val valErrBody = valErrResponse.bodyAsText()
+        val (valErrStatus, valErrBody) = client.awaitGraphQLBody(tableQuery) { it.contains("months apart (2 max)") }
+        valErrStatus shouldBe HttpStatusCode.OK
         valErrBody shouldContain """"errors":"""
         valErrBody shouldContain "months apart (2 max)"
         valErrBody shouldContain "account.yaml"
@@ -390,14 +391,8 @@ class ApplicationTest : DescribeSpec({
             - { grp: Mar2019, date: 2019-03-01, camt: 100.00 }
           """.trimIndent()
         )
-        Thread.sleep(700)
-
-        val recoveredResponse = client.post("/graphql") {
-          contentType(ContentType.Application.Json)
-          setBody(GraphQLRequest(query = tableQuery))
-        }
-        recoveredResponse.status shouldBe HttpStatusCode.OK
-        val recoveredBody = recoveredResponse.bodyAsText()
+        val (recoveredStatus, recoveredBody) = client.awaitGraphQLBody(tableQuery) { !it.contains(""""errors":""") }
+        recoveredStatus shouldBe HttpStatusCode.OK
         recoveredBody shouldContain """"currentOwner":"someone""""
         recoveredBody shouldNotContain """"errors":"""
       }
